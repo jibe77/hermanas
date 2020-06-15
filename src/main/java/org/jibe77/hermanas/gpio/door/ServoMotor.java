@@ -1,11 +1,9 @@
 package org.jibe77.hermanas.gpio.door;
 
-import com.pi4j.io.gpio.GpioController;
 import com.pi4j.wiringpi.*;
-import org.jibe77.hermanas.gpio.GpioSingleton;
+import org.jibe77.hermanas.gpio.GpioControllerSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -24,7 +22,7 @@ import javax.annotation.PostConstruct;
 public class ServoMotor
 {
     final
-    GpioSingleton gpioSingleton;
+    GpioControllerSingleton gpioControllerSingleton;
 
     boolean bottomButtonPressed;
 
@@ -33,23 +31,8 @@ public class ServoMotor
 
     Logger logger = LoggerFactory.getLogger(ServoMotor.class);
 
-    public ServoMotor(GpioSingleton gpioSingleton) {
-        this.gpioSingleton = gpioSingleton;
-    }
-
-    @PostConstruct
-    public void initialise() {
-        //Set the PinNumber pin to be a PWM pin, with values changing from 0 to 250
-        //this will give enough resolution to the servo motor
-        int returnValue = SoftPwm.softPwmCreate(
-                ServoMotor.DOOR_SETTING_PIN_NUMBER,
-                0,
-                ServoMotor.DOOR_SETTING_RANGE);
-        if (returnValue != 0) {
-            logger.warn("The door setting doesn't seem to initialise correctly, return value : {}", returnValue);
-        } else {
-            logger.info("The door servomotor has been initialised.");
-        }
+    public ServoMotor(GpioControllerSingleton gpioControllerSingleton) {
+        this.gpioControllerSingleton = gpioControllerSingleton;
     }
 
     public synchronized boolean setPosition(int positionNumber, int sleep) {

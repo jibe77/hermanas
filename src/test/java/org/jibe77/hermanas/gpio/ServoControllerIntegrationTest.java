@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.gpio;
 
 import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
-import org.jibe77.hermanas.gpio.door.ServoController;
+import org.jibe77.hermanas.gpio.door.DoorController;
 import org.jibe77.hermanas.gpio.door.ServoMotor;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -11,11 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(classes = {ServoController.class})
+@SpringBootTest(classes = {DoorController.class})
 public class ServoControllerIntegrationTest {
 
     @Autowired
-    ServoController controller;
+    DoorController controller;
 
     @MockBean
     ServoMotor servoMotor;
@@ -25,7 +25,7 @@ public class ServoControllerIntegrationTest {
     @Test
     public void testCloseDoor() throws DoorNotClosedCorrectlyException {
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... started.");
-        controller.closeDoor();
+        controller.closeDoorWithBottormButtonManagement();
         Mockito.verify(
                 servoMotor,
                 Mockito.times(1)
