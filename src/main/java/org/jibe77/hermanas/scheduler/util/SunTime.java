@@ -1,56 +1,74 @@
 package org.jibe77.hermanas.scheduler.util;
 
-import org.springframework.stereotype.Component;
-
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.TimeZone;
 
-@Component
 public class SunTime {
 
     public final static double LATITUDE = 49.37103491327111;
     public final static double LONGITUDE = 6.139976893987993;
 
-    protected static Date getNextSunsetTime(Date date) {
-        Date currentDaySunset = generateCurrentDay(date)[1].getTime();
-        if(date.after(currentDaySunset)) {
-            return generateNextDay(date)[1].getTime();
+    public static LocalDateTime computeNextSunset(LocalDateTime date) {
+        LocalDateTime currentDaySunset = computeCurrentDaySunset(date);
+        if(date.isAfter(currentDaySunset)) {
+            return computeNextDaySunset(date);
         } else {
             return currentDaySunset;
         }
     }
 
-    public static Date getNextSunsetTime() {
-        return getNextSunsetTime(Calendar.getInstance().getTime());
-    }
-
-    protected static Date getNextSunriseTime(Date date) {
-        Date currentDaySunrise = generateCurrentDay(date)[0].getTime();
-        if(date.after(currentDaySunrise)) {
-            return generateNextDay(date)[0].getTime();
+    public static LocalDateTime computeNextSunrise(LocalDateTime date) {
+        LocalDateTime currentDaySunrise = computeCurrentDaySunrise(date);
+        if(date.isAfter(currentDaySunrise)) {
+            return computeNextDaySunrise(date);
         } else {
             return currentDaySunrise;
         }
     }
 
-    public static Date getNextSunriseTime() {
-        return getNextSunriseTime(Calendar.getInstance().getTime());
+
+    protected static LocalDateTime computeNextDaySunset(LocalDateTime date) {
+        return computeCurrentDaySunset(date.plusDays(1));
     }
 
-    private static Calendar[] generateCurrentDay(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
+
+    protected static LocalDateTime computeNextDaySunrise(LocalDateTime date) {
+        return computeCurrentDaySunrise(date.plusDays(1));
+    }
+
+    protected static LocalDateTime computeCurrentDaySunrise(LocalDateTime date) {
+        return calendarToLocalDateTime(computeCurrentDay(date)[0]);
+    }
+
+    protected static LocalDateTime computeCurrentDaySunset(LocalDateTime date) {
+        return calendarToLocalDateTime(computeCurrentDay(date)[1]);
+    }
+    protected static Calendar[] computeCurrentDay(LocalDateTime date) {
         return ca.rmen.sunrisesunset.SunriseSunset.getSunriseSunset(
-                cal,
+                localDateTimeToCalendar(date),
                 SunTime.LATITUDE,
                 SunTime.LONGITUDE);
     }
 
-    private static Calendar[] generateNextDay(Date date) {
-        Calendar nextDay = Calendar.getInstance();
-        nextDay.setTime(date);
-        nextDay.add(Calendar.DAY_OF_MONTH, 1);
-        return generateCurrentDay(nextDay.getTime());
+    public static Calendar localDateTimeToCalendar(LocalDateTime localDateTime) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.clear();
+        calendar.set(localDateTime.getYear(), localDateTime.getMonthValue()-1, localDateTime.getDayOfMonth(),
+                localDateTime.getHour(), localDateTime.getMinute(), localDateTime.getSecond());
+        return calendar;
     }
+
+    public static LocalDateTime calendarToLocalDateTime(Calendar calendar) {
+        if (calendar == null) {
+            return null;
+        }
+        TimeZone tz = calendar.getTimeZone();
+        ZoneId zid = tz == null ? ZoneId.systemDefault() : tz.toZoneId();
+        return LocalDateTime.ofInstant(calendar.toInstant(), zid);
+    }
+
+
 
 }

@@ -1,10 +1,11 @@
 package org.jibe77.hermanas.scheduler.util;
 
-
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.Month;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,48 +16,17 @@ public class SunTimeTest {
      */
     @Test
     public void testWinderToSummerTime() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2022, Calendar.MARCH, 26, 0, 0);
-        Date nextSunsetTime = SunTime.getNextSunsetTime(calendar.getTime());
-        Date nextSunriseTime = SunTime.getNextSunriseTime(calendar.getTime());
-        System.out.println("Sunrise before summer time at: " + nextSunriseTime);
-        System.out.println("Sunset before summer time at: " + nextSunsetTime);
-        // Verify 06:27
-        calendar.setTime(nextSunriseTime);
-        assertEquals(6, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(27, calendar.get(Calendar.MINUTE));
-        // Verify 18:57
-        calendar.setTime(nextSunsetTime);
-        assertEquals(18, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(57, calendar.get(Calendar.MINUTE));
+        LocalDateTime dateTime = LocalDateTime.of(2022, Month.MARCH, 26, 0, 0);
+        assertEquals("2022-03-26T06:27:13", SunTime.computeNextSunrise(dateTime).toString(), "Verify sunrise time is at 06:27 before summer time change.");
+        assertEquals("2022-03-26T18:57:34", SunTime.computeNextSunset(dateTime).toString(), "Verify sunset time is at 18:57 before summer time change.");
 
-        calendar.set(2022, Calendar.MARCH, 27, 0, 0);
-        nextSunsetTime = SunTime.getNextSunsetTime(calendar.getTime());
-        nextSunriseTime = SunTime.getNextSunriseTime(calendar.getTime());
-        System.out.println("Sunrise after summer time at: " + nextSunriseTime);
-        System.out.println("Sunset after summer time at: " + nextSunsetTime);
-        // Verify 07:25
-        calendar.setTime(nextSunriseTime);
-        assertEquals(7, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(25, calendar.get(Calendar.MINUTE));
-        // Verify 19:59
-        calendar.setTime(nextSunsetTime);
-        assertEquals(19, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(59, calendar.get(Calendar.MINUTE));
+        dateTime = LocalDateTime.of(2022, Month.MARCH, 27, 0, 0);
+        assertEquals("2022-03-27T07:25:04", SunTime.computeNextSunrise(dateTime).toString(), "Verify sunrise time is at 07:25 after summer time change.");
+        assertEquals("2022-03-27T19:59:06", SunTime.computeNextSunset(dateTime).toString(), "Verify sunset time is at 19:59 after summer time change.");
 
-        calendar.set(2022, Calendar.MARCH, 27, 23, 0);
-        nextSunsetTime = SunTime.getNextSunsetTime(calendar.getTime());
-        nextSunriseTime = SunTime.getNextSunriseTime(calendar.getTime());
-        System.out.println("Sunrise next day after summer time at: " + nextSunriseTime);
-        System.out.println("Sunset next day after summer time at: " + nextSunsetTime);
-        // Verify 07:25
-        calendar.setTime(nextSunriseTime);
-        assertEquals(7, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(22, calendar.get(Calendar.MINUTE));
-        // Verify 19:59
-        calendar.setTime(nextSunsetTime);
-        assertEquals(20, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(0, calendar.get(Calendar.MINUTE));
+        dateTime = LocalDateTime.of(2022, Month.MARCH, 27, 23, 0);
+        assertEquals("2022-03-28T07:22:55", SunTime.computeNextSunrise(dateTime).toString(), "Verify 07:22 the next day if the sunrise is already past.");
+        assertEquals("2022-03-28T20:00:37", SunTime.computeNextSunset(dateTime).toString(), "Verify 20:00 the next day if the sunset is already past");
     }
 
     /**
@@ -64,33 +34,12 @@ public class SunTimeTest {
      */
     @Test
     public void testSummerToWinterTime() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2022, Calendar.OCTOBER, 29, 0, 0);
-        Date nextSunsetTime = SunTime.getNextSunsetTime(calendar.getTime());
-        Date nextSunriseTime = SunTime.getNextSunriseTime(calendar.getTime());
-        System.out.println("Sunrise before winter time at: " + nextSunriseTime);
-        System.out.println("Sunset before winter time at: " + nextSunsetTime);
-        // Verify 8:19
-        calendar.setTime(nextSunriseTime);
-        assertEquals(8, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(19, calendar.get(Calendar.MINUTE));
-        // Verify 18:21
-        calendar.setTime(nextSunsetTime);
-        assertEquals(18, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(21, calendar.get(Calendar.MINUTE));
+        LocalDateTime dateTime = LocalDateTime.of(2022, Month.OCTOBER, 29, 0, 0);
+        assertEquals("2022-10-29T08:19:25", SunTime.computeNextSunrise(dateTime).toString(), "Verify the sunrise is at 8:19 before winter time change.");
+        assertEquals("2022-10-29T18:21:20", SunTime.computeNextSunset(dateTime).toString(), "Verify the sunset is at 18:21 before winter time change.");
 
-        calendar.set(2022, Calendar.OCTOBER, 30, 0, 0);
-        nextSunsetTime = SunTime.getNextSunsetTime(calendar.getTime());
-        nextSunriseTime = SunTime.getNextSunriseTime(calendar.getTime());
-        System.out.println("Sunrise after winter time at: " + nextSunriseTime);
-        System.out.println("Sunset after winter time at: " + nextSunsetTime);
-        // Verify 07:21
-        calendar.setTime(nextSunriseTime);
-        assertEquals(7, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(21, calendar.get(Calendar.MINUTE));
-        // Verify 17:19
-        calendar.setTime(nextSunsetTime);
-        assertEquals(17, calendar.get(Calendar.HOUR_OF_DAY));
-        assertEquals(19, calendar.get(Calendar.MINUTE));
+        dateTime = LocalDateTime.of(2022, Month.OCTOBER, 30, 0, 0);
+        assertEquals("2022-10-30T07:21:03", SunTime.computeNextSunrise(dateTime).toString(), "Verify the sunrise is at 07:21 after winter time change.");
+        assertEquals("2022-10-30T17:19:37", SunTime.computeNextSunset(dateTime).toString(), "Verify the sunrise is at 17:19 after winter time change.");
     }
 }
