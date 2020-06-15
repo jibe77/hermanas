@@ -1,18 +1,16 @@
 package org.jibe77.hermanas.scheduler.job;
 
-import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.scheduler.trigger.SunsetTrigger;
 import org.jibe77.hermanas.scheduler.util.SunTimeUtils;
 import org.jibe77.hermanas.service.DoorService;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
+import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DoorClosingJob implements Job {
+public class DoorOpeningJob implements Job {
 
     @Autowired
     /**
@@ -24,16 +22,11 @@ public class DoorClosingJob implements Job {
     @Autowired
     SunsetTrigger sunsetTrigger;
 
-    Logger logger = LoggerFactory.getLogger(DoorClosingJob.class);
+    Logger logger = LoggerFactory.getLogger(DoorOpeningJob.class);
 
     public void execute(JobExecutionContext context) {
-        try {
-            logger.info("start door closing job at sunset.");
-            doorService.close();
-        } catch (DoorNotClosedCorrectlyException e) {
-            logger.error("Didn't close the door correctly.");
-        } finally {
-            sunsetTrigger.setStartTime(SunTimeUtils.computeNextSunsetAsDate());
-        }
+        logger.info("start door opening at sunrise.");
+        doorService.open();
+        sunsetTrigger.setStartTime(SunTimeUtils.computeNextSunriseAsDate());
     }
 }

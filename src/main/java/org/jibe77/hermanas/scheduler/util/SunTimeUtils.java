@@ -3,14 +3,35 @@ package org.jibe77.hermanas.scheduler.util;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 
-public class SunTime {
+/**
+ * Update regulary timezone on JRE using command because daylight saving time will be soon removed :
+ *  sudo java -jar tzupdater.jar -l https://data.iana.org/time-zones/tzdata-latest.tar.gz
+ */
+public class SunTimeUtils {
 
     public final static double LATITUDE = 49.37103491327111;
     public final static double LONGITUDE = 6.139976893987993;
 
-    public static LocalDateTime computeNextSunset(LocalDateTime date) {
+    public static LocalDateTime computeNextSunset() {
+        return computeNextSunset(LocalDateTime.now());
+    }
+
+    public static LocalDateTime computeNextSunrise() {
+        return computeNextSunrise(LocalDateTime.now());
+    }
+
+    public static Date computeNextSunsetAsDate() {
+        return localDateTimeToCalendar(computeNextSunset()).getTime();
+    }
+
+    public static Date computeNextSunriseAsDate() {
+        return localDateTimeToCalendar(computeNextSunset()).getTime();
+    }
+
+    protected static LocalDateTime computeNextSunset(LocalDateTime date) {
         LocalDateTime currentDaySunset = computeCurrentDaySunset(date);
         if(date.isAfter(currentDaySunset)) {
             return computeNextDaySunset(date);
@@ -19,7 +40,7 @@ public class SunTime {
         }
     }
 
-    public static LocalDateTime computeNextSunrise(LocalDateTime date) {
+    protected static LocalDateTime computeNextSunrise(LocalDateTime date) {
         LocalDateTime currentDaySunrise = computeCurrentDaySunrise(date);
         if(date.isAfter(currentDaySunrise)) {
             return computeNextDaySunrise(date);
@@ -48,8 +69,8 @@ public class SunTime {
     protected static Calendar[] computeCurrentDay(LocalDateTime date) {
         return ca.rmen.sunrisesunset.SunriseSunset.getSunriseSunset(
                 localDateTimeToCalendar(date),
-                SunTime.LATITUDE,
-                SunTime.LONGITUDE);
+                SunTimeUtils.LATITUDE,
+                SunTimeUtils.LONGITUDE);
     }
 
     public static Calendar localDateTimeToCalendar(LocalDateTime localDateTime) {
@@ -60,7 +81,7 @@ public class SunTime {
         return calendar;
     }
 
-    public static LocalDateTime calendarToLocalDateTime(Calendar calendar) {
+    private static LocalDateTime calendarToLocalDateTime(Calendar calendar) {
         if (calendar == null) {
             return null;
         }
