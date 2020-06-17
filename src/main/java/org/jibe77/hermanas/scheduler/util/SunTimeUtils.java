@@ -3,7 +3,6 @@ package org.jibe77.hermanas.scheduler.util;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TimeZone;
 
 /**
@@ -21,14 +20,6 @@ public class SunTimeUtils {
 
     public static LocalDateTime computeNextSunrise() {
         return computeNextSunrise(LocalDateTime.now());
-    }
-
-    public static Date computeNextSunsetAsDate() {
-        return localDateTimeToCalendar(computeNextSunset()).getTime();
-    }
-
-    public static Date computeNextSunriseAsDate() {
-        return localDateTimeToCalendar(computeNextSunset()).getTime();
     }
 
     protected static LocalDateTime computeNextSunset(LocalDateTime date) {
