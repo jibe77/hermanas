@@ -41,6 +41,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -48,6 +52,23 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
+		<dependency>
+			<groupId>net.time4j</groupId>
+			<artifactId>time4j-base</artifactId>
+			<version>5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>net.time4j</groupId>
+			<artifactId>time4j-sqlxml</artifactId>
+			<version>5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>net.time4j</groupId>
+			<artifactId>time4j-tzdata</artifactId>
+			<version>5.0-2020a</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
@@ -64,6 +85,29 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.retry</groupId>
+			<artifactId>spring-retry</artifactId>
+			<version>1.1.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>6.0.10.Final</version>
+		</dependency>
+
+		<!-- compute sunset and sunrise hour for the current day -->
+		<!-- for more information : https://github.com/caarmen/SunriseSunset -->
+		<dependency>
+			<groupId>ca.rmen</groupId>
+			<artifactId>lib-sunrise-sunset</artifactId>
+			<version>1.1.1</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -75,4 +119,10 @@
 		</plugins>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>caarmen-repo</id>
+			<url>https://dl.bintray.com/caarmen/maven/</url>
+		</repository>
+	</repositories>
 </project>
