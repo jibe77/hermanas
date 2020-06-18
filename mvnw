@@ -34,6 +34,9 @@
 #   MAVEN_SKIP_RC - flag to disable loading of mavenrc files
 # ----------------------------------------------------------------------------
 
+# Prevent Rpi zero crashing during package goal
+MAVEN_OPTS="-Xms 128 -Xmx256"
+
 if [ -z "$MAVEN_SKIP_RC" ] ; then
 
   if [ -f /etc/mavenrc ] ; then
