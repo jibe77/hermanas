@@ -35,7 +35,7 @@
 # ----------------------------------------------------------------------------
 
 # Prevent Rpi zero crashing during package goal
-MAVEN_OPTS="-Xms 128 -Xmx256"
+MAVEN_OPTS="-Xms128m -Xmx256m"
 
 if [ -z "$MAVEN_SKIP_RC" ] ; then
 
