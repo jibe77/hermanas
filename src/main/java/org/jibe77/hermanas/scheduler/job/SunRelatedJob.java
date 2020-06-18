@@ -38,12 +38,7 @@ public class SunRelatedJob implements Job {
             }
             sunHourService.reloadDoorClosingTime();
         } else if (currentTime.isAfter(sunHourService.getNextDoorOpeningTime())) {
-            try {
-                logger.info("start door closing job at sunset.");
-                doorService.close();
-            } catch (DoorNotClosedCorrectlyException e) {
-                logger.error("Didn't close the door correctly.");
-            }
+            doorService.open();
             sunHourService.reloadDoorOpeningTime();
         } else if (currentTime.isAfter(sunHourService.getNextLightOnTime())) {
             // TODO ...
