@@ -1,28 +1,33 @@
-package org.jibe77.hermanas.scheduler.util;
+package org.jibe77.hermanas.scheduler;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-/**
- * Update regulary timezone on JRE using command because daylight saving time will be soon removed :
- *  sudo java -jar tzupdater.jar -l https://data.iana.org/time-zones/tzdata-latest.tar.gz
- */
+@Component
+@Scope("singleton")
 public class SunTimeUtils {
 
-    public final static double LATITUDE = 49.37103491327111;
-    public final static double LONGITUDE = 6.139976893987993;
+    @Value("${suntime.latitude}")
+    public double latitude;
 
-    public static LocalDateTime computeNextSunset() {
+    @Value("${suntime.longitude}")
+    public double longitude;
+
+    protected LocalDateTime computeNextSunset() {
         return computeNextSunset(LocalDateTime.now());
     }
 
-    public static LocalDateTime computeNextSunrise() {
+    protected LocalDateTime computeNextSunrise() {
         return computeNextSunrise(LocalDateTime.now());
     }
 
-    protected static LocalDateTime computeNextSunset(LocalDateTime date) {
+    protected LocalDateTime computeNextSunset(LocalDateTime date) {
         LocalDateTime currentDaySunset = computeCurrentDaySunset(date);
         if(date.isAfter(currentDaySunset)) {
             return computeNextDaySunset(date);
@@ -31,7 +36,7 @@ public class SunTimeUtils {
         }
     }
 
-    protected static LocalDateTime computeNextSunrise(LocalDateTime date) {
+    protected LocalDateTime computeNextSunrise(LocalDateTime date) {
         LocalDateTime currentDaySunrise = computeCurrentDaySunrise(date);
         if(date.isAfter(currentDaySunrise)) {
             return computeNextDaySunrise(date);
@@ -41,30 +46,30 @@ public class SunTimeUtils {
     }
 
 
-    protected static LocalDateTime computeNextDaySunset(LocalDateTime date) {
+    protected LocalDateTime computeNextDaySunset(LocalDateTime date) {
         return computeCurrentDaySunset(date.plusDays(1));
     }
 
 
-    protected static LocalDateTime computeNextDaySunrise(LocalDateTime date) {
+    protected LocalDateTime computeNextDaySunrise(LocalDateTime date) {
         return computeCurrentDaySunrise(date.plusDays(1));
     }
 
-    protected static LocalDateTime computeCurrentDaySunrise(LocalDateTime date) {
+    protected LocalDateTime computeCurrentDaySunrise(LocalDateTime date) {
         return calendarToLocalDateTime(computeCurrentDay(date)[0]);
     }
 
-    protected static LocalDateTime computeCurrentDaySunset(LocalDateTime date) {
+    protected LocalDateTime computeCurrentDaySunset(LocalDateTime date) {
         return calendarToLocalDateTime(computeCurrentDay(date)[1]);
     }
-    protected static Calendar[] computeCurrentDay(LocalDateTime date) {
+    protected Calendar[] computeCurrentDay(LocalDateTime date) {
         return ca.rmen.sunrisesunset.SunriseSunset.getSunriseSunset(
                 localDateTimeToCalendar(date),
-                SunTimeUtils.LATITUDE,
-                SunTimeUtils.LONGITUDE);
+                latitude,
+                longitude);
     }
 
-    public static Calendar localDateTimeToCalendar(LocalDateTime localDateTime) {
+    private Calendar localDateTimeToCalendar(LocalDateTime localDateTime) {
         Calendar calendar = Calendar.getInstance();
         calendar.clear();
         calendar.set(localDateTime.getYear(), localDateTime.getMonthValue()-1, localDateTime.getDayOfMonth(),
@@ -72,7 +77,7 @@ public class SunTimeUtils {
         return calendar;
     }
 
-    private static LocalDateTime calendarToLocalDateTime(Calendar calendar) {
+    private LocalDateTime calendarToLocalDateTime(Calendar calendar) {
         if (calendar == null) {
             return null;
         }
@@ -80,7 +85,4 @@ public class SunTimeUtils {
         ZoneId zid = tz == null ? ZoneId.systemDefault() : tz.toZoneId();
         return LocalDateTime.ofInstant(calendar.toInstant(), zid);
     }
-
-
-
 }
