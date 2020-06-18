@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.scheduler.job;
 
 import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
-import org.jibe77.hermanas.scheduler.SunHourService;
+import org.jibe77.hermanas.scheduler.SunTimeService;
 import org.jibe77.hermanas.service.DoorService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class SunRelatedJob implements Job {
 
     @Autowired
-    SunHourService sunHourService;
+    SunTimeService sunHourService;
 
     @Autowired
     /**
