@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.scheduler;
 
-import org.jibe77.hermanas.scheduler.util.SunTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
@@ -12,34 +11,40 @@ import java.time.LocalDateTime;
 
 @Component
 @Scope("singleton")
-public class SunHourService {
+public class SunTimeService {
 
-    Logger logger = LoggerFactory.getLogger(SunHourService.class);
+    Logger logger = LoggerFactory.getLogger(SunTimeService.class);
+
+    SunTimeUtils sunTimeUtils;
+
+    public SunTimeService(SunTimeUtils sunTimeUtils) {
+        this.sunTimeUtils = sunTimeUtils;
+    }
 
     @Cacheable("light-on")
     public LocalDateTime getNextLightOnTime() {
-        LocalDateTime localDateTime = SunTimeUtils.computeNextSunset();
+        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset();
         logger.info("computing next light switching on time : {}", localDateTime.toString());
         return localDateTime;
     }
 
     @Cacheable("light-off")
     public LocalDateTime getNextLightOffTime() {
-        LocalDateTime localDateTime = SunTimeUtils.computeNextSunset().plusMinutes(20);
+        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset().plusMinutes(20);
         logger.info("computing next light switching off time : {}", localDateTime.toString());
         return localDateTime;
     }
 
     @Cacheable("door-opening")
     public LocalDateTime getNextDoorOpeningTime() {
-        LocalDateTime localDateTime = SunTimeUtils.computeNextSunrise().plusMinutes(15);
+        LocalDateTime localDateTime = sunTimeUtils.computeNextSunrise().plusMinutes(15);
         logger.info("computing next door opening time : {}", localDateTime.toString());
         return localDateTime;
     }
 
     @Cacheable("door-closing")
     public LocalDateTime getNextDoorClosingTime() {
-        LocalDateTime localDateTime = SunTimeUtils.computeNextSunset().plusMinutes(15);
+        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset().plusMinutes(15);
         logger.info("computing next door closing time : {}", localDateTime.toString());
         return localDateTime;
     }
@@ -62,4 +67,5 @@ public class SunHourService {
     public void reloadLightOffTime() {
         logger.info("revoke cache on light switching off time.");
     }
+
 }

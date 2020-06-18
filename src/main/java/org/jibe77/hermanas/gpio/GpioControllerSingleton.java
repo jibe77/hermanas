@@ -7,6 +7,7 @@ import com.pi4j.wiringpi.SoftPwm;
 import org.jibe77.hermanas.gpio.door.ServoMotor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,12 @@ public class GpioControllerSingleton {
     GpioController gpio;
 
     Logger logger = LoggerFactory.getLogger(GpioControllerSingleton.class);
+
+    @Value("${door.servo.gpio.address}")
+    private int doorServoGpioAddress;
+
+    @Value("${door.servo.gpio.range}")
+    private int doorSettingRange;
 
     @PostConstruct
     private void initialise() {
@@ -40,9 +47,9 @@ public class GpioControllerSingleton {
             //Set the PinNumber pin to be a PWM pin, with values changing from 0 to 250
             //this will give enough resolution to the servo motor
             int returnValue = SoftPwm.softPwmCreate(
-                    ServoMotor.DOOR_SETTING_PIN_NUMBER,
+                    doorServoGpioAddress,
                     0,
-                    ServoMotor.DOOR_SETTING_RANGE);
+                    doorSettingRange);
             if (returnValue != 0) {
                 logger.warn("The door setting doesn't seem to initialise correctly, return value : {}", returnValue);
             } else {

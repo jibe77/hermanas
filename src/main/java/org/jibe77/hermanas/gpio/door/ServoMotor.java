@@ -4,11 +4,10 @@ import com.pi4j.wiringpi.*;
 import org.jibe77.hermanas.gpio.GpioControllerSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
 
 /**
  * This class manipulates a servo motor.
@@ -26,8 +25,8 @@ public class ServoMotor
 
     boolean bottomButtonPressed;
 
-    public static final int DOOR_SETTING_PIN_NUMBER = 6;
-    public static final int DOOR_SETTING_RANGE = 100;
+    @Value("${door.servo.gpio.address}")
+    private int doorServoGpioAddress;
 
     Logger logger = LoggerFactory.getLogger(ServoMotor.class);
 
@@ -40,7 +39,7 @@ public class ServoMotor
         {
             bottomButtonPressed = false;
             //send the value to the motor.
-            SoftPwm.softPwmWrite(DOOR_SETTING_PIN_NUMBER, positionNumber);
+            SoftPwm.softPwmWrite(doorServoGpioAddress, positionNumber);
             //give time to the motor to reach the position
             sleepMillisec(sleep);
             //stop sending orders to the motor.
@@ -57,7 +56,7 @@ public class ServoMotor
      */
     public void stop(){
         //zero tells the motor to turn itself off and wait for more instructions.
-        SoftPwm.softPwmWrite(DOOR_SETTING_PIN_NUMBER, 0);
+        SoftPwm.softPwmWrite(doorServoGpioAddress, 0);
     }
 
     public void stopAtBottom() {

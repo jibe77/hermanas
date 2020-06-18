@@ -6,6 +6,7 @@ import com.pi4j.io.gpio.RaspiPin;
 import org.jibe77.hermanas.gpio.GpioControllerSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,9 @@ public class BottomButton {
 
     GpioPinDigitalInput bottomButton;
 
+    @Value("${door.button.bottom.gpio.address}")
+            private int doorButtonBottomGpioAddress;
+
     Logger logger = LoggerFactory.getLogger(BottomButton.class);
 
     public BottomButton(ServoMotor servoMotor, GpioControllerSingleton gpioControllerSingleton) {
@@ -34,7 +38,7 @@ public class BottomButton {
             logger.info("provision door button on gpio instance.");
             bottomButton =
                     gpioControllerSingleton.getController().provisionDigitalInputPin(
-                            RaspiPin.GPIO_16, PinPullResistance.PULL_DOWN);
+                            RaspiPin.getPinByAddress(doorButtonBottomGpioAddress), PinPullResistance.PULL_DOWN);
             bottomButton.setShutdownOptions(true);
             bottomButton.addListener(new BottomButtonListener(servoMotor));
         }
