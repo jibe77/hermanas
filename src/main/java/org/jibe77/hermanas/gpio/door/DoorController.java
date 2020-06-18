@@ -2,6 +2,7 @@ package org.jibe77.hermanas.gpio.door;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -25,11 +26,17 @@ public class DoorController
 
     Logger logger = LoggerFactory.getLogger(DoorController.class);
 
-    private static final int DOOR_OPENING_DURATION = 8000;
-    private static final int DOOR_OPENING_GEAR_POSITION = 16;
+    @Value("${door.opening.duration}")
+    private int doorOpeningDuration;
 
-    private static final int DOOR_CLOSING_DURATION = 3000;
-    private static final int DOOR_CLOSING_GEAR_POSITION = 5;
+    @Value("${door.opening.position}")
+    private int doorOpeningPosition;
+
+    @Value("${door.closing.duration}")
+    private int doorClosingDuration;
+
+    @Value("${door.closing.position}")
+    private int doorClosingPosition;
 
     public DoorController(ServoMotor servo, BottomButton bottomButton) {
         this.servo = servo;
@@ -57,9 +64,9 @@ public class DoorController
     private boolean closeDoor() {
         logger.info(
                 "Close the door moving servo clockwise with gear position {} for {} ms ...",
-                DOOR_CLOSING_GEAR_POSITION,
-                DOOR_CLOSING_DURATION);
-        return servo.setPosition(DOOR_CLOSING_GEAR_POSITION, DOOR_CLOSING_DURATION);
+                doorClosingPosition,
+                doorClosingDuration);
+        return servo.setPosition(doorClosingPosition, doorClosingDuration);
 
     }
 
@@ -76,9 +83,9 @@ public class DoorController
     public void openDoor()
     {
         logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
-                DOOR_OPENING_GEAR_POSITION,
-                DOOR_OPENING_DURATION);
-        servo.setPosition(DOOR_OPENING_GEAR_POSITION, DOOR_OPENING_DURATION);
+                doorOpeningPosition,
+                doorOpeningDuration);
+        servo.setPosition(doorOpeningPosition, doorOpeningDuration);
         logger.info("... done");
     }
 }
