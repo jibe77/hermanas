@@ -14,7 +14,6 @@ import uk.co.caprica.picam.enums.Encoding;
 import javax.annotation.PostConstruct;
 
 import java.io.File;
-import java.nio.file.FileSystemNotFoundException;
 import java.time.LocalDateTime;
 
 import static uk.co.caprica.picam.CameraConfiguration.cameraConfiguration;
@@ -32,15 +31,18 @@ public class CameraController {
 
     @PostConstruct
     private void init() {
+        logger.info("init camera config.");
          config = cameraConfiguration()
                 .width(1920)
                 .height(1080)
                 .encoding(Encoding.JPEG)
                 .quality(85)
                 .delay(5000);
+         takePicture();
     }
 
     public void takePicture() {
+        logger.info("taking a picture.");
         try(Camera camera = new Camera(config)) {
             LocalDateTime localDateTime = LocalDateTime.now();
             File fileRoot = new File(
