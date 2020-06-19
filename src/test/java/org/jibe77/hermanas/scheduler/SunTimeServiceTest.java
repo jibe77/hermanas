@@ -4,7 +4,6 @@ import net.time4j.Moment;
 import net.time4j.PlainDate;
 import net.time4j.calendar.astro.SolarTime;
 import net.time4j.tz.repo.TZDATA;
-import org.jibe77.hermanas.gpio.door.ServoMotor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
