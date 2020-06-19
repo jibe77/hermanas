@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.gpio.door.servo;
 
-import org.jibe77.hermanas.gpio.GpioHermanasController;
+import org.jibe77.hermanas.gpio.GpioHermanasFakeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 public class ServoMotorController
 {
     final
-    GpioHermanasController gpioHermanasController;
+    GpioHermanasFakeController gpioHermanasController;
 
     @Value("${door.servo.gpio.address}")
     private int doorServoGpioAddress;
@@ -36,7 +36,7 @@ public class ServoMotorController
 
     Logger logger = LoggerFactory.getLogger(ServoMotorController.class);
 
-    public ServoMotorController(GpioHermanasController gpioHermanasController) {
+    public ServoMotorController(GpioHermanasFakeController gpioHermanasController) {
         this.gpioHermanasController = gpioHermanasController;
     }
 

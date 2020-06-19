@@ -14,7 +14,7 @@ public class ServoMotorControllerIntegrationTest {
     ServoMotorController servoMotorController;
 
     @MockBean
-    GpioHermanasController gpioHermanasController;
+    GpioHermanasFakeController gpioHermanasController;
 
     @Test
     public void testServoMotorErrorPosition() {
