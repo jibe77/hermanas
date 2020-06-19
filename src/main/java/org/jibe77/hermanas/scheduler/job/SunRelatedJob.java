@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.scheduler.job;
 
+import org.jibe77.hermanas.gpio.camera.CameraController;
 import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.scheduler.SunTimeService;
 import org.jibe77.hermanas.service.DoorService;
@@ -19,6 +20,9 @@ public class SunRelatedJob implements Job {
     SunTimeService sunHourService;
 
     @Autowired
+    CameraController cameraController;
+
+    @Autowired
     /**
      * Quartz is instantiating the job with default constructor,
      * so it's not possible to inject beans with constructor.
@@ -29,6 +33,7 @@ public class SunRelatedJob implements Job {
 
     public void execute(JobExecutionContext context) {
         LocalDateTime currentTime = LocalDateTime.now();
+        cameraController.takePicture();
         if (currentTime.isAfter(sunHourService.getNextDoorClosingTime())) {
             try {
                 logger.info("start door closing job at sunset.");
