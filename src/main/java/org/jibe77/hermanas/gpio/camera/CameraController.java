@@ -32,7 +32,7 @@ public class CameraController {
 
     @PostConstruct
     private void init() {
-        CameraConfiguration config = cameraConfiguration()
+         config = cameraConfiguration()
                 .width(1920)
                 .height(1080)
                 .encoding(Encoding.JPEG)
