@@ -1,4 +1,5 @@
 package org.jibe77.hermanas.scheduler.detail;
+
 import org.jibe77.hermanas.scheduler.job.SunRelatedJob;
 import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.stereotype.Component;
