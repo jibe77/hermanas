@@ -2,6 +2,7 @@ package org.jibe77.hermanas.gpio.door.bottombutton;
 
 import com.pi4j.io.gpio.GpioPinDigitalInput;
 import org.jibe77.hermanas.gpio.GpioHermanasController;
+import org.jibe77.hermanas.gpio.GpioHermanasFakeController;
 import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class BottomButtonController {
 
     Logger logger = LoggerFactory.getLogger(BottomButtonController.class);
 
-    public BottomButtonController(ServoMotorController servoMotorController, GpioHermanasController gpioHermanasController) {
+    public BottomButtonController(ServoMotorController servoMotorController, GpioHermanasFakeController gpioHermanasController) {
         this.servoMotorController = servoMotorController;
         this.gpioHermanasController = gpioHermanasController;
     }
