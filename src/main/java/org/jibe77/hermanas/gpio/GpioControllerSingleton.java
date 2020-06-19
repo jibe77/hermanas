@@ -1,10 +1,8 @@
 package org.jibe77.hermanas.gpio;
 
-import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioFactory;
+import com.pi4j.io.gpio.*;
 import com.pi4j.wiringpi.Gpio;
 import com.pi4j.wiringpi.SoftPwm;
-import org.jibe77.hermanas.gpio.door.ServoMotor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +17,7 @@ import javax.annotation.PreDestroy;
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class GpioControllerSingleton {
 
-    GpioController gpio;
+    private GpioController gpio;
 
     Logger logger = LoggerFactory.getLogger(GpioControllerSingleton.class);
 
@@ -61,13 +59,23 @@ public class GpioControllerSingleton {
         logger.info("... initialisation done.");
     }
 
-    public GpioController getController() {
-        return gpio;
-    }
-
     @PreDestroy
     private void tearDown() {
         logger.info("Shutdown gpio instance.");
         gpio.shutdown();
+    }
+
+    public void moveServo(int doorServoGpioAddress, int positionNumber) {
+        //send the value to the motor.
+        SoftPwm.softPwmWrite(doorServoGpioAddress, positionNumber);
+    }
+
+    public GpioPinDigitalInput provisionButton(int gpioAddress) {
+        return gpio.provisionDigitalInputPin(
+                RaspiPin.getPinByAddress(gpioAddress), PinPullResistance.PULL_DOWN);
+    }
+
+    public void unprovisionButton(GpioPinDigitalInput bottomButton) {
+        gpio.unprovisionPin(bottomButton);
     }
 }

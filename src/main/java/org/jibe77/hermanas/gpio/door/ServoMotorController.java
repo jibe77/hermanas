@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.gpio.door;
 
-import com.pi4j.wiringpi.*;
 import org.jibe77.hermanas.gpio.GpioControllerSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,36 +17,41 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class ServoMotor
+public class ServoMotorController
 {
     final
     GpioControllerSingleton gpioControllerSingleton;
 
-    boolean bottomButtonPressed;
-
     @Value("${door.servo.gpio.address}")
     private int doorServoGpioAddress;
 
-    Logger logger = LoggerFactory.getLogger(ServoMotor.class);
+    private static final int SERVO_STOP_POSITION = 0;
+    // clockwise positions
+    private static final int SERVO_CLOSING_MIN_POSITION = 5;
+    private static final int SERVO_CLOSING_MAX_POSITION = 14;
+    // counter-clockwise positions
+    private static final int SERVO_OPENING_MIN_POSITION = 15;
+    private static final int SERVO_OPENING_MAX_POSITION = 25;
 
-    public ServoMotor(GpioControllerSingleton gpioControllerSingleton) {
+
+    Logger logger = LoggerFactory.getLogger(ServoMotorController.class);
+
+    public ServoMotorController(GpioControllerSingleton gpioControllerSingleton) {
         this.gpioControllerSingleton = gpioControllerSingleton;
     }
 
-    public synchronized boolean setPosition(int positionNumber, int sleep) {
-        if (positionNumber >= 5 && positionNumber <= 25)
-        {
-            bottomButtonPressed = false;
-            //send the value to the motor.
-            SoftPwm.softPwmWrite(doorServoGpioAddress, positionNumber);
+    public synchronized void setPosition(int positionNumber, int sleep) {
+        // if the motor is moving clockwise, it means the door is closing
+        if ((positionNumber >= SERVO_CLOSING_MIN_POSITION && positionNumber <= SERVO_CLOSING_MAX_POSITION)
+                || (positionNumber >= SERVO_OPENING_MIN_POSITION && positionNumber <= SERVO_OPENING_MAX_POSITION)) {
+            gpioControllerSingleton.moveServo(doorServoGpioAddress, positionNumber);
             //give time to the motor to reach the position
             sleepMillisec(sleep);
             //stop sending orders to the motor.
-            if (!bottomButtonPressed)
-                stop();
-            return bottomButtonPressed;
+            stop();
         } else {
-            throw new IllegalArgumentException("Nothing done, positionNumber has to be between 5 and 25");
+            throw new IllegalArgumentException("Nothing done, positionNumber has to be between " +
+                    SERVO_CLOSING_MIN_POSITION + " and " + SERVO_OPENING_MAX_POSITION);
         }
     }
 
@@ -56,12 +60,7 @@ public class ServoMotor
      */
     public void stop(){
         //zero tells the motor to turn itself off and wait for more instructions.
-        SoftPwm.softPwmWrite(doorServoGpioAddress, 0);
-    }
-
-    public void stopAtBottom() {
-        bottomButtonPressed = true;
-        stop();
+        gpioControllerSingleton.moveServo(doorServoGpioAddress, SERVO_STOP_POSITION);
     }
 
     /**

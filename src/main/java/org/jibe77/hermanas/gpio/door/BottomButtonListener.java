@@ -7,17 +7,25 @@ import org.slf4j.LoggerFactory;
 
 public class BottomButtonListener implements GpioPinListenerDigital {
 
-    ServoMotor servoMotor;
+    BottomButtonController bottomButtonController;
+    ServoMotorController servoMotorController;
 
     Logger logger = LoggerFactory.getLogger(BottomButtonListener.class);
 
-    public BottomButtonListener(ServoMotor servoMotor) {
-        this.servoMotor = servoMotor;
+    public BottomButtonListener(BottomButtonController bottomButtonController, ServoMotorController servoMotorController) {
+        this.bottomButtonController = bottomButtonController;
+        this.servoMotorController = servoMotorController;
     }
 
     @Override
     public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-        logger.info("Door has reached the bottom, stop servomotor now !");
-        servoMotor.stopAtBottom();
+        if (event.getState().isHigh()) {
+            logger.info("Door has reached the bottom, stop servomotor now !");
+            bottomButtonController.setBottomButtonPressed(true);
+            servoMotorController.stop();
+        } else if (event.getState().isLow()) {
+            logger.info("Bottom button is not pressed anymore.");
+            bottomButtonController.setBottomButtonPressed(false);
+        }
     }
 }

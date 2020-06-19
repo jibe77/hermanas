@@ -1,8 +1,6 @@
 package org.jibe77.hermanas.gpio.door;
 
 import com.pi4j.io.gpio.GpioPinDigitalInput;
-import com.pi4j.io.gpio.PinPullResistance;
-import com.pi4j.io.gpio.RaspiPin;
 import org.jibe77.hermanas.gpio.GpioControllerSingleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,45 +11,51 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class BottomButton {
+public class BottomButtonController {
 
     final
-    ServoMotor servoMotor;
+    ServoMotorController servoMotorController;
 
     final
     GpioControllerSingleton gpioControllerSingleton;
 
-    GpioPinDigitalInput bottomButton;
-
     @Value("${door.button.bottom.gpio.address}")
             private int doorButtonBottomGpioAddress;
 
-    Logger logger = LoggerFactory.getLogger(BottomButton.class);
+    private GpioPinDigitalInput bottomButton;
 
-    public BottomButton(ServoMotor servoMotor, GpioControllerSingleton gpioControllerSingleton) {
-        this.servoMotor = servoMotor;
+    boolean bottomButtonPressed = false;
+
+    Logger logger = LoggerFactory.getLogger(BottomButtonController.class);
+
+    public BottomButtonController(ServoMotorController servoMotorController, GpioControllerSingleton gpioControllerSingleton) {
+        this.servoMotorController = servoMotorController;
         this.gpioControllerSingleton = gpioControllerSingleton;
     }
 
     public synchronized void provisionButton() {
         if (bottomButton == null) {
             logger.info("provision door button on gpio instance.");
-            bottomButton =
-                    gpioControllerSingleton.getController().provisionDigitalInputPin(
-                            RaspiPin.getPinByAddress(doorButtonBottomGpioAddress), PinPullResistance.PULL_DOWN);
+            bottomButton = gpioControllerSingleton.provisionButton(doorButtonBottomGpioAddress);
             bottomButton.setShutdownOptions(true);
-            bottomButton.addListener(new BottomButtonListener(servoMotor));
+            bottomButton.addListener(new BottomButtonListener(this, servoMotorController));
         }
     }
 
     public synchronized void unprovisionButton() {
         if (bottomButton != null) {
             logger.info("unprovision door button on gpio instance.");
-            gpioControllerSingleton.getController().unprovisionPin(bottomButton);
             bottomButton.removeAllListeners();
+            gpioControllerSingleton.unprovisionButton(bottomButton);
             bottomButton = null;
         }
     }
 
+    public boolean isBottomButtonPressed() {
+        return bottomButtonPressed;
+    }
 
+    protected void setBottomButtonPressed(boolean bottomButtonPressed) {
+        this.bottomButtonPressed = bottomButtonPressed;
+    }
 }

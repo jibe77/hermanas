@@ -2,13 +2,12 @@ package org.jibe77.hermanas.gpio;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
-import com.pi4j.io.gpio.Pin;
-import com.pi4j.io.gpio.PinPullResistance;
-import org.jibe77.hermanas.gpio.door.BottomButton;
+import org.jibe77.hermanas.gpio.door.BottomButtonController;
 import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.gpio.door.DoorController;
-import org.jibe77.hermanas.gpio.door.ServoMotor;
+import org.jibe77.hermanas.gpio.door.ServoMotorController;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,14 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(classes = {DoorController.class, BottomButton.class})
+@SpringBootTest(classes = {DoorController.class, BottomButtonController.class})
 public class ServoControllerIntegrationTest {
 
     @Autowired
     DoorController controller;
 
     @MockBean
-    ServoMotor servoMotor;
+    ServoMotorController servoMotorController;
 
     @MockBean
     GpioControllerSingleton gpioControllerSingleton;
@@ -34,21 +33,22 @@ public class ServoControllerIntegrationTest {
     @MockBean
     GpioPinDigitalInput gpioPinDigitalInput;
 
+    @MockBean
+    BottomButtonController bottomButtonController;
+
     Logger logger = LoggerFactory.getLogger(ServoControllerIntegrationTest.class);
 
     @Test
     public void testCloseDoor() throws DoorNotClosedCorrectlyException {
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... started.");
-        Mockito.when(gpioControllerSingleton.getController()).thenReturn(gpioController);
         Mockito.when(
-                gpioController.provisionDigitalInputPin(
-                        Mockito.any(Pin.class),
-                        Mockito.any(PinPullResistance.class))
+                gpioControllerSingleton.provisionButton(
+                        Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
-        Mockito.when(servoMotor.setPosition(Mockito.anyInt(), Mockito.anyInt())).thenReturn(true);
+        Mockito.when(bottomButtonController.isBottomButtonPressed()).thenReturn(true);
         controller.closeDoorWithBottormButtonManagement();
         Mockito.verify(
-                servoMotor,
+                servoMotorController,
                 Mockito.times(1)
         ).setPosition(
                 Mockito.anyInt(),
@@ -62,7 +62,7 @@ public class ServoControllerIntegrationTest {
         logger.info("<--Pi4J--> GPIO Control OpenDoor ... started.");
         controller.openDoor();
         Mockito.verify(
-                servoMotor,
+                servoMotorController,
                 Mockito.times(1)
         ).setPosition(
                 Mockito.anyInt(),
