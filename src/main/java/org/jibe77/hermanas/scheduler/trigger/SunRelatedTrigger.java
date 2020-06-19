@@ -6,15 +6,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
 @Component
 public class SunRelatedTrigger extends SimpleTriggerFactoryBean {
 
     @Value("${suntime.scheduler.trigger.interval}")
     private int triggerInterval;
 
+    SunRelatedJobDetail sunRelatedJobDetail;
+
     public SunRelatedTrigger(SunRelatedJobDetail sunRelatedJobDetail) {
+        this.sunRelatedJobDetail = sunRelatedJobDetail;
+    }
+
+    @PostConstruct
+    private void init() {
         setJobDetail(sunRelatedJobDetail.getObject());
-        setRepeatInterval(triggerInterval);
         setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
+        setRepeatInterval(triggerInterval);
     }
 }

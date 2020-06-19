@@ -1,5 +1,7 @@
 package org.jibe77.hermanas.gpio.door;
 
+import org.jibe77.hermanas.gpio.door.bottombutton.BottomButtonController;
+import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,10 +21,10 @@ import org.springframework.stereotype.Component;
 public class DoorController
 {
     // the servo motor
-    private final ServoMotor servo;
+    private final ServoMotorController servo;
 
     final
-    BottomButton bottomButton;
+    BottomButtonController bottomButtonController;
 
     Logger logger = LoggerFactory.getLogger(DoorController.class);
 
@@ -38,9 +40,9 @@ public class DoorController
     @Value("${door.closing.position}")
     private int doorClosingPosition;
 
-    public DoorController(ServoMotor servo, BottomButton bottomButton) {
+    public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController) {
         this.servo = servo;
-        this.bottomButton = bottomButton;
+        this.bottomButtonController = bottomButtonController;
     }
 
     /**
@@ -51,28 +53,30 @@ public class DoorController
             value = { DoorNotClosedCorrectlyException.class },
             maxAttempts = 5,
             backoff = @Backoff(delay = 5000))
-    public void closeDoorWithBottormButtonManagement() throws DoorNotClosedCorrectlyException {
-        bottomButton.provisionButton();
-        if (!closeDoor()) {
+    public void closeDoorWithBottormButtonManagement() {
+        bottomButtonController.provisionButton();
+        bottomButtonController.resetBottomButtonHasBeenPressed();
+        closeDoor();
+        if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
+            logger.error("Bottom position not reached correctly. The door is being reopened now.");
             openDoor();
             throw new DoorNotClosedCorrectlyException();
         }
         logger.info("... done");
-        bottomButton.unprovisionButton();
+        bottomButtonController.unprovisionButton();
     }
 
-    private boolean closeDoor() {
+    private void closeDoor() {
         logger.info(
                 "Close the door moving servo clockwise with gear position {} for {} ms ...",
                 doorClosingPosition,
                 doorClosingDuration);
-        return servo.setPosition(doorClosingPosition, doorClosingDuration);
-
+        servo.setPosition(doorClosingPosition, doorClosingDuration);
     }
 
     @Recover
     private void closeDoorNoError(DoorNotClosedCorrectlyException e) {
-        logger.error("The door hasn't been closed correctly, closing it now with bottom button taken in charge.");
+        logger.error("The door hasn't been closed correctly, closing it now with bottom button taken in charge.", e);
         closeDoor();
     }
 

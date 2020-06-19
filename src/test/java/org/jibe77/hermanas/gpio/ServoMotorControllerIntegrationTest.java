@@ -1,25 +1,25 @@
 package org.jibe77.hermanas.gpio;
 
-import org.jibe77.hermanas.gpio.door.ServoMotor;
+import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.util.Assert;
 
-@SpringBootTest(classes = {ServoMotor.class})
-public class ServoMotorIntegrationTest {
+@SpringBootTest(classes = {ServoMotorController.class})
+public class ServoMotorControllerIntegrationTest {
 
     @Autowired
-    ServoMotor servoMotor;
+    ServoMotorController servoMotorController;
 
     @MockBean
-    GpioControllerSingleton gpioControllerSingleton;
+    GpioHermanasFakeController gpioHermanasController;
 
     @Test
     public void testServoMotorErrorPosition() {
         try {
-            servoMotor.setPosition(0, 100);
+            servoMotorController.setPosition(0, 100);
             Assert.isTrue(
                     false,
                     "This code should not be reached because positionNumber argument is between 5 and 25.");
@@ -30,13 +30,13 @@ public class ServoMotorIntegrationTest {
 
     @Test
     public void testServoMotorClockwise() {
-        servoMotor.setPosition(14, 100);
+        servoMotorController.setPosition(14, 100);
         Assert.isTrue(true, "The door is supposed to move right now !");
     }
 
     @Test
     public void testServoMotorCounterClockwise() {
-        servoMotor.setPosition(15, 100);
+        servoMotorController.setPosition(15, 100);
         Assert.isTrue(true, "The door is supposed to move right now !");
     }
 
