@@ -2,12 +2,11 @@ package org.jibe77.hermanas.gpio;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
-import org.jibe77.hermanas.gpio.door.BottomButtonController;
+import org.jibe77.hermanas.gpio.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.gpio.door.DoorController;
-import org.jibe77.hermanas.gpio.door.ServoMotorController;
+import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ public class ServoControllerIntegrationTest {
     ServoMotorController servoMotorController;
 
     @MockBean
-    GpioControllerSingleton gpioControllerSingleton;
+    GpioHermanasController gpioHermanasController;
 
     @MockBean
     GpioController gpioController;
@@ -42,10 +41,10 @@ public class ServoControllerIntegrationTest {
     public void testCloseDoor() throws DoorNotClosedCorrectlyException {
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... started.");
         Mockito.when(
-                gpioControllerSingleton.provisionButton(
+                gpioHermanasController.provisionButton(
                         Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
-        Mockito.when(bottomButtonController.isBottomButtonPressed()).thenReturn(true);
+        Mockito.when(bottomButtonController.isBottomButtonHasBeenPressed()).thenReturn(true);
         controller.closeDoorWithBottormButtonManagement();
         Mockito.verify(
                 servoMotorController,

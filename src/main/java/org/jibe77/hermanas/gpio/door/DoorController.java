@@ -1,5 +1,7 @@
 package org.jibe77.hermanas.gpio.door;
 
+import org.jibe77.hermanas.gpio.door.bottombutton.BottomButtonController;
+import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,8 +55,9 @@ public class DoorController
             backoff = @Backoff(delay = 5000))
     public void closeDoorWithBottormButtonManagement() {
         bottomButtonController.provisionButton();
+        bottomButtonController.resetBottomButtonHasBeenPressed();
         closeDoor();
-        if (!bottomButtonController.isBottomButtonPressed()) {
+        if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
             logger.error("Bottom position not reached correctly. The door is being reopened now.");
             openDoor();
             throw new DoorNotClosedCorrectlyException();

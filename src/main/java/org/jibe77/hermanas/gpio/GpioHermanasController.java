@@ -15,11 +15,11 @@ import javax.annotation.PreDestroy;
 
 @Component()
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
-public class GpioControllerSingleton {
+public class GpioHermanasController {
 
     private GpioController gpio;
 
-    Logger logger = LoggerFactory.getLogger(GpioControllerSingleton.class);
+    Logger logger = LoggerFactory.getLogger(GpioHermanasController.class);
 
     @Value("${door.servo.gpio.address}")
     private int doorServoGpioAddress;

@@ -1,6 +1,6 @@
-package org.jibe77.hermanas.gpio.door;
+package org.jibe77.hermanas.gpio.door.servo;
 
-import org.jibe77.hermanas.gpio.GpioControllerSingleton;
+import org.jibe77.hermanas.gpio.GpioHermanasController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 public class ServoMotorController
 {
     final
-    GpioControllerSingleton gpioControllerSingleton;
+    GpioHermanasController gpioHermanasController;
 
     @Value("${door.servo.gpio.address}")
     private int doorServoGpioAddress;
@@ -36,15 +36,15 @@ public class ServoMotorController
 
     Logger logger = LoggerFactory.getLogger(ServoMotorController.class);
 
-    public ServoMotorController(GpioControllerSingleton gpioControllerSingleton) {
-        this.gpioControllerSingleton = gpioControllerSingleton;
+    public ServoMotorController(GpioHermanasController gpioHermanasController) {
+        this.gpioHermanasController = gpioHermanasController;
     }
 
     public synchronized void setPosition(int positionNumber, int sleep) {
         // if the motor is moving clockwise, it means the door is closing
         if ((positionNumber >= SERVO_CLOSING_MIN_POSITION && positionNumber <= SERVO_CLOSING_MAX_POSITION)
                 || (positionNumber >= SERVO_OPENING_MIN_POSITION && positionNumber <= SERVO_OPENING_MAX_POSITION)) {
-            gpioControllerSingleton.moveServo(doorServoGpioAddress, positionNumber);
+            gpioHermanasController.moveServo(doorServoGpioAddress, positionNumber);
             //give time to the motor to reach the position
             sleepMillisec(sleep);
             //stop sending orders to the motor.
@@ -60,7 +60,7 @@ public class ServoMotorController
      */
     public void stop(){
         //zero tells the motor to turn itself off and wait for more instructions.
-        gpioControllerSingleton.moveServo(doorServoGpioAddress, SERVO_STOP_POSITION);
+        gpioHermanasController.moveServo(doorServoGpioAddress, SERVO_STOP_POSITION);
     }
 
     /**

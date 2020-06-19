@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.gpio;
 
-import org.jibe77.hermanas.gpio.door.ServoMotorController;
+import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +14,7 @@ public class ServoMotorControllerIntegrationTest {
     ServoMotorController servoMotorController;
 
     @MockBean
-    GpioControllerSingleton gpioControllerSingleton;
+    GpioHermanasController gpioHermanasController;
 
     @Test
     public void testServoMotorErrorPosition() {
