@@ -20,11 +20,19 @@ public class SunTimeUtils {
     public double longitude;
 
     protected LocalDateTime computeNextSunset(long minutes) {
-        return computeNextSunset(LocalDateTime.now().minusMinutes(minutes)).plusMinutes(minutes);
+        return computeNextSunset(LocalDateTime.now(), minutes);
     }
 
     protected LocalDateTime computeNextSunrise(long minutes) {
-        return computeNextSunrise(LocalDateTime.now().minusMinutes(minutes)).plusMinutes(minutes);
+        return computeNextSunrise(LocalDateTime.now(), minutes);
+    }
+
+    protected LocalDateTime computeNextSunset(LocalDateTime date, long minutes) {
+        return computeNextSunset(date.minusMinutes(minutes)).plusMinutes(minutes);
+    }
+
+    protected LocalDateTime computeNextSunrise(LocalDateTime date, long minutes) {
+        return computeNextSunrise(date.minusMinutes(minutes)).plusMinutes(minutes);
     }
 
     protected LocalDateTime computeNextSunset(LocalDateTime date) {
