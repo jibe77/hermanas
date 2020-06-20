@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class SunRelatedJob implements Job {
 
     @Autowired
-    SunTimeService sunHourService;
+    SunTimeService sunTimeService;
 
     @Autowired
     CameraController cameraController;
@@ -33,7 +33,7 @@ public class SunRelatedJob implements Job {
 
     public void execute(JobExecutionContext context) {
         LocalDateTime currentTime = LocalDateTime.now();
-        if (currentTime.isAfter(sunHourService.getNextDoorClosingTime(currentTime))) {
+        if (currentTime.isAfter(sunTimeService.getNextDoorClosingTime())) {
             try {
                 logger.info("start door closing job at sunset.");
                 cameraController.takePictureNoException();
@@ -42,18 +42,18 @@ public class SunRelatedJob implements Job {
                 logger.error("Didn't close the door correctly.");
             }
             cameraController.takePictureNoException();
-            sunHourService.reloadDoorClosingTime();
-        } else if (currentTime.isAfter(sunHourService.getNextDoorOpeningTime(currentTime))) {
+            sunTimeService.reloadDoorClosingTime();
+        } else if (currentTime.isAfter(sunTimeService.getNextDoorOpeningTime())) {
             cameraController.takePictureNoException();
             doorService.open();
             cameraController.takePictureNoException();
-            sunHourService.reloadDoorOpeningTime();
-        } else if (currentTime.isAfter(sunHourService.getNextLightOnTime(currentTime))) {
+            sunTimeService.reloadDoorOpeningTime();
+        } else if (currentTime.isAfter(sunTimeService.getNextLightOnTime())) {
             // TODO ...
-            sunHourService.reloadLightOnTime();
-        } else if (currentTime.isAfter(sunHourService.getNextLightOffTime(currentTime))) {
+            sunTimeService.reloadLightOnTime();
+        } else if (currentTime.isAfter(sunTimeService.getNextLightOffTime())) {
             // TODO ...
-            sunHourService.reloadLightOffTime();
+            sunTimeService.reloadLightOffTime();
         }
 
     }
