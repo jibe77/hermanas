@@ -34,36 +34,30 @@ public class SunTimeService {
         this.sunTimeUtils = sunTimeUtils;
     }
 
-    @Cacheable("light-on")
-    public LocalDateTime getNextLightOnTime(LocalDateTime currentTime) {
-        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset(
-                currentTime.minusMinutes(lightOnTimeBeforeSunset)
-                    ).plusMinutes(lightOnTimeBeforeSunset);
+    @Cacheable(value = "light-on")
+    public LocalDateTime getNextLightOnTime() {
+        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset(-1 * lightOnTimeBeforeSunset);
         logger.info("computing next light switching on time : {}", localDateTime.toString());
         return localDateTime;
     }
 
-    @Cacheable("light-off")
-    public LocalDateTime getNextLightOffTime(LocalDateTime currentTime) {
-        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset(
-                currentTime.minusMinutes(lightOffTimeAfterSunset)
-                    ).plusMinutes(lightOffTimeAfterSunset);
+    @Cacheable(value = "light-off")
+    public LocalDateTime getNextLightOffTime() {
+        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset(lightOffTimeAfterSunset);
         logger.info("computing next light switching off time : {}", localDateTime.toString());
         return localDateTime;
     }
 
-    @Cacheable("door-opening")
-    public LocalDateTime getNextDoorOpeningTime(LocalDateTime currentTime) {
-        LocalDateTime localDateTime = sunTimeUtils.computeNextSunrise(
-                currentTime.minusMinutes(doorOpenTimeAfterSunrise)
-                    ).plusMinutes(doorOpenTimeAfterSunrise);
+    @Cacheable(value = "door-opening")
+    public LocalDateTime getNextDoorOpeningTime() {
+        LocalDateTime localDateTime = sunTimeUtils.computeNextSunrise(doorOpenTimeAfterSunrise);
         logger.info("computing next door opening time : {}", localDateTime.toString());
         return localDateTime;
     }
 
-    @Cacheable("door-closing")
-    public LocalDateTime getNextDoorClosingTime(LocalDateTime currentTime) {
-        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset(currentTime.minusMinutes(doorCloseTimeAfterSunset)).plusMinutes(doorCloseTimeAfterSunset);
+    @Cacheable(value = "door-closing")
+    public LocalDateTime getNextDoorClosingTime() {
+        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset(doorCloseTimeAfterSunset);
         logger.info("computing next door closing time : {}", localDateTime.toString());
         return localDateTime;
     }
