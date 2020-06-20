@@ -39,7 +39,10 @@ public class SunTimeServiceTest {
     @Test
     public void testNextClosingDoorTime() {
         LocalDateTime dateTime = LocalDateTime.of(2020, Month.JUNE, 20, 21, 50, 0);
-
+        //
+        assertEquals("2020-06-20T22:10:00",
+                sunTimeUtils.computeNextSunset(15),
+                "search next sunset with 15 minutes after. In this case the sunset is already passed at 21:45 but the event is in the futur.");
     }
 
     /**
