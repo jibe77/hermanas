@@ -2,13 +2,15 @@ package org.jibe77.hermanas.service;
 
 import org.apache.commons.io.IOUtils;
 import org.jibe77.hermanas.gpio.camera.CameraController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 @RestController
 public class CameraService {
@@ -19,10 +21,14 @@ public class CameraService {
         this.cameraController = cameraController;
     }
 
+    Logger logger = LoggerFactory.getLogger(CameraService.class);
+
     @GetMapping(value = "/camera/takePicture")
     public @ResponseBody byte[] takePicture() throws IOException {
         File picture = cameraController.takePicture();
-        InputStream in = getClass().getResourceAsStream(picture.getAbsolutePath());
-        return IOUtils.toByteArray(in);
+        logger.info("return picture from {}.", picture.getAbsolutePath());
+        try (FileInputStream fileInputStream = new FileInputStream(picture)) {
+            return IOUtils.toByteArray(fileInputStream);
+        }
     }
 }
