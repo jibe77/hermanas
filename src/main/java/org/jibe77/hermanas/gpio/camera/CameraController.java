@@ -28,17 +28,32 @@ public class CameraController {
     @Value("${camera.path.root}")
     private String rootPath;
 
+    @Value("${camera.width}")
+    private int photoWidth;
+
+    @Value("${camera.height}")
+    private int photoHeight;
+
+    @Value("${camera.encoding}")
+    private String photoEncoding;
+
+    @Value("${camera.quality}")
+    private int photoQuality;
+
+    @Value("${camera.delay}")
+    private int photoDelay;
+
     Logger logger = LoggerFactory.getLogger(CameraController.class);
 
     @PostConstruct
     private void init() {
         logger.info("init camera config.");
          config = cameraConfiguration()
-                .width(1920)
-                .height(1080)
-                .encoding(Encoding.JPEG)
-                .quality(85)
-                .delay(5000);
+                .width(photoWidth)
+                .height(photoHeight)
+                .encoding(Encoding.valueOf(photoEncoding))
+                .quality(photoQuality)
+                .delay(photoDelay);
     }
 
     public File takePicture() throws IOException {

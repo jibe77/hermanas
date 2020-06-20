@@ -19,12 +19,12 @@ public class SunTimeUtils {
     @Value("${suntime.longitude}")
     public double longitude;
 
-    protected LocalDateTime computeNextSunset() {
-        return computeNextSunset(LocalDateTime.now());
+    protected LocalDateTime computeNextSunset(long minutes) {
+        return computeNextSunset(LocalDateTime.now().minusMinutes(minutes)).plusMinutes(minutes);
     }
 
-    protected LocalDateTime computeNextSunrise() {
-        return computeNextSunrise(LocalDateTime.now());
+    protected LocalDateTime computeNextSunrise(long minutes) {
+        return computeNextSunrise(LocalDateTime.now().minusMinutes(minutes)).plusMinutes(minutes);
     }
 
     protected LocalDateTime computeNextSunset(LocalDateTime date) {
