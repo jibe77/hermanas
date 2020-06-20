@@ -14,6 +14,7 @@ import uk.co.caprica.picam.enums.Encoding;
 import javax.annotation.PostConstruct;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 import static uk.co.caprica.picam.CameraConfiguration.cameraConfiguration;
@@ -38,10 +39,9 @@ public class CameraController {
                 .encoding(Encoding.JPEG)
                 .quality(85)
                 .delay(5000);
-         takePicture();
     }
 
-    public void takePicture() {
+    public File takePicture() throws IOException {
         logger.info("taking a picture.");
         try(Camera camera = new Camera(config)) {
             LocalDateTime localDateTime = LocalDateTime.now();
@@ -57,8 +57,18 @@ public class CameraController {
             logger.info("Taking a picture now ...");
             camera.takePicture(new FilePictureCaptureHandler(pictureFile));
             logger.info("... done.");
+            return pictureFile;
         } catch (Exception e) {
             logger.error("Error during picture due to ", e);
+            throw new IOException("Can't take picture or fetch file.", e);
+        }
+    }
+
+    public void takePictureNoException() {
+        try {
+            takePicture();
+        } catch (IOException e) {
+            logger.error("Can't take picture.");
         }
     }
 }
