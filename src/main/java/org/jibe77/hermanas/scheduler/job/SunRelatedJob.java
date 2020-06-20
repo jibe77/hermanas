@@ -33,7 +33,7 @@ public class SunRelatedJob implements Job {
 
     public void execute(JobExecutionContext context) {
         LocalDateTime currentTime = LocalDateTime.now();
-        if (currentTime.isAfter(sunHourService.getNextDoorClosingTime())) {
+        if (currentTime.isAfter(sunHourService.getNextDoorClosingTime(currentTime))) {
             try {
                 logger.info("start door closing job at sunset.");
                 cameraController.takePictureNoException();
@@ -43,15 +43,15 @@ public class SunRelatedJob implements Job {
             }
             cameraController.takePictureNoException();
             sunHourService.reloadDoorClosingTime();
-        } else if (currentTime.isAfter(sunHourService.getNextDoorOpeningTime())) {
+        } else if (currentTime.isAfter(sunHourService.getNextDoorOpeningTime(currentTime))) {
             cameraController.takePictureNoException();
             doorService.open();
             cameraController.takePictureNoException();
             sunHourService.reloadDoorOpeningTime();
-        } else if (currentTime.isAfter(sunHourService.getNextLightOnTime())) {
+        } else if (currentTime.isAfter(sunHourService.getNextLightOnTime(currentTime))) {
             // TODO ...
             sunHourService.reloadLightOnTime();
-        } else if (currentTime.isAfter(sunHourService.getNextLightOffTime())) {
+        } else if (currentTime.isAfter(sunHourService.getNextLightOffTime(currentTime))) {
             // TODO ...
             sunHourService.reloadLightOffTime();
         }

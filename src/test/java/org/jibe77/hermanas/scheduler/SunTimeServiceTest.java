@@ -36,6 +36,12 @@ public class SunTimeServiceTest {
         System.out.println(result.get().toZonalTimestamp(() -> "Europe/Berlin"));
     }
 
+    @Test
+    public void testNextClosingDoorTime() {
+        LocalDateTime dateTime = LocalDateTime.of(2020, Month.JUNE, 20, 21, 50, 0);
+
+    }
+
     /**
      * This test may fail if the dailight saving time is cancel and java is correctly updated.
      */
