@@ -5,7 +5,6 @@ import com.pi4j.io.gpio.event.GpioPinListener;
 import com.pi4j.io.gpio.trigger.GpioTrigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;

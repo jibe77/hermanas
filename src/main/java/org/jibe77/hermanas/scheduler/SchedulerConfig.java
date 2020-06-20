@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.scheduler;
 
+import org.jibe77.hermanas.scheduler.detail.CameraJobDetail;
 import org.jibe77.hermanas.scheduler.detail.SunRelatedJobDetail;
+import org.jibe77.hermanas.scheduler.trigger.CameraTrigger;
 import org.jibe77.hermanas.scheduler.trigger.SunRelatedTrigger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -20,11 +22,13 @@ public class SchedulerConfig {
     @Bean
     public SchedulerFactoryBean scheduler(
             SunRelatedTrigger sunRelatedTrigger,
-            SunRelatedJobDetail sunRelatedJobDetail) {
+            SunRelatedJobDetail sunRelatedJobDetail,
+            CameraTrigger cameraTrigger,
+            CameraJobDetail cameraJobDetail) {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setJobFactory(springBeanJobFactory());
-        schedulerFactory.setJobDetails(sunRelatedJobDetail.getObject());
-        schedulerFactory.setTriggers(sunRelatedTrigger.getObject());
+        schedulerFactory.setJobDetails(sunRelatedJobDetail.getObject(), cameraJobDetail.getObject());
+        schedulerFactory.setTriggers(sunRelatedTrigger.getObject(), cameraTrigger.getObject());
         return schedulerFactory;
     }
 

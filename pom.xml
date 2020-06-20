@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.0.4</version>
+	<version>0.0.5</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
@@ -102,6 +102,16 @@
 			<artifactId>lib-sunrise-sunset</artifactId>
 			<version>1.1.1</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.co.caprica</groupId>
+			<artifactId>picam</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.7</version>
 		</dependency>
 	</dependencies>
 
