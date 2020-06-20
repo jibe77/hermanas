@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Component
@@ -29,6 +30,11 @@ public class CameraJob implements Job {
     Logger logger = LoggerFactory.getLogger(CameraJob.class);
 
     public void execute(JobExecutionContext context) {
-        cameraController.takePicture();
+        try {
+            logger.info("Camera scheduled job is taking a picture now.");
+            cameraController.takePicture();
+        } catch (IOException e) {
+            logger.error("Can't take picture or write picture of filesystem.", e);
+        }
     }
 }

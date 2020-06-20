@@ -36,17 +36,17 @@ public class SunRelatedJob implements Job {
         if (currentTime.isAfter(sunHourService.getNextDoorClosingTime())) {
             try {
                 logger.info("start door closing job at sunset.");
-                cameraController.takePicture();
+                cameraController.takePictureNoException();
                 doorService.close();
             } catch (DoorNotClosedCorrectlyException e) {
                 logger.error("Didn't close the door correctly.");
             }
-            cameraController.takePicture();
+            cameraController.takePictureNoException();
             sunHourService.reloadDoorClosingTime();
         } else if (currentTime.isAfter(sunHourService.getNextDoorOpeningTime())) {
-            cameraController.takePicture();
+            cameraController.takePictureNoException();
             doorService.open();
-            cameraController.takePicture();
+            cameraController.takePictureNoException();
             sunHourService.reloadDoorOpeningTime();
         } else if (currentTime.isAfter(sunHourService.getNextLightOnTime())) {
             // TODO ...
