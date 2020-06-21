@@ -79,8 +79,10 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     @Override
     public GpioPinDigitalOutput provisionOutput(int gpioAddress) {
-        return gpio.provisionDigitalOutputPin(
+        GpioPinDigitalOutput gpioPinDigitalOutput = gpio.provisionDigitalOutputPin(
                 RaspiPin.getPinByAddress(gpioAddress));
+        gpioPinDigitalOutput.setShutdownOptions(true, PinState.LOW, PinPullResistance.OFF);
+        return gpioPinDigitalOutput;
     }
 
     public void unprovisionPin(GpioPin bottomButton) {
