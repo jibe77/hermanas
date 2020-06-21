@@ -56,7 +56,7 @@ public class CameraController {
                 .delay(photoDelay);
     }
 
-    public File takePicture() throws IOException {
+    public synchronized File takePicture() throws IOException {
         logger.info("taking a picture.");
         try(Camera camera = new Camera(config)) {
             LocalDateTime localDateTime = LocalDateTime.now();

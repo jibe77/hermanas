@@ -41,7 +41,7 @@ public class ServoControllerIntegrationTest {
     public void testCloseDoor() throws DoorNotClosedCorrectlyException {
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... started.");
         Mockito.when(
-                gpioHermanasController.provisionButton(
+                gpioHermanasController.provisionInput(
                         Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
         Mockito.when(bottomButtonController.isBottomButtonHasBeenPressed()).thenReturn(true);
