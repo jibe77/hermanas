@@ -19,12 +19,20 @@ public class SunTimeUtils {
     @Value("${suntime.longitude}")
     public double longitude;
 
-    protected LocalDateTime computeNextSunset() {
-        return computeNextSunset(LocalDateTime.now());
+    protected LocalDateTime computeNextSunset(long minutes) {
+        return computeNextSunset(LocalDateTime.now(), minutes);
     }
 
-    protected LocalDateTime computeNextSunrise() {
-        return computeNextSunrise(LocalDateTime.now());
+    protected LocalDateTime computeNextSunrise(long minutes) {
+        return computeNextSunrise(LocalDateTime.now(), minutes);
+    }
+
+    protected LocalDateTime computeNextSunset(LocalDateTime date, long minutes) {
+        return computeNextSunset(date.minusMinutes(minutes)).plusMinutes(minutes);
+    }
+
+    protected LocalDateTime computeNextSunrise(LocalDateTime date, long minutes) {
+        return computeNextSunrise(date.minusMinutes(minutes)).plusMinutes(minutes);
     }
 
     protected LocalDateTime computeNextSunset(LocalDateTime date) {
@@ -45,24 +53,22 @@ public class SunTimeUtils {
         }
     }
 
-
-    protected LocalDateTime computeNextDaySunset(LocalDateTime date) {
+    private LocalDateTime computeNextDaySunset(LocalDateTime date) {
         return computeCurrentDaySunset(date.plusDays(1));
     }
 
-
-    protected LocalDateTime computeNextDaySunrise(LocalDateTime date) {
+    private LocalDateTime computeNextDaySunrise(LocalDateTime date) {
         return computeCurrentDaySunrise(date.plusDays(1));
     }
 
-    protected LocalDateTime computeCurrentDaySunrise(LocalDateTime date) {
+    private LocalDateTime computeCurrentDaySunrise(LocalDateTime date) {
         return calendarToLocalDateTime(computeCurrentDay(date)[0]);
     }
 
-    protected LocalDateTime computeCurrentDaySunset(LocalDateTime date) {
+    private LocalDateTime computeCurrentDaySunset(LocalDateTime date) {
         return calendarToLocalDateTime(computeCurrentDay(date)[1]);
     }
-    protected Calendar[] computeCurrentDay(LocalDateTime date) {
+    private Calendar[] computeCurrentDay(LocalDateTime date) {
         return ca.rmen.sunrisesunset.SunriseSunset.getSunriseSunset(
                 localDateTimeToCalendar(date),
                 latitude,

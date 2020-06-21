@@ -36,6 +36,15 @@ public class SunTimeServiceTest {
         System.out.println(result.get().toZonalTimestamp(() -> "Europe/Berlin"));
     }
 
+    @Test
+    public void testNextClosingDoorTime() {
+        LocalDateTime dateTime = LocalDateTime.of(2020, Month.JUNE, 20, 21, 50, 0);
+        //
+        assertEquals("2020-06-20T22:01:15",
+                sunTimeUtils.computeNextSunset(dateTime,15).toString(),
+                "search next sunset with 15 minutes after. In this case the sunset is already passed at 21:45 but the event is in the futur.");
+    }
+
     /**
      * This test may fail if the dailight saving time is cancel and java is correctly updated.
      */
