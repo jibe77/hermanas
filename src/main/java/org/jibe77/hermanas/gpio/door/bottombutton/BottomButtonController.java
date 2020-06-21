@@ -48,7 +48,7 @@ public class BottomButtonController {
         if (bottomButton != null) {
             logger.info("unprovision door button on gpio instance.");
             bottomButton.removeAllListeners();
-            gpioHermanasController.unprovisionInput(bottomButton);
+            gpioHermanasController.unprovisionPin(bottomButton);
             bottomButton = null;
         }
     }

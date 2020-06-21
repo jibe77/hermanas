@@ -1,0 +1,53 @@
+package org.jibe77.hermanas.gpio.light;
+
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import org.jibe77.hermanas.gpio.GpioHermanasController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
+@Component
+@Scope("singleton")
+public class LightIRController {
+
+    final
+    GpioHermanasController gpioHermanasController;
+
+    @Value("${light.ir.relay.gpio.address}")
+    private int lightIrRelayGpioAddress;
+
+    GpioPinDigitalOutput gpioPinDigitalOutput;
+
+    Logger logger = LoggerFactory.getLogger(LightIRController.class);
+
+    public LightIRController(GpioHermanasController gpioHermanasController) {
+        this.gpioHermanasController = gpioHermanasController;
+    }
+
+    @PostConstruct
+    private void init() {
+        gpioPinDigitalOutput = gpioHermanasController.provisionOutput(lightIrRelayGpioAddress);
+    }
+
+    public synchronized void switchOn() {
+        logger.info("Switching on ir light.");
+        gpioPinDigitalOutput.high();
+
+    }
+
+    public synchronized void switchOff() {
+        logger.info("Switching off ir light.");
+        gpioPinDigitalOutput.low();
+    }
+
+    @PreDestroy
+    private void tearDown() {
+        switchOff();
+        gpioHermanasController.unprovisionPin(gpioPinDigitalOutput);
+    }
+}

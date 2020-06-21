@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.gpio.camera;
 
 import org.apache.commons.io.FileUtils;
+import org.jibe77.hermanas.gpio.light.LightIRController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,8 @@ public class CameraController {
 
     private CameraConfiguration config;
 
+    private LightIRController lightIRController;
+
     @Value("${camera.path.root}")
     private String rootPath;
 
@@ -45,6 +48,10 @@ public class CameraController {
 
     Logger logger = LoggerFactory.getLogger(CameraController.class);
 
+    public CameraController(LightIRController lightIRController) {
+        this.lightIRController = lightIRController;
+    }
+
     @PostConstruct
     private void init() {
         logger.info("init camera config.");
@@ -58,6 +65,7 @@ public class CameraController {
 
     public synchronized File takePicture() throws IOException {
         logger.info("taking a picture.");
+        lightIRController.switchOn();
         try(Camera camera = new Camera(config)) {
             LocalDateTime localDateTime = LocalDateTime.now();
             File fileRoot = new File(
@@ -76,6 +84,8 @@ public class CameraController {
         } catch (Exception e) {
             logger.error("Error during picture due to ", e);
             throw new IOException("Can't take picture or fetch file.", e);
+        } finally {
+            lightIRController.switchOff();
         }
     }
 
