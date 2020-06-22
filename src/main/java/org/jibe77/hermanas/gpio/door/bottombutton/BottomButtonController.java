@@ -21,7 +21,7 @@ public class BottomButtonController {
     GpioHermanasController gpioHermanasController;
 
     @Value("${door.button.bottom.gpio.address}")
-            private int doorButtonBottomGpioAddress;
+    private int doorButtonBottomGpioAddress;
 
     private GpioPinDigitalInput bottomButton;
 
@@ -37,7 +37,7 @@ public class BottomButtonController {
     public synchronized void provisionButton() {
         if (bottomButton == null) {
             logger.info("provision door button on gpio instance.");
-            bottomButton = gpioHermanasController.provisionButton(doorButtonBottomGpioAddress);
+            bottomButton = gpioHermanasController.provisionInput(doorButtonBottomGpioAddress);
             bottomButton.setShutdownOptions(true);
             bottomButton.addListener(new BottomButtonListener(this, servoMotorController));
         }
@@ -48,7 +48,7 @@ public class BottomButtonController {
         if (bottomButton != null) {
             logger.info("unprovision door button on gpio instance.");
             bottomButton.removeAllListeners();
-            gpioHermanasController.unprovisionButton(bottomButton);
+            gpioHermanasController.unprovisionPin(bottomButton);
             bottomButton = null;
         }
     }

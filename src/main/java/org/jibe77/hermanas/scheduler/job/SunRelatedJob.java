@@ -2,6 +2,7 @@ package org.jibe77.hermanas.scheduler.job;
 
 import org.jibe77.hermanas.gpio.camera.CameraController;
 import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
+import org.jibe77.hermanas.gpio.light.LightController;
 import org.jibe77.hermanas.scheduler.SunTimeService;
 import org.jibe77.hermanas.service.DoorService;
 import org.quartz.Job;
@@ -21,6 +22,9 @@ public class SunRelatedJob implements Job {
 
     @Autowired
     CameraController cameraController;
+
+    @Autowired
+    LightController lightController;
 
     @Autowired
     /**
@@ -49,10 +53,10 @@ public class SunRelatedJob implements Job {
             cameraController.takePictureNoException();
             sunTimeService.reloadDoorOpeningTime();
         } else if (currentTime.isAfter(sunTimeService.getNextLightOnTime())) {
-            // TODO ...
+            lightController.switchOn();
             sunTimeService.reloadLightOnTime();
         } else if (currentTime.isAfter(sunTimeService.getNextLightOffTime())) {
-            // TODO ...
+            lightController.switchOff();
             sunTimeService.reloadLightOffTime();
         }
 

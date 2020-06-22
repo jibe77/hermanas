@@ -72,12 +72,20 @@ public class GpioHermanasRpiController implements GpioHermanasController {
         SoftPwm.softPwmWrite(doorServoGpioAddress, positionNumber);
     }
 
-    public GpioPinDigitalInput provisionButton(int gpioAddress) {
+    public GpioPinDigitalInput provisionInput(int gpioAddress) {
         return gpio.provisionDigitalInputPin(
                 RaspiPin.getPinByAddress(gpioAddress), PinPullResistance.PULL_DOWN);
     }
 
-    public void unprovisionButton(GpioPinDigitalInput bottomButton) {
+    @Override
+    public GpioPinDigitalOutput provisionOutput(int gpioAddress) {
+        GpioPinDigitalOutput gpioPinDigitalOutput = gpio.provisionDigitalOutputPin(
+                RaspiPin.getPinByAddress(gpioAddress));
+        gpioPinDigitalOutput.setShutdownOptions(true, PinState.LOW, PinPullResistance.OFF);
+        return gpioPinDigitalOutput;
+    }
+
+    public void unprovisionPin(GpioPin bottomButton) {
         gpio.unprovisionPin(bottomButton);
     }
 }
