@@ -1,16 +1,16 @@
 package org.jibe77.hermanas.gpio.camera;
 
+import com.pi4j.wiringpi.Gpio;
 import org.apache.commons.io.FileUtils;
+import org.jibe77.hermanas.gpio.GpioHermanasController;
 import org.jibe77.hermanas.gpio.light.LightIRController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import uk.co.caprica.picam.Camera;
-import uk.co.caprica.picam.CameraConfiguration;
+import uk.co.caprica.picam.CaptureFailedException;
 import uk.co.caprica.picam.FilePictureCaptureHandler;
-import uk.co.caprica.picam.enums.Encoding;
 
 import javax.annotation.PostConstruct;
 
@@ -24,12 +24,9 @@ import static uk.co.caprica.picam.CameraConfiguration.cameraConfiguration;
 @Scope("singleton")
 public class CameraController {
 
-    private CameraConfiguration config;
-
     private LightIRController lightIRController;
 
-    @Value("${camera.path.root}")
-    private String rootPath;
+    private GpioHermanasController gpioHermanasController;
 
     @Value("${camera.width}")
     private int photoWidth;
@@ -46,27 +43,25 @@ public class CameraController {
     @Value("${camera.delay}")
     private int photoDelay;
 
+    @Value("${camera.path.root}")
+    private String rootPath;
+
     Logger logger = LoggerFactory.getLogger(CameraController.class);
 
-    public CameraController(LightIRController lightIRController) {
+    public CameraController(LightIRController lightIRController, GpioHermanasController gpioHermanasController) {
         this.lightIRController = lightIRController;
+        this.gpioHermanasController = gpioHermanasController;
     }
 
     @PostConstruct
-    private void init() {
-        logger.info("init camera config.");
-         config = cameraConfiguration()
-                .width(photoWidth)
-                .height(photoHeight)
-                .encoding(Encoding.valueOf(photoEncoding))
-                .quality(photoQuality)
-                .delay(photoDelay);
+    private void initCamera() {
+        gpioHermanasController.initCamera(photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay);
     }
+
 
     public synchronized File takePicture() throws IOException {
         logger.info("taking a picture.");
         lightIRController.switchOn();
-        try(Camera camera = new Camera(config)) {
             LocalDateTime localDateTime = LocalDateTime.now();
             File fileRoot = new File(
                     rootPath + "/" +
@@ -78,11 +73,11 @@ public class CameraController {
                     localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" + localDateTime.getMinute() + ".jpg";
             File pictureFile = new File(fileRoot, filename);
             logger.info("Taking a picture now ...");
-            camera.takePicture(new FilePictureCaptureHandler(pictureFile));
+        try {
+            gpioHermanasController.takePicture(new FilePictureCaptureHandler(pictureFile));
             logger.info("... done.");
             return pictureFile;
-        } catch (Exception e) {
-            logger.error("Error during picture due to ", e);
+        } catch (IOException e) {
             throw new IOException("Can't take picture or fetch file.", e);
         } finally {
             lightIRController.switchOff();
@@ -93,7 +88,7 @@ public class CameraController {
         try {
             takePicture();
         } catch (IOException e) {
-            logger.error("Can't take picture.");
+            logger.error("Can't take picture.", e);
         }
     }
 }
