@@ -22,6 +22,9 @@ public class LightController {
     @Value("${light.relay.gpio.address}")
     private int lightRelayGpioAddress;
 
+    @Value("${light.relay.enabled}")
+    private boolean lightEnabled;
+
     GpioPinDigitalOutput gpioPinDigitalOutput;
 
     Logger logger = LoggerFactory.getLogger(LightController.class);
@@ -32,24 +35,30 @@ public class LightController {
 
     @PostConstruct
     private void init() {
-        gpioPinDigitalOutput = gpioHermanasController.provisionOutput(lightRelayGpioAddress);
+        if (lightEnabled)
+            gpioPinDigitalOutput = gpioHermanasController.provisionOutput(lightRelayGpioAddress);
     }
 
 
     public synchronized void switchOn() {
-        logger.info("Switching on light.");
-        gpioPinDigitalOutput.high();
-
+        if (lightEnabled) {
+            logger.info("Switching on light.");
+            gpioPinDigitalOutput.high();
+        }
     }
 
     public synchronized void switchOff() {
-        logger.info("Switching off light.");
-        gpioPinDigitalOutput.low();
+        if (lightEnabled) {
+            logger.info("Switching off light.");
+            gpioPinDigitalOutput.low();
+        }
     }
 
     @PreDestroy
     private void tearDown() {
-        switchOff();
-        gpioHermanasController.unprovisionPin(gpioPinDigitalOutput);
+        if (lightEnabled) {
+            switchOff();
+            gpioHermanasController.unprovisionPin(gpioPinDigitalOutput);
+        }
     }
 }

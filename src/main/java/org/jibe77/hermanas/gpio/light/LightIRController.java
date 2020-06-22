@@ -21,6 +21,9 @@ public class LightIRController {
     @Value("${light.ir.relay.gpio.address}")
     private int lightIrRelayGpioAddress;
 
+    @Value("${light.ir.relay.enabled}")
+    private boolean lightIrEnabled;
+
     GpioPinDigitalOutput gpioPinDigitalOutput;
 
     Logger logger = LoggerFactory.getLogger(LightIRController.class);
@@ -31,23 +34,31 @@ public class LightIRController {
 
     @PostConstruct
     private void init() {
-        gpioPinDigitalOutput = gpioHermanasController.provisionOutput(lightIrRelayGpioAddress);
+        if (lightIrEnabled) {
+            gpioPinDigitalOutput = gpioHermanasController.provisionOutput(lightIrRelayGpioAddress);
+        }
     }
 
     public synchronized void switchOn() {
-        logger.info("Switching on ir light.");
-        gpioPinDigitalOutput.high();
+        if (lightIrEnabled) {
+            logger.info("Switching on ir light.");
+            gpioPinDigitalOutput.high();
+        }
 
     }
 
     public synchronized void switchOff() {
-        logger.info("Switching off ir light.");
-        gpioPinDigitalOutput.low();
+        if (lightIrEnabled) {
+            logger.info("Switching off ir light.");
+            gpioPinDigitalOutput.low();
+        }
     }
 
     @PreDestroy
     private void tearDown() {
-        switchOff();
-        gpioHermanasController.unprovisionPin(gpioPinDigitalOutput);
+        if (lightIrEnabled) {
+            switchOff();
+            gpioHermanasController.unprovisionPin(gpioPinDigitalOutput);
+        }
     }
 }
