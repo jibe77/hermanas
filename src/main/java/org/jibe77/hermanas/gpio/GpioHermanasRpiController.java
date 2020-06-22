@@ -75,7 +75,8 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     @Override
     public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay) {
-        logger.info("init camera config.");
+        logger.info("init camera config with width {} height {} encoding {} quality {} and delay {}.",
+                photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay);
         config = cameraConfiguration()
                 .width(photoWidth)
                 .height(photoHeight)
@@ -86,10 +87,11 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     @Override
     public void takePicture(FilePictureCaptureHandler filePictureCaptureHandler) throws IOException {
-        Camera camera = new Camera(config);
-        try {
+        try (Camera camera = new Camera(config)){
             camera.takePicture(filePictureCaptureHandler);
         } catch (CaptureFailedException e) {
+            throw new IOException("Can't capture a picture.", e);
+        } catch (Exception e) {
             throw new IOException(e);
         }
     }

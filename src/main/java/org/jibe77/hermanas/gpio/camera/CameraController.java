@@ -2,6 +2,8 @@ package org.jibe77.hermanas.gpio.camera;
 
 import com.pi4j.wiringpi.Gpio;
 import org.apache.commons.io.FileUtils;
+import org.jibe77.hermanas.data.entity.Picture;
+import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.gpio.GpioHermanasController;
 import org.jibe77.hermanas.gpio.light.LightIRController;
 import org.slf4j.Logger;
@@ -18,8 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static uk.co.caprica.picam.CameraConfiguration.cameraConfiguration;
-
 @Component
 @Scope("singleton")
 public class CameraController {
@@ -27,6 +27,8 @@ public class CameraController {
     private LightIRController lightIRController;
 
     private GpioHermanasController gpioHermanasController;
+
+    private PictureRepository pictureRepository;
 
     @Value("${camera.width}")
     private int photoWidth;
@@ -48,9 +50,10 @@ public class CameraController {
 
     Logger logger = LoggerFactory.getLogger(CameraController.class);
 
-    public CameraController(LightIRController lightIRController, GpioHermanasController gpioHermanasController) {
+    public CameraController(LightIRController lightIRController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository) {
         this.lightIRController = lightIRController;
         this.gpioHermanasController = gpioHermanasController;
+        this.pictureRepository = pictureRepository;
     }
 
     @PostConstruct
@@ -60,21 +63,24 @@ public class CameraController {
 
 
     public synchronized File takePicture() throws IOException {
-        logger.info("taking a picture.");
+        logger.info("taking a picture in root path {}.", rootPath);
         lightIRController.switchOn();
             LocalDateTime localDateTime = LocalDateTime.now();
+            String relativePath =  "/" +
+                    localDateTime.getYear() + "/" +
+                    localDateTime.getMonthValue() + "/" +
+                    localDateTime.getDayOfMonth();
             File fileRoot = new File(
-                    rootPath + "/" +
-                            localDateTime.getYear() + "/" +
-                            localDateTime.getMonthValue() + "/" +
-                            localDateTime.getDayOfMonth());
+                    rootPath + relativePath);
             FileUtils.forceMkdir(fileRoot);
             String filename = localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
                     localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" + localDateTime.getMinute() + ".jpg";
             File pictureFile = new File(fileRoot, filename);
-            logger.info("Taking a picture now ...");
+            logger.info("Taking a picture now in {} ...", pictureFile.getAbsolutePath());
         try {
             gpioHermanasController.takePicture(new FilePictureCaptureHandler(pictureFile));
+            logger.info("Save picture path in db.");
+            pictureRepository.save(new Picture(relativePath + "/" + filename));
             logger.info("... done.");
             return pictureFile;
         } catch (IOException e) {
