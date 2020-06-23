@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import uk.co.caprica.picam.CaptureFailedException;
 import uk.co.caprica.picam.FilePictureCaptureHandler;
 
 import javax.annotation.PostConstruct;
@@ -66,12 +65,12 @@ public class CameraController {
         logger.info("taking a picture in root path {}.", rootPath);
         lightIRController.switchOn();
             LocalDateTime localDateTime = LocalDateTime.now();
-            String relativePath =  "/" +
+            String relativePath =
                     localDateTime.getYear() + "/" +
                     localDateTime.getMonthValue() + "/" +
                     localDateTime.getDayOfMonth();
             File fileRoot = new File(
-                    rootPath + relativePath);
+                    rootPath + "/" + relativePath);
             FileUtils.forceMkdir(fileRoot);
             String filename = localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
                     localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" + localDateTime.getMinute() + ".jpg";
