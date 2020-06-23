@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.gpio.light;
 
-import com.pi4j.io.gpio.GpioPinDigitalInput;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import org.jibe77.hermanas.gpio.GpioHermanasController;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.scheduler;
+package org.jibe77.hermanas.scheduler.sun;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;

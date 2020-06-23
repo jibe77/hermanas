@@ -8,10 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import uk.co.caprica.picam.FilePictureCaptureHandler;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -19,12 +21,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-@Component()
+@Controller
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 @Profile("gpio-fake")
 public class GpioHermanasFakeController implements GpioHermanasController {
 
     Logger logger = LoggerFactory.getLogger(GpioHermanasFakeController.class);
+
+    private boolean cameraIsInitialised;
 
     @PostConstruct
     private void initialise() {
@@ -40,6 +44,22 @@ public class GpioHermanasFakeController implements GpioHermanasController {
         //send the value to the motor.
         logger.info("Fake GPIO : moving servo motor on Pin address {} on gear position {}.",
                 doorServoGpioAddress, positionNumber);
+    }
+
+    @Override
+    public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay) {
+        logger.info(
+            "Fake GPIO : init camera with photoWidth {} photoHeight {} photoEncoding {} photoQuality {} photoDelay {}",
+                photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay);
+        cameraIsInitialised = true;
+    }
+
+    @Override
+    public void takePicture(FilePictureCaptureHandler filePictureCaptureHandler) throws IOException {
+        logger.info("Fake GPIO : take picture ");
+        if (!cameraIsInitialised) {
+            throw new IllegalStateException("Fake GPIO : can't hasn't been initialised before taking picture !");
+        }
     }
 
     public GpioPinDigitalInput provisionInput(int gpioAddress) {
@@ -652,4 +672,6 @@ public class GpioHermanasFakeController implements GpioHermanasController {
             }
         };
     }
+
+
 }

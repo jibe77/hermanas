@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.scheduler;
+package org.jibe77.hermanas.scheduler.sun;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Component
 @Scope("singleton")
-public class SunTimeService {
+public class SunTimeManager {
 
     SunTimeUtils sunTimeUtils;
 
@@ -28,9 +28,9 @@ public class SunTimeService {
     @Value("${suntime.scheduler.door.open.time_after_sunrise}")
     private int doorOpenTimeAfterSunrise;
 
-    Logger logger = LoggerFactory.getLogger(SunTimeService.class);
+    Logger logger = LoggerFactory.getLogger(SunTimeManager.class);
 
-    public SunTimeService(SunTimeUtils sunTimeUtils) {
+    public SunTimeManager(SunTimeUtils sunTimeUtils) {
         this.sunTimeUtils = sunTimeUtils;
     }
 
