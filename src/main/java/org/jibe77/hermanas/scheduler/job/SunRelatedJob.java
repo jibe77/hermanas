@@ -1,51 +1,62 @@
 package org.jibe77.hermanas.scheduler.job;
 
+import org.jibe77.hermanas.gpio.camera.CameraController;
 import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
-import org.jibe77.hermanas.scheduler.SunTimeService;
+import org.jibe77.hermanas.gpio.light.LightController;
+import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.service.DoorService;
-import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @Component
-public class SunRelatedJob implements Job {
+public class SunRelatedJob {
 
-    @Autowired
-    SunTimeService sunHourService;
+    private SunTimeManager sunTimeManager;
 
-    @Autowired
-    /**
-     * Quartz is instantiating the job with default constructor,
-     * so it's not possible to inject beans with constructor.
-     */
-    public DoorService doorService;
+    private CameraController cameraController;
+
+    private LightController lightController;
+
+    private DoorService doorService;
+
+    public SunRelatedJob(SunTimeManager sunTimeManager, CameraController cameraController, LightController lightController, DoorService doorService) {
+        this.sunTimeManager = sunTimeManager;
+        this.cameraController = cameraController;
+        this.lightController = lightController;
+        this.doorService = doorService;
+    }
 
     Logger logger = LoggerFactory.getLogger(SunRelatedJob.class);
 
-    public void execute(JobExecutionContext context) {
+    @Scheduled(fixedDelayString = "${suntime.scheduler.delay.in.milliseconds}")
+    public void execute() {
         LocalDateTime currentTime = LocalDateTime.now();
-        if (currentTime.isAfter(sunHourService.getNextDoorClosingTime())) {
+        if (currentTime.isAfter(sunTimeManager.getNextDoorClosingTime())) {
             try {
                 logger.info("start door closing job at sunset.");
+                cameraController.takePictureNoException();
                 doorService.close();
             } catch (DoorNotClosedCorrectlyException e) {
                 logger.error("Didn't close the door correctly.");
             }
-            sunHourService.reloadDoorClosingTime();
-        } else if (currentTime.isAfter(sunHourService.getNextDoorOpeningTime())) {
+            cameraController.takePictureNoException();
+            sunTimeManager.reloadDoorClosingTime();
+        } else if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
+            cameraController.takePictureNoException();
             doorService.open();
-            sunHourService.reloadDoorOpeningTime();
-        } else if (currentTime.isAfter(sunHourService.getNextLightOnTime())) {
-            // TODO ...
-            sunHourService.reloadLightOnTime();
-        } else if (currentTime.isAfter(sunHourService.getNextLightOffTime())) {
-            // TODO ...
-            sunHourService.reloadLightOffTime();
+            cameraController.takePictureNoException();
+            sunTimeManager.reloadDoorOpeningTime();
+        } else if (currentTime.isAfter(sunTimeManager.getNextLightOnTime())) {
+            lightController.switchOn();
+            sunTimeManager.reloadLightOnTime();
+        } else if (currentTime.isAfter(sunTimeManager.getNextLightOffTime())) {
+            lightController.switchOff();
+            sunTimeManager.reloadLightOffTime();
         }
 
     }

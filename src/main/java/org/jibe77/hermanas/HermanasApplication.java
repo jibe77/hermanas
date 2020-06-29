@@ -1,16 +1,26 @@
 package org.jibe77.hermanas;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.io.File;
 
 @SpringBootApplication
 @EnableRetry
 @EnableCaching
+@EnableScheduling
 public class HermanasApplication {
 
+	static Logger logger = LoggerFactory.getLogger(HermanasApplication.class);
+
 	public static void main(String[] args) {
+		String userDirectory = new File("").getAbsolutePath();
+		logger.info("Current directory : {}.", userDirectory);
 		SpringApplication.run(HermanasApplication.class, args);
 	}
 }

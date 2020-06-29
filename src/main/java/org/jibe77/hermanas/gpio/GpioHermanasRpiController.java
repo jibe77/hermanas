@@ -11,15 +11,27 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import uk.co.caprica.picam.Camera;
+import uk.co.caprica.picam.CameraConfiguration;
+import uk.co.caprica.picam.CaptureFailedException;
+import uk.co.caprica.picam.FilePictureCaptureHandler;
+import uk.co.caprica.picam.enums.Encoding;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-@Component()
+import java.io.IOException;
+
+import static uk.co.caprica.picam.CameraConfiguration.cameraConfiguration;
+
+@Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 @Profile("gpio-rpi")
 public class GpioHermanasRpiController implements GpioHermanasController {
 
     private GpioController gpio;
+
+    private CameraConfiguration config;
 
     Logger logger = LoggerFactory.getLogger(GpioHermanasRpiController.class);
 
@@ -30,7 +42,7 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     private int doorSettingRange;
 
     @PostConstruct
-    private void initialise() {
+    private void initialiseGpioPins() {
         logger.info("Initialise GPIO ...");
         try {
             gpio = GpioFactory.getInstance();
@@ -61,6 +73,29 @@ public class GpioHermanasRpiController implements GpioHermanasController {
         logger.info("... initialisation done.");
     }
 
+    @Override
+    public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay) {
+        logger.info("init camera config with width {} height {} encoding {} quality {} and delay {}.",
+                photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay);
+        config = cameraConfiguration()
+                .width(photoWidth)
+                .height(photoHeight)
+                .encoding(Encoding.valueOf(photoEncoding))
+                .quality(photoQuality)
+                .delay(photoDelay);
+    }
+
+    @Override
+    public void takePicture(FilePictureCaptureHandler filePictureCaptureHandler) throws IOException {
+        try (Camera camera = new Camera(config)){
+            camera.takePicture(filePictureCaptureHandler);
+        } catch (CaptureFailedException e) {
+            throw new IOException("Can't capture a picture.", e);
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
+
     @PreDestroy
     private void tearDown() {
         logger.info("Shutdown gpio instance.");
@@ -72,12 +107,20 @@ public class GpioHermanasRpiController implements GpioHermanasController {
         SoftPwm.softPwmWrite(doorServoGpioAddress, positionNumber);
     }
 
-    public GpioPinDigitalInput provisionButton(int gpioAddress) {
+    public GpioPinDigitalInput provisionInput(int gpioAddress) {
         return gpio.provisionDigitalInputPin(
                 RaspiPin.getPinByAddress(gpioAddress), PinPullResistance.PULL_DOWN);
     }
 
-    public void unprovisionButton(GpioPinDigitalInput bottomButton) {
+    @Override
+    public GpioPinDigitalOutput provisionOutput(int gpioAddress) {
+        GpioPinDigitalOutput gpioPinDigitalOutput = gpio.provisionDigitalOutputPin(
+                RaspiPin.getPinByAddress(gpioAddress));
+        gpioPinDigitalOutput.setShutdownOptions(true, PinState.LOW, PinPullResistance.OFF);
+        return gpioPinDigitalOutput;
+    }
+
+    public void unprovisionPin(GpioPin bottomButton) {
         gpio.unprovisionPin(bottomButton);
     }
 }

@@ -2,7 +2,6 @@ package org.jibe77.hermanas.gpio.door.bottombutton;
 
 import com.pi4j.io.gpio.GpioPinDigitalInput;
 import org.jibe77.hermanas.gpio.GpioHermanasController;
-import org.jibe77.hermanas.gpio.GpioHermanasFakeController;
 import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,7 @@ public class BottomButtonController {
     GpioHermanasController gpioHermanasController;
 
     @Value("${door.button.bottom.gpio.address}")
-            private int doorButtonBottomGpioAddress;
+    private int doorButtonBottomGpioAddress;
 
     private GpioPinDigitalInput bottomButton;
 
@@ -30,7 +29,7 @@ public class BottomButtonController {
 
     Logger logger = LoggerFactory.getLogger(BottomButtonController.class);
 
-    public BottomButtonController(ServoMotorController servoMotorController, GpioHermanasFakeController gpioHermanasController) {
+    public BottomButtonController(ServoMotorController servoMotorController, GpioHermanasController gpioHermanasController) {
         this.servoMotorController = servoMotorController;
         this.gpioHermanasController = gpioHermanasController;
     }
@@ -38,7 +37,7 @@ public class BottomButtonController {
     public synchronized void provisionButton() {
         if (bottomButton == null) {
             logger.info("provision door button on gpio instance.");
-            bottomButton = gpioHermanasController.provisionButton(doorButtonBottomGpioAddress);
+            bottomButton = gpioHermanasController.provisionInput(doorButtonBottomGpioAddress);
             bottomButton.setShutdownOptions(true);
             bottomButton.addListener(new BottomButtonListener(this, servoMotorController));
         }
@@ -49,7 +48,7 @@ public class BottomButtonController {
         if (bottomButton != null) {
             logger.info("unprovision door button on gpio instance.");
             bottomButton.removeAllListeners();
-            gpioHermanasController.unprovisionButton(bottomButton);
+            gpioHermanasController.unprovisionPin(bottomButton);
             bottomButton = null;
         }
     }
