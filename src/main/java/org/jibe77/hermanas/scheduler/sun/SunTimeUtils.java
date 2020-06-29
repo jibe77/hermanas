@@ -1,9 +1,12 @@
 package org.jibe77.hermanas.scheduler.sun;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
@@ -18,6 +21,13 @@ public class SunTimeUtils {
 
     @Value("${suntime.longitude}")
     public double longitude;
+
+    Logger logger = LoggerFactory.getLogger(SunTimeUtils.class);
+
+    @PostConstruct
+    private void init() {
+        logger.info("Sun time utils configured with latitude {} and longitude {}.", latitude, longitude);
+    }
 
     protected LocalDateTime computeNextSunset(long minutes) {
         return computeNextSunset(LocalDateTime.now(), minutes);
