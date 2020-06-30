@@ -3,6 +3,7 @@ package org.jibe77.hermanas.gpio;
 import com.pi4j.io.gpio.*;
 import com.pi4j.wiringpi.Gpio;
 import com.pi4j.wiringpi.SoftPwm;
+import org.jibe77.hermanas.gpio.sensor.DHT22;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -122,5 +123,56 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     public void unprovisionPin(GpioPin bottomButton) {
         gpio.unprovisionPin(bottomButton);
+    }
+
+    @Override
+    public void initSensor(int pinNumber) {
+        Gpio.pinMode(pinNumber, Gpio.OUTPUT);
+        Gpio.digitalWrite(pinNumber, Gpio.HIGH);
+    }
+
+    @Override
+    public void sendStartSignal(int pinNumber) {
+        // Send start signal.
+        Gpio.pinMode(pinNumber, Gpio.OUTPUT);
+        Gpio.digitalWrite(pinNumber, Gpio.LOW);
+        Gpio.delay(10);
+        Gpio.digitalWrite(pinNumber, Gpio.HIGH);
+    }
+
+    @Override
+    public void waitForResponseSignal(int pinNumber, boolean keepRunning) {
+        Gpio.pinMode(pinNumber, Gpio.INPUT);
+        while (keepRunning && Gpio.digitalRead(pinNumber) == Gpio.HIGH) {
+        }
+        while (keepRunning && Gpio.digitalRead(pinNumber) == Gpio.LOW) {
+        }
+        while (keepRunning && Gpio.digitalRead(pinNumber) == Gpio.HIGH) {
+        }
+    }
+
+    @Override
+    public void close(int pinNumber) {
+        // Set pin high for end of transmission.
+        Gpio.pinMode(pinNumber, Gpio.OUTPUT);
+        Gpio.digitalWrite(pinNumber, Gpio.HIGH);
+    }
+
+    @Override
+    public byte[] fetchData(int pinNumber, boolean keepRunning, long startTime) {
+        byte[] data = new byte[5];
+        for (int i = 0; i < 40; i++) {
+            while (keepRunning && Gpio.digitalRead(pinNumber) == Gpio.LOW) {
+            }
+            startTime = System.nanoTime();
+            while (keepRunning && Gpio.digitalRead(pinNumber) == Gpio.HIGH) {
+            }
+            long timeHight = System.nanoTime() - startTime;
+            data[i / 8] <<= 1;
+            if ( timeHight > DHT22.LONGEST_ZERO) {
+                data[i / 8] |= 1;
+            }
+        }
+        return data;
     }
 }

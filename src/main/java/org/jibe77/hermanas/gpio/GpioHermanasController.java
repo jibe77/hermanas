@@ -20,4 +20,14 @@ public interface GpioHermanasController {
     void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay);
 
     void takePicture(FilePictureCaptureHandler filePictureCaptureHandler) throws IOException;
+
+    void initSensor(int pinNumber);
+
+    void sendStartSignal(int pinNumber);
+
+    void waitForResponseSignal(int pinNumber, boolean keepRunning);
+
+    void close(int pinNumber);
+
+    byte[] fetchData(int pinNumber, boolean keepRunning, long startTime);
 }
