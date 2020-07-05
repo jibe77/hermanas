@@ -22,4 +22,11 @@ public class SchedulerService {
         // add 1 minute because the cron task is started every minutes, so the event is not starting at this very moment.
         return localDateTime.plusMinutes(1).format(DateTimeFormatter.ofPattern("HH:mm"));
     }
+
+    @GetMapping(value = "/scheduler/doorOpeningTime")
+    public String getNextDoorOpeningTime() {
+        LocalDateTime localDateTime = sunTimeManager.getNextDoorOpeningTime();
+        // add 1 minute because the cron task is started every minutes, so the event is not starting at this very moment.
+        return localDateTime.plusMinutes(1).format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
 }
