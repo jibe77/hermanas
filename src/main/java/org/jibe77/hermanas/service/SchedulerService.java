@@ -29,4 +29,19 @@ public class SchedulerService {
         // add 1 minute because the cron task is started every minutes, so the event is not starting at this very moment.
         return localDateTime.plusMinutes(1).format(DateTimeFormatter.ofPattern("HH:mm"));
     }
+
+    @GetMapping(value = "/scheduler/lightOffTime")
+    public String getNextLightOffTime() {
+        LocalDateTime localDateTime = sunTimeManager.getNextLightOffTime();
+        // add 1 minute because the cron task is started every minutes, so the event is not starting at this very moment.
+        return localDateTime.plusMinutes(1).format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
+    @GetMapping(value = "/scheduler/lightOnTime")
+    public String getNextLightOnTime() {
+        LocalDateTime localDateTime = sunTimeManager.getNextLightOnTime();
+        // add 1 minute because the cron task is started every minutes, so the event is not starting at this very moment.
+        return localDateTime.plusMinutes(1).format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
 }
