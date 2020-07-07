@@ -43,6 +43,9 @@ public class CameraController {
     @Value("${camera.delay}")
     private int photoDelay;
 
+    @Value("${camera.rotation}")
+    private int photoRotation;
+
     @Value("${camera.path.root}")
     private String rootPath;
 
@@ -56,7 +59,7 @@ public class CameraController {
 
     @PostConstruct
     private void initCamera() {
-        gpioHermanasController.initCamera(photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay);
+        gpioHermanasController.initCamera(photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay, photoRotation);
     }
 
 

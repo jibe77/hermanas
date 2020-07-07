@@ -19,11 +19,13 @@ public class LightService {
 
     @GetMapping(value = "/light/on")
     public void switchOn() {
+        logger.info("Rest service is switching the light on.");
         lightController.switchOn();
     }
 
     @GetMapping(value = "/light/off")
     public void switchOff() {
+        logger.info("Rest service is switching the light off.");
         lightController.switchOff();
     }
 }

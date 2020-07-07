@@ -10,12 +10,13 @@
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.1.5</version>
+	<version>0.1.6</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
 
 	<properties>
+		<!-- Java is not supported on Raspberry pi Zero after version 8. -->
 		<java.version>1.8</java.version>
 	</properties>
 
