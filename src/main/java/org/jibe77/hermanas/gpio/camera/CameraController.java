@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.gpio.camera;
 
-import com.pi4j.wiringpi.Gpio;
 import org.apache.commons.io.FileUtils;
 import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
