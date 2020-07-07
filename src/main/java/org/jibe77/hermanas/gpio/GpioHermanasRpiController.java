@@ -75,7 +75,7 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     }
 
     @Override
-    public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay) {
+    public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay, int photoRotation) {
         logger.info("init camera config with width {} height {} encoding {} quality {} and delay {}.",
                 photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay);
         config = cameraConfiguration()
@@ -83,7 +83,8 @@ public class GpioHermanasRpiController implements GpioHermanasController {
                 .height(photoHeight)
                 .encoding(Encoding.valueOf(photoEncoding))
                 .quality(photoQuality)
-                .delay(photoDelay);
+                .delay(photoDelay)
+                .rotation(photoRotation);
     }
 
     @Override

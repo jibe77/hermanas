@@ -47,10 +47,10 @@ public class GpioHermanasFakeController implements GpioHermanasController {
     }
 
     @Override
-    public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay) {
+    public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay, int photoRotation) {
         logger.info(
-            "Fake GPIO : init camera with photoWidth {} photoHeight {} photoEncoding {} photoQuality {} photoDelay {}",
-                photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay);
+            "Fake GPIO : init camera with photoWidth {} photoHeight {} photoEncoding {} photoQuality {} photoDelay {} photoRotation {}",
+                photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay, photoRotation);
         cameraIsInitialised = true;
     }
 
