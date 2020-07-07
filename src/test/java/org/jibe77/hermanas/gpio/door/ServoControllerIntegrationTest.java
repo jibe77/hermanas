@@ -1,10 +1,9 @@
-package org.jibe77.hermanas.gpio;
+package org.jibe77.hermanas.gpio.door;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
+import org.jibe77.hermanas.gpio.GpioHermanasController;
 import org.jibe77.hermanas.gpio.door.bottombutton.BottomButtonController;
-import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
-import org.jibe77.hermanas.gpio.door.DoorController;
 import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

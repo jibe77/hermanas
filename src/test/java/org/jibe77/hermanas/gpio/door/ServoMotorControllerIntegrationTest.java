@@ -1,5 +1,6 @@
-package org.jibe77.hermanas.gpio;
+package org.jibe77.hermanas.gpio.door;
 
+import org.jibe77.hermanas.gpio.GpioHermanasFakeController;
 import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

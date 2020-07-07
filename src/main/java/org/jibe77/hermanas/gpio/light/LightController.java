@@ -34,8 +34,10 @@ public class LightController {
 
     @PostConstruct
     private void init() {
-        if (lightEnabled)
+        if (lightEnabled) {
+            logger.info("initialising light relay on gpio pin {}.", lightRelayGpioAddress);
             gpioPinDigitalOutput = gpioHermanasController.provisionOutput(lightRelayGpioAddress);
+        }
     }
 
 

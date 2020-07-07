@@ -47,10 +47,10 @@ public class GpioHermanasFakeController implements GpioHermanasController {
     }
 
     @Override
-    public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay) {
+    public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay, int photoRotation) {
         logger.info(
-            "Fake GPIO : init camera with photoWidth {} photoHeight {} photoEncoding {} photoQuality {} photoDelay {}",
-                photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay);
+            "Fake GPIO : init camera with photoWidth {} photoHeight {} photoEncoding {} photoQuality {} photoDelay {} photoRotation {}",
+                photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay, photoRotation);
         cameraIsInitialised = true;
     }
 
@@ -673,5 +673,29 @@ public class GpioHermanasFakeController implements GpioHermanasController {
         };
     }
 
+    @Override
+    public void initSensor(int pinNumber) {
+        logger.info("init sensor on gpio address {}.", pinNumber);
+    }
 
+    @Override
+    public void sendStartSignal(int pinNumber) {
+        logger.info("send start signal to sensor on pin number {}.", pinNumber);
+    }
+
+    @Override
+    public void waitForResponseSignal(int pinNumber, boolean keepRunning) {
+        logger.info("wait for response signal on pin number {}, keep running {}.", pinNumber, keepRunning);
+    }
+
+    @Override
+    public void close(int pinNumber) {
+        logger.info("close pin number {}.", pinNumber);
+    }
+
+    @Override
+    public byte[] fetchData(int pinNumber, boolean keepRunning, long startTime) {
+        logger.info("fetch data on pin number {}.", pinNumber);
+        return new byte[] {1,2,3,4,10};
+    }
 }

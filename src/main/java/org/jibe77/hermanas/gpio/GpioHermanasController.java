@@ -17,7 +17,17 @@ public interface GpioHermanasController {
 
     void moveServo(int doorServoGpioAddress, int positionNumber);
 
-    void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay);
+    void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay, int photoRotation);
 
     void takePicture(FilePictureCaptureHandler filePictureCaptureHandler) throws IOException;
+
+    void initSensor(int pinNumber);
+
+    void sendStartSignal(int pinNumber);
+
+    void waitForResponseSignal(int pinNumber, boolean keepRunning);
+
+    void close(int pinNumber);
+
+    byte[] fetchData(int pinNumber, boolean keepRunning, long startTime);
 }
