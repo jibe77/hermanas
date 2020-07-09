@@ -52,6 +52,9 @@ public class DHT22 {
     @Value("${sensor.gpio.timeout.in.ms}")
     private int timeoutInMilliseconds;
 
+    @Value("${sensor.gpio.parity.check}")
+    private boolean checkParity;
+
     /**
      * 40 bit Data from sensor
      */
@@ -106,7 +109,7 @@ public class DHT22 {
         Hashtable<IOException, Integer> exceptions = new Hashtable<IOException, Integer>();
         for (int i=0; i < 10; i++) {
             try {
-                if (read(true)) {
+                if (read(checkParity)) {
                     return true;
                 }
             } catch (IOException e) {
@@ -136,7 +139,7 @@ public class DHT22 {
      * @throws Exception
      */
     public boolean read() throws Exception {
-        return read(true);
+        return read(checkParity);
     }
 
     /**
