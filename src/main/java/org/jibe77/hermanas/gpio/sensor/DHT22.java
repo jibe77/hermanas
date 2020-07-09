@@ -45,6 +45,9 @@ public class DHT22 {
     @Value("${sensor.gpio.address}")
     private int pinNumber;
 
+    @Value("${sensor.gpio.timeout.in.ms}")
+    private int timeoutInMilliseconds;
+
     /**
      * 40 bit Data from sensor
      */
@@ -83,7 +86,7 @@ public class DHT22 {
         // Reset data
         data = new byte[5];
         try {
-            data = future.get(2, TimeUnit.SECONDS);
+            data = future.get(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
             readSensor.close();
         } catch (Exception e) {
             readSensor.close();
