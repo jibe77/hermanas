@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.gpio.sensor;
 
 import org.jibe77.hermanas.gpio.GpioHermanasController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +40,8 @@ public class DHT22 {
      * Minimum time in milliseconds to wait between reads of sensor.
      */
     public static final int MIN_MILLISECS_BETWEEN_READS = 2500;
+
+    Logger logger = LoggerFactory.getLogger(DHT22.class);
 
     /**
      * PI4J Pin number.
@@ -197,6 +201,12 @@ public class DHT22 {
 
     private void checkParity() throws ParityCheckException {
         if (!(data[4] == (data[0] + data[1] + data[2] + data[3]))) {
+            logger.info("Can't check parity on data array, " +
+                    "index 0 is {}," +
+                    "index 1 is {}," +
+                    "index 2 is {}," +
+                    "index 3 is {}," +
+                    "index 4 is {}", data[0], data[1], data[2], data[3], data[4]);
             throw new ParityCheckException();
         }
     }
