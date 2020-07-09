@@ -6,19 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Hashtable;
-import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 /**
  * Implements the DHT22 / AM2302 reading in Java using Pi4J.
  *
@@ -30,16 +17,6 @@ import java.util.concurrent.TimeUnit;
 public class DHT22 {
 
     GpioHermanasController gpioHermanasController;
-
-    /**
-     * Time in nanoseconds to separate ZERO and ONE signals.
-     */
-    public static final int LONGEST_ZERO = 50000;
-
-    /**
-     * Minimum time in milliseconds to wait between reads of sensor.
-     */
-    public static final int MIN_MILLISECS_BETWEEN_READS = 2500;
 
     Logger logger = LoggerFactory.getLogger(DHT22.class);
 
@@ -55,226 +32,73 @@ public class DHT22 {
     @Value("${sensor.gpio.parity.check}")
     private boolean checkParity;
 
-    /**
-     * 40 bit Data from sensor
-     */
-    private byte[] data = null;
+    private static final int maxTimings = 85;
+    private final int[] dht22_dat = {0, 0, 0, 0, 0};
+    private float temperature = 9999;
+    private float humidity = 9999;
 
-    /**
-     * Value of last successful humidity reading.
-     */
-    private Double humidity = null;
-
-    /**
-     * Value of last successful temperature reading.
-     */
-    private Double temperature = null;
-
-    /**
-     * Last read attempt
-     */
-    private Long lastRead = null;
 
     public DHT22(GpioHermanasController gpioHermanasController) {
         this.gpioHermanasController = gpioHermanasController;
     }
 
-    /**
-     * Communicate with sensor to get new reading data.
-     * @throws ExecutionException
-     * @throws InterruptedException
-     *
-     * @throws Exception if failed to successfully read data.
-     */
-    private void getData() throws IOException {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        ReadSensorFuture readSensor = new ReadSensorFuture();
-        Future<byte[]> future = executor.submit(readSensor);
-        // Reset data
-        data = new byte[5];
-        try {
-            data = future.get(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
-            readSensor.close();
-        } catch (Exception e) {
-            readSensor.close();
-            future.cancel(true);
-            executor.shutdown();
-            throw new IOException(e);
-        }
-        readSensor.close();
-        executor.shutdown();
+    private int pollDHT22() {
+        return gpioHermanasController.fetchData(pinNumber, dht22_dat);
     }
 
-    public boolean doReadLoop() throws InterruptedException, IOException {
-        Hashtable<IOException, Integer> exceptions = new Hashtable<IOException, Integer>();
-        for (int i=0; i < 10; i++) {
-            try {
-                if (read(checkParity)) {
-                    return true;
-                }
-            } catch (IOException e) {
-                if (Objects.isNull(exceptions.get(e))) {
-                    exceptions.put(e, 1);
-                } else {
-                    exceptions.put(e, exceptions.get(e).intValue() + 1);
+    public void refreshData() {
+        int pollDataCheck = pollDHT22();
+        if (pollDataCheck >= 40 && checkParity()) {
+
+            final float newHumidity = (float) ((dht22_dat[0] << 8) + dht22_dat[1]) / 10;
+            final float newTemperature = (float) (((dht22_dat[2] & 0x7F) << 8) + dht22_dat[3]) / 10;
+
+            if (humidity == 9999 || ((newHumidity < humidity + 40) && (newHumidity > humidity - 40))) {
+                humidity = newHumidity;
+                if (humidity > 100) {
+                    humidity = dht22_dat[0]; // for DHT22
                 }
             }
-            Thread.sleep(DHT22.MIN_MILLISECS_BETWEEN_READS);
-        }
-        // return the most common exception.
-        IOException returnException = null;
-        int exceptionCount =  0;
-        for (IOException e : exceptions.keySet()) {
-            if (exceptions.get(e).intValue() > exceptionCount) {
-                returnException = e;
-            }
-        }
-        throw returnException;
-    }
 
-    /**
-     * Make one new sensor reading.
-     *
-     * @return
-     * @throws Exception
-     */
-    public boolean read() throws Exception {
-        return read(checkParity);
-    }
-
-    /**
-     * Make a new sensor reading
-     *
-     * @param checkParity Should a parity check be performed?
-     * @return
-     * @throws ValueOutOfOperatingRangeException
-     * @throws ParityCheckException
-     * @throws IOException
-     */
-    public boolean read(boolean checkParity) throws ValueOutOfOperatingRangeException, ParityCheckException, IOException {
-        checkLastReadDelay();
-        lastRead = System.currentTimeMillis();
-        getData();
-        if (checkParity) {
-            checkParity();
-        }
-
-        // Operating Ranges from specification sheet.
-        // humidity 0-100
-        // temperature -40~80
-        double newHumidityValue = getReadingValueFromBytes(data[0], data[1]);
-        logger.info("humidity value found {}.", newHumidityValue);
-        double newTemperatureValue = getReadingValueFromBytes(data[2], data[3]);
-        logger.info("temperature value found {}.", newTemperatureValue);
-        if (newHumidityValue >= 0 && newHumidityValue <= 100) {
-            humidity = newHumidityValue;
-        } else {
-            throw new ValueOutOfOperatingRangeException();
-        }
-        if (newTemperatureValue >= -40 && newTemperatureValue < 85) {
-            temperature = newTemperatureValue;
-        } else {
-            throw new ValueOutOfOperatingRangeException();
-        }
-        lastRead = System.currentTimeMillis();
-        return true;
-    }
-
-    private void checkLastReadDelay() throws IOException {
-        if (Objects.nonNull(lastRead)) {
-            if (lastRead > System.currentTimeMillis() - 2000) {
-                throw new IOException("Last read was under 2 seconds ago. Please wait longer between reads!");
+            if (temperature == 9999 || ((newTemperature < temperature + 40) && (newTemperature > temperature - 40))) {
+                temperature = (float) (((dht22_dat[2] & 0x7F) << 8) + dht22_dat[3]) / 10;
+                if (temperature > 125) {
+                    temperature = dht22_dat[2]; // for DHT22
+                }
+                if ((dht22_dat[2] & 0x80) != 0) {
+                    temperature = -temperature;
+                }
             }
         }
     }
 
-    protected static double getReadingValueFromBytes(final byte hi, final byte low) {
-        ByteBuffer bb = ByteBuffer.allocate(2);
-        bb.order(ByteOrder.BIG_ENDIAN);
-        bb.put(hi);
-        bb.put(low);
-        short shortVal = bb.getShort(0);
-        Double doubleValue = new Double(shortVal) / 10;
 
-        // When highest bit of temperature is 1, it means the temperature is below 0 degree Celsius.
-        if (1 == ((hi >> 7) & 1)) {
-            doubleValue = (doubleValue + 3276.8) * -1d;
+    public double getHumidity() {
+        if (humidity == 9999) {
+            return 0;
         }
-
-        return doubleValue;
-    }
-
-    private void checkParity() throws ParityCheckException {
-        if (!(data[4] == (data[0] + data[1] + data[2] + data[3]))) {
-            logger.info("Can't check parity on data array, " +
-                    "index 0 is {}," +
-                    "index 1 is {}," +
-                    "index 2 is {}," +
-                    "index 3 is {}," +
-                    "index 4 is {}", data[0], data[1], data[2], data[3], data[4]);
-            throw new ParityCheckException();
-        }
-    }
-
-    public Double getHumidity() {
+        logger.info("returning humidity {}.", humidity);
         return humidity;
     }
 
-    public Double getTemperature() {
+    @SuppressWarnings("unused")
+    public double getTemperature() {
+        if (temperature == 9999) {
+            return 0;
+        }
+        logger.info("returning temperature {}.", temperature);
         return temperature;
     }
 
-    /**
-     * Callable Future for reading sensor.  Allows timeout if it gets stuck.
-     */
-    private class ReadSensorFuture implements Callable<byte[]>, Closeable {
-
-        private boolean keepRunning = true;
-
-        public ReadSensorFuture() {
-            gpioHermanasController.initSensor(pinNumber);
-        }
-
-        @Override
-        public byte[] call() throws Exception {
-
-            // do expensive (slow) stuff before we start and privoritize thread.
-            long startTime = System.nanoTime();
-            Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-
-            sendStartSignal();
-            waitForResponseSignal();
-            byte[] data = gpioHermanasController.fetchData(pinNumber, keepRunning, startTime);
-
-            Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
-            return data;
-        }
-
-        private void sendStartSignal() {
-            gpioHermanasController.sendStartSignal(pinNumber);
-        }
-
-        /**
-         * AM2302 will pull low 80us as response signal, then
-         * AM2302 pulls up 80us for preparation to send data.
-         */
-        private void waitForResponseSignal() {
-            gpioHermanasController.waitForResponseSignal(pinNumber, keepRunning);
-        }
-
-        @Override
-        public void close() throws IOException {
-            keepRunning = false;
-            gpioHermanasController.close(pinNumber);
-        }
+    private boolean checkParity() {
+        logger.info("Check parity on data array, " +
+                "index 0 is {}," +
+                "index 1 is {}," +
+                "index 2 is {}," +
+                "index 3 is {}," +
+                "index 4 is {}", dht22_dat[0], dht22_dat[1], dht22_dat[2], dht22_dat[3], dht22_dat[4]);
+        return dht22_dat[4] == (dht22_dat[0] + dht22_dat[1] + dht22_dat[2] + dht22_dat[3] & 0xFF);
     }
 
-    public class ParityCheckException extends IOException {
-        private static final long serialVersionUID = 1L;
-    }
-
-    public class ValueOutOfOperatingRangeException extends IOException {
-        private static final long serialVersionUID = 1L;
-    }
 
 }

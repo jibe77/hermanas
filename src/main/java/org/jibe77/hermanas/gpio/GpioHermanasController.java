@@ -29,5 +29,5 @@ public interface GpioHermanasController {
 
     void close(int pinNumber);
 
-    byte[] fetchData(int pinNumber, boolean keepRunning, long startTime);
+    int fetchData(int pinNumber, int[] dht22_dat);
 }

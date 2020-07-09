@@ -694,8 +694,13 @@ public class GpioHermanasFakeController implements GpioHermanasController {
     }
 
     @Override
-    public byte[] fetchData(int pinNumber, boolean keepRunning, long startTime) {
+    public int fetchData(int pinNumber, int[] data) {
         logger.info("fetch data on pin number {}.", pinNumber);
-        return new byte[] {1,2,3,4,10};
+        data[0] =  1;
+        data[1] = 2;
+        data[2] = 3;
+        data[3] =              4;
+        data[4] =         10;
+        return 50;
     }
 }

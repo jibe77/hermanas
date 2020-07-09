@@ -25,11 +25,20 @@ public class DHT22Test {
     public void testReadSensor() throws Exception {
         Mockito.when(gpioHermanasController.fetchData(
                 Mockito.anyInt(),
-                Mockito.anyBoolean(),
-                Mockito.anyLong())
-            ).thenReturn(new byte[] {1, 2, 3, 4, 10});
-        dht22.read();
-        assertEquals(25.8, dht22.getHumidity());
-        assertEquals(77.2, dht22.getTemperature());
+                Mockito.any())
+            ).thenReturn(50);
+        assertEquals(0, dht22.getHumidity());
+        assertEquals(0, dht22.getTemperature());
+    }
+
+    @Test
+    public void testReadSensorWithRefresh() throws Exception {
+        Mockito.when(gpioHermanasController.fetchData(
+                Mockito.anyInt(),
+                Mockito.any())
+        ).thenReturn(50);
+        dht22.refreshData();
+        assertEquals(0, dht22.getHumidity());
+        assertEquals(0, dht22.getTemperature());
     }
 }

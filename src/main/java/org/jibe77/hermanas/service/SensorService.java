@@ -15,13 +15,13 @@ public class SensorService {
 
     @GetMapping(value = "/sensor/temperature")
     public Double getTemperature() throws Exception {
-        dht22.read();
+        dht22.refreshData();
         return dht22.getTemperature();
     }
 
     @GetMapping(value = "/sensor/humidity")
     public Double getHumidity() throws Exception {
-        dht22.read();
+        dht22.refreshData();
         return dht22.getHumidity();
     }
 }
