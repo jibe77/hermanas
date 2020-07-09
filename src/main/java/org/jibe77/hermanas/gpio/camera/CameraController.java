@@ -4,7 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.gpio.GpioHermanasController;
-import org.jibe77.hermanas.gpio.light.LightIRController;
+import org.jibe77.hermanas.gpio.light.LightController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @Scope("singleton")
 public class CameraController {
 
-    private LightIRController lightIRController;
+    private LightController lightController;
 
     private GpioHermanasController gpioHermanasController;
 
@@ -51,8 +51,8 @@ public class CameraController {
 
     Logger logger = LoggerFactory.getLogger(CameraController.class);
 
-    public CameraController(LightIRController lightIRController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository) {
-        this.lightIRController = lightIRController;
+    public CameraController(LightController lightController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository) {
+        this.lightController = lightController;
         this.gpioHermanasController = gpioHermanasController;
         this.pictureRepository = pictureRepository;
     }
@@ -65,7 +65,7 @@ public class CameraController {
 
     public synchronized File takePicture() throws IOException {
         logger.info("taking a picture in root path {}.", rootPath);
-        lightIRController.switchOn();
+        lightController.switchOn();
             LocalDateTime localDateTime = LocalDateTime.now();
             String relativePath =
                     localDateTime.getYear() + "/" +
@@ -87,7 +87,7 @@ public class CameraController {
         } catch (IOException e) {
             throw new IOException("Can't take picture or fetch file.", e);
         } finally {
-            lightIRController.switchOff();
+            lightController.switchOff();
         }
     }
 
