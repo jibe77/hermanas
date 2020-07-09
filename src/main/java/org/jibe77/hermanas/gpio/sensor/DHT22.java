@@ -163,12 +163,14 @@ public class DHT22 {
         // humidity 0-100
         // temperature -40~80
         double newHumidityValue = getReadingValueFromBytes(data[0], data[1]);
+        logger.info("humidity value found {}.", newHumidityValue);
+        double newTemperatureValue = getReadingValueFromBytes(data[2], data[3]);
+        logger.info("temperature value found {}.", newTemperatureValue);
         if (newHumidityValue >= 0 && newHumidityValue <= 100) {
             humidity = newHumidityValue;
         } else {
             throw new ValueOutOfOperatingRangeException();
         }
-        double newTemperatureValue = getReadingValueFromBytes(data[2], data[3]);
         if (newTemperatureValue >= -40 && newTemperatureValue < 85) {
             temperature = newTemperatureValue;
         } else {
