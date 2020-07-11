@@ -56,8 +56,8 @@ public class DHT22 {
                 String returnValue = in.readLine();
                 logger.info("python {} with native command {} {} {} has returned {}.", pythonCommand, pythonScript, scriptArg1, scriptArg2, returnValue);
                 String[] temperatureAndHumidity = returnValue.split(" ");
-                this.temperature = Double.valueOf(temperatureAndHumidity[0].substring(6, 10));
-                this.humidity = Double.valueOf(temperatureAndHumidity[2].substring(9, 13));
+                this.temperature = Double.valueOf(temperatureAndHumidity[0].substring(5, 9));
+                this.humidity = Double.valueOf(temperatureAndHumidity[1].substring(9, 13));
                 logger.info("temperature {} and humidity {}", temperature, humidity);
             }
 
