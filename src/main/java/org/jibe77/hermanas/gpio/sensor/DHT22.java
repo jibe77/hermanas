@@ -25,14 +25,20 @@ public class DHT22 {
 
     Logger logger = LoggerFactory.getLogger(DHT22.class);
 
-    @Value("${python.command}")
+    @Value("${sensor.python.command}")
     private String pythonCommand;
 
     /**
      * PI4J Pin number.
      */
-    @Value("${sensor.gpio.native.command}")
-    private String nativeCommand;
+    @Value("${sensor.python.script}")
+    private String pythonScript;
+
+    @Value("${sensor.python.arg1}")
+    private String scriptArg1;
+
+    @Value("${sensor.python.arg2}")
+    private String scriptArg2;
 
     private double humidity = 0;
     private double temperature = 0;
@@ -42,19 +48,20 @@ public class DHT22 {
 
     @Cacheable(value = {"sensor"})
     public void refreshData() throws IOException {
-        ProcessBuilder pb = new ProcessBuilder(pythonCommand, nativeCommand);
+        ProcessBuilder pb = new ProcessBuilder(pythonCommand, pythonScript, scriptArg1, scriptArg2);
+        pb.redirectErrorStream(true);
         Process p = pb.start();
         try {
-            p.waitFor(10, TimeUnit.SECONDS);
             try (BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
                 String returnValue = in.readLine();
-                logger.info("native command {} has returned {}.", nativeCommand, returnValue);
+                logger.info("python {} with native command {} has returned {}.", pythonCommand, pythonScript, returnValue);
                 String[] temperatureAndHumidity = returnValue.split(" ");
                 this.temperature = Double.valueOf(temperatureAndHumidity[0].substring(6, 10));
                 this.humidity = Double.valueOf(temperatureAndHumidity[2].substring(9, 13));
                 logger.info("temperature {} and humidity {}", temperature, humidity);
             }
-            int exitValue = p.exitValue();
+
+            int exitValue = p.waitFor();
             logger.info("exit value {}.", exitValue);
         } catch (InterruptedException e) {
             e.printStackTrace();
