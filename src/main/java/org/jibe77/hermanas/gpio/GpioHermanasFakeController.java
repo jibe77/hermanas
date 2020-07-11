@@ -692,15 +692,4 @@ public class GpioHermanasFakeController implements GpioHermanasController {
     public void close(int pinNumber) {
         logger.info("close pin number {}.", pinNumber);
     }
-
-    @Override
-    public int fetchData(int pinNumber, int[] data) {
-        logger.info("fetch data on pin number {}.", pinNumber);
-        data[0] =  1;
-        data[1] = 2;
-        data[2] = 3;
-        data[3] =              4;
-        data[4] =         10;
-        return 50;
-    }
 }

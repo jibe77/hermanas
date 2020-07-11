@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.1.11</version>
+	<version>0.1.12</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>

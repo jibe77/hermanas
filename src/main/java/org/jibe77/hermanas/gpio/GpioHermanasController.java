@@ -28,6 +28,4 @@ public interface GpioHermanasController {
     void waitForResponseSignal(int pinNumber, boolean keepRunning);
 
     void close(int pinNumber);
-
-    int fetchData(int pinNumber, int[] dht22_dat);
 }

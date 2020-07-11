@@ -158,46 +158,4 @@ public class GpioHermanasRpiController implements GpioHermanasController {
         Gpio.pinMode(pinNumber, Gpio.OUTPUT);
         Gpio.digitalWrite(pinNumber, Gpio.HIGH);
     }
-
-    @Override
-    public int fetchData(int pinNumber, int[] dht22_dat) {
-        int lastState = Gpio.HIGH;
-        int j = 0;
-        dht22_dat[0] = dht22_dat[1] = dht22_dat[2] = dht22_dat[3] = dht22_dat[4] = 0;
-
-        Gpio.pinMode(pinNumber, Gpio.OUTPUT);
-        Gpio.digitalWrite(pinNumber, Gpio.LOW);
-        Gpio.delay(18);
-
-        Gpio.digitalWrite(pinNumber, Gpio.HIGH);
-        Gpio.pinMode(pinNumber, Gpio.INPUT);
-
-        for (int i = 0; i < 85; i++) {
-            int counter = 0;
-            while (Gpio.digitalRead(pinNumber) == lastState) {
-                counter++;
-                Gpio.delayMicroseconds(1);
-                if (counter == 255) {
-                    break;
-                }
-            }
-
-            lastState = Gpio.digitalRead(pinNumber);
-
-            if (counter == 255) {
-                break;
-            }
-
-            /* ignore first 3 transitions */
-            if (i >= 4 && i % 2 == 0) {
-                /* shove each bit into the storage bytes */
-                dht22_dat[j / 8] <<= 1;
-                if (counter > 16) {
-                    dht22_dat[j / 8] |= 1;
-                }
-                j++;
-            }
-        }
-        return j;
-    }
 }
