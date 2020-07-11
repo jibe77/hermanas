@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.gpio.sensor;
 
+import org.jibe77.hermanas.data.entity.Sensor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.concurrent.TimeUnit;
+import java.time.LocalDateTime;
 
 /**
  * Implements the DHT22 / AM2302 reading in Java using Pi4J.
@@ -40,14 +41,13 @@ public class DHT22 {
     @Value("${sensor.python.arg2}")
     private String scriptArg2;
 
-    private double humidity = 0;
-    private double temperature = 0;
-
     public DHT22() {
     }
 
     @Cacheable(value = {"sensor"})
-    public void refreshData() throws IOException {
+    public Sensor refreshData() throws IOException {
+        Sensor sensor = new Sensor();
+        sensor.setDateTime(LocalDateTime.now());
         ProcessBuilder pb = new ProcessBuilder(pythonCommand, pythonScript, scriptArg1, scriptArg2);
         pb.redirectErrorStream(true);
         Process p = pb.start();
@@ -58,12 +58,12 @@ public class DHT22 {
                 String[] returnedString = returnValue.split(" ");
                 for (String returnedValue : returnedString) {
                     if (returnedValue.startsWith("Temp=")) {
-                        this.temperature = Double.valueOf(returnedValue.substring(5, 9));
+                        sensor.setTemperature(Double.valueOf(returnedValue.substring(5, 9)));
                     } else if (returnedValue.startsWith("Humidity=")) {
-                        this.humidity = Double.valueOf(returnedValue.substring(9, 13));
+                        sensor.setHumidity(Double.valueOf(returnedValue.substring(9, 13)));
                     }
                 }
-                logger.info("temperature {} and humidity {}", temperature, humidity);
+                logger.info("temperature {} and humidity {}", sensor.getTemperature(), sensor.getHumidity());
             }
 
             int exitValue = p.waitFor();
@@ -71,27 +71,9 @@ public class DHT22 {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        return sensor;
     }
 
-    public double getHumidity() {
-        try {
-            refreshData();
-        } catch (IOException e) {
-            logger.error("Can't refresh humidity.");
-            return -1;
-        }
-        return humidity;
-    }
-
-    public double getTemperature() {
-        try {
-            refreshData();
-        } catch (IOException e) {
-            logger.error("Can't refresh temperature.");
-            return -1;
-        }
-        return temperature;
-    }
 
     @Scheduled(fixedDelayString = "${sensor.cache.delay}")
     @CacheEvict(value = {"sensor"})

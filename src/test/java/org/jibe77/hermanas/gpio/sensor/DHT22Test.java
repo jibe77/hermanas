@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.gpio.sensor;
 
+import org.jibe77.hermanas.data.entity.Sensor;
 import org.jibe77.hermanas.gpio.GpioHermanasController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,8 @@ public class DHT22Test {
 
     @Test
     public void testReadSensorWithRefresh() throws Exception {
-        dht22.refreshData();
-        assertEquals(57.6, dht22.getHumidity());
-        assertEquals(24.9, dht22.getTemperature());
+        Sensor sensor = dht22.refreshData();
+        assertEquals(57.6, sensor.getHumidity());
+        assertEquals(24.9, sensor.getTemperature());
     }
 }

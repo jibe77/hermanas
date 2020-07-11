@@ -28,13 +28,12 @@ public class SensorJob {
     public void execute() {
         try {
             logger.info("Sensor scheduled job is taking temperature and humidity now.");
-            dht22.refreshData();
-            Sensor sensor = new Sensor();
-            sensor.setTemperature(dht22.getTemperature());
-            sensor.setHumidity(dht22.getHumidity());
+            Sensor sensor = dht22.refreshData();
+            sensor.setTemperature(sensor.getTemperature());
+            sensor.setHumidity(sensor.getHumidity());
             sensor.setDateTime(LocalDateTime.now());
             sensorRepository.save(sensor);
-            logger.info("Temperature {} Humidity {}.", dht22.getTemperature(), dht22.getHumidity());
+            logger.info("Temperature {} Humidity {}.", sensor.getTemperature(), sensor.getHumidity());
         } catch (Exception e) {
             logger.error("Can't take temperature and humidity.", e);
         }
