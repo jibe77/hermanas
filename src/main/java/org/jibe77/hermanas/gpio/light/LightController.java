@@ -55,6 +55,14 @@ public class LightController {
         }
     }
 
+    /**
+     * if the light is enabled and the pin is high, then returns true
+     * @return true if the light is on.
+     */
+    public boolean isSwitchedOn() {
+        return lightEnabled && gpioPinDigitalOutput.getState().isHigh();
+    }
+
     @PreDestroy
     private void tearDown() {
         if (lightEnabled) {

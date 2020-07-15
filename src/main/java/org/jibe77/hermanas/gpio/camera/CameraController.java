@@ -65,19 +65,22 @@ public class CameraController {
 
     public synchronized File takePicture() throws IOException {
         logger.info("taking a picture in root path {}.", rootPath);
-        lightController.switchOn();
-            LocalDateTime localDateTime = LocalDateTime.now();
-            String relativePath =
-                    localDateTime.getYear() + "/" +
-                    localDateTime.getMonthValue() + "/" +
-                    localDateTime.getDayOfMonth();
-            File fileRoot = new File(
-                    rootPath + "/" + relativePath);
-            FileUtils.forceMkdir(fileRoot);
-            String filename = localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
-                    localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" + localDateTime.getMinute() + ".jpg";
-            File pictureFile = new File(fileRoot, filename);
-            logger.info("Taking a picture now in {} ...", pictureFile.getAbsolutePath());
+        boolean lightIsAlreadySwitchedOn = lightController.isSwitchedOn();
+        if (!lightIsAlreadySwitchedOn) {
+            lightController.switchOn();
+        }
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String relativePath =
+                localDateTime.getYear() + "/" +
+                        localDateTime.getMonthValue() + "/" +
+                        localDateTime.getDayOfMonth();
+        File fileRoot = new File(
+                rootPath + "/" + relativePath);
+        FileUtils.forceMkdir(fileRoot);
+        String filename = localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
+                localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" + localDateTime.getMinute() + ".jpg";
+        File pictureFile = new File(fileRoot, filename);
+        logger.info("Taking a picture now in {} ...", pictureFile.getAbsolutePath());
         try {
             gpioHermanasController.takePicture(new FilePictureCaptureHandler(pictureFile));
             logger.info("Save picture path in db.");
@@ -87,7 +90,8 @@ public class CameraController {
         } catch (IOException e) {
             throw new IOException("Can't take picture or fetch file.", e);
         } finally {
-            lightController.switchOff();
+            if (!lightIsAlreadySwitchedOn)
+                lightController.switchOff();
         }
     }
 
