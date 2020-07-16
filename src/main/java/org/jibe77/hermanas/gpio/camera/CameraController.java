@@ -68,6 +68,8 @@ public class CameraController {
         boolean lightIsAlreadySwitchedOn = lightController.isSwitchedOn();
         if (!lightIsAlreadySwitchedOn) {
             lightController.switchOn();
+        } else {
+            logger.debug("light is already on, it's useless to switch it on again.");
         }
         LocalDateTime localDateTime = LocalDateTime.now();
         String relativePath =
@@ -90,8 +92,11 @@ public class CameraController {
         } catch (IOException e) {
             throw new IOException("Can't take picture or fetch file.", e);
         } finally {
-            if (!lightIsAlreadySwitchedOn)
+            if (!lightIsAlreadySwitchedOn) {
                 lightController.switchOff();
+            } else {
+                logger.debug("light was already switched on before taking picture, it must not be switched off.");
+            }
         }
     }
 
