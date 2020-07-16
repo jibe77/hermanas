@@ -65,22 +65,12 @@ public class CameraController {
 
     public synchronized File takePicture() throws IOException {
         logger.info("taking a picture in root path {}.", rootPath);
-        boolean lightIsAlreadySwitchedOn = lightController.isSwitchedOn();
-        if (!lightIsAlreadySwitchedOn) {
-            lightController.switchOn();
-        } else {
-            logger.debug("light is already on, it's useless to switch it on again.");
-        }
+        boolean lightIsAlreadySwitchedOn = switchLightOn();
         LocalDateTime localDateTime = LocalDateTime.now();
-        String relativePath =
-                localDateTime.getYear() + "/" +
-                        localDateTime.getMonthValue() + "/" +
-                        localDateTime.getDayOfMonth();
-        File fileRoot = new File(
-                rootPath + "/" + relativePath);
+        String relativePath = generateRelativePath(localDateTime);
+        File fileRoot = new File(rootPath + "/" + relativePath);
         FileUtils.forceMkdir(fileRoot);
-        String filename = localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
-                localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" + localDateTime.getMinute() + ".jpg";
+        String filename = generateFilename(localDateTime);
         File pictureFile = new File(fileRoot, filename);
         logger.info("Taking a picture now in {} ...", pictureFile.getAbsolutePath());
         try {
@@ -92,14 +82,50 @@ public class CameraController {
         } catch (IOException e) {
             throw new IOException("Can't take picture or fetch file.", e);
         } finally {
-            if (!lightIsAlreadySwitchedOn) {
-                lightController.switchOff();
-            } else {
-                logger.debug("light was already switched on before taking picture, it must not be switched off.");
-            }
+            switchOffLight(lightIsAlreadySwitchedOn);
         }
     }
 
+    private String generateRelativePath(LocalDateTime localDateTime) {
+        return localDateTime.getYear() + "/" +
+                localDateTime.getMonthValue() + "/" +
+                localDateTime.getDayOfMonth();
+    }
+
+    private String generateFilename(LocalDateTime localDateTime) {
+        return localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
+                localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" + localDateTime.getMinute() + ".jpg";
+    }
+
+    /**
+     * Switch off the light if the light was not already switched on by the current controller.
+     * @param lightIsAlreadySwitchedOn true if the light was already on before.
+     */
+    private void switchOffLight(boolean lightIsAlreadySwitchedOn) {
+        if (!lightIsAlreadySwitchedOn) {
+            lightController.switchOff();
+        } else {
+            logger.debug("light was already switched on before taking picture, it must not be switched off.");
+        }
+    }
+
+    /**
+     * Switch on the light managing the previous state of the light.
+     * @return true if this method has switched on the light.
+     */
+    private boolean switchLightOn() {
+        boolean lightIsAlreadySwitchedOn = lightController.isSwitchedOn();
+        if (!lightIsAlreadySwitchedOn) {
+            lightController.switchOn();
+        } else {
+            logger.debug("light is already on, it's useless to switch it on again.");
+        }
+        return lightIsAlreadySwitchedOn;
+    }
+
+    /**
+     * Takes a picture managing the IO exception.
+     */
     public void takePictureNoException() {
         try {
             takePicture();
