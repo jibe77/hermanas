@@ -69,7 +69,7 @@ public class DHT22 {
             int exitValue = p.waitFor();
             logger.info("exit value {}.", exitValue);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("interrupted while refreshing data.", e);
         }
         return sensor;
     }
