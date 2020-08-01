@@ -16,7 +16,7 @@
 	<description>Chicken coop automation</description>
 
 	<properties>
-		<!-- Java is not supported on Raspberry pi Zero after version 8. -->
+		<!-- Java is supported on Raspberry pi Zero up to version 8. -->
 		<java.version>1.8</java.version>
 	</properties>
 
