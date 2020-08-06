@@ -5,34 +5,42 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WeatherInfo {
 
-    public void setValues(String temperature, String humidity) {
-        if (getMain() == null)
+    void setValues(Double temperature, Double humidity) {
+        if (getMain() == null) {
             setMain(new Main());
+            setName("External temperature.");
+        }
         getMain().setTemp(temperature);
         getMain().setHumidity(humidity);
     }
+
+    public Double getHumidity() {
+        return getMain().getHumidity();
+    }
+
+    public Double getTemp() { return getMain().getTemp();}
 
     class Main {
 
         public Main() {
         }
 
-        private String temp;
-        private String humidity;
+        private Double temp;
+        private Double humidity;
 
-        public String getTemp() {
+        public Double getTemp() {
             return temp;
         }
 
-        public void setTemp(String temp) {
+        private void setTemp(Double temp) {
             this.temp = temp;
         }
 
-        public String getHumidity() {
+        public Double getHumidity() {
             return humidity;
         }
 
-        public void setHumidity(String humidity) {
+        private void setHumidity(Double humidity) {
             this.humidity = humidity;
         }
 
@@ -44,31 +52,6 @@ public class WeatherInfo {
                     '}';
         }
     }
-
-
-    /*
-        {
-          "coord": {
-            "lon":6.14,"lat":49.37
-          },
-          "weather":[{
-            "id":801,
-            "main":"Clouds",
-            "description":"few clouds",
-            "icon":"02d"}],
-          "base":"stations",
-          "main":{"temp":286.43,"feels_like":283.83,"temp_min":285.93,"temp_max":287.15,"pressure":1024,"humidity":71},
-          "visibility":10000,
-          "wind":{"speed":3.1,"deg":20},
-          "clouds":{"all":20},
-          "dt":1594451423,
-          "sys":{"type":1,"id":1601,"country":"FR","sunrise":1594438910,"sunset":1594496382},
-          "timezone":7200,
-          "id":2972811,
-          "name":"Thionville",
-          "cod":200
-        }
-     */
 
     String name;
     Main main;
@@ -92,8 +75,8 @@ public class WeatherInfo {
     @Override
     public String toString() {
         return "WeatherInfo{" +
-                "name='" + name + '\'' +
-                ", main=" + main +
+                "name='" + getName() + '\'' +
+                ", main=" + getMain() +
                 '}';
     }
 }
