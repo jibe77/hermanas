@@ -17,6 +17,7 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Component
 @Scope("singleton")
@@ -126,11 +127,12 @@ public class CameraController {
     /**
      * Takes a picture managing the IO exception.
      */
-    public void takePictureNoException() {
+    public Optional<File> takePictureNoException() {
         try {
-            takePicture();
+            return Optional.ofNullable(takePicture());
         } catch (IOException e) {
             logger.error("Can't take picture.", e);
+            return Optional.empty();
         }
     }
 }
