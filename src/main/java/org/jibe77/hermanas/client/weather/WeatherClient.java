@@ -22,19 +22,29 @@ public class WeatherClient {
     @Value("${weather.info.key}")
     public String weatherInfoKey;
 
+    @Value("${weather.info.enabled}")
+    public boolean weatherInfoEnabled;
+
     private static final Logger log = LoggerFactory.getLogger(WeatherClient.class);
 
     @Autowired
     RestTemplateBuilder builder;
 
     public WeatherInfo getInfo() {
-        WeatherInfo weatherInfo = builder.build().getForObject(
-                weatherInfoUrl,
-                WeatherInfo.class,
-                latitude,
-                longitude,
-                weatherInfoKey);
-        log.info(weatherInfo.toString());
-        return weatherInfo;
+        if (weatherInfoEnabled) {
+            WeatherInfo weatherInfo = builder.build().getForObject(
+                    weatherInfoUrl,
+                    WeatherInfo.class,
+                    latitude,
+                    longitude,
+                    weatherInfoKey);
+            log.info(weatherInfo.toString());
+            return weatherInfo;
+        } else {
+            // default value if disabled.
+            WeatherInfo weatherInfo = new WeatherInfo();
+            weatherInfo.setValues(-1d, -1d);
+            return weatherInfo;
+        }
     }
 }

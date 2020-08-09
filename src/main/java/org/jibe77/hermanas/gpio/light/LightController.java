@@ -60,7 +60,9 @@ public class LightController {
      * @return true if the light is on.
      */
     public boolean isSwitchedOn() {
-        return lightEnabled && gpioPinDigitalOutput.getState().isHigh();
+        return lightEnabled &&
+                gpioPinDigitalOutput.getState() != null &&
+                gpioPinDigitalOutput.getState().isHigh();
     }
 
     @PreDestroy
