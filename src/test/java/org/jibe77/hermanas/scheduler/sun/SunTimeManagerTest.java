@@ -34,7 +34,7 @@ public class SunTimeManagerTest {
 
         SolarTime hamburg = SolarTime.ofLocation(latitude, longitude);
         Optional<Moment> result = PlainDate.nowInSystemTime().get(hamburg.sunrise());
-        System.out.println(result.get().toZonalTimestamp(() -> "Europe/London"));
+        assertEquals("2020-08-09T05:37:05Z", result.get().toZonalTimestamp(() -> "Europe/London").atUTC().toString());
     }
 
     @Test
@@ -42,7 +42,7 @@ public class SunTimeManagerTest {
         LocalDateTime dateTime = LocalDateTime.of(2020, Month.JUNE, 20, 21, 50, 0);
         //
         assertEquals("2020-06-20T22:37:35Z",
-                sunTimeUtils.computeNextSunset(dateTime,15).atOffset(ZoneOffset.UTC).toString(),
+                sunTimeUtils.computeNextSunset(dateTime.atOffset(ZoneOffset.UTC).toLocalDateTime(),15).atOffset(ZoneOffset.UTC).toString(),
                 "search next sunset with 15 minutes after. In this case the sunset is already passed at 21:45 but the event is in the futur.");
     }
 
