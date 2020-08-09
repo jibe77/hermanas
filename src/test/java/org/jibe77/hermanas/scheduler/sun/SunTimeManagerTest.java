@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,8 +41,8 @@ public class SunTimeManagerTest {
     public void testNextClosingDoorTime() {
         LocalDateTime dateTime = LocalDateTime.of(2020, Month.JUNE, 20, 21, 50, 0);
         //
-        assertEquals("2020-06-20T22:01:15",
-                sunTimeUtils.computeNextSunset(dateTime,15).toString(),
+        assertEquals("2020-06-20T22:01:15Z",
+                sunTimeUtils.computeNextSunset(dateTime,15).atOffset(ZoneOffset.UTC).toString(),
                 "search next sunset with 15 minutes after. In this case the sunset is already passed at 21:45 but the event is in the futur.");
     }
 
@@ -51,16 +52,16 @@ public class SunTimeManagerTest {
     @Test
     public void testWinderToSummerTime() {
         LocalDateTime dateTime = LocalDateTime.of(2022, Month.MARCH, 26, 0, 0);
-        assertEquals("2022-03-26T06:27:13", sunTimeUtils.computeNextSunrise(dateTime).toString(), "Verify sunrise time is at 06:27 before summer time change.");
-        assertEquals("2022-03-26T18:57:34", sunTimeUtils.computeNextSunset(dateTime).toString(), "Verify sunset time is at 18:57 before summer time change.");
+        assertEquals("2022-03-26T06:27:13Z", sunTimeUtils.computeNextSunrise(dateTime).atOffset(ZoneOffset.UTC).toString(), "Verify sunrise time is at 06:27 before summer time change.");
+        assertEquals("2022-03-26T18:57:34Z", sunTimeUtils.computeNextSunset(dateTime).atOffset(ZoneOffset.UTC).toString(), "Verify sunset time is at 18:57 before summer time change.");
 
         dateTime = LocalDateTime.of(2022, Month.MARCH, 27, 0, 0);
-        assertEquals("2022-03-27T07:25:04", sunTimeUtils.computeNextSunrise(dateTime).toString(), "Verify sunrise time is at 07:25 after summer time change.");
-        assertEquals("2022-03-27T19:59:06", sunTimeUtils.computeNextSunset(dateTime).toString(), "Verify sunset time is at 19:59 after summer time change.");
+        assertEquals("2022-03-27T07:25:04Z", sunTimeUtils.computeNextSunrise(dateTime).atOffset(ZoneOffset.UTC).toString(), "Verify sunrise time is at 07:25 after summer time change.");
+        assertEquals("2022-03-27T19:59:06Z", sunTimeUtils.computeNextSunset(dateTime).atOffset(ZoneOffset.UTC).toString(), "Verify sunset time is at 19:59 after summer time change.");
 
         dateTime = LocalDateTime.of(2022, Month.MARCH, 27, 23, 0);
-        assertEquals("2022-03-28T07:22:55", sunTimeUtils.computeNextSunrise(dateTime).toString(), "Verify 07:22 the next day if the sunrise is already past.");
-        assertEquals("2022-03-28T20:00:37", sunTimeUtils.computeNextSunset(dateTime).toString(), "Verify 20:00 the next day if the sunset is already past");
+        assertEquals("2022-03-28T07:22:55Z", sunTimeUtils.computeNextSunrise(dateTime).atOffset(ZoneOffset.UTC).toString(), "Verify 07:22 the next day if the sunrise is already past.");
+        assertEquals("2022-03-28T20:00:37Z", sunTimeUtils.computeNextSunset(dateTime).atOffset(ZoneOffset.UTC).toString(), "Verify 20:00 the next day if the sunset is already past");
     }
 
     /**
