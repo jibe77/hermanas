@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -29,23 +30,34 @@ public class SunTimeUtils {
         logger.info("Sun time utils configured with latitude {} and longitude {}.", latitude, longitude);
     }
 
-    protected LocalDateTime computeNextSunset(long minutes) {
-        return computeNextSunset(LocalDateTime.now(), minutes);
+    /**
+     * Compute LocalDateTime for an event occuring in X minutes after the sunset
+     * @param minutes minutes after the sunset, it is possible to specify
+     *                a negative value for an event before the sunset
+     * @return Time of the event after the sunset
+     */
+    protected LocalDateTime computeTimeForNextSunsetEvent(long minutes) {
+        return computeTimeForNextSunsetEvent(LocalDateTime.now(), minutes);
     }
 
-    protected LocalDateTime computeNextSunrise(long minutes) {
-        return computeNextSunrise(LocalDateTime.now(), minutes);
+    protected LocalDateTime computeTimeForNextSunriseEvent(long minutes) {
+        return computeTimeForNextSunriseEvent(LocalDateTime.now(), minutes);
     }
 
-    protected LocalDateTime computeNextSunset(LocalDateTime date, long minutes) {
-        return computeNextSunset(date.minusMinutes(minutes)).plusMinutes(minutes);
+    protected LocalDateTime computeTimeForNextSunsetEvent(LocalDateTime date, long minutes) {
+        return computeTimeForNextSunsetEvent(date.minusMinutes(minutes)).plusMinutes(minutes);
     }
 
-    protected LocalDateTime computeNextSunrise(LocalDateTime date, long minutes) {
-        return computeNextSunrise(date.minusMinutes(minutes)).plusMinutes(minutes);
+    protected ZonedDateTime computeTimeForNextSunsetEvent(ZonedDateTime dateTime, long minutes) {
+        LocalDateTime localDateTime = computeTimeForNextSunsetEvent(convertZonedToLocalDateTime(dateTime), minutes);
+        return convertLocalToZonedDateTime(localDateTime, dateTime.getZone());
     }
 
-    protected LocalDateTime computeNextSunset(LocalDateTime date) {
+    protected LocalDateTime computeTimeForNextSunriseEvent(LocalDateTime date, long minutes) {
+        return computeTimeForNextSunriseEvent(date.minusMinutes(minutes)).plusMinutes(minutes);
+    }
+
+    protected LocalDateTime computeTimeForNextSunsetEvent(LocalDateTime date) {
         LocalDateTime currentDaySunset = computeCurrentDaySunset(date);
         if(date.isAfter(currentDaySunset)) {
             return computeNextDaySunset(date);
@@ -54,7 +66,7 @@ public class SunTimeUtils {
         }
     }
 
-    protected LocalDateTime computeNextSunrise(LocalDateTime date) {
+    protected LocalDateTime computeTimeForNextSunriseEvent(LocalDateTime date) {
         LocalDateTime currentDaySunrise = computeCurrentDaySunrise(date);
         if(date.isAfter(currentDaySunrise)) {
             return computeNextDaySunrise(date);
@@ -100,5 +112,14 @@ public class SunTimeUtils {
         TimeZone tz = calendar.getTimeZone();
         ZoneId zid = tz == null ? ZoneId.systemDefault() : tz.toZoneId();
         return LocalDateTime.ofInstant(calendar.toInstant(), zid);
+    }
+
+    private ZonedDateTime convertLocalToZonedDateTime(LocalDateTime localDateTime, ZoneId zoneId) {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault());
+        return zonedDateTime.withZoneSameInstant(zoneId);
+    }
+
+    private LocalDateTime convertZonedToLocalDateTime(ZonedDateTime dateTime) {
+        return dateTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
     }
 }

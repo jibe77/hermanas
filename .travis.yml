@@ -1,2 +1,9 @@
 language: java
-jdk: oraclejdk8
+jdk: openjdk8
+addons:
+  sonarcloud:
+    organization: jibe77
+    token:
+      secure: ZLArZip9scGL+xE2NJ93P/OjI7JgH6SOa4zMeorCgY/JHZ8sEAJw4VtPFjKlPs+EcGp8ht8PZ8U6Mr3Lu1Lrhfu4LoFijVNJVZsz7xjz7o+wnFWez7+6j0jSAW6PbiuJgboBDiYzIDp2W0btGOU2w+AwKurQxGBRCeAe0E5aDzK42oHqp7sFassEK4VC7OnqIYxjayyFl+mPk2ZF6Shnc5RgGw2T8XapaI8l5nXCvESImJfoVmPJMdsB64Tw9mS2sLm42uFb52FnmNtuFOvEA3rem0DsSESvlKYnGGNumOBnp32Y7HJvCazhPuHRDDj/W21DHZb7MRBABKwDOSEkD271nxAGAyMnjCMIiH5dIhgKzjB8d+xnEGo+HiUpOG7ITsKP+X+AUaIHVmxoI0Rm19OZaHeT93QUtXfsACwKTmp5i6TpIuG5t/VHrSurba2s6jrRB8O83G0kVR5YZH0BVItWMl7ZZ83HK73A5HKyPjfZ5vQU7wWxbtQQeyUbHVCiEI/GYt30qhIgzX1WIQppZfOoaZhLgyLjMlbVYGAnmTt5sAXSNk+o61djwbFp/9IkvWOjEf7Il98Oj/vndNRvvtdhuVHOVT0KMCZxhxroJkWnwSDQe/OKhZlGqh7KTT3KU/GctXEKL8wY+nqNaTlOPZhEKFUL8nXR72EibsRcYb8=
+script:
+- mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=jibe77_hermanas

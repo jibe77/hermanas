@@ -57,21 +57,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<dependency>
-			<groupId>net.time4j</groupId>
-			<artifactId>time4j-base</artifactId>
-			<version>5.6</version>
-		</dependency>
-		<dependency>
-			<groupId>net.time4j</groupId>
-			<artifactId>time4j-sqlxml</artifactId>
-			<version>5.6</version>
-		</dependency>
-		<dependency>
-			<groupId>net.time4j</groupId>
-			<artifactId>time4j-tzdata</artifactId>
-			<version>5.0-2020a</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
