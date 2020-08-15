@@ -36,28 +36,28 @@ public class SunTimeManager {
 
     @Cacheable(value = "light-on")
     public LocalDateTime getNextLightOnTime() {
-        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset(-1 * lightOnTimeBeforeSunset);
+        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(-1 * lightOnTimeBeforeSunset);
         logger.info("computing next light switching on time : {}", localDateTime.toString());
         return localDateTime;
     }
 
     @Cacheable(value = "light-off")
     public LocalDateTime getNextLightOffTime() {
-        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset(lightOffTimeAfterSunset);
+        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(lightOffTimeAfterSunset);
         logger.info("computing next light switching off time : {}", localDateTime.toString());
         return localDateTime;
     }
 
     @Cacheable(value = "door-opening")
     public LocalDateTime getNextDoorOpeningTime() {
-        LocalDateTime localDateTime = sunTimeUtils.computeNextSunrise(doorOpenTimeAfterSunrise);
+        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunriseEvent(doorOpenTimeAfterSunrise);
         logger.info("computing next door opening time : {}", localDateTime.toString());
         return localDateTime;
     }
 
     @Cacheable(value = "door-closing")
     public LocalDateTime getNextDoorClosingTime() {
-        LocalDateTime localDateTime = sunTimeUtils.computeNextSunset(doorCloseTimeAfterSunset);
+        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset);
         logger.info("computing next door closing time : {}", localDateTime.toString());
         return localDateTime;
     }

@@ -1,5 +1,2 @@
 language: java
 jdk: openjdk8
-
-before_install:
-  - export TZ=Europe/Paris
