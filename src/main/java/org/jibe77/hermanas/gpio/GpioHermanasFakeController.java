@@ -15,6 +15,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -78,7 +79,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setName(String name) {
-
+                // default implementation
             }
 
             @Override
@@ -88,7 +89,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setTag(Object tag) {
-
+                // default implementation
             }
 
             @Override
@@ -98,7 +99,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setProperty(String key, String value) {
-
+                // default implementation
             }
 
             @Override
@@ -123,27 +124,27 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void removeProperty(String key) {
-
+                // default implementation
             }
 
             @Override
             public void clearProperties() {
-
+                // default implementation
             }
 
             @Override
             public void export(PinMode mode) {
-
+                // default implementation
             }
 
             @Override
             public void export(PinMode mode, PinState defaultState) {
-
+                // default implementation
             }
 
             @Override
             public void unexport() {
-
+                // default implementation
             }
 
             @Override
@@ -153,7 +154,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setMode(PinMode mode) {
-
+                // default implementation
             }
 
             @Override
@@ -168,7 +169,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setPullResistance(PinPullResistance resistance) {
-
+                // default implementation
             }
 
             @Override
@@ -183,17 +184,17 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public Collection<GpioPinListener> getListeners() {
-                return null;
+                return Collections.emptyList();
             }
 
             @Override
             public void addListener(GpioPinListener... listener) {
-
+                // default implementation
             }
 
             @Override
             public void addListener(List<? extends GpioPinListener> listeners) {
-
+                // default implementation
             }
 
             @Override
@@ -203,17 +204,17 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void removeListener(GpioPinListener... listener) {
-
+                // default implementation
             }
 
             @Override
             public void removeListener(List<? extends GpioPinListener> listeners) {
-
+                // default implementation
             }
 
             @Override
             public void removeAllListeners() {
-
+                // default implementation
             }
 
             @Override
@@ -223,57 +224,57 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setShutdownOptions(GpioPinShutdown options) {
-
+                // default implementation
             }
 
             @Override
             public void setShutdownOptions(Boolean unexport) {
-
+                // default implementation
             }
 
             @Override
             public void setShutdownOptions(Boolean unexport, PinState state) {
-
+                // default implementation
             }
 
             @Override
             public void setShutdownOptions(Boolean unexport, PinState state, PinPullResistance resistance) {
-
+                // default implementation
             }
 
             @Override
             public void setShutdownOptions(Boolean unexport, PinState state, PinPullResistance resistance, PinMode mode) {
-
+                // default implementation
             }
 
             @Override
             public Collection<GpioTrigger> getTriggers() {
-                return null;
+                return Collections.emptyList();
             }
 
             @Override
             public void addTrigger(GpioTrigger... trigger) {
-
+                // default implementation
             }
 
             @Override
             public void addTrigger(List<? extends GpioTrigger> triggers) {
-
+                // default implementation
             }
 
             @Override
             public void removeTrigger(GpioTrigger... trigger) {
-
+                // default implementation
             }
 
             @Override
             public void removeTrigger(List<? extends GpioTrigger> triggers) {
-
+                // default implementation
             }
 
             @Override
             public void removeAllTriggers() {
-
+                // default implementation
             }
 
             @Override
@@ -308,12 +309,12 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setDebounce(int debounce) {
-
+                // default implementation
             }
 
             @Override
             public void setDebounce(int debounce, PinState... state) {
-
+                // default implementation
             }
         };
     }
@@ -338,7 +339,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setName(String name) {
-
+                // default implementation
             }
 
             @Override
@@ -348,7 +349,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setTag(Object tag) {
-
+                // default implementation
             }
 
             @Override
@@ -358,7 +359,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setProperty(String key, String value) {
-
+                // default implementation
             }
 
             @Override
@@ -383,27 +384,27 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void removeProperty(String key) {
-
+                // default implementation
             }
 
             @Override
             public void clearProperties() {
-
+                // default implementation
             }
 
             @Override
             public void export(PinMode mode) {
-
+                // default implementation
             }
 
             @Override
             public void export(PinMode mode, PinState defaultState) {
-
+                // default implementation
             }
 
             @Override
             public void unexport() {
-
+                // default implementation
             }
 
             @Override
@@ -413,7 +414,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setMode(PinMode mode) {
-
+                // default implementation
             }
 
             @Override
@@ -428,7 +429,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setPullResistance(PinPullResistance resistance) {
-
+                // default implementation
             }
 
             @Override
@@ -443,17 +444,17 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public Collection<GpioPinListener> getListeners() {
-                return null;
+                return Collections.emptyList();
             }
 
             @Override
             public void addListener(GpioPinListener... listener) {
-
+                // default implementation
             }
 
             @Override
             public void addListener(List<? extends GpioPinListener> listeners) {
-
+                // default implementation
             }
 
             @Override
@@ -463,17 +464,17 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void removeListener(GpioPinListener... listener) {
-
+                // default implementation
             }
 
             @Override
             public void removeListener(List<? extends GpioPinListener> listeners) {
-
+                // default implementation
             }
 
             @Override
             public void removeAllListeners() {
-
+                // default implementation
             }
 
             @Override
@@ -483,27 +484,27 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setShutdownOptions(GpioPinShutdown options) {
-
+                // default implementation
             }
 
             @Override
             public void setShutdownOptions(Boolean unexport) {
-
+                // default implementation
             }
 
             @Override
             public void setShutdownOptions(Boolean unexport, PinState state) {
-
+                // default implementation
             }
 
             @Override
             public void setShutdownOptions(Boolean unexport, PinState state, PinPullResistance resistance) {
-
+                // default implementation
             }
 
             @Override
             public void setShutdownOptions(Boolean unexport, PinState state, PinPullResistance resistance, PinMode mode) {
-
+                // default implementation
             }
 
             @Override
@@ -528,17 +529,17 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void high() {
-
+                // default implementation
             }
 
             @Override
             public void low() {
-
+                // default implementation
             }
 
             @Override
             public void toggle() {
-
+                // default implementation
             }
 
             @Override
@@ -663,12 +664,12 @@ public class GpioHermanasFakeController implements GpioHermanasController {
 
             @Override
             public void setState(PinState state) {
-
+                // default implementation
             }
 
             @Override
             public void setState(boolean state) {
-
+                // default implementation
             }
         };
     }
@@ -681,15 +682,5 @@ public class GpioHermanasFakeController implements GpioHermanasController {
     @Override
     public void sendStartSignal(int pinNumber) {
         logger.info("send start signal to sensor on pin number {}.", pinNumber);
-    }
-
-    @Override
-    public void waitForResponseSignal(int pinNumber, boolean keepRunning) {
-        logger.info("wait for response signal on pin number {}, keep running {}.", pinNumber, keepRunning);
-    }
-
-    @Override
-    public void close(int pinNumber) {
-        logger.info("close pin number {}.", pinNumber);
     }
 }

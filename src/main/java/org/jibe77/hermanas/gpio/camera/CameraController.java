@@ -69,7 +69,7 @@ public class CameraController {
         boolean lightIsAlreadySwitchedOn = switchLightOn();
         LocalDateTime localDateTime = LocalDateTime.now();
         String relativePath = generateRelativePath(localDateTime);
-        File fileRoot = new File(rootPath + "/" + relativePath);
+        File fileRoot = new File(rootPath + File.separator + relativePath);
         FileUtils.forceMkdir(fileRoot);
         String filename = generateFilename(localDateTime);
         File pictureFile = new File(fileRoot, filename);
@@ -77,7 +77,7 @@ public class CameraController {
         try {
             gpioHermanasController.takePicture(new FilePictureCaptureHandler(pictureFile));
             logger.info("Save picture path in db.");
-            pictureRepository.save(new Picture(relativePath + "/" + filename));
+            pictureRepository.save(new Picture(relativePath + File.separator + filename));
             logger.info("... done.");
             return pictureFile;
         } catch (IOException e) {

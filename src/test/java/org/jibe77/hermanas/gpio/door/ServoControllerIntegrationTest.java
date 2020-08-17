@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest(classes = {DoorController.class, BottomButtonController.class})
-public class ServoControllerIntegrationTest {
+class ServoControllerIntegrationTest {
 
     @Autowired
     DoorController controller;
@@ -37,7 +37,7 @@ public class ServoControllerIntegrationTest {
     Logger logger = LoggerFactory.getLogger(ServoControllerIntegrationTest.class);
 
     @Test
-    public void testCloseDoor() throws DoorNotClosedCorrectlyException {
+    void testCloseDoor() throws DoorNotClosedCorrectlyException {
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... started.");
         Mockito.when(
                 gpioHermanasController.provisionInput(
@@ -56,7 +56,7 @@ public class ServoControllerIntegrationTest {
     }
 
     @Test
-    public void testOpenDoor() {
+    void testOpenDoor() {
         logger.info("<--Pi4J--> GPIO Control OpenDoor ... started.");
         controller.openDoor();
         Mockito.verify(

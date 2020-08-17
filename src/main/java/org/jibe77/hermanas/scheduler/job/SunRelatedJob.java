@@ -6,7 +6,6 @@ import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.gpio.light.LightController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.service.DoorService;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

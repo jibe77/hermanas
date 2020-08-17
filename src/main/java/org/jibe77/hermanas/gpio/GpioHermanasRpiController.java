@@ -3,7 +3,6 @@ package org.jibe77.hermanas.gpio;
 import com.pi4j.io.gpio.*;
 import com.pi4j.wiringpi.Gpio;
 import com.pi4j.wiringpi.SoftPwm;
-import org.jibe77.hermanas.gpio.sensor.DHT22;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -138,24 +137,6 @@ public class GpioHermanasRpiController implements GpioHermanasController {
         Gpio.pinMode(pinNumber, Gpio.OUTPUT);
         Gpio.digitalWrite(pinNumber, Gpio.LOW);
         Gpio.delay(10);
-        Gpio.digitalWrite(pinNumber, Gpio.HIGH);
-    }
-
-    @Override
-    public void waitForResponseSignal(int pinNumber, boolean keepRunning) {
-        Gpio.pinMode(pinNumber, Gpio.INPUT);
-        while (keepRunning && Gpio.digitalRead(pinNumber) == Gpio.HIGH) {
-        }
-        while (keepRunning && Gpio.digitalRead(pinNumber) == Gpio.LOW) {
-        }
-        while (keepRunning && Gpio.digitalRead(pinNumber) == Gpio.HIGH) {
-        }
-    }
-
-    @Override
-    public void close(int pinNumber) {
-        // Set pin high for end of transmission.
-        Gpio.pinMode(pinNumber, Gpio.OUTPUT);
         Gpio.digitalWrite(pinNumber, Gpio.HIGH);
     }
 }

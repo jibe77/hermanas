@@ -38,7 +38,7 @@ public class WeatherClient {
                     latitude,
                     longitude,
                     weatherInfoKey);
-            log.info(weatherInfo.toString());
+            log.info("Weather info content : {}", weatherInfo);
             return weatherInfo;
         } else {
             // default value if disabled.

@@ -75,6 +75,8 @@ public class ServoMotorController
         catch ( InterruptedException e)
         {
             logger.error("Sleep interrupted:", e);
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
         }
     }
 }

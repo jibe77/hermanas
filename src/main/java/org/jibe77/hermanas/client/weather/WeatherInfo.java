@@ -23,6 +23,7 @@ public class WeatherInfo {
     class Main {
 
         public Main() {
+            // default constructor
         }
 
         private Double temp;
