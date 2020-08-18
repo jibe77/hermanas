@@ -24,8 +24,4 @@ public interface GpioHermanasController {
     void initSensor(int pinNumber);
 
     void sendStartSignal(int pinNumber);
-
-    void waitForResponseSignal(int pinNumber, boolean keepRunning);
-
-    void close(int pinNumber);
 }

@@ -10,7 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(classes = {DHT22.class})
-public class DHT22Test {
+class DHT22Test {
 
     @Autowired
     DHT22 dht22;
@@ -19,7 +19,7 @@ public class DHT22Test {
     GpioHermanasController gpioHermanasController;
 
     @Test
-    public void testReadSensorWithRefresh() throws Exception {
+    void testReadSensorWithRefresh() throws Exception {
         Sensor sensor = dht22.refreshData();
         assertEquals(57.6, sensor.getHumidity());
         assertEquals(24.9, sensor.getTemperature());

@@ -42,6 +42,7 @@ public class DHT22 {
     private String scriptArg2;
 
     public DHT22() {
+        // default constructor
     }
 
     @Cacheable(value = {"sensor"})
@@ -70,6 +71,8 @@ public class DHT22 {
             logger.info("exit value {}.", exitValue);
         } catch (InterruptedException e) {
             logger.error("interrupted while refreshing data.", e);
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
         }
         return sensor;
     }

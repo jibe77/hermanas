@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
-public class PictureRepositoryTest {
+class PictureRepositoryTest {
 
     @Autowired
     private PictureRepository pictureRepository;
@@ -28,7 +28,7 @@ public class PictureRepositoryTest {
     }
 
     @Test
-    public void testFetchData(){
+    void testFetchData(){
         /*Test data retrieval*/
         Picture picture = pictureRepository.findByPath("2020/6/23/2020-6-23-0-7.jpg");
         assertNotNull(picture);

@@ -6,10 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.util.Assert;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = {ServoMotorController.class})
-public class ServoMotorControllerIntegrationTest {
+class ServoMotorControllerIntegrationTest {
 
     @Autowired
     ServoMotorController servoMotorController;
@@ -18,27 +19,27 @@ public class ServoMotorControllerIntegrationTest {
     GpioHermanasFakeController gpioHermanasController;
 
     @Test
-    public void testServoMotorErrorPosition() {
+    void testServoMotorErrorPosition() {
         try {
             servoMotorController.setPosition(0, 100);
-            Assert.isTrue(
+            assertTrue(
                     false,
                     "This code should not be reached because positionNumber argument is between 5 and 25.");
         } catch (IllegalArgumentException e) {
-            Assert.isTrue(true, "This exception is expected.");
+            assertTrue(true, "This exception is expected.");
         }
     }
 
     @Test
-    public void testServoMotorClockwise() {
+    void testServoMotorClockwise() {
         servoMotorController.setPosition(14, 100);
-        Assert.isTrue(true, "The door is supposed to move right now !");
+        assertTrue(true, "The door is supposed to move right now !");
     }
 
     @Test
-    public void testServoMotorCounterClockwise() {
+    void testServoMotorCounterClockwise() {
         servoMotorController.setPosition(15, 100);
-        Assert.isTrue(true, "The door is supposed to move right now !");
+        assertTrue(true, "The door is supposed to move right now !");
     }
 
 }
