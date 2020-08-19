@@ -2,7 +2,6 @@ package org.jibe77.hermanas.scheduler.job;
 
 import org.jibe77.hermanas.gpio.camera.CameraController;
 import org.jibe77.hermanas.service.DoorService;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,13 +14,10 @@ public class CameraJob {
 
     private CameraController cameraController;
 
-    private DoorService doorService;
-
     Logger logger = LoggerFactory.getLogger(CameraJob.class);
 
-    public CameraJob(CameraController cameraController, DoorService doorService) {
+    public CameraJob(CameraController cameraController) {
         this.cameraController = cameraController;
-        this.doorService = doorService;
     }
 
     @Scheduled(fixedDelayString = "${camera.scheduler.delay.in.milliseconds}")

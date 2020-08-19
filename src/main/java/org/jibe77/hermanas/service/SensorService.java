@@ -7,6 +7,8 @@ import org.jibe77.hermanas.gpio.sensor.DHT22;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 @RestController
 public class SensorService {
 
@@ -20,7 +22,7 @@ public class SensorService {
     }
 
     @GetMapping(value = "/sensor/info")
-    public Sensor getInfo() throws Exception {
+    public Sensor getInfo() throws IOException {
         Sensor sensor = dht22.refreshData();
         WeatherInfo weatherInfo = weatherClient.getInfo();
         sensor.setExternalHumidity(weatherInfo.getHumidity());
