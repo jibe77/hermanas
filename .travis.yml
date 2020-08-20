@@ -3,7 +3,7 @@ jdk: openjdk8
 deploy:
   provider: script
   skip_cleanup: true
-  script: rsync -r -e "ssh -o StrictHostKeyChecking=no" --delete-after --quiet $TRAVIS_BUILD_DIR/ pi@poulailler57.ddns.net:temp
+  script: rsync -r -e 'sshpass -p "$PUBLISH_PASSWORD" ssh -o StrictHostKeyChecking=no' --delete-after --quiet $TRAVIS_BUILD_DIR/ $PUBLISH_LOGIN@$PUBLISH_URL:temp
   on:
     branch: master
 addons:
