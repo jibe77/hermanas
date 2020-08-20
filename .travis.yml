@@ -1,5 +1,11 @@
 language: java
 jdk: openjdk8
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: rsync -r --delete-after --quiet $TRAVIS_BUILD_DIR/ pi@poulailler57.ddns.net:temp
+  on:
+    branch: master
 addons:
   sonarcloud:
     organization: jibe77
