@@ -1,11 +1,11 @@
 language: java
 jdk: openjdk8
-deploy:
-  provider: script
-  skip_cleanup: true
-  script: rsync -r -e 'sshpass -p "$PUBLISH_PASSWORD" ssh -o StrictHostKeyChecking=no' --delete-after --quiet $TRAVIS_BUILD_DIR/ $PUBLISH_LOGIN@$PUBLISH_URL:temp
-  on:
-    branch: master
+after_success:
+  - echo "${SFTP_KEY}" | base64 --decode >/tmp/sftp_rsa
+  - curl --ftp-create-dirs
+    -T target/hermanas-0.1.16-SNAPSHOT.jar
+    --key /tmp/sftp_rsa
+    sftp://${SFTP_USER}:${SFTP_PASSWORD}@poulailler57.ddns.net/temp
 addons:
   sonarcloud:
     organization: jibe77
