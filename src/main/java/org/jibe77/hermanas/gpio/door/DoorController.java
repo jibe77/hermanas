@@ -45,6 +45,7 @@ public class DoorController
     private int doorClosingPosition;
 
     private LocalDateTime lastClosingTime;
+    private LocalDateTime lastOpeningTime;
 
     public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController) {
         this.servo = servo;
@@ -101,11 +102,15 @@ public class DoorController
                 doorOpeningPosition,
                 doorOpeningDuration);
         servo.setPosition(doorOpeningPosition, doorOpeningDuration);
-        this.lastClosingTime = null;
+        this.lastOpeningTime = LocalDateTime.now();
         logger.info("... done");
     }
 
     public Optional<LocalDateTime> getLastClosingTime() {
         return Optional.of(lastClosingTime);
+    }
+
+    public Optional<LocalDateTime> getLastOpeningTime() {
+        return Optional.of(lastOpeningTime);
     }
 }

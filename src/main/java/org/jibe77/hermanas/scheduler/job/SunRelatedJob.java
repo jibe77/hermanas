@@ -56,7 +56,7 @@ public class SunRelatedJob {
     public void execute() {
         LocalDateTime currentTime = LocalDateTime.now();
         if (currentTime.isAfter(sunTimeManager.getNextDoorClosingTime())) {
-            if (!doorAlreadyClosedManuallyToday()) {
+            if (doorIsOpened()) {
                 try {
                     logger.info("start door closing job at sunset.");
                     logger.info("take picture before closing door.");
@@ -71,7 +71,7 @@ public class SunRelatedJob {
                 }
                 cameraController.takePictureNoException();
             } else {
-                logger.info("door has already been closed manually, nothing to do in this event.");
+                logger.info("door has already been closed before, nothing to do in this event.");
             }
             sunTimeManager.reloadDoorClosingTime();
         } else if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
@@ -83,6 +83,10 @@ public class SunRelatedJob {
         } else if (currentTime.isAfter(sunTimeManager.getNextLightOnTime())) {
             logger.info("light switching on event is starting now.");
             lightController.switchOn();
+            if (doorIsClosed()) {
+                logger.info("the light-switching-on event has found that the door is closed, opening it now.");
+                doorController.openDoor();
+            }
             sunTimeManager.reloadLightOnTime();
         } else if (currentTime.isAfter(sunTimeManager.getNextLightOffTime())) {
             logger.info("light switching off event is starting now.");
@@ -91,13 +95,33 @@ public class SunRelatedJob {
         }
     }
 
-    private boolean doorAlreadyClosedManuallyToday() {
+    /**
+     * Tells if the door is opened, or probably opened.
+     * @return true if the opening time is after the last closing time.
+     *          true if the opening or closing time is unknown.
+     */
+    private boolean doorIsOpened() {
         Optional<LocalDateTime> lastClosingTime =  doorController.getLastClosingTime();
-        if (lastClosingTime.isPresent()) {
-            return lastClosingTime.get().isAfter(LocalDateTime.now().minusMinutes(
-                    doorCloseTimeAfterSunset + lightOnTimeBeforeSunset));
+        Optional<LocalDateTime> lastOpeningTime = doorController.getLastOpeningTime();
+        if (lastClosingTime.isPresent() && lastOpeningTime.isPresent()) {
+            return lastOpeningTime.get().isAfter(lastClosingTime.get());
         } else {
-            return false;
+            return true;
+        }
+    }
+
+    /**
+     * Tells if the door is closed, or probably closed.
+     * @return true if the closing time is after the last opening time.
+     *          true if the opening or closing time is unknown.
+     */
+    private boolean doorIsClosed() {
+        Optional<LocalDateTime> lastClosingTime =  doorController.getLastClosingTime();
+        Optional<LocalDateTime> lastOpeningTime = doorController.getLastOpeningTime();
+        if (lastClosingTime.isPresent() && lastOpeningTime.isPresent()) {
+            return lastClosingTime.get().isAfter(lastOpeningTime.get());
+        } else {
+            return true;
         }
     }
 }
