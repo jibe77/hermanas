@@ -24,6 +24,7 @@ class SunTimeManagerTest {
     @Value("${suntime.zoneId}")
     private String zoneId;
     private ZoneId zone;
+    private ZonedDateTime dateTime;
 
     @Autowired
     SunTimeUtils sunTimeUtils;
@@ -33,14 +34,7 @@ class SunTimeManagerTest {
     @BeforeEach
     private void init() {
         zone = ZoneId.of(zoneId);
-    }
-
-    /**
-     * Test closing door time with gps properties in tokyo.
-     */
-    @Test
-    void testNextClosingDoorTime() {
-        ZonedDateTime dateTime = ZonedDateTime.of(
+        dateTime = ZonedDateTime.of(
                 2020,
                 6,
                 20,
@@ -49,7 +43,23 @@ class SunTimeManagerTest {
                 0,
                 0,
                 zone);
+    }
 
+    @Test
+    void testSunsetAfterDawn() {
+        logger.info("The date is converted to the system default zone : {}",
+                dateTime.withZoneSameInstant(ZoneId.systemDefault()));
+        assertEquals("2020-06-20T19:20:20+09:00[Asia/Tokyo]",
+                sunTimeUtils.computeCurrentDaySunset(dateTime).toString(),
+                "search next sunset event time. In this case the sunset is at 19:20.");
+    }
+
+
+    /**
+     * Test closing door time with gps properties in tokyo.
+     */
+    @Test
+    void testNextClosingDoorTime() {
         logger.info("The date is converted to the system default zone : {}",
                 dateTime.withZoneSameInstant(ZoneId.systemDefault()));
         assertEquals("2020-06-20T19:35:20+09:00[Asia/Tokyo]",

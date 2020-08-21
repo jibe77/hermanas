@@ -5,10 +5,14 @@ import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  *A controller for a servo motor at GPIO pin 1 using software Pulse Width Modulation (Soft PWD).
@@ -18,13 +22,13 @@ import org.springframework.stereotype.Component;
  * Class used for BlueJ on Raspberry Pi tutorial.
  */
 @Component
+@Scope("singleton")
 public class DoorController
 {
     // the servo motor
     private final ServoMotorController servo;
 
-    final
-    BottomButtonController bottomButtonController;
+    final BottomButtonController bottomButtonController;
 
     Logger logger = LoggerFactory.getLogger(DoorController.class);
 
@@ -39,6 +43,8 @@ public class DoorController
 
     @Value("${door.closing.position}")
     private int doorClosingPosition;
+
+    private LocalDateTime lastClosingTime;
 
     public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController) {
         this.servo = servo;
@@ -64,6 +70,7 @@ public class DoorController
             if(!bottomButtonController.isBottomButtonHasBeenPressed())
                 throw new DoorNotClosedCorrectlyException();
         }
+        this.lastClosingTime = LocalDateTime.now();
         logger.info("... done");
         bottomButtonController.unprovisionButton();
     }
@@ -74,6 +81,8 @@ public class DoorController
                 doorClosingPosition,
                 doorClosingDuration);
         servo.setPosition(doorClosingPosition, doorClosingDuration);
+        this.lastClosingTime = LocalDateTime.now();
+
     }
 
     @Recover
@@ -92,6 +101,11 @@ public class DoorController
                 doorOpeningPosition,
                 doorOpeningDuration);
         servo.setPosition(doorOpeningPosition, doorOpeningDuration);
+        this.lastClosingTime = null;
         logger.info("... done");
+    }
+
+    public Optional<LocalDateTime> getLastClosingTime() {
+        return Optional.of(lastClosingTime);
     }
 }

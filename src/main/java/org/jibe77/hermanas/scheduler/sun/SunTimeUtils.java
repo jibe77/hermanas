@@ -87,9 +87,15 @@ public class SunTimeUtils {
         return calendarToLocalDateTime(computeCurrentDay(date)[0]);
     }
 
-    private LocalDateTime computeCurrentDaySunset(LocalDateTime date) {
+    public LocalDateTime computeCurrentDaySunset(LocalDateTime date) {
         return calendarToLocalDateTime(computeCurrentDay(date)[1]);
     }
+
+    public ZonedDateTime computeCurrentDaySunset(ZonedDateTime date) {
+        LocalDateTime localDateTime = calendarToLocalDateTime(computeCurrentDay(convertZonedToLocalDateTime(date))[1]);
+        return convertLocalToZonedDateTime(localDateTime, date.getZone());
+    }
+
     private Calendar[] computeCurrentDay(LocalDateTime date) {
         return ca.rmen.sunrisesunset.SunriseSunset.getSunriseSunset(
                 localDateTimeToCalendar(date),
