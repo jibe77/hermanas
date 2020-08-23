@@ -55,6 +55,43 @@ public class SunRelatedJob {
     @Scheduled(fixedDelayString = "${suntime.scheduler.delay.in.milliseconds}")
     public void execute() {
         LocalDateTime currentTime = LocalDateTime.now();
+        manageDoorClosingEvent(currentTime);
+        manageDoorOpeningEvent(currentTime);
+        manageLightSwitchingOnEvent(currentTime);
+        manageLightSwitchingOffEvent(currentTime);
+    }
+
+    private void manageLightSwitchingOffEvent(LocalDateTime currentTime) {
+        if (currentTime.isAfter(sunTimeManager.getNextLightOffTime())) {
+            logger.info("light switching off event is starting now.");
+            lightController.switchOff();
+            sunTimeManager.reloadLightOffTime();
+        }
+    }
+
+    private void manageLightSwitchingOnEvent(LocalDateTime currentTime) {
+        if (currentTime.isAfter(sunTimeManager.getNextLightOnTime())) {
+            logger.info("light switching on event is starting now.");
+            lightController.switchOn();
+            if (doorIsClosed()) {
+                logger.info("the light-switching-on event has found that the door is closed, opening it now.");
+                doorController.openDoor();
+            }
+            sunTimeManager.reloadLightOnTime();
+        }
+    }
+
+    private void manageDoorOpeningEvent(LocalDateTime currentTime) {
+        if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
+            logger.info("door opening event is starting now.");
+            cameraController.takePictureNoException();
+            doorService.open();
+            cameraController.takePictureNoException();
+            sunTimeManager.reloadDoorOpeningTime();
+        }
+    }
+
+    private void manageDoorClosingEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorClosingTime())) {
             if (doorIsOpened()) {
                 try {
@@ -74,24 +111,6 @@ public class SunRelatedJob {
                 logger.info("door has already been closed before, nothing to do in this event.");
             }
             sunTimeManager.reloadDoorClosingTime();
-        } else if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
-            logger.info("door opening event is starting now.");
-            cameraController.takePictureNoException();
-            doorService.open();
-            cameraController.takePictureNoException();
-            sunTimeManager.reloadDoorOpeningTime();
-        } else if (currentTime.isAfter(sunTimeManager.getNextLightOnTime())) {
-            logger.info("light switching on event is starting now.");
-            lightController.switchOn();
-            if (doorIsClosed()) {
-                logger.info("the light-switching-on event has found that the door is closed, opening it now.");
-                doorController.openDoor();
-            }
-            sunTimeManager.reloadLightOnTime();
-        } else if (currentTime.isAfter(sunTimeManager.getNextLightOffTime())) {
-            logger.info("light switching off event is starting now.");
-            lightController.switchOff();
-            sunTimeManager.reloadLightOffTime();
         }
     }
 

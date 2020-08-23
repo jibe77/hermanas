@@ -107,7 +107,7 @@ public class DoorController
     }
 
     public Optional<LocalDateTime> getLastClosingTime() {
-        return Optional.of(lastClosingTime);
+        return Optional.ofNullable(lastClosingTime);
     }
 
     public Optional<LocalDateTime> getLastOpeningTime() {
