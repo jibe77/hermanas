@@ -24,7 +24,7 @@ public class CameraService {
 
     Logger logger = LoggerFactory.getLogger(CameraService.class);
 
-    @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_JPEG_VALUE)
+    @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
     public @ResponseBody byte[] takePicture() throws IOException {
         File picture = cameraController.takePicture();
         logger.info("return picture from {}.", picture.getAbsolutePath());

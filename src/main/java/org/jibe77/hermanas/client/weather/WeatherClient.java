@@ -25,6 +25,8 @@ public class WeatherClient {
     @Value("${weather.info.enabled}")
     public boolean weatherInfoEnabled;
 
+    public static final Double DEFAULT_VALUE_IF_DISABLED = -100d;
+
     private static final Logger log = LoggerFactory.getLogger(WeatherClient.class);
 
     @Autowired
@@ -43,7 +45,7 @@ public class WeatherClient {
         } else {
             // default value if disabled.
             WeatherInfo weatherInfo = new WeatherInfo();
-            weatherInfo.setValues(-1d, -1d);
+            weatherInfo.setValues(DEFAULT_VALUE_IF_DISABLED, DEFAULT_VALUE_IF_DISABLED);
             return weatherInfo;
         }
     }

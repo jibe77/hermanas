@@ -12,7 +12,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 /**
  *A controller for a servo motor at GPIO pin 1 using software Pulse Width Modulation (Soft PWD).
@@ -106,11 +105,29 @@ public class DoorController
         logger.info("... done");
     }
 
-    public Optional<LocalDateTime> getLastClosingTime() {
-        return Optional.ofNullable(lastClosingTime);
+    /**
+     * Tells if the door is opened, or probably opened.
+     * @return true if the opening time is after the last closing time.
+     *          true if the opening or closing time is unknown.
+     */
+    public boolean doorIsOpened() {
+        if (lastClosingTime != null && lastOpeningTime != null) {
+            return lastOpeningTime.isAfter(lastClosingTime);
+        } else {
+            return true;
+        }
     }
 
-    public Optional<LocalDateTime> getLastOpeningTime() {
-        return Optional.of(lastOpeningTime);
+    /**
+     * Tells if the door is closed, or probably closed.
+     * @return true if the closing time is after the last opening time.
+     *          true if the opening or closing time is unknown.
+     */
+    public boolean doorIsClosed() {
+        if (lastClosingTime != null && lastOpeningTime != null) {
+            return lastClosingTime.isAfter(lastOpeningTime);
+        } else {
+            return true;
+        }
     }
 }
