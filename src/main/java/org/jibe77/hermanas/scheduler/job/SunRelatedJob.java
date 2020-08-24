@@ -73,7 +73,7 @@ public class SunRelatedJob {
         if (currentTime.isAfter(sunTimeManager.getNextLightOnTime())) {
             logger.info("light switching on event is starting now.");
             lightController.switchOn();
-            if (doorIsClosed()) {
+            if (doorController.doorIsClosed()) {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
                 doorController.openDoor();
             }
@@ -93,7 +93,7 @@ public class SunRelatedJob {
 
     private void manageDoorClosingEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorClosingTime())) {
-            if (doorIsOpened()) {
+            if (doorController.doorIsOpened()) {
                 try {
                     logger.info("start door closing job at sunset.");
                     logger.info("take picture before closing door.");
@@ -111,36 +111,6 @@ public class SunRelatedJob {
                 logger.info("door has already been closed before, nothing to do in this event.");
             }
             sunTimeManager.reloadDoorClosingTime();
-        }
-    }
-
-    /**
-     * Tells if the door is opened, or probably opened.
-     * @return true if the opening time is after the last closing time.
-     *          true if the opening or closing time is unknown.
-     */
-    private boolean doorIsOpened() {
-        Optional<LocalDateTime> lastClosingTime =  doorController.getLastClosingTime();
-        Optional<LocalDateTime> lastOpeningTime = doorController.getLastOpeningTime();
-        if (lastClosingTime.isPresent() && lastOpeningTime.isPresent()) {
-            return lastOpeningTime.get().isAfter(lastClosingTime.get());
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * Tells if the door is closed, or probably closed.
-     * @return true if the closing time is after the last opening time.
-     *          true if the opening or closing time is unknown.
-     */
-    private boolean doorIsClosed() {
-        Optional<LocalDateTime> lastClosingTime =  doorController.getLastClosingTime();
-        Optional<LocalDateTime> lastOpeningTime = doorController.getLastOpeningTime();
-        if (lastClosingTime.isPresent() && lastOpeningTime.isPresent()) {
-            return lastClosingTime.get().isAfter(lastOpeningTime.get());
-        } else {
-            return true;
         }
     }
 }

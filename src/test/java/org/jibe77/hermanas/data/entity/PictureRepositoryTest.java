@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.File;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
@@ -18,7 +20,7 @@ class PictureRepositoryTest {
     private PictureRepository pictureRepository;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         Picture picture1= new Picture("2020/6/23/2020-6-23-0-7.jpg");
 
         //save user, verify has ID value after save

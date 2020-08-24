@@ -28,4 +28,9 @@ public class LightService {
         logger.info("Rest service is switching the light off.");
         lightController.switchOff();
     }
+
+    @GetMapping(value = "/light/isSwitchedOn")
+    public boolean isSwitchedOn() {
+        return lightController.isSwitchedOn();
+    }
 }
