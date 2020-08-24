@@ -19,7 +19,7 @@ public class RepositoryIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-        Optional<Sensor> s = sensorRepository.findById(-1);
+        Optional<Sensor> s = sensorRepository.findById(-1L);
         if (!s.isPresent()) {
             return Health.up().build();
         } else {
