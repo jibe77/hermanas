@@ -5,6 +5,9 @@ import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.gpio.GpioHermanasController;
 import org.jibe77.hermanas.gpio.light.LightController;
+import org.jibe77.hermanas.gpio.light.LightIRController;
+import org.jibe77.hermanas.gpio.light.LightSwitchedOnByCamera;
+import org.jibe77.hermanas.scheduler.sun.SunTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +27,10 @@ import java.util.Optional;
 public class CameraController {
 
     private LightController lightController;
+    private LightIRController lightIRController;
+    private SunTimeUtils sunTimeUtils;
+
+    private LightSwitchedOnByCamera lightSwitchedOnByCamera = LightSwitchedOnByCamera.NONE;
 
     private GpioHermanasController gpioHermanasController;
 
@@ -52,10 +59,12 @@ public class CameraController {
 
     Logger logger = LoggerFactory.getLogger(CameraController.class);
 
-    public CameraController(LightController lightController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository) {
+    public CameraController(LightController lightController, LightIRController lightIRController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository, SunTimeUtils sunTimeUtils) {
         this.lightController = lightController;
+        this.lightIRController = lightIRController;
         this.gpioHermanasController = gpioHermanasController;
         this.pictureRepository = pictureRepository;
+        this.sunTimeUtils = sunTimeUtils;
     }
 
     @PostConstruct
@@ -66,7 +75,7 @@ public class CameraController {
 
     public synchronized File takePicture() throws IOException {
         logger.info("taking a picture in root path {}.", rootPath);
-        boolean lightIsAlreadySwitchedOn = switchLightOn();
+        switchLightOn();
         LocalDateTime localDateTime = LocalDateTime.now();
         String relativePath = generateRelativePath(localDateTime);
         File fileRoot = new File(rootPath + File.separator + relativePath);
@@ -83,7 +92,7 @@ public class CameraController {
         } catch (IOException e) {
             throw new IOException("Can't take picture or fetch file.", e);
         } finally {
-            switchOffLight(lightIsAlreadySwitchedOn);
+            switchOffLight();
         }
     }
 
@@ -100,28 +109,41 @@ public class CameraController {
 
     /**
      * Switch off the light if the light was not already switched on by the current controller.
-     * @param lightIsAlreadySwitchedOn true if the light was already on before.
      */
-    private void switchOffLight(boolean lightIsAlreadySwitchedOn) {
-        if (!lightIsAlreadySwitchedOn) {
-            lightController.switchOff();
-        } else {
-            logger.debug("light was already switched on before taking picture, it must not be switched off.");
+    private void switchOffLight() {
+        switch (lightSwitchedOnByCamera) {
+            case LIGHT :
+                lightController.switchOff();
+                break;
+            case IR_LIGHT :
+                lightIRController.switchOff();
+                break;
+            default:
+                logger.debug("light hasn't been switched on before taking picture, it should not be switched off.");
+                break;
         }
+        lightSwitchedOnByCamera = LightSwitchedOnByCamera.NONE;
     }
 
     /**
      * Switch on the light managing the previous state of the light.
-     * @return true if this method has switched on the light.
      */
-    private boolean switchLightOn() {
-        boolean lightIsAlreadySwitchedOn = lightController.isSwitchedOn();
-        if (!lightIsAlreadySwitchedOn) {
-            lightController.switchOn();
+    private void switchLightOn() {
+        // by night, the IR Light is switched on
+        if (sunTimeUtils.isDay()) {
+            if (lightController.isSwitchedOn()) {
+                logger.debug("light is already on, it's useless to switch it on again.");
+                lightSwitchedOnByCamera = LightSwitchedOnByCamera.NONE;
+            } else {
+                logger.info("light has been switched on by camera.");
+                lightController.switchOn();
+                lightSwitchedOnByCamera = LightSwitchedOnByCamera.LIGHT;
+            }
         } else {
-            logger.debug("light is already on, it's useless to switch it on again.");
+            logger.info("IR Light has been switched on by camera.");
+            lightIRController.switchOn();
+            lightSwitchedOnByCamera = LightSwitchedOnByCamera.IR_LIGHT;
         }
-        return lightIsAlreadySwitchedOn;
     }
 
     /**
