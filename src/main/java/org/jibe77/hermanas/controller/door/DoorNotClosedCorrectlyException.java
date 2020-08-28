@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.gpio.door;
+package org.jibe77.hermanas.controller.door;
 
 public class DoorNotClosedCorrectlyException extends RuntimeException {
 }

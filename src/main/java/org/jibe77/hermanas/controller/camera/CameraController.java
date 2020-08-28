@@ -1,11 +1,10 @@
-package org.jibe77.hermanas.gpio.camera;
+package org.jibe77.hermanas.controller.camera;
 
 import org.apache.commons.io.FileUtils;
 import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
-import org.jibe77.hermanas.gpio.GpioHermanasController;
-import org.jibe77.hermanas.gpio.light.LightController;
-import org.jibe77.hermanas.scheduler.sun.SunTimeUtils;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
+import org.jibe77.hermanas.controller.light.LightController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

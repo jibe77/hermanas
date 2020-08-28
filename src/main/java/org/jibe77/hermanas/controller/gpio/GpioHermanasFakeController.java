@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.gpio;
+package org.jibe77.hermanas.controller.gpio;
 
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.event.GpioPinListener;

@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.service;
 
 import org.apache.commons.io.IOUtils;
-import org.jibe77.hermanas.gpio.camera.CameraController;
+import org.jibe77.hermanas.controller.camera.CameraController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
