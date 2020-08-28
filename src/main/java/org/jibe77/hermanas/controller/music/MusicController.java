@@ -7,14 +7,18 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.sound.sampled.*;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Random;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class MusicController {
+
+    @Value("${music.player.start.cmd}")
+    private String musicPlayerStartCmd;
 
     @Value("${music.path.mix}")
     private String pathToFolder;
@@ -22,7 +26,7 @@ public class MusicController {
     @Value("${music.path.cocorico}")
     private String cocoricoFile;
 
-    private Clip clip;
+    Process process;
 
     Logger logger = LoggerFactory.getLogger(MusicController.class);
 
@@ -39,10 +43,13 @@ public class MusicController {
     }
 
     public void stop() {
-        if (clip != null && clip.isRunning()) {
-            clip.stop();
-            clip.close();
+        if (process != null) {
+            logger.info("Stop music detroying process.");
+            process.destroyForcibly();
+        } else {
+            logger.info("No music process to stop.");
         }
+
     }
 
     public boolean cocorico() {
@@ -50,33 +57,24 @@ public class MusicController {
     }
 
     private boolean readMusicFile(File musicFile) {
-        AudioInputStream audioInputStream;
-        logger.info("Reading music file {}", musicFile.getAbsolutePath());
+        stop();
+        String path = musicFile.getAbsolutePath();
+        ProcessBuilder pb = new ProcessBuilder(musicPlayerStartCmd, path);
+        logger.info("Play music with command {} {}.", musicPlayerStartCmd, path);
         try {
-
-            // create AudioInputStream object
-            audioInputStream =
-                    AudioSystem.getAudioInputStream(musicFile);
-
-            // stop pre-exisiting running song
-            stop();
-
-            // create clip reference
-            clip = AudioSystem.getClip();
-
-            // open audioInputStream to the clip
-            clip.open(audioInputStream);
-            clip.start();
-            return true;
-        } catch (UnsupportedAudioFileException e) {
-            logger.error("Error playing file due to unsupported file.", e);
-            return false;
+            process = pb.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line);
+            }
+            logger.info("music player says :()", output.toString());
         } catch (IOException e) {
-            logger.error("Error playing music.", e);
-            return false;
-        } catch (LineUnavailableException e) {
-            logger.error("Error playing clip.", e);
+            logger.error("Can't play music with command {} on file {}.", musicPlayerStartCmd, path);
             return false;
         }
+        logger.info("read music method is returning true, everything seems fine.");
+        return true;
     }
 }
