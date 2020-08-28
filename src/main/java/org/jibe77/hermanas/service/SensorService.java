@@ -1,25 +1,32 @@
 package org.jibe77.hermanas.service;
 
-import org.jibe77.hermanas.gpio.sensor.DHT22;
+import org.jibe77.hermanas.client.weather.WeatherClient;
+import org.jibe77.hermanas.client.weather.WeatherInfo;
+import org.jibe77.hermanas.data.entity.Sensor;
+import org.jibe77.hermanas.controller.sensor.DHT22;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
 
 @RestController
 public class SensorService {
 
     DHT22 dht22;
 
-    public SensorService(DHT22 dht22) {
+    WeatherClient weatherClient;
+
+    public SensorService(DHT22 dht22, WeatherClient weatherClient) {
         this.dht22 = dht22;
+        this.weatherClient = weatherClient;
     }
 
-    @GetMapping(value = "/sensor/temperature")
-    public Double getTemperature() throws Exception {
-        return dht22.refreshData().getTemperature();
-    }
-
-    @GetMapping(value = "/sensor/humidity")
-    public Double getHumidity() throws Exception {
-        return dht22.refreshData().getHumidity();
+    @GetMapping(value = "/sensor/info")
+    public Sensor getInfo() throws IOException {
+        Sensor sensor = dht22.refreshData();
+        WeatherInfo weatherInfo = weatherClient.getInfo();
+        sensor.setExternalHumidity(weatherInfo.getHumidity());
+        sensor.setExternalTemperature(weatherInfo.getTemp());
+        return sensor;
     }
 }

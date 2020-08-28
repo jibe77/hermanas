@@ -5,18 +5,18 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.1.RELEASE</version>
+		<version>2.3.3.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.1.13</version>
+	<version>0.1.23-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
 
 	<properties>
-		<!-- Java is not supported on Raspberry pi Zero after version 8. -->
+		<!-- Java is supported on Raspberry pi Zero up to version 8. -->
 		<java.version>1.8</java.version>
 	</properties>
 
@@ -46,7 +46,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-cache</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -54,21 +57,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<dependency>
-			<groupId>net.time4j</groupId>
-			<artifactId>time4j-base</artifactId>
-			<version>5.6</version>
-		</dependency>
-		<dependency>
-			<groupId>net.time4j</groupId>
-			<artifactId>time4j-sqlxml</artifactId>
-			<version>5.6</version>
-		</dependency>
-		<dependency>
-			<groupId>net.time4j</groupId>
-			<artifactId>time4j-tzdata</artifactId>
-			<version>5.0-2020a</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -129,6 +117,33 @@
 				<configuration>
 					<executable>true</executable>
 				</configuration>
+				<executions>
+					<execution>
+						<id>build-info</id>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.5</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

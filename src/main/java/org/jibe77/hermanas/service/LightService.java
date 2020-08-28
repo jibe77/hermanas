@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.service;
 
-import org.jibe77.hermanas.gpio.light.LightController;
+import org.jibe77.hermanas.controller.light.LightController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,5 +27,10 @@ public class LightService {
     public void switchOff() {
         logger.info("Rest service is switching the light off.");
         lightController.switchOff();
+    }
+
+    @GetMapping(value = "/light/isSwitchedOn")
+    public boolean isSwitchedOn() {
+        return lightController.isSwitchedOn();
     }
 }

@@ -15,7 +15,11 @@ public class Sensor {
 
     private Double temperature;
 
+    private Double externalTemperature;
+
     private Double humidity;
+
+    private Double externalHumidity;
 
     private LocalDateTime dateTime;
 
@@ -49,6 +53,22 @@ public class Sensor {
 
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public Double getExternalTemperature() {
+        return externalTemperature;
+    }
+
+    public void setExternalTemperature(Double externalTemperature) {
+        this.externalTemperature = externalTemperature;
+    }
+
+    public Double getExternalHumidity() {
+        return externalHumidity;
+    }
+
+    public void setExternalHumidity(Double externalHumidity) {
+        this.externalHumidity = externalHumidity;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.service;
 
 import org.apache.commons.io.IOUtils;
-import org.jibe77.hermanas.gpio.camera.CameraController;
+import org.jibe77.hermanas.controller.camera.CameraController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -24,7 +24,7 @@ public class CameraService {
 
     Logger logger = LoggerFactory.getLogger(CameraService.class);
 
-    @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_JPEG_VALUE)
+    @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
     public @ResponseBody byte[] takePicture() throws IOException {
         File picture = cameraController.takePicture();
         logger.info("return picture from {}.", picture.getAbsolutePath());

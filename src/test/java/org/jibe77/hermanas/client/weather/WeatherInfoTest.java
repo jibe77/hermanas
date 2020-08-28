@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(classes = {WeatherClient.class})
-public class WeatherInfoTest {
+class WeatherInfoTest {
 
     @Value("${suntime.latitude}")
     public double latitude;
@@ -30,9 +30,9 @@ public class WeatherInfoTest {
     RestTemplate restTemplate;
 
     @Test
-    public void testWeather() {
+    void testWeather() {
         WeatherInfo weatherInfo = new WeatherInfo();
-        weatherInfo.setValues("0", "0");
+        weatherInfo.setValues(0d, 0d);
         Mockito.when(restTemplateBuilder.build()).thenReturn(restTemplate);
         Mockito.when(restTemplate.getForObject(
                 Mockito.anyString(),
@@ -41,6 +41,8 @@ public class WeatherInfoTest {
                 Mockito.anyDouble(),
                 Mockito.anyString())).thenReturn(weatherInfo);
         weatherInfo = weatherClient.getInfo();
-        assertEquals("0", weatherInfo.getMain().getTemp());
+        assertEquals(0d, weatherInfo.getMain().getTemp());
+        assertEquals(0d, weatherInfo.getMain().getHumidity());
+
     }
 }

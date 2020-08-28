@@ -1,8 +1,10 @@
 package org.jibe77.hermanas.scheduler.job;
 
+import org.jibe77.hermanas.client.weather.WeatherClient;
+import org.jibe77.hermanas.client.weather.WeatherInfo;
 import org.jibe77.hermanas.data.entity.Sensor;
 import org.jibe77.hermanas.data.repository.SensorRepository;
-import org.jibe77.hermanas.gpio.sensor.DHT22;
+import org.jibe77.hermanas.controller.sensor.DHT22;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,11 +19,14 @@ public class SensorJob {
 
     private SensorRepository sensorRepository;
 
+    private WeatherClient weatherClient;
+
     Logger logger = LoggerFactory.getLogger(SensorJob.class);
 
-    public SensorJob(DHT22 dht22, SensorRepository sensorRepository) {
+    public SensorJob(DHT22 dht22, SensorRepository sensorRepository, WeatherClient weatherClient) {
         this.dht22 = dht22;
         this.sensorRepository = sensorRepository;
+        this.weatherClient = weatherClient;
     }
 
     @Scheduled(fixedDelayString = "${sensor.scheduler.delay.in.milliseconds}")
@@ -32,6 +37,11 @@ public class SensorJob {
             sensor.setTemperature(sensor.getTemperature());
             sensor.setHumidity(sensor.getHumidity());
             sensor.setDateTime(LocalDateTime.now());
+
+            WeatherInfo weatherInfo = weatherClient.getInfo();
+            sensor.setExternalTemperature(weatherInfo.getTemp());
+            sensor.setExternalHumidity(weatherInfo.getHumidity());
+
             sensorRepository.save(sensor);
             logger.info("Temperature {} Humidity {}.", sensor.getTemperature(), sensor.getHumidity());
         } catch (Exception e) {
