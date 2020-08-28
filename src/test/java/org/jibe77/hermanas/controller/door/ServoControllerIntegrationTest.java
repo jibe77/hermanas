@@ -1,10 +1,10 @@
-package org.jibe77.hermanas.gpio.door;
+package org.jibe77.hermanas.controller.door;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
-import org.jibe77.hermanas.gpio.GpioHermanasController;
-import org.jibe77.hermanas.gpio.door.bottombutton.BottomButtonController;
-import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
+import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
+import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;

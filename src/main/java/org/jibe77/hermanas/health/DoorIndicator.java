@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.health;
 
-import org.jibe77.hermanas.gpio.door.DoorController;
+import org.jibe77.hermanas.controller.door.DoorController;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;

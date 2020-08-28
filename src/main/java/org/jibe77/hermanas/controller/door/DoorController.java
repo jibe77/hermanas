@@ -1,7 +1,7 @@
-package org.jibe77.hermanas.gpio.door;
+package org.jibe77.hermanas.controller.door;
 
-import org.jibe77.hermanas.gpio.door.bottombutton.BottomButtonController;
-import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
+import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
+import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

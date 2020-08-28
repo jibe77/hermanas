@@ -1,8 +1,8 @@
-package org.jibe77.hermanas.gpio.door.bottombutton;
+package org.jibe77.hermanas.controller.door.bottombutton;
 
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
-import org.jibe77.hermanas.gpio.door.servo.ServoMotorController;
+import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

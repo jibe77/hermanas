@@ -1,10 +1,10 @@
 package org.jibe77.hermanas.scheduler.job;
 
 import org.jibe77.hermanas.client.jms.EmailService;
-import org.jibe77.hermanas.gpio.camera.CameraController;
-import org.jibe77.hermanas.gpio.door.DoorController;
-import org.jibe77.hermanas.gpio.door.DoorNotClosedCorrectlyException;
-import org.jibe77.hermanas.gpio.light.LightController;
+import org.jibe77.hermanas.controller.camera.CameraController;
+import org.jibe77.hermanas.controller.door.DoorController;
+import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
+import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.service.DoorService;
 import org.slf4j.Logger;

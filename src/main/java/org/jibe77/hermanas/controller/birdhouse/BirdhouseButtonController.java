@@ -1,8 +1,8 @@
-package org.jibe77.hermanas.gpio.birdhouse;
+package org.jibe77.hermanas.controller.birdhouse;
 
 import com.pi4j.io.gpio.GpioPinDigitalInput;
-import org.jibe77.hermanas.gpio.GpioHermanasController;
-import org.jibe77.hermanas.gpio.light.LightController;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
+import org.jibe77.hermanas.controller.light.LightController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

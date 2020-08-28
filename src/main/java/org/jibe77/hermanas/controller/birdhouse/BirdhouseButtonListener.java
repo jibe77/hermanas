@@ -1,8 +1,8 @@
-package org.jibe77.hermanas.gpio.birdhouse;
+package org.jibe77.hermanas.controller.birdhouse;
 
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
-import org.jibe77.hermanas.gpio.light.LightController;
+import org.jibe77.hermanas.controller.light.LightController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

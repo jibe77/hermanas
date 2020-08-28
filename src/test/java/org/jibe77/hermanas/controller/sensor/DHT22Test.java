@@ -1,7 +1,7 @@
-package org.jibe77.hermanas.gpio.sensor;
+package org.jibe77.hermanas.controller.sensor;
 
 import org.jibe77.hermanas.data.entity.Sensor;
-import org.jibe77.hermanas.gpio.GpioHermanasController;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

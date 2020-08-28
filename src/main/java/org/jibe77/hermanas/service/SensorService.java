@@ -3,7 +3,7 @@ package org.jibe77.hermanas.service;
 import org.jibe77.hermanas.client.weather.WeatherClient;
 import org.jibe77.hermanas.client.weather.WeatherInfo;
 import org.jibe77.hermanas.data.entity.Sensor;
-import org.jibe77.hermanas.gpio.sensor.DHT22;
+import org.jibe77.hermanas.controller.sensor.DHT22;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
