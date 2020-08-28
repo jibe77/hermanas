@@ -69,7 +69,7 @@ public class MusicController {
             while ((line = reader.readLine()) != null) {
                 output.append(line);
             }
-            logger.info("music player says :()", output.toString());
+            logger.info("music player says : {}", output);
         } catch (IOException e) {
             logger.error("Can't play music with command {} on file {}.", musicPlayerStartCmd, path);
             return false;
