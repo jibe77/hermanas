@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.scheduler.sun;
 
-import ca.rmen.sunrisesunset.SunriseSunset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -102,10 +101,6 @@ public class SunTimeUtils {
                 localDateTimeToCalendar(date),
                 latitude,
                 longitude);
-    }
-
-    public boolean isDay() {
-        return SunriseSunset.isDay(latitude, longitude);
     }
 
     private Calendar localDateTimeToCalendar(LocalDateTime localDateTime) {
