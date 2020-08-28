@@ -26,8 +26,6 @@ public class CameraController {
 
     private LightController lightController;
 
-    private SunTimeUtils sunTimeUtils;
-
     private boolean lightSwitchedOnByCamera;
 
     private GpioHermanasController gpioHermanasController;
@@ -57,11 +55,10 @@ public class CameraController {
 
     Logger logger = LoggerFactory.getLogger(CameraController.class);
 
-    public CameraController(LightController lightController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository, SunTimeUtils sunTimeUtils) {
+    public CameraController(LightController lightController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository) {
         this.lightController = lightController;
         this.gpioHermanasController = gpioHermanasController;
         this.pictureRepository = pictureRepository;
-        this.sunTimeUtils = sunTimeUtils;
     }
 
     @PostConstruct
