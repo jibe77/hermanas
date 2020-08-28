@@ -7,10 +7,8 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Random;
 
 @Component
@@ -26,7 +24,22 @@ public class MusicController {
     @Value("${music.path.cocorico}")
     private String cocoricoFile;
 
-    Process process;
+    @Value("${music.volume.cmd}")
+    private String volumeCmd;
+
+    @Value("${music.volume.arg1}")
+    private String volumeCmdArg1;
+
+    @Value("${music.volume.arg2}")
+    private String volumeCmdArg2;
+
+    @Value("${music.volume.max}")
+    private String volumeLevelMax;
+
+    @Value("${music.volume.regular}")
+    private String volumeLevelRegular;
+
+    Process currentMusicProcess;
 
     Logger logger = LoggerFactory.getLogger(MusicController.class);
 
@@ -34,7 +47,7 @@ public class MusicController {
         File mixFolder = new File(pathToFolder);
         File[] songsAvailable = mixFolder.listFiles();
         File pickedSong = pickSong(songsAvailable);
-        return readMusicFile(pickedSong);
+        return readMusicFile(pickedSong, volumeLevelRegular);
     }
 
     private File pickSong(File[] array) {
@@ -43,33 +56,33 @@ public class MusicController {
     }
 
     public void stop() {
-        if (process != null) {
+        if (currentMusicProcess != null) {
             logger.info("Stop music detroying process.");
-            process.destroyForcibly();
+            currentMusicProcess.destroyForcibly();
         } else {
             logger.info("No music process to stop.");
         }
-
     }
 
     public boolean cocorico() {
-        return readMusicFile(new File(cocoricoFile));
+        return readMusicFile(new File(cocoricoFile), volumeLevelMax);
     }
 
-    private boolean readMusicFile(File musicFile) {
+    private boolean readMusicFile(File musicFile, String volumeLevel) {
         stop();
+
         String path = musicFile.getAbsolutePath();
-        ProcessBuilder pb = new ProcessBuilder(musicPlayerStartCmd, path);
-        logger.info("Play music with command {} {}.", musicPlayerStartCmd, path);
         try {
-            process = pb.start();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuilder output = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line);
-            }
-            logger.info("music player says : {}", output);
+            logger.info("Set music level to {} with command {} {} {} {}.",
+                    volumeLevel,
+                    volumeCmd,
+                    volumeCmdArg1,
+                    volumeCmdArg2,
+                    volumeLevel);
+            new ProcessBuilder(volumeCmd, volumeCmdArg1, volumeCmdArg2, volumeLevel).start();
+
+            logger.info("Play music with command {} {}.", musicPlayerStartCmd, path);
+            currentMusicProcess = new ProcessBuilder(musicPlayerStartCmd, path).start();
         } catch (IOException e) {
             logger.error("Can't play music with command {} on file {}.", musicPlayerStartCmd, path);
             return false;

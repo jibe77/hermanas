@@ -5,6 +5,7 @@ import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.controller.light.LightController;
+import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.service.DoorService;
 import org.slf4j.Logger;
@@ -32,22 +33,25 @@ public class SunRelatedJob {
 
     private EmailService emailService;
 
+    private MusicController musicController;
+
     @Value("${email.notification.sunset.subject}")
     private String emailNotificationSunsetSubject;
 
-    @Value("${suntime.scheduler.door.close.time_after_sunset}")
-    private long doorCloseTimeAfterSunset;
+    @Value("${play.cocorico.at.sunrise.enabled}")
+    private boolean cocoricoAtSunriseEnabled;
 
-    @Value("${suntime.scheduler.light.on.time_before_sunset}")
-    private long lightOnTimeBeforeSunset;
+    @Value("${play.song.at.sunset}")
+    private boolean playSongAtSunset;
 
-    public SunRelatedJob(SunTimeManager sunTimeManager, CameraController cameraController, LightController lightController, DoorService doorService, EmailService emailService, DoorController doorController) {
+    public SunRelatedJob(SunTimeManager sunTimeManager, CameraController cameraController, LightController lightController, DoorService doorService, EmailService emailService, DoorController doorController, MusicController musicController) {
         this.sunTimeManager = sunTimeManager;
         this.cameraController = cameraController;
         this.lightController = lightController;
         this.doorService = doorService;
         this.emailService = emailService;
         this.doorController = doorController;
+        this.musicController = musicController;
     }
 
     Logger logger = LoggerFactory.getLogger(SunRelatedJob.class);
@@ -73,6 +77,9 @@ public class SunRelatedJob {
         if (currentTime.isAfter(sunTimeManager.getNextLightOnTime())) {
             logger.info("light switching on event is starting now.");
             lightController.switchOn();
+            if (playSongAtSunset) {
+                musicController.playSongRandomly();
+            }
             if (doorController.doorIsClosed()) {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
                 doorController.openDoor();
@@ -86,6 +93,9 @@ public class SunRelatedJob {
             logger.info("door opening event is starting now.");
             cameraController.takePictureNoException();
             doorService.open();
+            if (cocoricoAtSunriseEnabled) {
+                musicController.cocorico();
+            }
             cameraController.takePictureNoException();
             sunTimeManager.reloadDoorOpeningTime();
         }
