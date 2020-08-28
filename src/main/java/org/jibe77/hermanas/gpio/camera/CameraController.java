@@ -5,8 +5,6 @@ import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.gpio.GpioHermanasController;
 import org.jibe77.hermanas.gpio.light.LightController;
-import org.jibe77.hermanas.gpio.light.LightIRController;
-import org.jibe77.hermanas.gpio.light.LightSwitchedOnByCamera;
 import org.jibe77.hermanas.scheduler.sun.SunTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,10 +25,10 @@ import java.util.Optional;
 public class CameraController {
 
     private LightController lightController;
-    private LightIRController lightIRController;
+
     private SunTimeUtils sunTimeUtils;
 
-    private LightSwitchedOnByCamera lightSwitchedOnByCamera = LightSwitchedOnByCamera.NONE;
+    private boolean lightSwitchedOnByCamera;
 
     private GpioHermanasController gpioHermanasController;
 
@@ -59,9 +57,8 @@ public class CameraController {
 
     Logger logger = LoggerFactory.getLogger(CameraController.class);
 
-    public CameraController(LightController lightController, LightIRController lightIRController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository, SunTimeUtils sunTimeUtils) {
+    public CameraController(LightController lightController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository, SunTimeUtils sunTimeUtils) {
         this.lightController = lightController;
-        this.lightIRController = lightIRController;
         this.gpioHermanasController = gpioHermanasController;
         this.pictureRepository = pictureRepository;
         this.sunTimeUtils = sunTimeUtils;
@@ -111,38 +108,25 @@ public class CameraController {
      * Switch off the light if the light was not already switched on by the current controller.
      */
     private void switchOffLight() {
-        switch (lightSwitchedOnByCamera) {
-            case LIGHT :
-                lightController.switchOff();
-                break;
-            case IR_LIGHT :
-                lightIRController.switchOff();
-                break;
-            default:
-                logger.debug("light hasn't been switched on before taking picture, it should not be switched off.");
-                break;
+        if (lightSwitchedOnByCamera) {
+            lightController.switchOff();
+            lightSwitchedOnByCamera = false;
+        } else {
+            logger.debug("light hasn't been switched on before taking picture, it should not be switched off.");
         }
-        lightSwitchedOnByCamera = LightSwitchedOnByCamera.NONE;
     }
 
     /**
      * Switch on the light managing the previous state of the light.
      */
     private void switchLightOn() {
-        // by night, the IR Light is switched on
-        if (sunTimeUtils.isDay()) {
-            if (lightController.isSwitchedOn()) {
-                logger.debug("light is already on, it's useless to switch it on again.");
-                lightSwitchedOnByCamera = LightSwitchedOnByCamera.NONE;
-            } else {
-                logger.info("light has been switched on by camera.");
-                lightController.switchOn();
-                lightSwitchedOnByCamera = LightSwitchedOnByCamera.LIGHT;
-            }
+        if (lightController.isSwitchedOn()) {
+            logger.debug("light is already on, it's useless to switch it on again.");
+            lightSwitchedOnByCamera = false;
         } else {
-            logger.info("IR Light has been switched on by camera.");
-            lightIRController.switchOn();
-            lightSwitchedOnByCamera = LightSwitchedOnByCamera.IR_LIGHT;
+            logger.info("light has been switched on by camera.");
+            lightController.switchOn();
+            lightSwitchedOnByCamera = true;
         }
     }
 

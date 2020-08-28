@@ -104,10 +104,6 @@ public class SunTimeUtils {
                 longitude);
     }
 
-    public boolean isDay() {
-        return SunriseSunset.isDay(latitude, longitude);
-    }
-
     private Calendar localDateTimeToCalendar(LocalDateTime localDateTime) {
         Calendar calendar = Calendar.getInstance();
         calendar.clear();
