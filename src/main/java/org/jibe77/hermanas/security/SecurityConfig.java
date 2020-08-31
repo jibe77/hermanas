@@ -40,11 +40,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         logger.info("Configure user and password for main user");
         auth.inMemoryAuthentication()
             .withUser(user)
-            .password(password)
+            .password("{noop}" + password)
             .roles("USER")
             .and()
                 .withUser(demoUser)
-                .password(demoPassword)
+                .password("{noop}" + demoPassword)
                 .roles("DEMO");
     }
 }
