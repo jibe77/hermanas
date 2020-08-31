@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -27,11 +28,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     {
         http
                 .csrf().disable()
-                .authorizeRequests().anyRequest().authenticated()
+                .authorizeRequests()
+                    .antMatchers(HttpMethod.GET, "/light/on").hasRole("USER")
+                    .antMatchers(HttpMethod.GET, "/light/off").hasRole("USER")
+                    .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasAnyRole("USER", "DEMO")
                 .and()
                 .httpBasic();
     }
 
+    /**
+     * Configures the users.
+     * For the moment, the password are stored in plain text.
+     * If we need to crypt them, see
+     * https://info.michael-simons.eu/2018/01/13/spring-security-5-new-password-storage-format/
+     * @param auth
+     * @throws Exception
+     */
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth)
             throws Exception

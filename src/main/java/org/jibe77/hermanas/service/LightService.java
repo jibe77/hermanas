@@ -19,21 +19,18 @@ public class LightService {
     Logger logger = LoggerFactory.getLogger(LightService.class);
 
     @GetMapping(value = "/light/on", produces = "application/json")
-    @Secured("USER")
     public void switchOn() {
         logger.info("Rest service is switching the light on.");
         lightController.switchOn();
     }
 
     @GetMapping(value = "/light/off", produces = "application/json")
-    @Secured("USER")
     public void switchOff() {
         logger.info("Rest service is switching the light off.");
         lightController.switchOff();
     }
 
     @GetMapping(value = "/light/isSwitchedOn")
-    @Secured({"DEMO", "USER"})
     public boolean isSwitchedOn() {
         return lightController.isSwitchedOn();
     }
