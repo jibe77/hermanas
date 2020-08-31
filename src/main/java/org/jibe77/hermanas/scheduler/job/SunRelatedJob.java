@@ -112,7 +112,13 @@ public class SunRelatedJob {
                     doorService.close();
                     logger.info("take picture once the door is closed and send it by email.");
                     Optional<File> picWithClosedDoor = cameraController.takePictureNoException();
-                    emailService.sendPicture(emailNotificationSunsetSubject, picWithClosedDoor);
+                    if (picWithClosedDoor.isPresent()) {
+                        emailService.sendMailWithAttachment("The door has been closed",
+                                "Here is a picture inside the chicken coop :", picWithClosedDoor.get());
+                    } else {
+                        emailService.sendMail("The door has been closed",
+                                "The picture inside the chicken coop is not available (camera problem ?).");
+                    }
                 } catch (DoorNotClosedCorrectlyException e) {
                     logger.error("Didn't close the door correctly.");
                 }
