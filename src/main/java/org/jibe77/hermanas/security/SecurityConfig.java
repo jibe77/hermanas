@@ -20,25 +20,43 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 public class SecurityConfig extends WebSecurityConfigurerAdapter
 {
     Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-    @Value("${spring.security.user.name}")
+    @Value("${security.user.name}")
     private String user;
-    @Value("${spring.security.user.password}")
+    @Value("${security.user.password}")
     private String password;
-    @Value("${spring.security.demo.name}")
-    private String demoUser;
-    @Value("${spring.security.demo.password}")
-    private String demoPassword;
+    @Value("${security.guest.name}")
+    private String guestUser;
+    @Value("${security.guest.password}")
+    private String guestPassword;
 
+    /**
+     * See doc about configuration
+     * https://www.baeldung.com/spring-security-expressions
+     * @param http
+     * @throws Exception
+     */
     @Override
     protected void configure(HttpSecurity http) throws Exception
     {
-        http
-                .csrf().disable()
-                .authorizeRequests()
-                    .antMatchers("/**").hasAnyRole("USER")
-                    .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasRole( "DEMO")
+        logger.info("Configure authorizations.");
+        http.authorizeRequests()
+                // list of allowed urls for GUEST user.
+                .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasRole( "GUEST")
+                .antMatchers(HttpMethod.GET, "/camera/takePicture").hasRole( "GUEST")
+                .antMatchers(HttpMethod.GET, "/fan/isSwitchedOn").hasRole( "GUEST")
+                .antMatchers(HttpMethod.GET, "/scheduler/doorClosingTime").hasRole( "GUEST")
+                .antMatchers(HttpMethod.GET, "/scheduler/doorOpeningTime").hasRole( "GUEST")
+                .antMatchers(HttpMethod.GET, "/scheduler/lightOffTime").hasRole( "GUEST")
+                .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").hasRole( "GUEST")
+                .antMatchers(HttpMethod.GET, "/sensor/info").hasRole( "GUEST")
+                // user is allowed to call all the services
+                .antMatchers("/**").hasRole("USER")
+            .and()
+                .formLogin()
+                .permitAll()
                 .and()
-                .httpBasic();
+                .logout()
+            .permitAll();
     }
 
     /**
@@ -60,8 +78,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
             .password("{noop}" + password)
             .roles("USER")
             .and()
-                .withUser(demoUser)
-                .password("{noop}" + demoPassword)
-                .roles("DEMO");
+                .withUser(guestUser)
+                .password("{noop}" + guestPassword)
+                .roles("GUEST");
     }
 }
