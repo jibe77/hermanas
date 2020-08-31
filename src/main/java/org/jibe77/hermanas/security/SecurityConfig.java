@@ -29,9 +29,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         http
                 .csrf().disable()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.GET, "/light/on").hasRole("USER")
-                    .antMatchers(HttpMethod.GET, "/light/off").hasRole("USER")
-                    .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasAnyRole("USER", "DEMO")
+                    .antMatchers("/**").hasAnyRole("USER")
+                    .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasAnyRole( "DEMO")
                 .and()
                 .httpBasic();
     }
