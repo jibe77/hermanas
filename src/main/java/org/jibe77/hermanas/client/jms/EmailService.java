@@ -33,40 +33,46 @@ public class EmailService {
 
     Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    private void sendMailWithAttachment(String to, String subject, String body, File fileToAttach)
+    public void sendMail(String subject, String body)
     {
-        MimeMessagePreparator preparator = mimeMessage -> {
-            mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
-            mimeMessage.setFrom(new InternetAddress(from));
-            mimeMessage.setSubject(subject);
-            mimeMessage.setText(body);
+        if (enabled) {
+            MimeMessagePreparator preparator = mimeMessage -> {
+                mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(emailNotificationTo));
+                mimeMessage.setFrom(new InternetAddress(from));
+                mimeMessage.setSubject(subject);
+                mimeMessage.setText(body);
 
-            FileSystemResource file = new FileSystemResource(fileToAttach);
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-            helper.addAttachment("logo.jpg", file);
-            helper.setText("", true);
-        };
+                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+                helper.setText("", true);
+            };
 
-        try {
-            mailSender.send(preparator);
-        }
-        catch (MailException ex) {
-           logger.error("Can't send email", ex);
+            try {
+                mailSender.send(preparator);
+            } catch (MailException ex) {
+                logger.error("Can't send email", ex);
+            }
         }
     }
 
-    public void sendPicture(String emailNotificationSubject, Optional<File> pic) {
+    public void sendMailWithAttachment(String subject, String body, File fileToAttach)
+    {
         if (enabled) {
-            if (pic.isPresent()) {
-                logger.info("send email notification with subject {}", emailNotificationSubject);
-                sendMailWithAttachment(
-                        emailNotificationTo,
-                        emailNotificationSubject,
-                        "Voici une photo des cocottes.",
-                        pic.get());
-            } else {
-                logger.warn("can't send email notification with subject {} because pic is not available.",
-                        emailNotificationSubject);
+            MimeMessagePreparator preparator = mimeMessage -> {
+                mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(emailNotificationTo));
+                mimeMessage.setFrom(new InternetAddress(from));
+                mimeMessage.setSubject(subject);
+                mimeMessage.setText(body);
+
+                FileSystemResource file = new FileSystemResource(fileToAttach);
+                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+                helper.addAttachment("logo.jpg", file);
+                helper.setText("", true);
+            };
+
+            try {
+                mailSender.send(preparator);
+            } catch (MailException ex) {
+                logger.error("Can't send email", ex);
             }
         }
     }
