@@ -43,7 +43,7 @@ public class EmailService {
                 mimeMessage.setText(body);
 
                 MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-                helper.setText("", true);
+                helper.setText(body, true);
             };
 
             try {
@@ -66,7 +66,7 @@ public class EmailService {
                 FileSystemResource file = new FileSystemResource(fileToAttach);
                 MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
                 helper.addAttachment("logo.jpg", file);
-                helper.setText("", true);
+                helper.setText(body, true);
             };
 
             try {
