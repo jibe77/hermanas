@@ -70,6 +70,7 @@ public class SunRelatedJob {
             logger.info("light switching off event is starting now.");
             lightController.switchOff();
             sunTimeManager.reloadLightOffTime();
+            musicController.stop();
         }
     }
 
@@ -78,7 +79,7 @@ public class SunRelatedJob {
             logger.info("light switching on event is starting now.");
             lightController.switchOn();
             if (playSongAtSunset) {
-                musicController.playSongRandomly();
+                musicController.playMusicRandomly();
             }
             if (doorController.doorIsClosed()) {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
