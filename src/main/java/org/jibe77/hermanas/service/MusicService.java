@@ -20,7 +20,7 @@ public class MusicService {
     @GetMapping(value = "/music/play")
     public boolean play() {
         logger.info("Play music");
-        return musicController.playSongRandomly();
+        return musicController.playMusicRandomly();
     }
 
     @GetMapping(value = "/music/stop")
