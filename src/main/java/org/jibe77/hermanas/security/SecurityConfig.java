@@ -51,6 +51,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/sensor/info").hasRole( "GUEST")
                 // user is allowed to call all the services
                 .antMatchers("/**").hasRole("USER")
+                .and().httpBasic()
             .and()
                 .formLogin()
                 .permitAll()
