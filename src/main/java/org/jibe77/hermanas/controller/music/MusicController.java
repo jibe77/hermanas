@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -17,9 +18,6 @@ public class MusicController {
 
     @Value("${music.player.start.cmd}")
     private String musicPlayerStartCmd;
-
-    @Value("${music.player.suffle.param}")
-    private String musicPlayerShuffleParam;
 
     @Value("${music.path.mix}")
     private String pathToFolder;
@@ -50,17 +48,23 @@ public class MusicController {
         stop();
         try {
             setMusicLevel(volumeLevelRegular);
-            String pathWithAllContent = pathToFolder + "/*";
-            logger.info("Play music with command {} {} {}.", musicPlayerStartCmd, musicPlayerShuffleParam, pathWithAllContent);
+            String listOfFile = getListOfFiles(pathToFolder);
+            logger.info("Play music with command {} {} {}.", musicPlayerStartCmd, listOfFile);
             currentMusicProcess = new ProcessBuilder(
                     musicPlayerStartCmd,
-                    musicPlayerShuffleParam,
-                    pathWithAllContent).start();
+                    listOfFile).start();
         } catch (IOException e) {
             logger.error("Can't play music.", e);
             return false;
         }
         return true;
+    }
+
+    private String getListOfFiles(String pathToFolder) {
+        File folder = new File(pathToFolder);
+        List<File> filesList = Arrays.asList(folder.listFiles());
+        Collections.shuffle(filesList);
+        return filesList.stream().map(f -> f.getAbsolutePath()).collect(Collectors.joining(" "));
     }
 
     private File pickSong(File[] array) {
