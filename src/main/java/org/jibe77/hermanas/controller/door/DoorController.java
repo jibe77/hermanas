@@ -112,9 +112,13 @@ public class DoorController {
      *          true if the opening or closing time is unknown.
      */
     public boolean doorIsOpened() {
+        logger.info(
+                "doorIsOpened() method is comparing last closing time {} with lastOpeningTime {}.",
+                lastClosingTime, lastOpeningTime);
         if (lastClosingTime != null && lastOpeningTime != null) {
             return lastOpeningTime.isAfter(lastClosingTime);
         } else {
+            logger.info("Some data is missing so the door is supposed to be opened.");
             return true;
         }
     }
@@ -125,9 +129,13 @@ public class DoorController {
      *          true if the opening or closing time is unknown.
      */
     public boolean doorIsClosed() {
+        logger.info(
+                "doorIsClosed() method is comparing last closing time {} with lastOpeningTime {}.",
+                lastClosingTime, lastOpeningTime);
         if (lastClosingTime != null && lastOpeningTime != null) {
             return lastClosingTime.isAfter(lastOpeningTime);
         } else {
+            logger.info("Some data is missing so the door is supposed to be closed.");
             return true;
         }
     }

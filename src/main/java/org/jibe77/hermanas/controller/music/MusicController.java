@@ -50,10 +50,12 @@ public class MusicController {
         stop();
         try {
             setMusicLevel(volumeLevelRegular);
+            String pathWithAllContent = pathToFolder + "/*";
+            logger.info("Play music with command {} {} {}.", musicPlayerStartCmd, musicPlayerShuffleParam, pathWithAllContent);
             currentMusicProcess = new ProcessBuilder(
                     musicPlayerStartCmd,
                     musicPlayerShuffleParam,
-                    pathToFolder + "/*").start();
+                    pathWithAllContent).start();
         } catch (IOException e) {
             logger.error("Can't play music.", e);
             return false;
