@@ -51,12 +51,13 @@ public class MusicController {
         stop();
         try {
             setMusicLevel(volumeLevelRegular);
-            String listOfFile = getListOfFiles(pathToFolder);
+            List<String> listOfFile = getListOfFiles(pathToFolder);
             logger.info("Play music with command {} {} {}.", musicPlayerStartCmd, musicPlayerShuffleParam, listOfFile);
-            currentMusicProcess = new ProcessBuilder(
-                    musicPlayerStartCmd,
-                    musicPlayerShuffleParam,
-                    listOfFile).start();
+            List<String> commandWithParams = new ArrayList<>(listOfFile.size() + 2);
+            commandWithParams.add(musicPlayerStartCmd);
+            commandWithParams.add(musicPlayerShuffleParam);
+            commandWithParams.addAll(listOfFile);
+            currentMusicProcess = new ProcessBuilder(commandWithParams).start();
         } catch (IOException e) {
             logger.error("Can't play music.", e);
             return false;
@@ -64,18 +65,12 @@ public class MusicController {
         return true;
     }
 
-    private String getListOfFiles(String pathToFolder) {
+    private List<String> getListOfFiles(String pathToFolder) {
         File folder = new File(pathToFolder);
         List<File> filesList = Arrays.asList(folder.listFiles());
         Collections.shuffle(filesList);
         return filesList.stream()
-                .map(f -> f.getAbsolutePath())
-                .map(p -> p.replaceAll(" ", "\\\\ "))
-                .map(p -> p.replaceAll("&", "\\\\&"))
-                .map(p -> p.replaceAll("'", "\\\\'"))
-                .map(p -> p.replaceAll("\\(", "\\\\("))
-                .map(p -> p.replaceAll("\\)", "\\\\)"))
-                .collect(Collectors.joining(" "));
+                .map(f -> f.getAbsolutePath()).collect(Collectors.toList());
     }
 
     private File pickSong(File[] array) {
