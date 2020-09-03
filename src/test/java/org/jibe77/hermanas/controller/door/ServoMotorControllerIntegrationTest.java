@@ -46,22 +46,4 @@ class ServoMotorControllerIntegrationTest {
         servoMotorController.setPosition(15, 100);
         assertTrue(true, "The door is supposed to move right now !");
     }
-
-    @Test
-    void test() {
-        File f1 = new File("test test&t.wav");
-        File f2 = new File("c'est un test.wav");
-        File f3 = new File("clkj ' & &t.wav");
-        List<File> filesList = new ArrayList<File>();
-        filesList.add(f1);
-        filesList.add(f2);
-        filesList.add(f3);
-        System.out.println(filesList.stream()
-                .map(f -> f.getAbsolutePath())
-                .map(p -> p.replaceAll(" ", "\\\\ "))
-                .map(p -> p.replaceAll("&", "\\\\&"))
-                .map(p -> p.replaceAll("'", "\\\\'"))
-                .collect(Collectors.joining(" ")));
-    }
-
 }

@@ -73,6 +73,8 @@ public class MusicController {
                 .map(p -> p.replaceAll(" ", "\\\\ "))
                 .map(p -> p.replaceAll("&", "\\\\&"))
                 .map(p -> p.replaceAll("'", "\\\\'"))
+                .map(p -> p.replaceAll("\\(", "\\\\("))
+                .map(p -> p.replaceAll("\\)", "\\\\)"))
                 .collect(Collectors.joining(" "));
     }
 
