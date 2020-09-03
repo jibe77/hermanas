@@ -19,6 +19,9 @@ public class MusicController {
     @Value("${music.player.start.cmd}")
     private String musicPlayerStartCmd;
 
+    @Value("${music.player.suffle.param}")
+    private String musicPlayerShuffleParam;
+
     @Value("${music.path.mix}")
     private String pathToFolder;
 
@@ -49,9 +52,10 @@ public class MusicController {
         try {
             setMusicLevel(volumeLevelRegular);
             String listOfFile = getListOfFiles(pathToFolder);
-            logger.info("Play music with command {} {} {}.", musicPlayerStartCmd, listOfFile);
+            logger.info("Play music with command {} {} {}.", musicPlayerStartCmd, musicPlayerShuffleParam, listOfFile);
             currentMusicProcess = new ProcessBuilder(
                     musicPlayerStartCmd,
+                    musicPlayerShuffleParam,
                     listOfFile).start();
         } catch (IOException e) {
             logger.error("Can't play music.", e);
@@ -64,7 +68,12 @@ public class MusicController {
         File folder = new File(pathToFolder);
         List<File> filesList = Arrays.asList(folder.listFiles());
         Collections.shuffle(filesList);
-        return filesList.stream().map(f -> f.getAbsolutePath()).collect(Collectors.joining(" "));
+        return filesList.stream()
+                .map(f -> f.getAbsolutePath())
+                .map(p -> p.replaceAll(" ", "\\ "))
+                .map(p -> p.replaceAll("&", "\\&"))
+                .map(p -> p.replaceAll("'", "\\'"))
+                .collect(Collectors.joining(" "));
     }
 
     private File pickSong(File[] array) {
