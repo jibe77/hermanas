@@ -41,22 +41,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         logger.info("Configure authorizations.");
         http.authorizeRequests()
                 // list of allowed urls for GUEST user.
-                .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasRole( "GUEST")
-                .antMatchers(HttpMethod.GET, "/camera/takePicture").hasRole( "GUEST")
-                .antMatchers(HttpMethod.GET, "/fan/isSwitchedOn").hasRole( "GUEST")
-                .antMatchers(HttpMethod.GET, "/scheduler/doorClosingTime").hasRole( "GUEST")
-                .antMatchers(HttpMethod.GET, "/scheduler/doorOpeningTime").hasRole( "GUEST")
-                .antMatchers(HttpMethod.GET, "/scheduler/lightOffTime").hasRole( "GUEST")
-                .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").hasRole( "GUEST")
-                .antMatchers(HttpMethod.GET, "/sensor/info").hasRole( "GUEST")
+                .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasAnyRole("USER", "GUEST")
+                .antMatchers(HttpMethod.GET, "/camera/takePicture").hasAnyRole("USER", "GUEST")
+                .antMatchers(HttpMethod.GET, "/fan/isSwitchedOn").hasAnyRole("USER", "GUEST")
+                .antMatchers(HttpMethod.GET, "/scheduler/doorClosingTime").hasAnyRole("USER", "GUEST")
+                .antMatchers(HttpMethod.GET, "/scheduler/doorOpeningTime").hasAnyRole("USER", "GUEST")
+                .antMatchers(HttpMethod.GET, "/scheduler/lightOffTime").hasAnyRole("USER", "GUEST")
+                .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").hasAnyRole("USER", "GUEST")
+                .antMatchers(HttpMethod.GET, "/sensor/info").hasAnyRole("USER", "GUEST")
                 // user is allowed to call all the services
                 .antMatchers("/**").hasRole("USER")
-                /*.and()
+                .and()
                 .formLogin()
                 .permitAll()
                 .and()
                 .logout()
-                .permitAll() doesn't work */
+                .permitAll()
                 .and()
                 .httpBasic();
     }

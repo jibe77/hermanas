@@ -7,6 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = {ServoMotorController.class})
@@ -40,6 +45,23 @@ class ServoMotorControllerIntegrationTest {
     void testServoMotorCounterClockwise() {
         servoMotorController.setPosition(15, 100);
         assertTrue(true, "The door is supposed to move right now !");
+    }
+
+    @Test
+    void test() {
+        File f1 = new File("test test&t.wav");
+        File f2 = new File("c'est un test.wav");
+        File f3 = new File("clkj ' & &t.wav");
+        List<File> filesList = new ArrayList<File>();
+        filesList.add(f1);
+        filesList.add(f2);
+        filesList.add(f3);
+        System.out.println(filesList.stream()
+                .map(f -> f.getAbsolutePath())
+                .map(p -> p.replaceAll(" ", "\\\\ "))
+                .map(p -> p.replaceAll("&", "\\\\&"))
+                .map(p -> p.replaceAll("'", "\\\\'"))
+                .collect(Collectors.joining(" ")));
     }
 
 }

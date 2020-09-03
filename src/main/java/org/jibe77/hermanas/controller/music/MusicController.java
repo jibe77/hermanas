@@ -70,9 +70,9 @@ public class MusicController {
         Collections.shuffle(filesList);
         return filesList.stream()
                 .map(f -> f.getAbsolutePath())
-                .map(p -> p.replaceAll(" ", "\\ "))
-                .map(p -> p.replaceAll("&", "\\&"))
-                .map(p -> p.replaceAll("'", "\\'"))
+                .map(p -> p.replaceAll(" ", "\\\\ "))
+                .map(p -> p.replaceAll("&", "\\\\&"))
+                .map(p -> p.replaceAll("'", "\\\\'"))
                 .collect(Collectors.joining(" "));
     }
 
