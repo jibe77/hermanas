@@ -5,7 +5,6 @@ import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
-import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,7 @@ import java.util.Optional;
 @Component
 public class ApplicationStatusListener {
 
-    Logger logger = LoggerFactory.getLogger(SunTimeManager.class);
+    Logger logger = LoggerFactory.getLogger(ApplicationStatusListener.class);
 
     EventRepository eventRepository;
     CameraController cameraController;

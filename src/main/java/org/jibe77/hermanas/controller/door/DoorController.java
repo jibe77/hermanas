@@ -117,7 +117,7 @@ public class DoorController {
                 lastClosingTime, lastOpeningTime);
         if (lastClosingTime != null && lastOpeningTime != null) {
             return lastOpeningTime.isAfter(lastClosingTime);
-        } else if (lastOpeningTime != null && lastClosingTime == null) {
+        } else if (lastOpeningTime != null) {
             logger.info("The opening time is know but closing time unknown, the door is supposed to be opened.");
           return true;
         } else {
@@ -137,7 +137,7 @@ public class DoorController {
                 lastClosingTime, lastOpeningTime);
         if (lastClosingTime != null && lastOpeningTime != null) {
             return lastClosingTime.isAfter(lastOpeningTime);
-        } else if (lastClosingTime != null && lastOpeningTime == null) {
+        } else if (lastClosingTime != null) {
             logger.info("The closing time is know but opening time unknown, the door is supposed to be closed.");
             return true;
         } else {
