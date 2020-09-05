@@ -7,6 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = {ServoMotorController.class})
@@ -41,5 +46,4 @@ class ServoMotorControllerIntegrationTest {
         servoMotorController.setPosition(15, 100);
         assertTrue(true, "The door is supposed to move right now !");
     }
-
 }

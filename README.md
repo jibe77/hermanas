@@ -8,3 +8,6 @@ Data to store :
     * just the path, the file is saved in the filesystem
     * detected chicken in photo
     * detected eggs in photo
+
+Security with role : 
+https://howtodoinjava.com/spring-boot2/security-rest-basic-auth-example/

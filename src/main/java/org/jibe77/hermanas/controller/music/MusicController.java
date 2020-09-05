@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -18,11 +19,14 @@ public class MusicController {
     @Value("${music.player.start.cmd}")
     private String musicPlayerStartCmd;
 
+    @Value("${music.player.suffle.param}")
+    private String musicPlayerShuffleParam;
+
     @Value("${music.path.mix}")
     private String pathToFolder;
 
-    @Value("${music.path.cocorico}")
-    private String cocoricoFile;
+    @Value("${music.path.rooster}")
+    private String pathToRooster;
 
     @Value("${music.volume.cmd}")
     private String volumeCmd;
@@ -43,11 +47,30 @@ public class MusicController {
 
     Logger logger = LoggerFactory.getLogger(MusicController.class);
 
-    public boolean playSongRandomly() {
-        File mixFolder = new File(pathToFolder);
-        File[] songsAvailable = mixFolder.listFiles();
-        File pickedSong = pickSong(songsAvailable);
-        return readMusicFile(pickedSong, volumeLevelRegular);
+    public boolean playMusicRandomly() {
+        stop();
+        try {
+            setMusicLevel(volumeLevelRegular);
+            List<String> listOfFile = getListOfFiles(pathToFolder);
+            logger.info("Play music with command {} {} {}.", musicPlayerStartCmd, musicPlayerShuffleParam, listOfFile);
+            List<String> commandWithParams = new ArrayList<>(listOfFile.size() + 2);
+            commandWithParams.add(musicPlayerStartCmd);
+            commandWithParams.add(musicPlayerShuffleParam);
+            commandWithParams.addAll(listOfFile);
+            currentMusicProcess = new ProcessBuilder(commandWithParams).start();
+        } catch (IOException e) {
+            logger.error("Can't play music.", e);
+            return false;
+        }
+        return true;
+    }
+
+    private List<String> getListOfFiles(String pathToFolder) {
+        File folder = new File(pathToFolder);
+        List<File> filesList = Arrays.asList(folder.listFiles());
+        Collections.shuffle(filesList);
+        return filesList.stream()
+                .map(f -> f.getAbsolutePath()).collect(Collectors.toList());
     }
 
     private File pickSong(File[] array) {
@@ -57,30 +80,29 @@ public class MusicController {
 
     public void stop() {
         if (currentMusicProcess != null) {
-            logger.info("Stop music detroying process.");
+            logger.info("Stop music destroying process.");
             currentMusicProcess.destroyForcibly();
-        } else {
-            logger.info("No music process to stop.");
+            currentMusicProcess = null;
         }
     }
 
     public boolean cocorico() {
-        return readMusicFile(new File(cocoricoFile), volumeLevelMax);
+        stop();
+        try {
+            setMusicLevel(volumeLevelMax);
+            File mixFolder = new File(pathToRooster);
+            File[] filesAvailable = mixFolder.listFiles();
+            File pickedFile = pickSong(filesAvailable);
+            return readMusicFile(pickedFile);
+        } catch (IOException e) {
+            logger.error("Can't play cocorico.", e);
+            return false;
+        }
     }
 
-    private boolean readMusicFile(File musicFile, String volumeLevel) {
-        stop();
-
+    private boolean readMusicFile(File musicFile) {
         String path = musicFile.getAbsolutePath();
         try {
-            logger.info("Set music level to {} with command {} {} {} {}.",
-                    volumeLevel,
-                    volumeCmd,
-                    volumeCmdArg1,
-                    volumeCmdArg2,
-                    volumeLevel);
-            new ProcessBuilder(volumeCmd, volumeCmdArg1, volumeCmdArg2, volumeLevel).start();
-
             logger.info("Play music with command {} {}.", musicPlayerStartCmd, path);
             currentMusicProcess = new ProcessBuilder(musicPlayerStartCmd, path).start();
         } catch (IOException e) {
@@ -89,5 +111,15 @@ public class MusicController {
         }
         logger.info("read music method is returning true, everything seems fine.");
         return true;
+    }
+
+    private void setMusicLevel(String volumeLevel) throws IOException {
+        logger.info("Set music level to {} with command {} {} {} {}.",
+                volumeLevel,
+                volumeCmd,
+                volumeCmdArg1,
+                volumeCmdArg2,
+                volumeLevel);
+        new ProcessBuilder(volumeCmd, volumeCmdArg1, volumeCmdArg2, volumeLevel).start();
     }
 }

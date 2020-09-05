@@ -70,6 +70,7 @@ public class SunRelatedJob {
             logger.info("light switching off event is starting now.");
             lightController.switchOff();
             sunTimeManager.reloadLightOffTime();
+            musicController.stop();
         }
     }
 
@@ -78,7 +79,7 @@ public class SunRelatedJob {
             logger.info("light switching on event is starting now.");
             lightController.switchOn();
             if (playSongAtSunset) {
-                musicController.playSongRandomly();
+                musicController.playMusicRandomly();
             }
             if (doorController.doorIsClosed()) {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
@@ -112,7 +113,13 @@ public class SunRelatedJob {
                     doorService.close();
                     logger.info("take picture once the door is closed and send it by email.");
                     Optional<File> picWithClosedDoor = cameraController.takePictureNoException();
-                    emailService.sendPicture(emailNotificationSunsetSubject, picWithClosedDoor);
+                    if (picWithClosedDoor.isPresent()) {
+                        emailService.sendMailWithAttachment("Sunset notif: door is closed",
+                                "Here is a picture inside the chicken coop :", picWithClosedDoor.get());
+                    } else {
+                        emailService.sendMail("Sunset notif: door is closed",
+                                "The picture inside the chicken coop is not available (camera problem ?).");
+                    }
                 } catch (DoorNotClosedCorrectlyException e) {
                     logger.error("Didn't close the door correctly.");
                 }

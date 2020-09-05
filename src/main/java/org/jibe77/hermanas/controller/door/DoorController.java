@@ -14,16 +14,14 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 /**
- *A controller for a servo motor at GPIO pin 1 using software Pulse Width Modulation (Soft PWD).
- *
+ * A controller for a servo motor at GPIO pin 1 using software Pulse Width Modulation (Soft PWD).
  * This class controls the servo motor programatically.
- *
  * Class used for BlueJ on Raspberry Pi tutorial.
  */
 @Component
 @Scope("singleton")
-public class DoorController
-{
+public class DoorController {
+
     // the servo motor
     private final ServoMotorController servo;
 
@@ -76,13 +74,14 @@ public class DoorController
     }
 
     private void closeDoor() {
-        logger.info(
-                "Close the door moving servo clockwise with gear position {} for {} ms ...",
-                doorClosingPosition,
-                doorClosingDuration);
-        servo.setPosition(doorClosingPosition, doorClosingDuration);
-        this.lastClosingTime = LocalDateTime.now();
-
+        if (doorIsOpened()) {
+            logger.info(
+                    "Close the door moving servo clockwise with gear position {} for {} ms ...",
+                    doorClosingPosition,
+                    doorClosingDuration);
+            servo.setPosition(doorClosingPosition, doorClosingDuration);
+            this.lastClosingTime = LocalDateTime.now();
+        }
     }
 
     @Recover
@@ -97,12 +96,14 @@ public class DoorController
      */
     public void openDoor()
     {
-        logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
-                doorOpeningPosition,
-                doorOpeningDuration);
-        servo.setPosition(doorOpeningPosition, doorOpeningDuration);
-        this.lastOpeningTime = LocalDateTime.now();
-        logger.info("... done");
+        if (doorIsClosed()) {
+            logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
+                    doorOpeningPosition,
+                    doorOpeningDuration);
+            servo.setPosition(doorOpeningPosition, doorOpeningDuration);
+            this.lastOpeningTime = LocalDateTime.now();
+            logger.info("... done");
+        }
     }
 
     /**
@@ -111,9 +112,16 @@ public class DoorController
      *          true if the opening or closing time is unknown.
      */
     public boolean doorIsOpened() {
+        logger.info(
+                "doorIsOpened() method is comparing last closing time {} with lastOpeningTime {}.",
+                lastClosingTime, lastOpeningTime);
         if (lastClosingTime != null && lastOpeningTime != null) {
             return lastOpeningTime.isAfter(lastClosingTime);
+        } else if (lastOpeningTime != null && lastClosingTime == null) {
+            logger.info("The opening time is know but closing time unknown, the door is supposed to be opened.");
+          return true;
         } else {
+            logger.info("Some data is missing so the door is supposed to be opened.");
             return true;
         }
     }
@@ -124,9 +132,16 @@ public class DoorController
      *          true if the opening or closing time is unknown.
      */
     public boolean doorIsClosed() {
+        logger.info(
+                "doorIsClosed() method is comparing last closing time {} with lastOpeningTime {}.",
+                lastClosingTime, lastOpeningTime);
         if (lastClosingTime != null && lastOpeningTime != null) {
             return lastClosingTime.isAfter(lastOpeningTime);
+        } else if (lastClosingTime != null && lastOpeningTime == null) {
+            logger.info("The closing time is know but opening time unknown, the door is supposed to be closed.");
+            return true;
         } else {
+            logger.info("Some data is missing so the door is supposed to be closed.");
             return true;
         }
     }
