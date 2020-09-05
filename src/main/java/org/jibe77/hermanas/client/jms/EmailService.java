@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
-import java.util.Optional;
 
 @Service("emailService")
 public class EmailService {

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,11 +71,11 @@ public class MusicController {
         List<File> filesList = Arrays.asList(folder.listFiles());
         Collections.shuffle(filesList);
         return filesList.stream()
-                .map(f -> f.getAbsolutePath()).collect(Collectors.toList());
+                .map(File::getAbsolutePath).collect(Collectors.toList());
     }
 
     private File pickSong(File[] array) {
-        int rnd = new Random().nextInt(array.length);
+        int rnd = new SecureRandom().nextInt(array.length);
         return array[rnd];
     }
 

@@ -19,6 +19,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter
 {
+    public static final String ROLE_GUEST = "GUEST";
+    public static final String ROLE_USER = "USER";
     Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
     @Value("${security.user.name}")
     private String user;
@@ -41,16 +43,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         logger.info("Configure authorizations.");
         http.authorizeRequests()
                 // list of allowed urls for GUEST user.
-                .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasAnyRole("USER", "GUEST")
-                .antMatchers(HttpMethod.GET, "/camera/takePicture").hasAnyRole("USER", "GUEST")
-                .antMatchers(HttpMethod.GET, "/fan/isSwitchedOn").hasAnyRole("USER", "GUEST")
-                .antMatchers(HttpMethod.GET, "/scheduler/doorClosingTime").hasAnyRole("USER", "GUEST")
-                .antMatchers(HttpMethod.GET, "/scheduler/doorOpeningTime").hasAnyRole("USER", "GUEST")
-                .antMatchers(HttpMethod.GET, "/scheduler/lightOffTime").hasAnyRole("USER", "GUEST")
-                .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").hasAnyRole("USER", "GUEST")
-                .antMatchers(HttpMethod.GET, "/sensor/info").hasAnyRole("USER", "GUEST")
+                .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/camera/takePicture").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/fan/isSwitchedOn").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/scheduler/doorClosingTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/scheduler/doorOpeningTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/scheduler/lightOffTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/sensor/info").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 // user is allowed to call all the services
-                .antMatchers("/**").hasRole("USER")
+                .antMatchers("/**").hasRole(ROLE_USER)
                 .and()
                 .formLogin()
                 .permitAll()
@@ -78,10 +80,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         auth.inMemoryAuthentication()
             .withUser(user)
             .password("{noop}" + password)
-            .roles("USER")
+            .roles(ROLE_USER)
             .and()
                 .withUser(guestUser)
                 .password("{noop}" + guestPassword)
-                .roles("GUEST");
+                .roles(ROLE_GUEST);
     }
 }

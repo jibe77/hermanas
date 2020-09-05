@@ -320,7 +320,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
     }
 
     public void unprovisionPin(GpioPin gpioPin) {
-        logger.info("Fake GPIO : unprovision pin.");
+        logger.info("Fake GPIO : unprovision pin {}.", gpioPin);
     }
 
     @Override
