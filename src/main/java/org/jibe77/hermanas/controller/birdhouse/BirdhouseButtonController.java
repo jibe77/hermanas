@@ -36,12 +36,12 @@ public class BirdhouseButtonController {
     }
 
     @PostConstruct
-    public void init() {
+    void init() {
         logger.info("Init Birdhouse controller at startup.");
         provisionButton();
     }
 
-    public synchronized void provisionButton() {
+    private synchronized void provisionButton() {
         if (button == null) {
             logger.info("provision birdhouse button on gpio instance.");
             button = gpioHermanasController.provisionInput(buttonGpioAddress);
@@ -51,12 +51,12 @@ public class BirdhouseButtonController {
     }
 
     @PreDestroy
-    public void tearDown() {
+    void tearDown() {
         logger.info("Tear down Birdhouse controller at shutdown.");
         unprovisionButton();
     }
 
-    public synchronized void unprovisionButton() {
+    private synchronized void unprovisionButton() {
         if (button != null) {
             logger.info("unprovision door button on gpio instance.");
             button.removeAllListeners();
@@ -65,11 +65,15 @@ public class BirdhouseButtonController {
         }
     }
 
-    public void setLightHasBeenSwitchedOnByBirdhouseDoor(boolean lightHasBeenSwitchedOnByBirdhouseDoor) {
+    void setLightHasBeenSwitchedOnByBirdhouseDoor(boolean lightHasBeenSwitchedOnByBirdhouseDoor) {
         this.lightHasBeenSwitchedOnByBirdhouseDoor = lightHasBeenSwitchedOnByBirdhouseDoor;
     }
 
-    public boolean isLightHasBeenSwitchedOnByBirdhouseDoor() {
+    boolean isLightHasBeenSwitchedOnByBirdhouseDoor() {
         return this.lightHasBeenSwitchedOnByBirdhouseDoor;
+    }
+
+    void setButton(GpioPinDigitalInput button) {
+        this.button = button;
     }
 }

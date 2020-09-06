@@ -51,6 +51,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/scheduler/lightOffTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/sensor/info").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/camera/takePicture").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 // user is allowed to call all the services
                 .antMatchers("/**").hasRole(ROLE_USER)
                 .and()
