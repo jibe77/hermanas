@@ -16,7 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class BirdhouseControllerTest {
+class BirdhouseButtonControllerTest {
 
     BirdhouseButtonController birdhouseButtonController;
 
