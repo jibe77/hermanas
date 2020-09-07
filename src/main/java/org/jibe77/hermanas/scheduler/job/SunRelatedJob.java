@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.scheduler.job;
 
-import org.jibe77.hermanas.client.jms.EmailService;
+import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
