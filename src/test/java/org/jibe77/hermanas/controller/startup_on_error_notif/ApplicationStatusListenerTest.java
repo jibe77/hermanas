@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.controller.startup_on_error_notif;
 
-import org.jibe77.hermanas.client.jms.EmailService;
+import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
