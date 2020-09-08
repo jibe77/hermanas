@@ -2,8 +2,11 @@ package org.jibe77.hermanas.controller.music;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.IOException;
 
@@ -15,6 +18,9 @@ public class MusicControllerTest {
     @Autowired
     MusicController musicController;
 
+    @MockBean
+    ProcessLauncher processLauncher;
+
     @Test
     void testStopWithoutCurrentProcess() {
         musicController.setCurrentMusicProcess(null);
@@ -24,23 +30,42 @@ public class MusicControllerTest {
 
     @Test
     void testStopWithCurrentProcess() throws IOException {
-        musicController.setCurrentMusicProcess(new ProcessBuilder("/bin/sleep", "5").start());
+        Process process = Mockito.mock(Process.class);
+        musicController.setCurrentMusicProcess(process);
         musicController.stop();
         assertNull(musicController.getCurrentMusicProcess());
     }
 
     @Test
-    void testPlayMusic() {
+    void testPlayMusic() throws IOException {
+        Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
         boolean hasWorked = musicController.playMusicRandomly();
         assertTrue(hasWorked);
         assertNotNull(musicController.getCurrentMusicProcess());
     }
 
     @Test
-    void testCocorico() {
+    void testPlayMusicWithIOException() throws IOException {
+        Mockito.when(processLauncher.launch(Mockito.anyList())).thenThrow(new IOException());
+        boolean hasWorked = musicController.playMusicRandomly();
+        assertFalse(hasWorked);
+        assertNull(musicController.getCurrentMusicProcess());
+    }
+
+    @Test
+    void testCocorico() throws IOException {
+        Mockito.when(processLauncher.launch(Mockito.anyString(), Mockito.anyString())).thenReturn(Mockito.mock(Process.class));
         boolean hasWorked = musicController.cocorico();
         assertTrue(hasWorked);
         assertNotNull(musicController.getCurrentMusicProcess());
+    }
+
+    @Test
+    void testCocoricoWithException() throws IOException {
+        Mockito.when(processLauncher.launch(Mockito.anyString(), Mockito.anyString())).thenThrow(new IOException());
+        boolean hasWorked = musicController.cocorico();
+        assertFalse(hasWorked);
+        assertNull(musicController.getCurrentMusicProcess());
     }
 
     @AfterEach
