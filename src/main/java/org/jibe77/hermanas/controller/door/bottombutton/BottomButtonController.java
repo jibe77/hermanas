@@ -61,7 +61,11 @@ public class BottomButtonController {
         return bottomButtonHasBeenPressed;
     }
 
-    protected void setBottomButtonHasBeenPressed(boolean bottomButtonHasBeenPressed) {
+    void setBottomButtonHasBeenPressed(boolean bottomButtonHasBeenPressed) {
         this.bottomButtonHasBeenPressed = bottomButtonHasBeenPressed;
+    }
+
+    void setBottomButton(GpioPinDigitalInput bottomButton) {
+        this.bottomButton = bottomButton;
     }
 }
