@@ -44,7 +44,7 @@ public class MusicController {
     @Value("${music.volume.regular}")
     private String volumeLevelRegular;
 
-    Process currentMusicProcess;
+    private Process currentMusicProcess;
 
     Logger logger = LoggerFactory.getLogger(MusicController.class);
 
@@ -122,5 +122,13 @@ public class MusicController {
                 volumeCmdArg2,
                 volumeLevel);
         new ProcessBuilder(volumeCmd, volumeCmdArg1, volumeCmdArg2, volumeLevel).start();
+    }
+
+    Process getCurrentMusicProcess() {
+        return currentMusicProcess;
+    }
+
+    void setCurrentMusicProcess(Process currentMusicProcess) {
+        this.currentMusicProcess = currentMusicProcess;
     }
 }
