@@ -2,7 +2,6 @@ package org.jibe77.hermanas.controller.music;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +12,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = {MusicController.class})
-public class MusicControllerTest {
+class MusicControllerTest {
 
     @Autowired
     MusicController musicController;
