@@ -40,9 +40,17 @@ class WeatherInfoTest {
                 Mockito.anyDouble(),
                 Mockito.anyDouble(),
                 Mockito.anyString())).thenReturn(weatherInfo);
+        weatherClient.setWeatherInfoEnabled(true);
         weatherInfo = weatherClient.getInfo();
-        assertEquals(0d, weatherInfo.getMain().getTemp());
-        assertEquals(0d, weatherInfo.getMain().getHumidity());
+        assertEquals(0d, weatherInfo.getTemp());
+        assertEquals(0d, weatherInfo.getHumidity());
+    }
 
+    @Test
+    void testWeatherIfDisabled() {
+        weatherClient.setWeatherInfoEnabled(false);
+        WeatherInfo weatherInfo = weatherClient.getInfo();
+        assertEquals(WeatherClient.DEFAULT_VALUE_IF_DISABLED, weatherInfo.getMain().getTemp());
+        assertEquals(WeatherClient.DEFAULT_VALUE_IF_DISABLED, weatherInfo.getMain().getHumidity());
     }
 }

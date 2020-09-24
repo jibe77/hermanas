@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 import static org.mockito.Mockito.*;
 
-public class SunRelatedJobTest {
+class SunRelatedJobTest {
 
     SunRelatedJob sunRelatedJob;
 
@@ -23,9 +23,14 @@ public class SunRelatedJobTest {
     EmailService emailService;
     DoorController doorController;
     MusicController musicController;
+    LocalDateTime eventAlwaysInTheFutur;
+    LocalDateTime eventToLaunch;
+
 
     @BeforeEach
     void init() {
+        eventAlwaysInTheFutur = LocalDateTime.now().plusHours(1);
+        eventToLaunch = LocalDateTime.now().minusHours(1);
         sunTimeManager = mock(SunTimeManager.class);
         cameraController = mock(CameraController.class);
         lightController = mock(LightController.class);
@@ -38,7 +43,6 @@ public class SunRelatedJobTest {
 
     @Test
     void testNoEvent() {
-        LocalDateTime eventAlwaysInTheFutur = LocalDateTime.now().plusDays(1);
         when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInTheFutur);
