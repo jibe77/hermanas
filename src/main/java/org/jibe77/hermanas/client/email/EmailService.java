@@ -1,8 +1,7 @@
-package org.jibe77.hermanas.client.jms;
+package org.jibe77.hermanas.client.email;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
@@ -18,8 +17,7 @@ import java.io.File;
 @Service("emailService")
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender mailSender;
 
     @Value("${email.notification.to}")
     private String emailNotificationTo;
@@ -31,6 +29,10 @@ public class EmailService {
     private boolean enabled;
 
     Logger logger = LoggerFactory.getLogger(EmailService.class);
+
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     public void sendMail(String subject, String body)
     {
@@ -74,5 +76,9 @@ public class EmailService {
                 logger.error("Can't send email", ex);
             }
         }
+    }
+
+    void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

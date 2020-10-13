@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = {ServoMotorController.class})
-class ServoMotorControllerIntegrationTest {
+class ServoMotorControllerTest {
 
     @Autowired
     ServoMotorController servoMotorController;

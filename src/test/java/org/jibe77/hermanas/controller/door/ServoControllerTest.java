@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest(classes = {DoorController.class, BottomButtonController.class})
-class ServoControllerIntegrationTest {
+class ServoControllerTest {
 
     @Autowired
     DoorController controller;
@@ -34,7 +34,7 @@ class ServoControllerIntegrationTest {
     @MockBean
     BottomButtonController bottomButtonController;
 
-    Logger logger = LoggerFactory.getLogger(ServoControllerIntegrationTest.class);
+    Logger logger = LoggerFactory.getLogger(ServoControllerTest.class);
 
     @Test
     void testCloseDoor() throws DoorNotClosedCorrectlyException {

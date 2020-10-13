@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.scheduler.job;
 
-import org.jibe77.hermanas.client.jms.EmailService;
+import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
@@ -27,8 +27,6 @@ public class SunRelatedJob {
 
     private LightController lightController;
 
-    private DoorService doorService;
-
     private DoorController doorController;
 
     private EmailService emailService;
@@ -44,11 +42,10 @@ public class SunRelatedJob {
     @Value("${play.song.at.sunset}")
     private boolean playSongAtSunset;
 
-    public SunRelatedJob(SunTimeManager sunTimeManager, CameraController cameraController, LightController lightController, DoorService doorService, EmailService emailService, DoorController doorController, MusicController musicController) {
+    public SunRelatedJob(SunTimeManager sunTimeManager, CameraController cameraController, LightController lightController, EmailService emailService, DoorController doorController, MusicController musicController) {
         this.sunTimeManager = sunTimeManager;
         this.cameraController = cameraController;
         this.lightController = lightController;
-        this.doorService = doorService;
         this.emailService = emailService;
         this.doorController = doorController;
         this.musicController = musicController;
@@ -57,7 +54,7 @@ public class SunRelatedJob {
     Logger logger = LoggerFactory.getLogger(SunRelatedJob.class);
 
     @Scheduled(fixedDelayString = "${suntime.scheduler.delay.in.milliseconds}")
-    public void execute() {
+    void execute() {
         LocalDateTime currentTime = LocalDateTime.now();
         manageDoorClosingEvent(currentTime);
         manageDoorOpeningEvent(currentTime);
@@ -93,7 +90,7 @@ public class SunRelatedJob {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
             logger.info("door opening event is starting now.");
             cameraController.takePictureNoException();
-            doorService.open();
+            doorController.openDoor();
             if (cocoricoAtSunriseEnabled) {
                 musicController.cocorico();
             }
@@ -110,20 +107,19 @@ public class SunRelatedJob {
                     logger.info("take picture before closing door.");
                     cameraController.takePictureNoException();
                     logger.info("close door");
-                    doorService.close();
+                    doorController.closeDoorWithBottormButtonManagement();
                     logger.info("take picture once the door is closed and send it by email.");
                     Optional<File> picWithClosedDoor = cameraController.takePictureNoException();
                     if (picWithClosedDoor.isPresent()) {
-                        emailService.sendMailWithAttachment("Sunset notif: door is closed",
+                        emailService.sendMailWithAttachment(emailNotificationSunsetSubject,
                                 "Here is a picture inside the chicken coop :", picWithClosedDoor.get());
                     } else {
-                        emailService.sendMail("Sunset notif: door is closed",
+                        emailService.sendMail(emailNotificationSunsetSubject,
                                 "The picture inside the chicken coop is not available (camera problem ?).");
                     }
                 } catch (DoorNotClosedCorrectlyException e) {
                     logger.error("Didn't close the door correctly.");
                 }
-                cameraController.takePictureNoException();
             } else {
                 logger.info("door has already been closed before, nothing to do in this event.");
             }

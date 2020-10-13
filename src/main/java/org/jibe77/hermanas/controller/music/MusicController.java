@@ -44,9 +44,15 @@ public class MusicController {
     @Value("${music.volume.regular}")
     private String volumeLevelRegular;
 
-    Process currentMusicProcess;
+    ProcessLauncher processLauncher;
+
+    private Process currentMusicProcess;
 
     Logger logger = LoggerFactory.getLogger(MusicController.class);
+
+    public MusicController(ProcessLauncher processLauncher) {
+        this.processLauncher = processLauncher;
+    }
 
     public boolean playMusicRandomly() {
         stop();
@@ -58,7 +64,7 @@ public class MusicController {
             commandWithParams.add(musicPlayerStartCmd);
             commandWithParams.add(musicPlayerShuffleParam);
             commandWithParams.addAll(listOfFile);
-            currentMusicProcess = new ProcessBuilder(commandWithParams).start();
+            currentMusicProcess = processLauncher.launch(commandWithParams);
         } catch (IOException e) {
             logger.error("Can't play music.", e);
             return false;
@@ -101,15 +107,10 @@ public class MusicController {
         }
     }
 
-    private boolean readMusicFile(File musicFile) {
+    private boolean readMusicFile(File musicFile) throws IOException {
         String path = musicFile.getAbsolutePath();
-        try {
-            logger.info("Play music with command {} {}.", musicPlayerStartCmd, path);
-            currentMusicProcess = new ProcessBuilder(musicPlayerStartCmd, path).start();
-        } catch (IOException e) {
-            logger.error("Can't play music with command {} on file {}.", musicPlayerStartCmd, path);
-            return false;
-        }
+        logger.info("Play music with command {} {}.", musicPlayerStartCmd, path);
+        currentMusicProcess = processLauncher.launch(musicPlayerStartCmd, path);
         logger.info("read music method is returning true, everything seems fine.");
         return true;
     }
@@ -121,6 +122,14 @@ public class MusicController {
                 volumeCmdArg1,
                 volumeCmdArg2,
                 volumeLevel);
-        new ProcessBuilder(volumeCmd, volumeCmdArg1, volumeCmdArg2, volumeLevel).start();
+        processLauncher.launch(volumeCmd, volumeCmdArg1, volumeCmdArg2, volumeLevel);
+    }
+
+    Process getCurrentMusicProcess() {
+        return currentMusicProcess;
+    }
+
+    void setCurrentMusicProcess(Process currentMusicProcess) {
+        this.currentMusicProcess = currentMusicProcess;
     }
 }

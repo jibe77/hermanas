@@ -2,7 +2,6 @@ package org.jibe77.hermanas.client.weather;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
@@ -29,8 +28,11 @@ public class WeatherClient {
 
     private static final Logger log = LoggerFactory.getLogger(WeatherClient.class);
 
-    @Autowired
-    RestTemplateBuilder builder;
+    final RestTemplateBuilder builder;
+
+    public WeatherClient(RestTemplateBuilder builder) {
+        this.builder = builder;
+    }
 
     public WeatherInfo getInfo() {
         if (weatherInfoEnabled) {
@@ -48,5 +50,9 @@ public class WeatherClient {
             weatherInfo.setValues(DEFAULT_VALUE_IF_DISABLED, DEFAULT_VALUE_IF_DISABLED);
             return weatherInfo;
         }
+    }
+
+    void setWeatherInfoEnabled(boolean weatherInfoEnabled) {
+        this.weatherInfoEnabled = weatherInfoEnabled;
     }
 }
