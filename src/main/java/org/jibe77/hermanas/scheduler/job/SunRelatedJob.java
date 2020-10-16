@@ -109,21 +109,29 @@ public class SunRelatedJob {
                     logger.info("close door");
                     doorController.closeDoorWithBottormButtonManagement();
                     logger.info("take picture once the door is closed and send it by email.");
-                    Optional<File> picWithClosedDoor = cameraController.takePictureNoException();
-                    if (picWithClosedDoor.isPresent()) {
-                        emailService.sendMailWithAttachment(emailNotificationSunsetSubject,
-                                "Here is a picture inside the chicken coop :", picWithClosedDoor.get());
-                    } else {
-                        emailService.sendMail(emailNotificationSunsetSubject,
-                                "The picture inside the chicken coop is not available (camera problem ?).");
-                    }
+                    notification("Here is a picture inside the chicken coop :",
+                            "The picture inside the chicken coop is not available (camera problem ?).");
                 } catch (DoorNotClosedCorrectlyException e) {
                     logger.error("Didn't close the door correctly.");
+                    notification(
+        "Watchout, the door hasn't been closed correctly, here is a picture inside the chicken coop :",
+            "Watchout, the door hasn't been closed correctly, no picture available (camera problem ?).");
                 }
             } else {
                 logger.info("door has already been closed before, nothing to do in this event.");
             }
             sunTimeManager.reloadDoorClosingTime();
+        }
+    }
+
+    private void notification(String textWithPicture, String textIfNoPicture) {
+        Optional<File> picWithClosedDoor = cameraController.takePictureNoException();
+        if (picWithClosedDoor.isPresent()) {
+            emailService.sendMailWithAttachment(emailNotificationSunsetSubject,
+                    textWithPicture, picWithClosedDoor.get());
+        } else {
+            emailService.sendMail(emailNotificationSunsetSubject,
+                    textIfNoPicture);
         }
     }
 }

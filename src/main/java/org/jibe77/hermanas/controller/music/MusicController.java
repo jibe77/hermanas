@@ -107,6 +107,14 @@ public class MusicController {
         }
     }
 
+    /**
+     * This methods returns true if music is playing
+     * @return true if music is playing
+     */
+    public boolean isPlaying() {
+        return (currentMusicProcess != null && currentMusicProcess.isAlive());
+    }
+
     private boolean readMusicFile(File musicFile) throws IOException {
         String path = musicFile.getAbsolutePath();
         logger.info("Play music with command {} {}.", musicPlayerStartCmd, path);

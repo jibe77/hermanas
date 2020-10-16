@@ -29,6 +29,13 @@ public class MusicService {
         musicController.stop();
     }
 
+    @GetMapping(value = "/music/status")
+    public boolean isPlaying() {
+        logger.info("return music player status");
+        return musicController.isPlaying();
+    }
+
+
     @GetMapping(value = "/music/cocorico")
     public boolean cocorico() {
         logger.info("Cocorico !");
