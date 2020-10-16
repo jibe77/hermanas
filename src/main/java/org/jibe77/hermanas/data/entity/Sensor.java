@@ -1,5 +1,7 @@
 package org.jibe77.hermanas.data.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -7,6 +9,7 @@ import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 @Entity
+@JsonIgnoreProperties(value = { "id" })
 public class Sensor {
 
     @Id
