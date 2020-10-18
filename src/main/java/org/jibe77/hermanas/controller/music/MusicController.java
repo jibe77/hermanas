@@ -7,10 +7,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -76,23 +73,28 @@ public class MusicController {
     }
 
     private void printErrorStreamInThread() {
-        BufferedReader bufferedReader = new BufferedReader(
-                new InputStreamReader(currentMusicProcess.getErrorStream()));
-        new Thread(() -> {
-            String line = null;
-            logger.info("error stream is opened ...");
-            do {
-                try {
-                    line = bufferedReader.readLine();
-                    if (line != null) {
-                        logger.info(line);
+        InputStream errorStream = currentMusicProcess.getErrorStream();
+        if (errorStream != null) {
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(errorStream));
+            new Thread(() -> {
+                String line = null;
+                logger.info("error stream is opened ...");
+                do {
+                    try {
+                        line = bufferedReader.readLine();
+                        if (line != null) {
+                            logger.info(line);
+                        }
+                    } catch (IOException e) {
+                        logger.error("can't read process errors.", e);
                     }
-                } catch (IOException e) {
-                    logger.error("can't read process errors.", e);
-                }
-            } while (line != null);
-            logger.info("process error stream is finished.");
-        }).start();
+                } while (line != null);
+                logger.info("process error stream is finished.");
+            }).start();
+        } else {
+            logger.info("error stream is null.");
+        }
     }
 
     private List<String> getListOfFiles(String pathToFolder) {
