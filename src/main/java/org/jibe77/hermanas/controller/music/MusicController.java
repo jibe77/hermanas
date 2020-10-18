@@ -7,8 +7,10 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,11 +67,32 @@ public class MusicController {
             commandWithParams.add(musicPlayerShuffleParam);
             commandWithParams.addAll(listOfFile);
             currentMusicProcess = processLauncher.launch(commandWithParams);
+            printErrorStreamInThread();
         } catch (IOException e) {
             logger.error("Can't play music.", e);
             return false;
         }
         return true;
+    }
+
+    private void printErrorStreamInThread() {
+        BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(currentMusicProcess.getErrorStream()));
+        new Thread(() -> {
+            String line = null;
+            logger.info("error stream is opened ...");
+            do {
+                try {
+                    line = bufferedReader.readLine();
+                    if (line != null) {
+                        logger.info(line);
+                    }
+                } catch (IOException e) {
+                    logger.error("can't read process errors.", e);
+                }
+            } while (line != null);
+            logger.info("process error stream is finished.");
+        }).start();
     }
 
     private List<String> getListOfFiles(String pathToFolder) {
@@ -94,6 +117,7 @@ public class MusicController {
     }
 
     public boolean cocorico() {
+        logger.info("Play cocorico !");
         stop();
         try {
             setMusicLevel(volumeLevelMax);
