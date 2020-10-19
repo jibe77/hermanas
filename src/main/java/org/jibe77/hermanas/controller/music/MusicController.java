@@ -19,8 +19,17 @@ public class MusicController {
     @Value("${music.player.start.cmd}")
     private String musicPlayerStartCmd;
 
-    @Value("${music.player.suffle.param}")
-    private String musicPlayerShuffleParam;
+    @Value("${music.player.nodisp.param}")
+    private String musicPlayerNoDispParam;
+
+    @Value("${music.player.duration.param.key}")
+    private String musicPlayerDurationKey;
+
+    @Value("${music.player.duration.param.value}")
+    private String musicPlayerDurationValue;
+
+    @Value("${music.player.autoexit}")
+    private String musicPlayerAutoExit;
 
     @Value("${music.path.mix}")
     private String pathToFolder;
@@ -58,10 +67,15 @@ public class MusicController {
         try {
             setMusicLevel(volumeLevelRegular);
             List<String> listOfFile = getListOfFiles(pathToFolder);
-            logger.info("Play music with command {} {} {}.", musicPlayerStartCmd, musicPlayerShuffleParam, listOfFile);
+            logger.info("Play music with command {} {} {} {} {} {}.",
+                    musicPlayerStartCmd, musicPlayerNoDispParam, musicPlayerDurationKey,
+                    musicPlayerDurationValue, musicPlayerAutoExit, listOfFile);
             List<String> commandWithParams = new ArrayList<>(listOfFile.size() + 2);
             commandWithParams.add(musicPlayerStartCmd);
-            commandWithParams.add(musicPlayerShuffleParam);
+            commandWithParams.add(musicPlayerNoDispParam);
+            commandWithParams.add(musicPlayerDurationKey);
+            commandWithParams.add(musicPlayerDurationValue);
+            commandWithParams.add(musicPlayerAutoExit);
             commandWithParams.addAll(listOfFile);
             currentMusicProcess = processLauncher.launch(commandWithParams);
             printErrorStreamInThread();
@@ -79,18 +93,18 @@ public class MusicController {
                     new InputStreamReader(errorStream));
             new Thread(() -> {
                 String line = null;
-                logger.info("error stream is opened ...");
+                logger.info("error stream is opened (debug only)...");
                 do {
                     try {
                         line = bufferedReader.readLine();
                         if (line != null) {
-                            logger.info(line);
+                            logger.debug(line);
                         }
                     } catch (IOException e) {
                         logger.error("can't read process errors.", e);
                     }
                 } while (line != null);
-                logger.info("process error stream is finished.");
+                logger.info("process error stream is finished (debug only).");
             }).start();
         } else {
             logger.info("error stream is null.");
