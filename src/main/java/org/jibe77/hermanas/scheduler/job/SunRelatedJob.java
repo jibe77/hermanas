@@ -7,7 +7,6 @@ import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
-import org.jibe77.hermanas.service.DoorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
