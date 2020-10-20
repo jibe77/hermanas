@@ -60,8 +60,7 @@ public class MusicController {
         stop();
         try {
             setMusicLevel(volumeLevelRegular);
-            List<String> listOfFile = new ArrayList<>();// getListOfFiles(pathToFolder);
-            listOfFile.add(pathToFolder + "/*");
+            List<String> listOfFile = getListOfFiles(pathToFolder);
             playMusic(listOfFile);
         } catch (IOException e) {
             logger.error("Can't play music.", e);
@@ -117,7 +116,6 @@ public class MusicController {
     private List<String> getListOfFiles(String pathToFolder) {
         File folder = new File(pathToFolder);
         List<File> filesList = Arrays.asList(folder.listFiles());
-        Collections.shuffle(filesList);
         return filesList.stream()
                 .map(File::getAbsolutePath).collect(Collectors.toList());
     }
