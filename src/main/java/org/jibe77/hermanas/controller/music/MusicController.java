@@ -86,10 +86,10 @@ public class MusicController {
         commandWithParams.add(musicPlayerShuffle);
         commandWithParams.addAll(listOfFile);
         currentMusicProcess = processLauncher.launch(commandWithParams);
-        printErrorStreamInThread();
+        printErrorStreamInThread(currentMusicProcess);
     }
 
-    private void printErrorStreamInThread() {
+    private void printErrorStreamInThread(Process currentMusicProcess) {
         InputStream errorStream = currentMusicProcess.getErrorStream();
         if (errorStream != null) {
             BufferedReader bufferedReader = new BufferedReader(
