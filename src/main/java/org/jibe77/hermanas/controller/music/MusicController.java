@@ -22,14 +22,8 @@ public class MusicController {
     @Value("${music.player.nodisp.param}")
     private String musicPlayerNoDispParam;
 
-    @Value("${music.player.duration.param.key}")
-    private String musicPlayerDurationKey;
-
-    @Value("${music.player.duration.param.value}")
-    private String musicPlayerDurationValue;
-
-    @Value("${music.player.autoexit.param}")
-    private String musicPlayerAutoExit;
+    @Value("${music.player.shuffle.param}")
+    private String musicPlayerShuffle;
 
     @Value("${music.path.mix}")
     private String pathToFolder;
@@ -66,24 +60,33 @@ public class MusicController {
         stop();
         try {
             setMusicLevel(volumeLevelRegular);
-            List<String> listOfFile = getListOfFiles(pathToFolder);
-            logger.info("Play music with command {} {} {} {} {} {}.",
-                    musicPlayerStartCmd, musicPlayerNoDispParam, musicPlayerDurationKey,
-                    musicPlayerDurationValue, musicPlayerAutoExit, listOfFile);
-            List<String> commandWithParams = new ArrayList<>(listOfFile.size() + 2);
-            commandWithParams.add(musicPlayerStartCmd);
-            commandWithParams.add(musicPlayerNoDispParam);
-            commandWithParams.add(musicPlayerDurationKey);
-            commandWithParams.add(musicPlayerDurationValue);
-            commandWithParams.add(musicPlayerAutoExit);
-            commandWithParams.addAll(listOfFile);
-            currentMusicProcess = processLauncher.launch(commandWithParams);
-            printErrorStreamInThread();
+            List<String> listOfFile = new ArrayList<>();// getListOfFiles(pathToFolder);
+            listOfFile.add(pathToFolder + "/*");
+            playMusic(listOfFile);
         } catch (IOException e) {
             logger.error("Can't play music.", e);
             return false;
         }
         return true;
+    }
+
+    private void playMusic(File musicFile) throws IOException {
+        List<String> listOfFile = new ArrayList<>(1);
+        listOfFile.add(musicFile.getAbsolutePath());
+        playMusic(listOfFile);
+    }
+
+    private void playMusic(List<String> listOfFile) throws IOException {
+        logger.info("Play music with command {} {} {}  {}.",
+                musicPlayerStartCmd, musicPlayerNoDispParam
+                , musicPlayerShuffle, listOfFile);
+        List<String> commandWithParams = new ArrayList<>(listOfFile.size() + 2);
+        commandWithParams.add(musicPlayerStartCmd);
+        commandWithParams.add(musicPlayerNoDispParam);
+        commandWithParams.add(musicPlayerShuffle);
+        commandWithParams.addAll(listOfFile);
+        currentMusicProcess = processLauncher.launch(commandWithParams);
+        printErrorStreamInThread();
     }
 
     private void printErrorStreamInThread() {
@@ -140,7 +143,8 @@ public class MusicController {
             File mixFolder = new File(pathToRooster);
             File[] filesAvailable = mixFolder.listFiles();
             File pickedFile = pickSong(filesAvailable);
-            return readMusicFile(pickedFile);
+            playMusic(pickedFile);
+            return true;
         } catch (IOException e) {
             logger.error("Can't play cocorico.", e);
             return false;
@@ -153,14 +157,6 @@ public class MusicController {
      */
     public boolean isPlaying() {
         return (currentMusicProcess != null && currentMusicProcess.isAlive());
-    }
-
-    private boolean readMusicFile(File musicFile) throws IOException {
-        String path = musicFile.getAbsolutePath();
-        logger.info("Play music with command {} {}.", musicPlayerStartCmd, path);
-        currentMusicProcess = processLauncher.launch(musicPlayerStartCmd, path);
-        logger.info("read music method is returning true, everything seems fine.");
-        return true;
     }
 
     private void setMusicLevel(String volumeLevel) throws IOException {
