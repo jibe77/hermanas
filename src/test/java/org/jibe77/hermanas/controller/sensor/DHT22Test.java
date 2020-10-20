@@ -24,4 +24,18 @@ class DHT22Test {
         assertEquals(57.6, sensor.getHumidity());
         assertEquals(24.9, sensor.getTemperature());
     }
+
+    @Test
+    void testParseSensorReturnedValue() {
+        Sensor sensor = dht22.parseSensorReturnedValue("Temp=2.9* Humidity=7.6%");
+        assertEquals(7.6, sensor.getHumidity());
+        assertEquals(2.9, sensor.getTemperature());
+    }
+
+    @Test
+    void testParseSensorReturnedValueMinus() {
+        Sensor sensor = dht22.parseSensorReturnedValue("Temp=-2.9* Humidity=7.6%");
+        assertEquals(7.6, sensor.getHumidity());
+        assertEquals(-2.9, sensor.getTemperature());
+    }
 }

@@ -34,9 +34,6 @@ public class SensorJob {
         try {
             logger.info("Sensor scheduled job is taking temperature and humidity now.");
             Sensor sensor = dht22.refreshData();
-            sensor.setTemperature(sensor.getTemperature());
-            sensor.setHumidity(sensor.getHumidity());
-            sensor.setDateTime(LocalDateTime.now());
 
             WeatherInfo weatherInfo = weatherClient.getInfo();
             sensor.setExternalTemperature(weatherInfo.getTemp());
