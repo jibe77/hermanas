@@ -28,7 +28,7 @@ public class MusicController {
     @Value("${music.player.duration.param.value}")
     private String musicPlayerDurationValue;
 
-    @Value("${music.player.autoexit}")
+    @Value("${music.player.autoexit.param}")
     private String musicPlayerAutoExit;
 
     @Value("${music.path.mix}")
