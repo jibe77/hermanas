@@ -23,8 +23,10 @@ class DoorControllerTest {
         assertEquals("UNDEFINED", doorController.status());
 
         doorController.closeDoorWithBottormButtonManagement(true);
+        doorController.closeDoorWithBottormButtonManagement(true);
         assertEquals("CLOSED", doorController.status());
 
+        doorController.openDoor(true);
         doorController.openDoor(true);
         assertEquals("OPENED", doorController.status());
     }
