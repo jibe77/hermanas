@@ -8,6 +8,7 @@ import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.MessageSource;
 
 import java.time.LocalDateTime;
 
@@ -25,6 +26,7 @@ class SunRelatedJobTest {
     MusicController musicController;
     LocalDateTime eventAlwaysInTheFutur;
     LocalDateTime eventToLaunch;
+    MessageSource messageSource;
 
 
     @BeforeEach
@@ -36,9 +38,10 @@ class SunRelatedJobTest {
         lightController = mock(LightController.class);
         doorController = mock(DoorController.class);
         musicController = mock(MusicController.class);
+        messageSource = mock(MessageSource.class);
 
         sunRelatedJob = new SunRelatedJob(sunTimeManager, cameraController, lightController,
-                emailService, doorController, musicController);
+                emailService, doorController, musicController, messageSource);
     }
 
     @Test
@@ -57,6 +60,5 @@ class SunRelatedJobTest {
         verify(musicController, times(0)).cocorico();
         verify(musicController, times(0)).playMusicRandomly();
         verify(musicController, times(0)).stop();
-
     }
 }
