@@ -47,33 +47,45 @@ public class DHT22 {
 
     @Cacheable(value = {"sensor"})
     public Sensor refreshData() throws IOException {
-        Sensor sensor = new Sensor();
-        sensor.setDateTime(LocalDateTime.now());
         ProcessBuilder pb = new ProcessBuilder(pythonCommand, pythonScript, scriptArg1, scriptArg2);
         pb.redirectErrorStream(true);
         Process p = pb.start();
-        try {
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                String returnValue = in.readLine();
-                logger.info("python {} with native command {} {} {} has returned {}.", pythonCommand, pythonScript, scriptArg1, scriptArg2, returnValue);
-                String[] returnedString = returnValue.split(" ");
-                for (String returnedValue : returnedString) {
-                    if (returnedValue.startsWith("Temp=")) {
-                        sensor.setTemperature(Double.valueOf(returnedValue.substring(5, 9)));
-                    } else if (returnedValue.startsWith("Humidity=")) {
-                        sensor.setHumidity(Double.valueOf(returnedValue.substring(9, 13)));
-                    }
-                }
-                logger.info("temperature {} and humidity {}", sensor.getTemperature(), sensor.getHumidity());
-            }
-
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()))){
+            String returnValue = in.readLine();
+            logger.info("python {} with native command {} {} {} has returned {}.", pythonCommand, pythonScript, scriptArg1, scriptArg2, returnValue);
+            Sensor sensor = parseSensorReturnedValue(returnValue);
+            logger.info("temperature {} and humidity {}", sensor.getTemperature(), sensor.getHumidity());
             int exitValue = p.waitFor();
             logger.info("exit value {}.", exitValue);
+            return sensor;
         } catch (InterruptedException e) {
             logger.error("interrupted while refreshing data.", e);
             // Restore interrupted state...
             Thread.currentThread().interrupt();
+            return createDefaultSensor();
         }
+    }
+
+    protected Sensor parseSensorReturnedValue(String returnValue) {
+        Sensor sensor = createDefaultSensor();
+        String[] returnedString = returnValue.split(" ");
+        for (String returnedValue : returnedString) {
+            if (returnedValue.startsWith("Temp=")) {
+                sensor.setTemperature(
+                        Double.valueOf(
+                                returnedValue.substring(5).replace('*', ' ')));
+            } else if (returnedValue.startsWith("Humidity=")) {
+                sensor.setHumidity(
+                        Double.valueOf(
+                                returnedValue.substring(9).replace('%', ' ')));
+            }
+        }
+        return sensor;
+    }
+
+    private Sensor createDefaultSensor() {
+        Sensor sensor = new Sensor();
+        sensor.setDateTime(LocalDateTime.now());
         return sensor;
     }
 

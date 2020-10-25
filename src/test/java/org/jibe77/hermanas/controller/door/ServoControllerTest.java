@@ -44,7 +44,7 @@ class ServoControllerTest {
                         Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
         Mockito.when(bottomButtonController.isBottomButtonHasBeenPressed()).thenReturn(true);
-        controller.closeDoorWithBottormButtonManagement();
+        controller.closeDoorWithBottormButtonManagement(false);
         Mockito.verify(
                 servoMotorController,
                 Mockito.times(1)
@@ -58,7 +58,7 @@ class ServoControllerTest {
     @Test
     void testOpenDoor() {
         logger.info("<--Pi4J--> GPIO Control OpenDoor ... started.");
-        controller.openDoor();
+        controller.openDoor(false);
         Mockito.verify(
                 servoMotorController,
                 Mockito.times(1)

@@ -5,6 +5,7 @@ import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,10 +25,10 @@ public class DoorService {
      *          false if the door has been closed without touching the bottom button.
      */
     @GetMapping("/door/close")
-    public boolean close() {
-        logger.info("closing door now ...");
+    public boolean close(@RequestParam(defaultValue = "false", required = false) String force) {
+        logger.info("closing door now with force set to {} ...", force);
         try {
-            doorController.closeDoorWithBottormButtonManagement();
+            doorController.closeDoorWithBottormButtonManagement(Boolean.TRUE.toString().equals(force));
             logger.info("... done !");
             return true;
         } catch (DoorNotClosedCorrectlyException e) {
@@ -37,20 +38,14 @@ public class DoorService {
     }
 
     @GetMapping("/door/open")
-    public void open() {
-        logger.info("opening door now ...");
-        doorController.openDoor();
+    public void open(@RequestParam(defaultValue = "false", required = false) String force) {
+        logger.info("opening door now with force set to {} ...", force);
+        doorController.openDoor(Boolean.TRUE.toString().equals(force));
         logger.info("... done !");
     }
 
     @GetMapping("/door/status")
     public String status() {
-        if (doorController.doorIsOpened() && !doorController.doorIsClosed()) {
-            return "OPENED";
-        } else if (doorController.doorIsClosed() && !doorController.doorIsOpened()) {
-            return "CLOSED";
-        } else {
-            return "UNDEFINED";
-        }
+        return doorController.status();
     }
 }

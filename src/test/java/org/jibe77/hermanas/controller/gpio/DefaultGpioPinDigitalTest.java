@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DefaultGpioPinDigitalTest {
+class DefaultGpioPinDigitalTest {
 
     public static final String TEST = "test";
 

@@ -7,12 +7,14 @@ import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Optional;
 
 @Component
@@ -23,11 +25,14 @@ public class ApplicationStatusListener {
     EventRepository eventRepository;
     CameraController cameraController;
     EmailService emailService;
+    MessageSource messageSource;
 
-    public ApplicationStatusListener(EventRepository eventRepository, EmailService emailService, CameraController cameraController) {
+    public ApplicationStatusListener(EventRepository eventRepository, EmailService emailService,
+                                     CameraController cameraController, MessageSource messageSource) {
         this.eventRepository = eventRepository;
         this.emailService = emailService;
         this.cameraController = cameraController;
+        this.messageSource = messageSource;
     }
 
     @PostConstruct
@@ -60,16 +65,16 @@ public class ApplicationStatusListener {
         Optional<File> pic = cameraController.takePictureNoException();
         if (pic.isPresent()) {
             emailService.sendMailWithAttachment(
-                    "Hermanas has restarted incorrecly",
-                    "The application was not available due to a technical problem. " +
-                            "Please verify the chicken coop door on the following picture !",
+                    messageSource.getMessage("restarted.incorrectly.title", null, Locale.getDefault()),
+                    messageSource.getMessage("restarted.incorrectly.message", null, Locale.getDefault()) +
+                            messageSource.getMessage("restarted.incorrectly.message_with_picture", null, Locale.getDefault())
+                    ,
                     pic.get());
         } else {
             emailService.sendMail(
-                    "Hermanas has restarted incorrecly",
-                    "The application was not available due to a technical problem. " +
-                            "Please verify the chicken coop door ! " +
-                            "The picture inside the chicken coop is not available (camera problem ?).");
+                messageSource.getMessage("restarted.incorrectly.title", null, Locale.getDefault()),
+                messageSource.getMessage("restarted.incorrectly.message", null, Locale.getDefault()) +
+                        messageSource.getMessage("restarted.incorrectly.message_without_picture", null, Locale.getDefault()));
         }
     }
 

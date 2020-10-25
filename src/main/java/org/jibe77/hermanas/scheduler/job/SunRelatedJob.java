@@ -7,7 +7,6 @@ import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
-import org.jibe77.hermanas.service.DoorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,7 +79,7 @@ public class SunRelatedJob {
             }
             if (doorController.doorIsClosed()) {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
-                doorController.openDoor();
+                doorController.openDoor(false);
             }
             sunTimeManager.reloadLightOnTime();
         }
@@ -90,7 +89,7 @@ public class SunRelatedJob {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
             logger.info("door opening event is starting now.");
             cameraController.takePictureNoException();
-            doorController.openDoor();
+            doorController.openDoor(false);
             if (cocoricoAtSunriseEnabled) {
                 musicController.cocorico();
             }
@@ -107,7 +106,7 @@ public class SunRelatedJob {
                     logger.info("take picture before closing door.");
                     cameraController.takePictureNoException();
                     logger.info("close door");
-                    doorController.closeDoorWithBottormButtonManagement();
+                    doorController.closeDoorWithBottormButtonManagement(false);
                     logger.info("take picture once the door is closed and send it by email.");
                     notification("Here is a picture inside the chicken coop :",
                             "The picture inside the chicken coop is not available (camera problem ?).");
