@@ -51,30 +51,33 @@ public class DoorController {
 
     /**
      * Close the door moving the servomotor clockwise
-     *
+     * @param force if force is set to true, force door to close even if it is closed.
      */
     @Retryable(
             value = { DoorNotClosedCorrectlyException.class },
             maxAttempts = 5,
             backoff = @Backoff(delay = 5000))
-    public void closeDoorWithBottormButtonManagement() {
+    public void closeDoorWithBottormButtonManagement(boolean force) {
         bottomButtonController.provisionButton();
         bottomButtonController.resetBottomButtonHasBeenPressed();
-        closeDoor();
+        closeDoor(force);
         if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
             logger.error("Bottom position not reached correctly. The door is being reopened now.");
             // if the door has been closed twice, opening the door is actually closing the door .
-            openDoor();
+            openDoor(false);
             if(!bottomButtonController.isBottomButtonHasBeenPressed())
                 throw new DoorNotClosedCorrectlyException();
         }
-        this.lastClosingTime = LocalDateTime.now();
         logger.info("... done");
         bottomButtonController.unprovisionButton();
     }
 
-    private void closeDoor() {
-        if (doorIsOpened()) {
+    /**
+     * Close door.
+     * @param force if force is set to true, force door to close even if it is closed.
+     */
+    private void closeDoor(boolean force) {
+        if (force || !doorIsClosed()) {
             logger.info(
                     "Close the door moving servo clockwise with gear position {} for {} ms ...",
                     doorClosingPosition,
@@ -87,16 +90,16 @@ public class DoorController {
     @Recover
     private void closeDoorNoError(DoorNotClosedCorrectlyException e) {
         logger.error("The door hasn't been closed correctly, closing it now with bottom button taken in charge.", e);
-        closeDoor();
+        closeDoor(false);
     }
 
     /**
      * Open the door moving the servomotor counter-clockwise.
-     *
+     * @param force if force is set to true, force door to open even if it is opened.
      */
-    public void openDoor()
+    public void openDoor(boolean force)
     {
-        if (doorIsClosed()) {
+        if (force || !doorIsOpened()) {
             logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
                     doorOpeningPosition,
                     doorOpeningDuration);
@@ -118,11 +121,11 @@ public class DoorController {
         if (lastClosingTime != null && lastOpeningTime != null) {
             return lastOpeningTime.isAfter(lastClosingTime);
         } else if (lastOpeningTime != null) {
-            logger.info("The opening time is know but closing time unknown, the door is supposed to be opened.");
+            logger.info("The opening time is known but closing time unknown, the door is supposed to be opened.");
           return true;
         } else {
-            logger.info("Some data is missing so the door is supposed to be opened.");
-            return true;
+            logger.info("No information, so the door is supposed not being opened.");
+            return false;
         }
     }
 
@@ -141,8 +144,18 @@ public class DoorController {
             logger.info("The closing time is know but opening time unknown, the door is supposed to be closed.");
             return true;
         } else {
-            logger.info("Some data is missing so the door is supposed to be closed.");
-            return true;
+            logger.info("Some data is missing so the door is supposed not to be closed.");
+            return false;
+        }
+    }
+
+    public String status() {
+        if (doorIsOpened()) {
+            return "OPENED";
+        } else if (doorIsClosed()) {
+            return "CLOSED";
+        } else {
+            return "UNDEFINED";
         }
     }
 }

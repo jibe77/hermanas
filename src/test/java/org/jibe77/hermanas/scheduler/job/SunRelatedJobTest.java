@@ -51,9 +51,9 @@ class SunRelatedJobTest {
         verify(cameraController, times(0)).takePictureNoException();
         verify(lightController, times(0)).switchOff();
         verify(lightController, times(0)).switchOn();
-        verify(doorController, times(0)).closeDoorWithBottormButtonManagement();
-        verify(doorController, times(0)).openDoor();
-        verify(doorController, times(0)).openDoor();
+        verify(doorController, times(0)).closeDoorWithBottormButtonManagement(false);
+        verify(doorController, times(0)).openDoor(false);
+        verify(doorController, times(0)).openDoor(false);
         verify(musicController, times(0)).cocorico();
         verify(musicController, times(0)).playMusicRandomly();
         verify(musicController, times(0)).stop();
