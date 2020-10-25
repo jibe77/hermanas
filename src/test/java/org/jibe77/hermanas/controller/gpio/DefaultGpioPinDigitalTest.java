@@ -50,14 +50,7 @@ class DefaultGpioPinDigitalTest {
         assertNull(defaultGpioPinDigital.getPullResistance());
         assertFalse(defaultGpioPinDigital.isPullResistance(PinPullResistance.PULL_UP));
         defaultGpioPinDigital.addListener(mock(GpioPinListener.class));
-        List<GpioPinListener> gpioPinListeners = new ArrayList<>(1);
-        gpioPinListeners.add(mock(GpioPinListener.class));
-        defaultGpioPinDigital.addListener(gpioPinListeners);
-        assertTrue(defaultGpioPinDigital.getListeners().isEmpty());
-        assertFalse(defaultGpioPinDigital.hasListener(mock(GpioPinListener.class)));
-        defaultGpioPinDigital.removeListener(mock(GpioPinListener.class));
-        defaultGpioPinDigital.removeListener(gpioPinListeners);
-        defaultGpioPinDigital.removeAllListeners();
+
         assertNull(defaultGpioPinDigital.getShutdownOptions());
         defaultGpioPinDigital.setShutdownOptions(mock(GpioPinShutdown.class));
         defaultGpioPinDigital.setShutdownOptions(Boolean.TRUE);
@@ -87,6 +80,24 @@ class DefaultGpioPinDigitalTest {
         defaultGpioPinDigital.toggle();
         defaultGpioPinDigital.setState(PinState.LOW);
         defaultGpioPinDigital.setState(false);
+    }
+
+    @Test
+    void testListeners() {
+        DefaultGpioPinDigital defaultGpioPinDigital = new DefaultGpioPinDigital();
+        List<GpioPinListener> gpioPinListeners = new ArrayList<>(1);
+        gpioPinListeners.add(mock(GpioPinListener.class));
+        defaultGpioPinDigital.addListener(gpioPinListeners);
+        assertTrue(defaultGpioPinDigital.getListeners().isEmpty());
+        assertFalse(defaultGpioPinDigital.hasListener(mock(GpioPinListener.class)));
+        defaultGpioPinDigital.removeListener(mock(GpioPinListener.class));
+        defaultGpioPinDigital.removeListener(gpioPinListeners);
+        defaultGpioPinDigital.removeAllListeners();
+    }
+
+    @Test
+    void testBlink() {
+        DefaultGpioPinDigital defaultGpioPinDigital = new DefaultGpioPinDigital();
         assertNull(defaultGpioPinDigital.blink(100));
         assertNull(defaultGpioPinDigital.blink(100, TimeUnit.HOURS));
         assertNull(defaultGpioPinDigital.blink(100, PinState.HIGH));
@@ -95,6 +106,11 @@ class DefaultGpioPinDigitalTest {
         assertNull(defaultGpioPinDigital.blink(100, 100, TimeUnit.DAYS));
         assertNull(defaultGpioPinDigital.blink(100, 100, PinState.HIGH));
         assertNull(defaultGpioPinDigital.blink(100, 100, PinState.HIGH, TimeUnit.MICROSECONDS));
+    }
+
+    @Test
+    void testPulse() {
+        DefaultGpioPinDigital defaultGpioPinDigital = new DefaultGpioPinDigital();
         assertNull(defaultGpioPinDigital.pulse(100));
         assertNull(defaultGpioPinDigital.pulse(100, TimeUnit.HOURS));
         assertNull(defaultGpioPinDigital.pulse(100, mock(Callable.class)));

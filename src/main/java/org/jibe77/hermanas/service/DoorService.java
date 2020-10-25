@@ -26,9 +26,9 @@ public class DoorService {
      */
     @GetMapping("/door/close")
     public boolean close(@RequestParam(defaultValue = "false", required = false) String force) {
-        logger.info("closing door now with force set to {} ...", force);
+        logger.info("closing door now  ...");
         try {
-            doorController.closeDoorWithBottormButtonManagement(Boolean.TRUE.toString().equals(force));
+            doorController.closeDoorWithBottormButtonManagement(Boolean.parseBoolean(force));
             logger.info("... done !");
             return true;
         } catch (DoorNotClosedCorrectlyException e) {
@@ -39,8 +39,8 @@ public class DoorService {
 
     @GetMapping("/door/open")
     public void open(@RequestParam(defaultValue = "false", required = false) String force) {
-        logger.info("opening door now with force set to {} ...", force);
-        doorController.openDoor(Boolean.TRUE.toString().equals(force));
+        logger.info("opening door now  ...");
+        doorController.openDoor(Boolean.parseBoolean(force));
         logger.info("... done !");
     }
 
