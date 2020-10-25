@@ -10,11 +10,13 @@ import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Optional;
 
 @Component
@@ -32,6 +34,8 @@ public class SunRelatedJob {
 
     private MusicController musicController;
 
+    private MessageSource messageSource;
+
     @Value("${email.notification.sunset.subject}")
     private String emailNotificationSunsetSubject;
 
@@ -41,13 +45,16 @@ public class SunRelatedJob {
     @Value("${play.song.at.sunset}")
     private boolean playSongAtSunset;
 
-    public SunRelatedJob(SunTimeManager sunTimeManager, CameraController cameraController, LightController lightController, EmailService emailService, DoorController doorController, MusicController musicController) {
+    public SunRelatedJob(SunTimeManager sunTimeManager, CameraController cameraController,
+                         LightController lightController, EmailService emailService, DoorController doorController,
+                         MusicController musicController, MessageSource messageSource) {
         this.sunTimeManager = sunTimeManager;
         this.cameraController = cameraController;
         this.lightController = lightController;
         this.emailService = emailService;
         this.doorController = doorController;
         this.musicController = musicController;
+        this.messageSource = messageSource;
     }
 
     Logger logger = LoggerFactory.getLogger(SunRelatedJob.class);
@@ -100,7 +107,7 @@ public class SunRelatedJob {
 
     private void manageDoorClosingEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorClosingTime())) {
-            if (doorController.doorIsOpened()) {
+            if (!doorController.doorIsClosed()) {
                 try {
                     logger.info("start door closing job at sunset.");
                     logger.info("take picture before closing door.");
@@ -108,13 +115,17 @@ public class SunRelatedJob {
                     logger.info("close door");
                     doorController.closeDoorWithBottormButtonManagement(false);
                     logger.info("take picture once the door is closed and send it by email.");
-                    notification("Here is a picture inside the chicken coop :",
-                            "The picture inside the chicken coop is not available (camera problem ?).");
+                    notification(
+                            messageSource.getMessage("event.closing.mail.with_picture.title", null, Locale.getDefault()),
+                            messageSource.getMessage("event.closing.mail.without_picture.title", null,
+                                    Locale.getDefault()));
                 } catch (DoorNotClosedCorrectlyException e) {
                     logger.error("Didn't close the door correctly.");
                     notification(
-        "Watchout, the door hasn't been closed correctly, here is a picture inside the chicken coop :",
-            "Watchout, the door hasn't been closed correctly, no picture available (camera problem ?).");
+                        messageSource.getMessage("event.closing_with_problem.mail.with_picture.title",
+                                null, Locale.getDefault()),
+                        messageSource.getMessage("event.closing_with_problem.mail.without_picture.title",
+                                null, Locale.getDefault()));
                 }
             } else {
                 logger.info("door has already been closed before, nothing to do in this event.");
