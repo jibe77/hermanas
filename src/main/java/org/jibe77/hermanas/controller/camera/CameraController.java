@@ -12,8 +12,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import uk.co.caprica.picam.FilePictureCaptureHandler;
 
-import javax.annotation.PostConstruct;
-
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -31,24 +29,6 @@ public class CameraController {
 
     private PictureRepository pictureRepository;
 
-    @Value("${camera.width}")
-    private int photoWidth;
-
-    @Value("${camera.height}")
-    private int photoHeight;
-
-    @Value("${camera.encoding}")
-    private String photoEncoding;
-
-    @Value("${camera.quality}")
-    private int photoQuality;
-
-    @Value("${camera.delay}")
-    private int photoDelay;
-
-    @Value("${camera.rotation}")
-    private int photoRotation;
-
     @Value("${camera.path.root}")
     private String rootPath;
 
@@ -60,13 +40,7 @@ public class CameraController {
         this.pictureRepository = pictureRepository;
     }
 
-    @PostConstruct
-    private void initCamera() {
-        gpioHermanasController.initCamera(photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay, photoRotation);
-    }
-
-
-    public synchronized File takePicture() throws IOException {
+    public synchronized File takePicture(boolean highQuality) throws IOException {
         logger.info("taking a picture in root path {}.", rootPath);
         switchLightOn();
         LocalDateTime localDateTime = LocalDateTime.now();
@@ -77,7 +51,7 @@ public class CameraController {
         File pictureFile = new File(fileRoot, filename);
         logger.info("Taking a picture now in {} ...", pictureFile.getAbsolutePath());
         try {
-            gpioHermanasController.takePicture(new FilePictureCaptureHandler(pictureFile));
+            gpioHermanasController.takePicture(new FilePictureCaptureHandler(pictureFile), highQuality);
             logger.info("Save picture path in db.");
             pictureRepository.save(new Picture(relativePath + File.separator + filename));
             logger.info("... done.");
@@ -129,9 +103,9 @@ public class CameraController {
     /**
      * Takes a picture managing the IO exception.
      */
-    public Optional<File> takePictureNoException() {
+    public Optional<File> takePictureNoException(boolean highQuality) {
         try {
-            return Optional.ofNullable(takePicture());
+            return Optional.ofNullable(takePicture(highQuality));
         } catch (IOException e) {
             logger.error("Can't take picture.", e);
             return Optional.empty();

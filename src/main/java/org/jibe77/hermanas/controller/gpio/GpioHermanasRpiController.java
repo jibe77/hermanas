@@ -5,6 +5,7 @@ import com.pi4j.wiringpi.Gpio;
 import com.pi4j.wiringpi.SoftPwm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Profile;
@@ -15,14 +16,11 @@ import uk.co.caprica.picam.Camera;
 import uk.co.caprica.picam.CameraConfiguration;
 import uk.co.caprica.picam.CaptureFailedException;
 import uk.co.caprica.picam.FilePictureCaptureHandler;
-import uk.co.caprica.picam.enums.Encoding;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import java.io.IOException;
-
-import static uk.co.caprica.picam.CameraConfiguration.cameraConfiguration;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -31,7 +29,9 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     private GpioController gpio;
 
-    private CameraConfiguration config;
+    private CameraConfiguration highQualityConfig;
+
+    private CameraConfiguration regularQualityconfig;
 
     Logger logger = LoggerFactory.getLogger(GpioHermanasRpiController.class);
 
@@ -40,6 +40,12 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     @Value("${door.servo.gpio.range}")
     private int doorSettingRange;
+
+    public GpioHermanasRpiController(@Qualifier("CameraHighQualityConfig") CameraConfiguration highQualityConfig,
+                                     @Qualifier("CameraRegularQualityConfig") CameraConfiguration regularQualityconfig) {
+        this.highQualityConfig = highQualityConfig;
+        this.regularQualityconfig = regularQualityconfig;
+    }
 
     @PostConstruct
     private void initialiseGpioPins() {
@@ -74,21 +80,8 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     }
 
     @Override
-    public void initCamera(int photoWidth, int photoHeight, String photoEncoding, int photoQuality, int photoDelay, int photoRotation) {
-        logger.info("init camera config with width {} height {} encoding {} quality {} and delay {}.",
-                photoWidth, photoHeight, photoEncoding, photoQuality, photoDelay);
-        config = cameraConfiguration()
-                .width(photoWidth)
-                .height(photoHeight)
-                .encoding(Encoding.valueOf(photoEncoding))
-                .quality(photoQuality)
-                .delay(photoDelay)
-                .rotation(photoRotation);
-    }
-
-    @Override
-    public void takePicture(FilePictureCaptureHandler filePictureCaptureHandler) throws IOException {
-        try (Camera camera = new Camera(config)){
+    public void takePicture(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
+        try (Camera camera = new Camera(highQuality ? highQualityConfig : regularQualityconfig)){
             camera.takePicture(filePictureCaptureHandler);
         } catch (CaptureFailedException e) {
             throw new IOException("Can't capture a picture.", e);

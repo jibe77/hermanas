@@ -95,12 +95,12 @@ public class SunRelatedJob {
     private void manageDoorOpeningEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
             logger.info("door opening event is starting now.");
-            cameraController.takePictureNoException();
+            cameraController.takePictureNoException(true);
             doorController.openDoor(false);
             if (cocoricoAtSunriseEnabled) {
                 musicController.cocorico();
             }
-            cameraController.takePictureNoException();
+            cameraController.takePictureNoException(true);
             sunTimeManager.reloadDoorOpeningTime();
         }
     }
@@ -111,7 +111,7 @@ public class SunRelatedJob {
                 try {
                     logger.info("start door closing job at sunset.");
                     logger.info("take picture before closing door.");
-                    cameraController.takePictureNoException();
+                    cameraController.takePictureNoException(true);
                     logger.info("close door");
                     doorController.closeDoorWithBottormButtonManagement(false);
                     logger.info("take picture once the door is closed and send it by email.");
@@ -135,7 +135,7 @@ public class SunRelatedJob {
     }
 
     private void notification(String textWithPicture, String textIfNoPicture) {
-        Optional<File> picWithClosedDoor = cameraController.takePictureNoException();
+        Optional<File> picWithClosedDoor = cameraController.takePictureNoException(true);
         if (picWithClosedDoor.isPresent()) {
             emailService.sendMailWithAttachment(emailNotificationSunsetSubject,
                     textWithPicture, picWithClosedDoor.get());

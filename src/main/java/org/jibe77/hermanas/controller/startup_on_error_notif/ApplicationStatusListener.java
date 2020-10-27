@@ -62,7 +62,7 @@ public class ApplicationStatusListener {
 
     private void sendShutdownErrorNotification() {
         logger.info("Sending a shutdown error notification by email.");
-        Optional<File> pic = cameraController.takePictureNoException();
+        Optional<File> pic = cameraController.takePictureNoException(false);
         if (pic.isPresent()) {
             emailService.sendMailWithAttachment(
                     messageSource.getMessage("restarted.incorrectly.title", null, Locale.getDefault()),

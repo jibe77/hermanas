@@ -55,7 +55,7 @@ class ApplicationStatusListenerTest {
         event.setEventType(EventType.STARTUP);
         Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any())).thenReturn(event);
         Optional<File> o = Optional.of(new File(""));
-        Mockito.when(cameraController.takePictureNoException()).thenReturn(o);
+        Mockito.when(cameraController.takePictureNoException(false)).thenReturn(o);
 
         applicationStatusListener.init();
 
@@ -70,7 +70,7 @@ class ApplicationStatusListenerTest {
         event.setEventType(EventType.STARTUP);
         Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any())).thenReturn(event);
         Optional<File> o = Optional.ofNullable(null);
-        Mockito.when(cameraController.takePictureNoException()).thenReturn(o);
+        Mockito.when(cameraController.takePictureNoException(false)).thenReturn(o);
 
         applicationStatusListener.init();
 

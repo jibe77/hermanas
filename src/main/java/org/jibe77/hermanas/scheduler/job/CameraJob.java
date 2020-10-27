@@ -32,7 +32,7 @@ public class CameraJob {
         if (sunTimeUtils.isDay() || takingPicturesByNight) {
             try {
                 logger.info("Camera scheduled job is taking a picture now.");
-                cameraController.takePicture();
+                cameraController.takePicture(true);
             } catch (IOException e) {
                 logger.error("Can't take picture or write picture of filesystem.", e);
             }

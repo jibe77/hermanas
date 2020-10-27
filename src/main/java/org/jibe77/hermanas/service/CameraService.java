@@ -26,7 +26,7 @@ public class CameraService {
 
     @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
     public @ResponseBody byte[] takePicture() throws IOException {
-        File picture = cameraController.takePicture();
+        File picture = cameraController.takePicture(false);
         logger.info("return picture from {}.", picture.getAbsolutePath());
         try (FileInputStream fileInputStream = new FileInputStream(picture)) {
             return IOUtils.toByteArray(fileInputStream);

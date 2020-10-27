@@ -22,7 +22,7 @@ public class JmsAndCameraHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-        Optional<File> picWithClosedDoor = cameraController.takePictureNoException();
+        Optional<File> picWithClosedDoor = cameraController.takePictureNoException(true);
         if (picWithClosedDoor.isPresent()) {
             emailService.sendMailWithAttachment(
                     "Notification sent by Actuator on Hermanas",
