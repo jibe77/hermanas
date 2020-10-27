@@ -10,12 +10,12 @@ import java.io.File;
 import java.util.Optional;
 
 @Component
-public class JmsAndCameraHealthIndicator implements HealthIndicator {
+public class MailAndCameraHealthIndicator implements HealthIndicator {
 
     CameraController cameraController;
     EmailService emailService;
 
-    public JmsAndCameraHealthIndicator(CameraController cameraController, EmailService emailService) {
+    public MailAndCameraHealthIndicator(CameraController cameraController, EmailService emailService) {
         this.cameraController = cameraController;
         this.emailService = emailService;
     }
