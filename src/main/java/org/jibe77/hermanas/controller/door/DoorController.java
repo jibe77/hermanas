@@ -58,39 +58,41 @@ public class DoorController {
             maxAttempts = 5,
             backoff = @Backoff(delay = 5000))
     public void closeDoorWithBottormButtonManagement(boolean force) {
-        bottomButtonController.provisionButton();
-        bottomButtonController.resetBottomButtonHasBeenPressed();
-        closeDoor(force);
-        if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
-            logger.error("Bottom position not reached correctly. The door is being reopened now.");
-            // if the door has been closed twice, opening the door is actually closing the door .
-            openDoor(false);
-            if(!bottomButtonController.isBottomButtonHasBeenPressed())
-                throw new DoorNotClosedCorrectlyException();
+        if (force || !doorIsClosed()) {
+            bottomButtonController.provisionButton();
+            bottomButtonController.resetBottomButtonHasBeenPressed();
+            closeDoor();
+            if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
+                logger.error("Bottom position not reached correctly. The door is being reopened now.");
+                // if the door has been closed twice, opening the door is actually closing the door .
+                openDoor(false);
+                if (!bottomButtonController.isBottomButtonHasBeenPressed())
+                    throw new DoorNotClosedCorrectlyException();
+            }
+            logger.info("... done");
+            bottomButtonController.unprovisionButton();
+        } else {
+            logger.info("Door is not closed because is already closed state.");
         }
-        logger.info("... done");
-        bottomButtonController.unprovisionButton();
     }
 
     /**
      * Close door.
      * @param force if force is set to true, force door to close even if it is closed.
      */
-    private void closeDoor(boolean force) {
-        if (force || !doorIsClosed()) {
-            logger.info(
-                    "Close the door moving servo clockwise with gear position {} for {} ms ...",
-                    doorClosingPosition,
-                    doorClosingDuration);
-            servo.setPosition(doorClosingPosition, doorClosingDuration);
-            this.lastClosingTime = LocalDateTime.now();
-        }
+    private void closeDoor() {
+        logger.info(
+                "Close the door moving servo clockwise with gear position {} for {} ms ...",
+                doorClosingPosition,
+                doorClosingDuration);
+        servo.setPosition(doorClosingPosition, doorClosingDuration);
+        this.lastClosingTime = LocalDateTime.now();
     }
 
     @Recover
     private void closeDoorNoError(DoorNotClosedCorrectlyException e) {
         logger.error("The door hasn't been closed correctly, closing it now with bottom button taken in charge.", e);
-        closeDoor(false);
+        closeDoor();
     }
 
     /**
@@ -106,6 +108,8 @@ public class DoorController {
             servo.setPosition(doorOpeningPosition, doorOpeningDuration);
             this.lastOpeningTime = LocalDateTime.now();
             logger.info("... done");
+        } else {
+            logger.info("Door is not opened because is already opened state.");
         }
     }
 

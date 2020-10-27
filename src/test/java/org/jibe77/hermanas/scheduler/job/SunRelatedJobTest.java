@@ -8,6 +8,7 @@ import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.MessageSource;
 
 import java.time.LocalDateTime;
 
@@ -24,21 +25,26 @@ class SunRelatedJobTest {
     DoorController doorController;
     MusicController musicController;
     LocalDateTime eventAlwaysInTheFutur;
+    LocalDateTime eventAlwaysInThePast;
     LocalDateTime eventToLaunch;
+    MessageSource messageSource;
 
 
     @BeforeEach
     void init() {
         eventAlwaysInTheFutur = LocalDateTime.now().plusHours(1);
+        eventAlwaysInThePast = LocalDateTime.now().minusHours(1);
         eventToLaunch = LocalDateTime.now().minusHours(1);
         sunTimeManager = mock(SunTimeManager.class);
         cameraController = mock(CameraController.class);
         lightController = mock(LightController.class);
+        emailService = mock(EmailService.class);
         doorController = mock(DoorController.class);
         musicController = mock(MusicController.class);
+        messageSource = mock(MessageSource.class);
 
         sunRelatedJob = new SunRelatedJob(sunTimeManager, cameraController, lightController,
-                emailService, doorController, musicController);
+                emailService, doorController, musicController, messageSource);
     }
 
     @Test
@@ -48,7 +54,7 @@ class SunRelatedJobTest {
         when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
         sunRelatedJob.execute();
-        verify(cameraController, times(0)).takePictureNoException();
+        verify(cameraController, times(0)).takePictureNoException(false);
         verify(lightController, times(0)).switchOff();
         verify(lightController, times(0)).switchOn();
         verify(doorController, times(0)).closeDoorWithBottormButtonManagement(false);
@@ -57,6 +63,45 @@ class SunRelatedJobTest {
         verify(musicController, times(0)).cocorico();
         verify(musicController, times(0)).playMusicRandomly();
         verify(musicController, times(0)).stop();
+    }
 
+    @Test
+    void testManageLightSwitchingOffEvent() {
+        when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
+        when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
+        when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInThePast);
+        when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
+        sunRelatedJob.execute();
+        verify(lightController, times(1)).switchOff();
+    }
+
+    @Test
+    void testManageLightSwitchingOnEvent() {
+        when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
+        when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
+        when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInTheFutur);
+        when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInThePast);
+        sunRelatedJob.execute();
+        verify(lightController, times(1)).switchOn();
+    }
+
+    @Test
+    void testManageDoorOpeningEvent() {
+        when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
+        when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInThePast);
+        when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInTheFutur);
+        when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
+        sunRelatedJob.execute();
+        verify(doorController, times(1)).openDoor(false);
+    }
+
+    @Test
+    void testManageDoorClosingEvent() {
+        when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInThePast);
+        when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
+        when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInTheFutur);
+        when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
+        sunRelatedJob.execute();
+        verify(doorController, times(1)).closeDoorWithBottormButtonManagement(false);
     }
 }
