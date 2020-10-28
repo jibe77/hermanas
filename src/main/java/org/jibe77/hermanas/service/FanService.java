@@ -29,7 +29,7 @@ public class FanService {
         fanController.switchOff();
     }
 
-    @GetMapping(value = "/fan/isSwitchedOn")
+    @GetMapping(value = "/fan/status")
     public boolean isSwitchedOn() {
         return fanController.isSwitchedOn();
     }
