@@ -4,6 +4,7 @@ import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
+import org.jibe77.hermanas.controller.fan.FanController;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
@@ -36,6 +37,8 @@ public class SunRelatedJob {
 
     private MessageSource messageSource;
 
+    private FanController fanController;
+
     @Value("${email.notification.sunset.subject}")
     private String emailNotificationSunsetSubject;
 
@@ -47,7 +50,8 @@ public class SunRelatedJob {
 
     public SunRelatedJob(SunTimeManager sunTimeManager, CameraController cameraController,
                          LightController lightController, EmailService emailService, DoorController doorController,
-                         MusicController musicController, MessageSource messageSource) {
+                         MusicController musicController, MessageSource messageSource,
+                         FanController fanController) {
         this.sunTimeManager = sunTimeManager;
         this.cameraController = cameraController;
         this.lightController = lightController;
@@ -55,6 +59,7 @@ public class SunRelatedJob {
         this.doorController = doorController;
         this.musicController = musicController;
         this.messageSource = messageSource;
+        this.fanController = fanController;
     }
 
     Logger logger = LoggerFactory.getLogger(SunRelatedJob.class);
@@ -78,6 +83,7 @@ public class SunRelatedJob {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
                 doorController.openDoor(false);
             }
+            fanController.switchOn();
             sunTimeManager.reloadLightOnTime();
         }
     }
@@ -91,6 +97,7 @@ public class SunRelatedJob {
                 musicController.cocorico();
             }
             cameraController.takePictureNoException(true);
+            fanController.switchOn();
             sunTimeManager.reloadDoorOpeningTime();
         }
     }
