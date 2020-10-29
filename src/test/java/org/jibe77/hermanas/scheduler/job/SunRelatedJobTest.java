@@ -3,6 +3,7 @@ package org.jibe77.hermanas.scheduler.job;
 import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
+import org.jibe77.hermanas.controller.fan.FanController;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
@@ -28,6 +29,7 @@ class SunRelatedJobTest {
     LocalDateTime eventAlwaysInThePast;
     LocalDateTime eventToLaunch;
     MessageSource messageSource;
+    FanController fanController;
 
 
     @BeforeEach
@@ -42,9 +44,10 @@ class SunRelatedJobTest {
         doorController = mock(DoorController.class);
         musicController = mock(MusicController.class);
         messageSource = mock(MessageSource.class);
+        fanController = mock(FanController.class);
 
         sunRelatedJob = new SunRelatedJob(sunTimeManager, cameraController, lightController,
-                emailService, doorController, musicController, messageSource);
+                emailService, doorController, musicController, messageSource, fanController);
     }
 
     @Test
