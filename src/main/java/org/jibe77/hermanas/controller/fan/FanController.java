@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @Component
 @Scope("singleton")
@@ -23,9 +25,14 @@ public class FanController {
     @Value("${fan.relay.enabled}")
     private boolean fanEnabled;
 
+    @Value("${fan.security.timer.delay}")
+    private long fanSecurityTimerDelay;
+
     GpioPinDigitalOutput gpioPinDigitalOutput;
 
     Logger logger = LoggerFactory.getLogger(FanController.class);
+
+    Timer fanSecurityStopTimer;
 
     public FanController(GpioHermanasController gpioHermanasController) {
         this.gpioHermanasController = gpioHermanasController;
@@ -42,8 +49,23 @@ public class FanController {
         if (fanEnabled) {
             logger.info("Switching on ir light.");
             gpioPinDigitalOutput.high();
+
+            startSecurityTimer();
         }
 
+    }
+
+    private void startSecurityTimer() {
+        if (fanSecurityStopTimer != null) {
+            fanSecurityStopTimer.cancel();
+        }
+        new Timer("Fan security stop").schedule(new TimerTask() {
+            public void run() {
+                logger.info("stopping fan after {} ms.", fanSecurityTimerDelay);
+                switchOff();
+            };
+        },
+        fanSecurityTimerDelay);
     }
 
     public synchronized void switchOff() {
