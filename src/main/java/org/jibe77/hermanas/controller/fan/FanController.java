@@ -49,7 +49,6 @@ public class FanController {
         if (fanEnabled) {
             logger.info("Switching on ir light.");
             gpioPinDigitalOutput.high();
-
             startSecurityTimer();
         }
 
@@ -59,19 +58,24 @@ public class FanController {
         if (fanSecurityStopTimer != null) {
             fanSecurityStopTimer.cancel();
         }
-        new Timer("Fan security stop").schedule(new TimerTask() {
-            public void run() {
-                logger.info("stopping fan after {} ms.", fanSecurityTimerDelay);
-                switchOff();
-            };
-        },
-        fanSecurityTimerDelay);
+        fanSecurityStopTimer = new Timer("Fan security stop");
+        fanSecurityStopTimer.schedule(new TimerTask() {
+                                          public void run() {
+                                              logger.info("stopping fan after {} ms.", fanSecurityTimerDelay);
+                                              switchOff();
+                                          }
+                                      },
+                fanSecurityTimerDelay);
     }
 
     public synchronized void switchOff() {
         if (fanEnabled) {
             logger.info("Switching off ir light.");
             gpioPinDigitalOutput.low();
+            if (fanSecurityStopTimer != null) {
+                fanSecurityStopTimer.cancel();
+                fanSecurityStopTimer = null;
+            }
         }
     }
 
@@ -85,6 +89,7 @@ public class FanController {
 
     /**
      * if the light is enabled and the pin is high, then returns true
+     *
      * @return true if the light is on.
      */
     public boolean isSwitchedOn() {

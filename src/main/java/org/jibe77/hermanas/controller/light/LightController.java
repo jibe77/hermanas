@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @Component
 @Scope("singleton")
@@ -23,6 +25,11 @@ public class LightController {
 
     @Value("${light.relay.enabled}")
     private boolean lightEnabled;
+
+    @Value("${light.security.timer.delay}")
+    private long lightSecurityTimerDelay;
+
+    private Timer lightSecurityStopTimer;
 
     GpioPinDigitalOutput gpioPinDigitalOutput;
 
@@ -45,6 +52,7 @@ public class LightController {
         if (lightEnabled) {
             logger.info("Switching on light.");
             gpioPinDigitalOutput.high();
+            startSecurityTimer();
         }
     }
 
@@ -52,6 +60,10 @@ public class LightController {
         if (lightEnabled) {
             logger.info("Switching off light.");
             gpioPinDigitalOutput.low();
+            if (lightSecurityStopTimer != null) {
+                lightSecurityStopTimer.cancel();
+                lightSecurityStopTimer = null;
+            }
         }
     }
 
@@ -63,6 +75,20 @@ public class LightController {
         return lightEnabled &&
                 gpioPinDigitalOutput.getState() != null &&
                 gpioPinDigitalOutput.getState().isHigh();
+    }
+
+    private void startSecurityTimer() {
+        if (lightSecurityStopTimer != null) {
+            lightSecurityStopTimer.cancel();
+        }
+        lightSecurityStopTimer = new Timer("Light security stop");
+        lightSecurityStopTimer.schedule(new TimerTask() {
+                                            public void run() {
+                                                logger.info("stopping light after {} ms.", lightSecurityTimerDelay);
+                                                switchOff();
+                                            }
+                                        },
+                lightSecurityTimerDelay);
     }
 
     @PreDestroy
