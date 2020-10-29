@@ -19,9 +19,6 @@ public class SunTimeManager {
     @Value("${suntime.scheduler.light.on.time_before_sunset}")
     private long lightOnTimeBeforeSunset;
 
-    @Value("${suntime.scheduler.light.off.time_after_sunset}")
-    private long lightOffTimeAfterSunset;
-
     @Value("${suntime.scheduler.door.close.time_after_sunset}")
     private long doorCloseTimeAfterSunset;
 
@@ -38,13 +35,6 @@ public class SunTimeManager {
     public LocalDateTime getNextLightOnTime() {
         LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(-1 * lightOnTimeBeforeSunset);
         logger.info("computing next light switching on time : {}", localDateTime);
-        return localDateTime;
-    }
-
-    @Cacheable(value = "light-off")
-    public LocalDateTime getNextLightOffTime() {
-        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(lightOffTimeAfterSunset);
-        logger.info("computing next light switching off time : {}", localDateTime);
         return localDateTime;
     }
 
@@ -75,11 +65,6 @@ public class SunTimeManager {
     @CacheEvict("light-on")
     public void reloadLightOnTime() {
         logger.info("revoke cache on light switching on time.");
-    }
-
-    @CacheEvict("light-off")
-    public void reloadLightOffTime() {
-        logger.info("revoke cache on light switching off time.");
     }
 
 }

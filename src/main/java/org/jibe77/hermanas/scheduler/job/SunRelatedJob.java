@@ -65,15 +65,6 @@ public class SunRelatedJob {
         manageDoorClosingEvent(currentTime);
         manageDoorOpeningEvent(currentTime);
         manageLightSwitchingOnEvent(currentTime);
-        manageLightSwitchingOffEvent(currentTime);
-    }
-
-    private void manageLightSwitchingOffEvent(LocalDateTime currentTime) {
-        if (currentTime.isAfter(sunTimeManager.getNextLightOffTime())) {
-            logger.info("light switching off event is starting now.");
-            lightController.switchOff();
-            sunTimeManager.reloadLightOffTime();
-        }
     }
 
     private void manageLightSwitchingOnEvent(LocalDateTime currentTime) {

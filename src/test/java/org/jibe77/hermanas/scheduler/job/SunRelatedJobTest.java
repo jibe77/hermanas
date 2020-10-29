@@ -51,7 +51,6 @@ class SunRelatedJobTest {
     void testNoEvent() {
         when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
-        when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
         sunRelatedJob.execute();
         verify(cameraController, times(0)).takePictureNoException(false);
@@ -66,20 +65,9 @@ class SunRelatedJobTest {
     }
 
     @Test
-    void testManageLightSwitchingOffEvent() {
-        when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
-        when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
-        when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInThePast);
-        when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
-        sunRelatedJob.execute();
-        verify(lightController, times(1)).switchOff();
-    }
-
-    @Test
     void testManageLightSwitchingOnEvent() {
         when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
-        when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInThePast);
         sunRelatedJob.execute();
         verify(lightController, times(1)).switchOn();
@@ -89,7 +77,6 @@ class SunRelatedJobTest {
     void testManageDoorOpeningEvent() {
         when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInThePast);
-        when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
         sunRelatedJob.execute();
         verify(doorController, times(1)).openDoor(false);
@@ -99,7 +86,6 @@ class SunRelatedJobTest {
     void testManageDoorClosingEvent() {
         when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInThePast);
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
-        when(sunTimeManager.getNextLightOffTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
         sunRelatedJob.execute();
         verify(doorController, times(1)).closeDoorWithBottormButtonManagement(false);
