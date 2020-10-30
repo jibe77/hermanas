@@ -47,7 +47,7 @@ public class FanController {
 
     public synchronized void switchOn() {
         if (fanEnabled) {
-            logger.info("Switching on ir light.");
+            logger.info("Switching on fan.");
             gpioPinDigitalOutput.high();
             startSecurityTimer();
         }
@@ -70,7 +70,7 @@ public class FanController {
 
     public synchronized void switchOff() {
         if (fanEnabled) {
-            logger.info("Switching off ir light.");
+            logger.info("Switching off fan.");
             gpioPinDigitalOutput.low();
             if (fanSecurityStopTimer != null) {
                 fanSecurityStopTimer.cancel();

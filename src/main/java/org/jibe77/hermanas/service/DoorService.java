@@ -38,10 +38,11 @@ public class DoorService {
     }
 
     @GetMapping("/door/open")
-    public void open(@RequestParam(defaultValue = "false", required = false) String force) {
+    public boolean open(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("opening door now  ...");
-        doorController.openDoor(Boolean.parseBoolean(force));
-        logger.info("... done !");
+        boolean result = doorController.openDoor(Boolean.parseBoolean(force), false);
+        logger.info("... done with result {} !", result);
+        return result;
     }
 
     @GetMapping("/door/status")

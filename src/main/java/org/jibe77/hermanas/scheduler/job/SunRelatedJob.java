@@ -81,7 +81,7 @@ public class SunRelatedJob {
             }
             if (!doorController.doorIsOpened()) {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
-                doorController.openDoor(false);
+                doorController.openDoor(false, false);
             }
             fanController.switchOn();
             sunTimeManager.reloadLightOnTime();
@@ -92,7 +92,7 @@ public class SunRelatedJob {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
             logger.info("door opening event is starting now.");
             cameraController.takePictureNoException(true);
-            doorController.openDoor(false);
+            doorController.openDoor(false, false);
             if (cocoricoAtSunriseEnabled) {
                 musicController.cocorico();
             }

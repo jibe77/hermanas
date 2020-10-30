@@ -20,7 +20,7 @@ public class DoorIndicator implements HealthIndicator {
         if (doorController.doorIsOpened()) {
             doorController.closeDoorWithBottormButtonManagement(false);
             if (doorController.doorIsClosed()) {
-                doorController.openDoor(false);
+                doorController.openDoor(false, false);
                 return Health.up().build();
             }
             return Health.down().build();

@@ -65,7 +65,7 @@ public class DoorController {
             if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
                 logger.error("Bottom position not reached correctly. The door is being reopened now.");
                 // if the door has been closed twice, opening the door is actually closing the door .
-                openDoor(false);
+                openDoor(false, true);
                 if (!bottomButtonController.isBottomButtonHasBeenPressed())
                     throw new DoorNotClosedCorrectlyException();
             }
@@ -99,17 +99,21 @@ public class DoorController {
      * Open the door moving the servomotor counter-clockwise.
      * @param force if force is set to true, force door to open even if it is opened.
      */
-    public void openDoor(boolean force)
+    public boolean openDoor(boolean force, boolean openingDoorAfterClosingProblem)
     {
         if (force || !doorIsOpened()) {
             logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
                     doorOpeningPosition,
                     doorOpeningDuration);
             servo.setPosition(doorOpeningPosition, doorOpeningDuration);
-            this.lastOpeningTime = LocalDateTime.now();
+            if (!openingDoorAfterClosingProblem) {
+                this.lastOpeningTime = LocalDateTime.now();
+            }
             logger.info("... done");
+            return true;
         } else {
             logger.info("Door is not opened because is already opened state.");
+            return false;
         }
     }
 
