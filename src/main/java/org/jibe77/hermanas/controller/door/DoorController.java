@@ -70,6 +70,7 @@ public class DoorController {
                     throw new DoorNotClosedCorrectlyException();
             }
             logger.info("... done");
+            this.lastClosingTime = LocalDateTime.now();
             bottomButtonController.unprovisionButton();
         } else {
             logger.info("Door is not closed because is already closed state.");
@@ -86,13 +87,13 @@ public class DoorController {
                 doorClosingPosition,
                 doorClosingDuration);
         servo.setPosition(doorClosingPosition, doorClosingDuration);
-        this.lastClosingTime = LocalDateTime.now();
     }
 
     @Recover
     private void closeDoorNoError(DoorNotClosedCorrectlyException e) {
         logger.error("The door hasn't been closed correctly, closing it now with bottom button taken in charge.", e);
         closeDoor();
+        this.lastClosingTime = LocalDateTime.now();
     }
 
     /**
