@@ -37,7 +37,10 @@ public class CameraService {
     public @ResponseBody String stream() {
         cameraController.stream();
         return "<html><body>Streaming : " +
-                "<video src=\"http://poulailler.local:8090/coop.mp4\" controls=\"controls\" type=\"video/mp4\"></video>" +
+                "<video controls=\"controls\">" +
+                "<source src=\"http://poulailler.local:8090/coop.mp4\" type=\"video/mp4\" />" +
+                "Vous n'avez pas de navigateur moderne, donc pas de balise video HTML5 !" +
+                "</video>" +
                 "</body></html>";
     }
 
