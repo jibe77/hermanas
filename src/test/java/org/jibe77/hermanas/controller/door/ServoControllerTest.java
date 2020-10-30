@@ -58,7 +58,7 @@ class ServoControllerTest {
     @Test
     void testOpenDoor() {
         logger.info("<--Pi4J--> GPIO Control OpenDoor ... started.");
-        controller.openDoor(false);
+        controller.openDoor(false, false);
         Mockito.verify(
                 servoMotorController,
                 Mockito.times(1)

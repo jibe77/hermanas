@@ -26,8 +26,8 @@ class DoorControllerTest {
         doorController.closeDoorWithBottormButtonManagement(true);
         assertEquals("CLOSED", doorController.status());
 
-        doorController.openDoor(true);
-        doorController.openDoor(true);
+        doorController.openDoor(true, false);
+        doorController.openDoor(true, false);
         assertEquals("OPENED", doorController.status());
     }
 }
