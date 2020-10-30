@@ -32,4 +32,15 @@ public class CameraService {
             return IOUtils.toByteArray(fileInputStream);
         }
     }
+
+    @GetMapping(value = "/camera/stream")
+    public @ResponseBody String stream() {
+        cameraController.stream();
+        return "<html><body>Streaming : <video src=\"http://poulailler.local:8090/\" controls=\"controls\"></video></body></html>";
+    }
+
+    @GetMapping(value = "/camera/stopStream")
+    public void stopStream() {
+        cameraController.stopStream();
+    }
 }

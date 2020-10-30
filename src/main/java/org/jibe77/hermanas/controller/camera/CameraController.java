@@ -111,4 +111,13 @@ public class CameraController {
             return Optional.empty();
         }
     }
+
+    public void stream() {
+        switchLightOn();
+        // TODO : start process for 30 seconds
+    }
+
+    public void stopStream() {
+        switchOffLight();
+    }
 }
