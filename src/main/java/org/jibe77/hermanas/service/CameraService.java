@@ -36,7 +36,9 @@ public class CameraService {
     @GetMapping(value = "/camera/stream")
     public @ResponseBody String stream() {
         cameraController.stream();
-        return "<html><body>Streaming : <video src=\"http://poulailler.local:8090/\" controls=\"controls\"></video></body></html>";
+        return "<html><body>Streaming : " +
+                "<video src=\"http://poulailler.local:8090/coop.mp4\" controls=\"controls\" type=\"video/mp4\"></video>" +
+                "</body></html>";
     }
 
     @GetMapping(value = "/camera/stopStream")
