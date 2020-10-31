@@ -34,7 +34,7 @@ public class CameraService {
     }
 
     @GetMapping(value = "/camera/stream")
-    public @ResponseBody String stream() {
+    public @ResponseBody String stream() throws IOException {
         cameraController.stream();
         return "<html>\n" +
                 "    <body>\n" +
