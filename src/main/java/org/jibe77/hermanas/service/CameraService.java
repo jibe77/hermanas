@@ -36,12 +36,11 @@ public class CameraService {
     @GetMapping(value = "/camera/stream")
     public @ResponseBody String stream() {
         cameraController.stream();
-        return "<html><body>Streaming : " +
-                "<video controls=\"controls\">" +
-                "<source src=\"http://poulailler.local:8090/coop.mp4\" type=\"video/mp4\" />" +
-                "Vous n'avez pas de navigateur moderne, donc pas de balise video HTML5 !" +
-                "</video>" +
-                "</body></html>";
+        return "<html>\n" +
+                "    <body>\n" +
+                "        <img src=\"http://poulailler.local:8081/?action=stream\">\n" +
+                "    </body>\n" +
+                "</html>";
     }
 
     @GetMapping(value = "/camera/stopStream")
