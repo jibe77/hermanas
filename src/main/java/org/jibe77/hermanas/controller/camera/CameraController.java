@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.controller.camera;
 
 import org.apache.commons.io.FileUtils;
+import org.jibe77.hermanas.controller.music.ProcessLauncher;
 import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
@@ -12,8 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import uk.co.caprica.picam.FilePictureCaptureHandler;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -34,10 +34,12 @@ public class CameraController {
 
     Logger logger = LoggerFactory.getLogger(CameraController.class);
 
-    public CameraController(LightController lightController, GpioHermanasController gpioHermanasController, PictureRepository pictureRepository) {
+    public CameraController(LightController lightController, GpioHermanasController gpioHermanasController,
+                            PictureRepository pictureRepository, ProcessLauncher processLauncher) {
         this.lightController = lightController;
         this.gpioHermanasController = gpioHermanasController;
         this.pictureRepository = pictureRepository;
+        this.processLauncher = processLauncher;
     }
 
     public synchronized File takePicture(boolean highQuality) throws IOException {
@@ -112,12 +114,60 @@ public class CameraController {
         }
     }
 
-    public void stream() {
+    ProcessLauncher processLauncher;
+
+    private Process currentStreamingProcess;
+
+    public void stream() throws IOException {
         switchLightOn();
-        // TODO : start process for 30 seconds
+
+        // /usr/local/bin/mjpg_streamer
+        // -i
+        // "/usr/local/lib/mjpg-streamer/input_raspicam.so -x 320 -y 180 -vf -hf -br 60"
+        // -o
+        // "/usr/local/lib/mjpg-streamer/output_http.so -p 8081"
+
+        currentStreamingProcess = processLauncher.launch(
+                "/usr/local/bin/mjpg_streamer",
+                "-i",
+                "\"/usr/local/lib/mjpg-streamer/input_raspicam.so -x 320 -y 180 -vf -hf -br 60\"",
+                "-o",
+                "\"/usr/local/lib/mjpg-streamer/output_http.so -p 8081\""
+        );
+        printErrorStreamInThread(currentStreamingProcess);
+    }
+
+    private void printErrorStreamInThread(Process currentStreamingProcess) {
+        InputStream errorStream = currentStreamingProcess.getErrorStream();
+        if (errorStream != null) {
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(errorStream));
+            new Thread(() -> {
+                String line = null;
+                logger.info("error stream is opened (debug only)...");
+                do {
+                    try {
+                        line = bufferedReader.readLine();
+                        if (line != null) {
+                            logger.debug(line);
+                        }
+                    } catch (IOException e) {
+                        logger.error("can't read process errors.", e);
+                    }
+                } while (line != null);
+                logger.info("process error stream is finished (debug only).");
+            }).start();
+        } else {
+            logger.info("error stream is null.");
+        }
     }
 
     public void stopStream() {
         switchOffLight();
+        if (currentStreamingProcess != null) {
+            logger.info("Stop music destroying process.");
+            currentStreamingProcess.destroyForcibly();
+            currentStreamingProcess = null;
+        }
     }
 }
