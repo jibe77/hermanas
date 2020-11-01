@@ -16,6 +16,7 @@ import uk.co.caprica.picam.FilePictureCaptureHandler;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Scope("singleton")
@@ -131,11 +132,13 @@ public class CameraController {
         processLauncher.printErrorStreamInThread(currentStreamingProcess);
     }
 
-    public void stopStream() {
+    public void stopStream() throws InterruptedException {
         switchOffLight();
         if (currentStreamingProcess != null) {
-            logger.info("Stop music destroying process.");
+            logger.info("Stop stream destroying process.");
             currentStreamingProcess.destroyForcibly();
+            boolean hasExited = currentStreamingProcess.waitFor(3, TimeUnit.SECONDS);
+            logger.info("Process has exited {}, is alive {}", hasExited, currentStreamingProcess.isAlive());
             currentStreamingProcess = null;
         }
     }

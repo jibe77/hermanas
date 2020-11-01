@@ -44,7 +44,7 @@ public class CameraService {
     }
 
     @GetMapping(value = "/camera/stopStream")
-    public void stopStream() {
+    public void stopStream() throws InterruptedException {
         cameraController.stopStream();
     }
 }
