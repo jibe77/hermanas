@@ -123,7 +123,7 @@ public class CameraController {
     private Process currentStreamingProcess;
 
     public void stream() throws IOException {
-        if (currentStreamingProcess != null) {
+        if (currentStreamingProcess == null) {
             switchLightOn();
             currentStreamingProcess = processLauncher.launch(
                     "/bin/bash", "-c",
