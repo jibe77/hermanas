@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.controller.camera;
 
 import org.apache.commons.io.FileUtils;
-import org.jibe77.hermanas.controller.music.ProcessLauncher;
+import org.jibe77.hermanas.controller.ProcessLauncher;
 import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
@@ -33,6 +33,9 @@ public class CameraController {
     private String rootPath;
 
     Logger logger = LoggerFactory.getLogger(CameraController.class);
+
+    @Value("${camera.streaming.command}")
+    private String streamingCommand;
 
     public CameraController(LightController lightController, GpioHermanasController gpioHermanasController,
                             PictureRepository pictureRepository, ProcessLauncher processLauncher) {
@@ -121,45 +124,11 @@ public class CameraController {
     public void stream() throws IOException {
         switchLightOn();
 
-        // /usr/local/bin/mjpg_streamer
-        // -i
-        // "/usr/local/lib/mjpg-streamer/input_raspicam.so -x 320 -y 180 -vf -hf -br 60"
-        // -o
-        // "/usr/local/lib/mjpg-streamer/output_http.so -p 8081"
-
         currentStreamingProcess = processLauncher.launch(
-                "/usr/local/bin/mjpg_streamer",
-                "-i",
-                "\"/usr/local/lib/mjpg-streamer/input_raspicam.so -x 320 -y 180 -vf -hf -br 60\"",
-                "-o",
-                "\"/usr/local/lib/mjpg-streamer/output_http.so -p 8081\""
+                "/bin/bash", "-c",
+                streamingCommand
         );
-        printErrorStreamInThread(currentStreamingProcess);
-    }
-
-    private void printErrorStreamInThread(Process currentStreamingProcess) {
-        InputStream errorStream = currentStreamingProcess.getErrorStream();
-        if (errorStream != null) {
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(errorStream));
-            new Thread(() -> {
-                String line = null;
-                logger.info("error stream is opened (debug only)...");
-                do {
-                    try {
-                        line = bufferedReader.readLine();
-                        if (line != null) {
-                            logger.debug(line);
-                        }
-                    } catch (IOException e) {
-                        logger.error("can't read process errors.", e);
-                    }
-                } while (line != null);
-                logger.info("process error stream is finished (debug only).");
-            }).start();
-        } else {
-            logger.info("error stream is null.");
-        }
+        processLauncher.printErrorStreamInThread(currentStreamingProcess);
     }
 
     public void stopStream() {

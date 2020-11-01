@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.controller.music;
 
+import org.jibe77.hermanas.controller.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,33 +99,8 @@ public class MusicController {
         commandWithParams.add(musicPlayerShuffle);
         commandWithParams.addAll(listOfFile);
         currentMusicProcess = processLauncher.launch(commandWithParams);
-        printErrorStreamInThread(currentMusicProcess);
+        processLauncher.printErrorStreamInThread(currentMusicProcess);
         startSecurityTimer();
-    }
-
-    private void printErrorStreamInThread(Process currentMusicProcess) {
-        InputStream errorStream = currentMusicProcess.getErrorStream();
-        if (errorStream != null) {
-            BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(errorStream));
-            new Thread(() -> {
-                String line = null;
-                logger.info("error stream is opened (debug only)...");
-                do {
-                    try {
-                        line = bufferedReader.readLine();
-                        if (line != null) {
-                            logger.debug(line);
-                        }
-                    } catch (IOException e) {
-                        logger.error("can't read process errors.", e);
-                    }
-                } while (line != null);
-                logger.info("process error stream is finished (debug only).");
-            }).start();
-        } else {
-            logger.info("error stream is null.");
-        }
     }
 
     private List<String> getListOfFiles(String pathToFolder) {
