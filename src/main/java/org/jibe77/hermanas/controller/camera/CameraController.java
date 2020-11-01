@@ -123,22 +123,30 @@ public class CameraController {
     private Process currentStreamingProcess;
 
     public void stream() throws IOException {
-        switchLightOn();
-
-        currentStreamingProcess = processLauncher.launch(
-                "/bin/bash", "-c",
-                streamingCommand
-        );
-        processLauncher.printErrorStreamInThread(currentStreamingProcess);
+        if (currentStreamingProcess != null) {
+            switchLightOn();
+            currentStreamingProcess = processLauncher.launch(
+                    "/bin/bash", "-c",
+                    streamingCommand
+            );
+            processLauncher.printErrorStreamInThread(currentStreamingProcess);
+        }
     }
 
-    public void stopStream() throws InterruptedException {
+    public void stopStream() throws InterruptedException, IOException {
         switchOffLight();
         if (currentStreamingProcess != null) {
             logger.info("Stop stream destroying process.");
-            currentStreamingProcess.destroyForcibly();
+            currentStreamingProcess.destroy();
             boolean hasExited = currentStreamingProcess.waitFor(3, TimeUnit.SECONDS);
-            logger.info("Process has exited {}, is alive {}", hasExited, currentStreamingProcess.isAlive());
+            logger.info("Process has exited {}.", hasExited);
+            if (!hasExited) {
+                logger.info("Force destroy.");
+                currentStreamingProcess.destroyForcibly();
+            }
+            logger.info("Process has exited {}, is alive {}, exit value {}",
+                    hasExited, currentStreamingProcess.isAlive(), currentStreamingProcess.exitValue());
+            processLauncher.launch("/usr/bin/killall", "mjpg_streamer");
             currentStreamingProcess = null;
         }
     }
