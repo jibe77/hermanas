@@ -40,7 +40,9 @@ public class CameraService {
     public ResponseEntity<StreamingResponseBody> stream(final HttpServletResponse response) throws IOException, InterruptedException {
         cameraController.stream();
         logger.info("stream has been called in camera controller, wait 2 seconds ....");
-        wait(2000);
+        synchronized (this) {
+            wait(2000);
+        }
 
         response.setContentType("multipart/x-mixed-replace;boundary=boundarydonotcross");
         response.setHeader("Cache-Control",
