@@ -38,12 +38,9 @@ public class CameraService {
     }
 
     @GetMapping(value = "/camera/stream", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<StreamingResponseBody> stream(final HttpServletResponse response) throws IOException, InterruptedException {
+    public ResponseEntity<StreamingResponseBody> stream(final HttpServletResponse response) throws IOException {
         cameraController.stream();
-        logger.info("stream has been called in camera controller, wait 2 seconds ....");
-        synchronized (this) {
-            wait(2000);
-        }
+        logger.info("stream has been called in camera controller, wait 1 seconds ....");
 
         response.setContentType("multipart/x-mixed-replace;boundary=boundarydonotcross");
         response.setHeader("Cache-Control",
@@ -72,9 +69,12 @@ public class CameraService {
 
             } catch (ClientAbortException e) {
                 try {
+                    logger.info("Client connection aborted, closing stream.");
                     stopStream();
                 } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                    logger.error("Interrupted stop stream !", e);
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
                 }
             }
         };
