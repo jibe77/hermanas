@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.service;
 
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.io.IOUtils;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.slf4j.Logger;
@@ -53,21 +54,29 @@ public class CameraService {
             BufferedInputStream bufferedInputStream = new BufferedInputStream(streamUrl.openStream());
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
 
-            int size;
-            byte[] data = new byte[1024];
-            logger.info("let's start copying the stream ...");
-            do {
+            try {
+                int size;
+                byte[] data = new byte[1024];
+                logger.info("let's start copying the stream ...");
+                do {
 
-                size = bufferedInputStream.read(data);
-                if (size != -1) {
-                    bufferedOutputStream.write(data, 0 , size);
-                    bufferedOutputStream.flush();
-                    logger.info("writing into stream array of size {}.", size);
+                    size = bufferedInputStream.read(data);
+                    if (size != -1) {
+                        bufferedOutputStream.write(data, 0, size);
+                        bufferedOutputStream.flush();
+                        logger.info("writing into stream array of size {}.", size);
+                    }
+                } while (size != -1);
+                logger.info("done, close outputstream.");
+                outputStream.close();
+
+            } catch (ClientAbortException e) {
+                try {
+                    stopStream();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
                 }
-            } while (size != -1);
-            logger.info("done, close outputstream.");
-            outputStream.close();
-
+            }
         };
         return new ResponseEntity<>(streamingResponseBody, HttpStatus.OK);
     }
