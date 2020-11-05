@@ -59,7 +59,7 @@ public class CameraService {
 
             try {
                 int size;
-                byte[] data = new byte[1024];
+                byte[] data = new byte[4096];
                 logger.info("let's start copying the stream ...");
                 do {
 
