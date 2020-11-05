@@ -41,7 +41,7 @@ public class CameraService {
     public ResponseEntity<StreamingResponseBody> stream(final HttpServletResponse response) throws IOException {
         cameraController.stream();
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             logger.info("Interrupted sleep.");
             Thread.currentThread().interrupt();
