@@ -146,7 +146,7 @@ public class CameraController {
             }
             logger.info("Process has exited {}, is alive {}, exit value {}",
                     hasExited, currentStreamingProcess.isAlive(), currentStreamingProcess.exitValue());
-            processLauncher.launch("/usr/bin/killall", "mjpg_streamer");
+            processLauncher.launch("/bin/kill", "-9", Long.toString(currentStreamingProcess.pid()));
             currentStreamingProcess = null;
         }
     }
