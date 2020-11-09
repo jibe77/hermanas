@@ -122,6 +122,8 @@ public class CameraController {
 
     private Process currentStreamingProcess;
 
+    int streamClientsCount = 0;
+
     public void stream() throws IOException {
         if (currentStreamingProcess == null) {
             switchLightOn();
@@ -130,12 +132,15 @@ public class CameraController {
                     streamingCommand
             );
             processLauncher.printErrorStreamInThread(currentStreamingProcess);
+            streamClientsCount++;
         }
     }
 
     public void stopStream() throws InterruptedException, IOException {
         switchOffLight();
-        if (currentStreamingProcess != null) {
+        streamClientsCount--;
+        logger.info("client has disconnected, it remains {} clients now.", streamClientsCount);
+        if (streamClientsCount == 0 && currentStreamingProcess != null) {
             logger.info("Stop stream destroying process.");
             currentStreamingProcess.destroy();
             boolean hasExited = currentStreamingProcess.waitFor(3, TimeUnit.SECONDS);

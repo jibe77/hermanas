@@ -62,7 +62,6 @@ public class CameraService {
                 byte[] data = new byte[4096];
                 logger.info("let's start copying the stream ...");
                 do {
-
                     size = bufferedInputStream.read(data);
                     if (size != -1) {
                         bufferedOutputStream.write(data, 0, size);
@@ -71,7 +70,6 @@ public class CameraService {
                 } while (size != -1);
                 logger.info("done, close outputstream.");
                 outputStream.close();
-
             } catch (ClientAbortException e) {
                 try {
                     logger.info("Client connection aborted, closing stream.");
