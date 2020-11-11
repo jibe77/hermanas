@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class DoorControllerTest {
 
@@ -17,8 +16,8 @@ class DoorControllerTest {
                 );
         assertEquals("UNDEFINED", doorController.status());
 
-        doorController.closeDoorWithBottormButtonManagement(true);
-        doorController.closeDoorWithBottormButtonManagement(true);
+        doorController.closeDoor(true);
+        doorController.closeDoor(true);
         assertEquals("CLOSED", doorController.status());
 
         doorController.openDoor(true, false);

@@ -33,13 +33,13 @@ class ServoControllerTest {
     Logger logger = LoggerFactory.getLogger(ServoControllerTest.class);
 
     @Test
-    void testCloseDoor() throws DoorNotClosedCorrectlyException {
+    void testCloseDoor() {
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... started.");
         Mockito.when(
                 gpioHermanasController.provisionInput(
                         Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
-        controller.closeDoorWithBottormButtonManagement(false);
+        controller.closeDoor(false);
         Mockito.verify(
                 servoMotorController,
                 Mockito.times(1)

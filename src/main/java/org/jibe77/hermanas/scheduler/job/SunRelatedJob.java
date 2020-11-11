@@ -3,7 +3,6 @@ package org.jibe77.hermanas.scheduler.job;
 import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
-import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.controller.fan.FanController;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.controller.music.MusicController;
@@ -105,25 +104,16 @@ public class SunRelatedJob {
     private void manageDoorClosingEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorClosingTime())) {
             if (!doorController.doorIsClosed()) {
-                try {
-                    logger.info("start door closing job at sunset.");
-                    logger.info("take picture before closing door.");
-                    cameraController.takePictureNoException(true);
-                    logger.info("close door");
-                    doorController.closeDoorWithBottormButtonManagement(false);
-                    logger.info("take picture once the door is closed and send it by email.");
-                    notification(
-                            messageSource.getMessage("event.closing.mail.with_picture.title", null, Locale.getDefault()),
-                            messageSource.getMessage("event.closing.mail.without_picture.title", null,
-                                    Locale.getDefault()));
-                } catch (DoorNotClosedCorrectlyException e) {
-                    logger.error("Didn't close the door correctly.");
-                    notification(
-                        messageSource.getMessage("event.closing_with_problem.mail.with_picture.title",
-                                null, Locale.getDefault()),
-                        messageSource.getMessage("event.closing_with_problem.mail.without_picture.title",
-                                null, Locale.getDefault()));
-                }
+                logger.info("start door closing job at sunset.");
+                logger.info("take picture before closing door.");
+                cameraController.takePictureNoException(true);
+                logger.info("close door");
+                doorController.closeDoor(false);
+                logger.info("take picture once the door is closed and send it by email.");
+                notification(
+                        messageSource.getMessage("event.closing.mail.with_picture.title", null, Locale.getDefault()),
+                        messageSource.getMessage("event.closing.mail.without_picture.title", null,
+                                Locale.getDefault()));
             } else {
                 logger.info("door has already been closed before, nothing to do in this event.");
             }

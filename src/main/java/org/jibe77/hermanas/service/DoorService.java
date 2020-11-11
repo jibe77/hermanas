@@ -1,7 +1,6 @@
 package org.jibe77.hermanas.service;
 
 import org.jibe77.hermanas.controller.door.DoorController;
-import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,14 +26,9 @@ public class DoorService {
     @GetMapping("/door/close")
     public boolean close(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("closing door now  ...");
-        try {
-            doorController.closeDoorWithBottormButtonManagement(Boolean.parseBoolean(force));
-            logger.info("... done !");
-            return true;
-        } catch (DoorNotClosedCorrectlyException e) {
-            logger.error("Door could not be closed correctly.");
-            return false;
-        }
+        doorController.closeDoor(Boolean.parseBoolean(force));
+        logger.info("... done !");
+        return true;
     }
 
     @GetMapping("/door/open")
