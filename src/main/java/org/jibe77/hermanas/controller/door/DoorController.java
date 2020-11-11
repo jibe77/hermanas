@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.controller.door;
 
-import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +24,6 @@ public class DoorController {
     // the servo motor
     private final ServoMotorController servo;
 
-    final BottomButtonController bottomButtonController;
-
     Logger logger = LoggerFactory.getLogger(DoorController.class);
 
     @Value("${door.opening.duration}")
@@ -44,9 +41,8 @@ public class DoorController {
     private LocalDateTime lastClosingTime;
     private LocalDateTime lastOpeningTime;
 
-    public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController) {
+    public DoorController(ServoMotorController servo) {
         this.servo = servo;
-        this.bottomButtonController = bottomButtonController;
     }
 
     /**
@@ -59,19 +55,9 @@ public class DoorController {
             backoff = @Backoff(delay = 5000))
     public void closeDoorWithBottormButtonManagement(boolean force) {
         if (force || !doorIsClosed()) {
-            bottomButtonController.provisionButton();
-            bottomButtonController.resetBottomButtonHasBeenPressed();
             closeDoor();
-            if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
-                logger.error("Bottom position not reached correctly. The door is being reopened now.");
-                // if the door has been closed twice, opening the door is actually closing the door .
-                openDoor(false, true);
-                if (!bottomButtonController.isBottomButtonHasBeenPressed())
-                    throw new DoorNotClosedCorrectlyException();
-            }
             logger.info("... done");
             this.lastClosingTime = LocalDateTime.now();
-            bottomButtonController.unprovisionButton();
         } else {
             logger.info("Door is not closed because is already closed state.");
         }

@@ -3,7 +3,6 @@ package org.jibe77.hermanas.controller.door;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
-import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -13,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(classes = {DoorController.class, BottomButtonController.class})
+@SpringBootTest(classes = {DoorController.class})
 class ServoControllerTest {
 
     @Autowired
@@ -31,9 +30,6 @@ class ServoControllerTest {
     @MockBean
     GpioPinDigitalInput gpioPinDigitalInput;
 
-    @MockBean
-    BottomButtonController bottomButtonController;
-
     Logger logger = LoggerFactory.getLogger(ServoControllerTest.class);
 
     @Test
@@ -43,7 +39,6 @@ class ServoControllerTest {
                 gpioHermanasController.provisionInput(
                         Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
-        Mockito.when(bottomButtonController.isBottomButtonHasBeenPressed()).thenReturn(true);
         controller.closeDoorWithBottormButtonManagement(false);
         Mockito.verify(
                 servoMotorController,

@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.controller.door;
 
-import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.junit.jupiter.api.Test;
 
@@ -12,13 +11,9 @@ class DoorControllerTest {
 
     @Test
     void status() {
-        BottomButtonController bottomButtonController =
-                mock(BottomButtonController.class);
-        when(bottomButtonController.isBottomButtonHasBeenPressed()).thenReturn(true);
 
         DoorController doorController = new DoorController(
-                mock(ServoMotorController.class),
-                bottomButtonController
+                mock(ServoMotorController.class)
                 );
         assertEquals("UNDEFINED", doorController.status());
 
