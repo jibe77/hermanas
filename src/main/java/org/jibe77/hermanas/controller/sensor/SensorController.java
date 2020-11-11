@@ -22,9 +22,9 @@ import java.time.LocalDateTime;
  * @author Doug Culnane
  */
 @Component
-public class DHT22 {
+public class SensorController {
 
-    Logger logger = LoggerFactory.getLogger(DHT22.class);
+    Logger logger = LoggerFactory.getLogger(SensorController.class);
 
     @Value("${sensor.python.command}")
     private String pythonCommand;
@@ -41,7 +41,7 @@ public class DHT22 {
     @Value("${sensor.python.arg2}")
     private String scriptArg2;
 
-    public DHT22() {
+    public SensorController() {
         // default constructor
     }
 

@@ -51,7 +51,6 @@ public class FanController {
             gpioPinDigitalOutput.high();
             startSecurityTimer();
         }
-
     }
 
     private void startSecurityTimer() {

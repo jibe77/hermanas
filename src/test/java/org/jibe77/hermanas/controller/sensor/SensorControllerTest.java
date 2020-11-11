@@ -9,32 +9,32 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(classes = {DHT22.class})
-class DHT22Test {
+@SpringBootTest(classes = {SensorController.class})
+class SensorControllerTest {
 
     @Autowired
-    DHT22 dht22;
+    SensorController sensorController;
 
     @MockBean
     GpioHermanasController gpioHermanasController;
 
     @Test
     void testReadSensorWithRefresh() throws Exception {
-        Sensor sensor = dht22.refreshData();
+        Sensor sensor = sensorController.refreshData();
         assertEquals(57.6, sensor.getHumidity());
         assertEquals(24.9, sensor.getTemperature());
     }
 
     @Test
     void testParseSensorReturnedValue() {
-        Sensor sensor = dht22.parseSensorReturnedValue("Temp=2.9* Humidity=7.6%");
+        Sensor sensor = sensorController.parseSensorReturnedValue("Temp=2.9* Humidity=7.6%");
         assertEquals(7.6, sensor.getHumidity());
         assertEquals(2.9, sensor.getTemperature());
     }
 
     @Test
     void testParseSensorReturnedValueMinus() {
-        Sensor sensor = dht22.parseSensorReturnedValue("Temp=-2.9* Humidity=7.6%");
+        Sensor sensor = sensorController.parseSensorReturnedValue("Temp=-2.9* Humidity=7.6%");
         assertEquals(7.6, sensor.getHumidity());
         assertEquals(-2.9, sensor.getTemperature());
     }
