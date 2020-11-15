@@ -90,7 +90,7 @@ public class CameraController {
     private String generateFilename(LocalDateTime localDateTime, int suffix) {
         return localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
                 localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" +
-                (suffix > 0 ? "" : suffix+"-") + localDateTime.getMinute() + ".png";
+                (suffix == 0 ? "" : suffix+"-") + localDateTime.getMinute() + ".png";
     }
 
     /**

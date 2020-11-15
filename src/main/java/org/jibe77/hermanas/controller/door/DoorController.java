@@ -2,6 +2,7 @@ package org.jibe77.hermanas.controller.door;
 
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
+import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,6 +164,14 @@ public class DoorController {
             return true;
         } else {
             logger.info("Some data is missing so the door is supposed not to be closed.");
+            Optional<File> picture = cameraController.takePictureNoException(true);
+            if (picture.isPresent()) {
+                try {
+                    return doorPictureAnalizer.isDoorClosed(picture.get());
+                } catch (IOException e) {
+                    logger.error("Can't read picture.", e);
+                }
+            }
             return false;
         }
     }
