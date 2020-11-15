@@ -59,7 +59,7 @@ class SunRelatedJobTest {
         verify(cameraController, times(0)).takePictureNoException(false);
         verify(lightController, times(0)).switchOff();
         verify(lightController, times(0)).switchOn();
-        verify(doorController, times(0)).closeDoor(false);
+        verify(doorController, times(0)).closeDoorWithPictureAnalysis(false);
         verify(doorController, times(0)).openDoor(false, false);
         verify(doorController, times(0)).openDoor(false, false);
         verify(musicController, times(0)).cocorico();
@@ -91,6 +91,6 @@ class SunRelatedJobTest {
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
         sunRelatedJob.execute();
-        verify(doorController, times(1)).closeDoor(false);
+        verify(doorController, times(1)).closeDoorWithPictureAnalysis(false);
     }
 }

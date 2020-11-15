@@ -53,13 +53,12 @@ public class CameraController {
         String relativePath = generateRelativePath(localDateTime);
         File fileRoot = new File(rootPath + File.separator + relativePath);
         FileUtils.forceMkdir(fileRoot);
-        String filename = generateFilename(localDateTime);
-        File pictureFile = new File(fileRoot, filename);
+        File pictureFile = generateUniqueFilename(localDateTime, fileRoot);
         logger.info("Taking a picture now in {} ...", pictureFile.getAbsolutePath());
         try {
             gpioHermanasController.takePicture(new FilePictureCaptureHandler(pictureFile), highQuality);
             logger.info("Save picture path in db.");
-            pictureRepository.save(new Picture(relativePath + File.separator + filename));
+            pictureRepository.save(new Picture(relativePath + File.separator + pictureFile.getName()));
             logger.info("... done.");
             return pictureFile;
         } catch (IOException e) {
@@ -69,15 +68,29 @@ public class CameraController {
         }
     }
 
+    private File generateUniqueFilename(LocalDateTime localDateTime, File fileRoot) {
+        return generateUniqueFilename(localDateTime, 0, fileRoot);
+    }
+
+    private File generateUniqueFilename(LocalDateTime localDateTime, int suffix, File fileRoot) {
+        String filename = generateFilename(localDateTime, suffix);
+        File file = new File(fileRoot, filename);
+        if (file.exists()) {
+            return generateUniqueFilename(localDateTime, suffix+1, fileRoot);
+        }
+        return file;
+    }
+
     private String generateRelativePath(LocalDateTime localDateTime) {
         return localDateTime.getYear() + "/" +
                 localDateTime.getMonthValue() + "/" +
                 localDateTime.getDayOfMonth();
     }
 
-    private String generateFilename(LocalDateTime localDateTime) {
+    private String generateFilename(LocalDateTime localDateTime, int suffix) {
         return localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
-                localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" + localDateTime.getMinute() + ".jpg";
+                localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" +
+                (suffix > 0 ? "" : suffix+"-") + localDateTime.getMinute() + ".png";
     }
 
     /**

@@ -2,8 +2,10 @@ package org.jibe77.hermanas.controller.door;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
+import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
+import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -28,6 +30,12 @@ class ServoControllerTest {
     GpioController gpioController;
 
     @MockBean
+    DoorPictureAnalizer doorPictureAnalizer;
+
+    @MockBean
+    CameraController cameraController;
+
+    @MockBean
     GpioPinDigitalInput gpioPinDigitalInput;
 
     Logger logger = LoggerFactory.getLogger(ServoControllerTest.class);
@@ -39,14 +47,13 @@ class ServoControllerTest {
                 gpioHermanasController.provisionInput(
                         Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
-        controller.closeDoor(false);
+        controller.closeDoorWithPictureAnalysis(false);
         Mockito.verify(
                 servoMotorController,
                 Mockito.times(1)
         ).setPosition(
                 Mockito.anyInt(),
                 Mockito.anyInt());
-        // TODO : add more verifications.
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... finished !");
     }
 
