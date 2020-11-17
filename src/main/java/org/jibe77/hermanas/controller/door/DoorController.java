@@ -74,9 +74,8 @@ public class DoorController {
                     logger.error("Bottom position not reached correctly. The door is being reopened now.");
                     // if the door has been closed twice, opening the door is actually closing the door .
                     openDoor(false, true);
-                    if (!doorPictureAnalizer.isDoorClosed(picture.get()))
-                        throw new DoorNotClosedCorrectlyException();
-                    }
+                    throw new DoorNotClosedCorrectlyException();
+                }
             } catch (IOException e) {
                 logger.error("Can't read picture taken by camera.", e);
             }
@@ -184,5 +183,21 @@ public class DoorController {
         } else {
             return "UNDEFINED";
         }
+    }
+
+    public void turnServoClockwise(Integer duration) {
+        logger.info(
+                "Turn the servo clockwise with gear position {} for {} ms ...",
+                doorClosingPosition,
+                doorClosingDuration);
+        servo.setPosition(doorClosingPosition, duration);
+    }
+
+    public void turnServoCounterClockwise(Integer duration) {
+        logger.info(
+                "Turn the servo counter-clockwise with gear position {} for {} ms ...",
+                doorOpeningPosition,
+                doorOpeningDuration);
+        servo.setPosition(doorClosingPosition, duration);
     }
 }

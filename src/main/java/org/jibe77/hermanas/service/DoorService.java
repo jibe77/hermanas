@@ -39,6 +39,20 @@ public class DoorService {
         return result;
     }
 
+    @GetMapping("/door/turnClockwise")
+    public void turnClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
+        logger.info("turning servomotor clockwise  ...");
+        doorController.turnServoClockwise(Integer.valueOf(duration));
+        logger.info("... done !");
+    }
+
+    @GetMapping("/door/turnCounterClockwise")
+    public void turnCounterClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
+        logger.info("turning servomotor counter-clockwise  ...");
+        doorController.turnServoCounterClockwise(Integer.valueOf(duration));
+        logger.info("... done !");
+    }
+
     @GetMapping("/door/status")
     public String status() {
         return doorController.status();
