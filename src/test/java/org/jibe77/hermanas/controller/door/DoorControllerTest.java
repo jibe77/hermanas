@@ -7,15 +7,19 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DoorControllerTest {
 
     @Test
     void status() {
+        DoorPictureAnalizer doorPictureAnalizer =
+                mock(DoorPictureAnalizer.class);
+        when(doorPictureAnalizer.isDoorClosed()).thenReturn(true);
 
         DoorController doorController = new DoorController(
                 mock(ServoMotorController.class),
-                mock(DoorPictureAnalizer.class),
+                doorPictureAnalizer,
                 mock(CameraController.class)
                 );
         assertEquals("UNDEFINED", doorController.status());

@@ -47,6 +47,7 @@ class ServoControllerTest {
                 gpioHermanasController.provisionInput(
                         Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
+        Mockito.when(doorPictureAnalizer.isDoorClosed()).thenReturn(true);
         controller.closeDoorWithPictureAnalysis(false);
         Mockito.verify(
                 servoMotorController,
