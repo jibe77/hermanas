@@ -143,7 +143,15 @@ public class DoorController {
             logger.info("The opening time is known but closing time unknown, the door is supposed to be opened.");
             return true;
         } else {
-            logger.info("No information, so the door is supposed not being opened.");
+            logger.info("No closing data available, analysing picture.");
+            Optional<File> picture = cameraController.takePictureNoException(true);
+            if (picture.isPresent()) {
+                try {
+                    return !doorPictureAnalizer.isDoorClosed(picture.get());
+                } catch (IOException e) {
+                    logger.error("Can't read picture.", e);
+                }
+            }
             return false;
         }
     }
