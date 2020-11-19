@@ -1,24 +1,49 @@
 package org.jibe77.hermanas.image;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
 import java.io.IOException;
 
 class DoorImageAnalyzerTest {
 
+    Logger logger = LoggerFactory.getLogger(DoorImageAnalyzerTest.class);
+
     @Test
     void testOpenPicture() throws IOException {
-        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer();
-        assertFalse(doorPictureAnalizer.isDoorClosed(
-                "src/test/resources/pictures/is opened/logo.jpg"));
-        assertFalse(doorPictureAnalizer.isDoorClosed(
-                "src/test/resources/pictures/is opened/logo copie.jpg"));
-        assertFalse(doorPictureAnalizer.isDoorClosed(
-                "src/test/resources/pictures/is opened/logo copie 2.jpg"));
-        assertTrue(doorPictureAnalizer.isDoorClosed(
-                "src/test/resources/pictures/is closed/logo 7.jpg"));
+        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer(null);
+        File closedFolder = new File("src/test/resources/pictures/is closed");
+        File openedFolder = new File("src/test/resources/pictures/is opened");
+        File difficultToPredictFolder = new File("src/test/resources/pictures/difficult to predict");
+
+        for (File closedDoorPicture : closedFolder.listFiles()) {
+            if (!closedDoorPicture.getName().equals(".DS_Store")) {
+                logger.info("Processing file {}.", closedDoorPicture.getAbsolutePath());
+                assertTrue(doorPictureAnalizer.isDoorClosed(closedDoorPicture));
+            }
+        }
+        for (File openedDoorPicture : openedFolder.listFiles()) {
+            if (!openedDoorPicture.getName().equals(".DS_Store")) {
+                logger.info("Processing file {}.", openedDoorPicture.getAbsolutePath());
+                assertFalse(doorPictureAnalizer.isDoorClosed(openedDoorPicture));
+            }
+        }
+        for (File picture : difficultToPredictFolder.listFiles()) {
+            if (!picture.getName().equals(".DS_Store")) {
+                logger.info("Processing file {}.", picture.getAbsolutePath());
+                PredictionException predictionException = null;
+                try {
+                    doorPictureAnalizer.isDoorClosed(picture);
+                } catch (PredictionException e) {
+                    predictionException = e;
+                }
+                assertNotNull(predictionException);
+            }
+        }
     }
 }

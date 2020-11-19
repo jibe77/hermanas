@@ -69,7 +69,7 @@ public class CameraController {
     }
 
     private File generateUniqueFilename(LocalDateTime localDateTime, File fileRoot) {
-        return generateUniqueFilename(localDateTime, 0, fileRoot);
+        return generateUniqueFilename(localDateTime, 1, fileRoot);
     }
 
     private File generateUniqueFilename(LocalDateTime localDateTime, int suffix, File fileRoot) {
@@ -90,7 +90,8 @@ public class CameraController {
     private String generateFilename(LocalDateTime localDateTime, int suffix) {
         return localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
                 localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" +
-                (suffix == 0 ? "" : suffix+"-") + localDateTime.getMinute() + ".png";
+                localDateTime.getMinute() +
+                (suffix == 1 ? "" : suffix+"-") + ".png";
     }
 
     /**

@@ -1,7 +1,11 @@
 package org.jibe77.hermanas.image;
 
+import org.jibe77.hermanas.controller.camera.CameraController;
+import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -11,11 +15,33 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
 
 @Component
 public class DoorPictureAnalizer {
 
+    private final CameraController cameraController;
+
     Logger logger = LoggerFactory.getLogger(DoorPictureAnalizer.class);
+
+    public DoorPictureAnalizer(CameraController cameraController) {
+        this.cameraController = cameraController;
+    }
+
+    @Retryable(
+            value = { PredictionException.class},
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 5000))
+    public boolean isDoorClosed() {
+        Optional<File> picture = cameraController.takePictureNoException(true);
+        try {
+            return (picture.isPresent() && isDoorClosed(picture.get()));
+        } catch (IOException e) {
+            logger.error("Can't process picture.", e);
+            // impossible to analyse, the door is supposed to be closed correctly.
+            return true;
+        }
+    }
 
     /**
      * Analyze image
@@ -61,10 +87,16 @@ public class DoorPictureAnalizer {
         }
         double max = Collections.max(results);
         double min = Collections.min(results);
+        double dif = max - min;
         logger.info("result is between {} and {}.", min, max);
-        if (min > 50 && max < 85) {
+        if (min > 55 && max < 85 && dif < 25 && dif > 5) {
             logger.info("door is closed");
             return true;
+        } else if (min > 50 && max < 58 && dif < 5) {
+            // it seems there is not enough light
+            // this comes from a lightening problem and the chicken in front of the camera
+            // it's better to try again, and the door is likely to be closed.
+            throw new PredictionException();
         } else {
             logger.info("door is opened");
             return false;

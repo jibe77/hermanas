@@ -4,6 +4,7 @@ import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
+import org.jibe77.hermanas.image.PredictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,22 +63,24 @@ public class DoorController {
      * @param force if force is set to true, force door to close even if it is closed.
      */
     @Retryable(
-            value = { DoorNotClosedCorrectlyException.class },
+            value = { DoorNotClosedCorrectlyException.class},
             maxAttempts = 5,
             backoff = @Backoff(delay = 5000))
     public void closeDoorWithPictureAnalysis(boolean force) {
         if (force || !doorIsClosed()) {
             closeDoor();
-            Optional<File> picture = cameraController.takePictureNoException(true);
+            boolean doorIsClosed;
             try {
-                if (picture.isPresent() && !doorPictureAnalizer.isDoorClosed(picture.get())) {
-                    logger.error("Bottom position not reached correctly. The door is being reopened now.");
-                    // if the door has been closed twice, opening the door is actually closing the door .
-                    openDoor(false, true);
-                    throw new DoorNotClosedCorrectlyException();
-                }
-            } catch (IOException e) {
-                logger.error("Can't read picture taken by camera.", e);
+                doorIsClosed = doorPictureAnalizer.isDoorClosed();
+            } catch (PredictionException e) {
+                logger.info("Can't predict, so the door is supposed to be closed.", e);
+                doorIsClosed = true;
+            }
+            if (!doorIsClosed) {
+                logger.error("Bottom position not reached correctly. The door is being reopened now.");
+                // if the door has been closed twice, opening the door is actually closing the door .
+                openDoor(false, true);
+                throw new DoorNotClosedCorrectlyException();
             }
             logger.info("... done");
             this.lastClosingTime = LocalDateTime.now();
@@ -109,8 +112,7 @@ public class DoorController {
      * Open the door moving the servomotor counter-clockwise.
      * @param force if force is set to true, force door to open even if it is opened.
      */
-    public boolean openDoor(boolean force, boolean openingDoorAfterClosingProblem)
-    {
+    public boolean openDoor(boolean force, boolean openingDoorAfterClosingProblem) {
         if (force || !doorIsOpened()) {
             logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
                     doorOpeningPosition,
