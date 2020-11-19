@@ -15,11 +15,22 @@ class DoorImageAnalyzerTest {
     Logger logger = LoggerFactory.getLogger(DoorImageAnalyzerTest.class);
 
     @Test
-    void testOpenPicture() throws IOException {
+    void testOpenedFolder() throws IOException {
+        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer(null);
+        File openedFolder = new File("src/test/resources/pictures/is opened");
+
+        for (File openedDoorPicture : openedFolder.listFiles()) {
+            if (!openedDoorPicture.getName().equals(".DS_Store")) {
+                logger.info("Processing file {}.", openedDoorPicture.getAbsolutePath());
+                assertFalse(doorPictureAnalizer.isDoorClosed(openedDoorPicture));
+            }
+        }
+    }
+
+    @Test
+    void testClosedFolder() throws IOException {
         DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer(null);
         File closedFolder = new File("src/test/resources/pictures/is closed");
-        File openedFolder = new File("src/test/resources/pictures/is opened");
-        File difficultToPredictFolder = new File("src/test/resources/pictures/difficult to predict");
 
         for (File closedDoorPicture : closedFolder.listFiles()) {
             if (!closedDoorPicture.getName().equals(".DS_Store")) {
@@ -27,12 +38,13 @@ class DoorImageAnalyzerTest {
                 assertTrue(doorPictureAnalizer.isDoorClosed(closedDoorPicture));
             }
         }
-        for (File openedDoorPicture : openedFolder.listFiles()) {
-            if (!openedDoorPicture.getName().equals(".DS_Store")) {
-                logger.info("Processing file {}.", openedDoorPicture.getAbsolutePath());
-                assertFalse(doorPictureAnalizer.isDoorClosed(openedDoorPicture));
-            }
-        }
+    }
+
+    @Test
+    void testDifficultToPredictFolder() throws IOException {
+        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer(null);
+        File difficultToPredictFolder = new File("src/test/resources/pictures/difficult to predict");
+
         for (File picture : difficultToPredictFolder.listFiles()) {
             if (!picture.getName().equals(".DS_Store")) {
                 logger.info("Processing file {}.", picture.getAbsolutePath());

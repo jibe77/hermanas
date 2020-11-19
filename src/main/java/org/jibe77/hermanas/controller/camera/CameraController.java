@@ -91,7 +91,7 @@ public class CameraController {
         return localDateTime.getYear() + "-" + localDateTime.getMonthValue() + "-" +
                 localDateTime.getDayOfMonth() + "-" + localDateTime.getHour() + "-" +
                 localDateTime.getMinute() +
-                (suffix == 1 ? "" : suffix+"-") + ".png";
+                (suffix == 1 ? "" : "-"+suffix) + ".png";
     }
 
     /**

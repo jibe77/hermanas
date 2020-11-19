@@ -89,14 +89,15 @@ public class DoorPictureAnalizer {
         double min = Collections.min(results);
         double dif = max - min;
         logger.info("result is between {} and {}.", min, max);
-        if (min > 55 && max < 85 && dif < 25 && dif > 5) {
-            logger.info("door is closed");
+        if (min > 55 && max < 85 && dif < 25 && dif >= 5) {
+            logger.info("door is closed.");
+            return true;
+        } else if (min > 50 && max < 70 && dif <= 16 && dif >= 8) {
+            logger.info("door seems to be closed but there is probably a chick in front.");
             return true;
         } else if (min > 50 && max < 58 && dif < 5) {
-            // it seems there is not enough light
-            // this comes from a lightening problem and the chicken in front of the camera
-            // it's better to try again, and the door is likely to be closed.
-            throw new PredictionException();
+            logger.info("door seems to be closed but there is a problem with light.");
+            return true;
         } else {
             logger.info("door is opened");
             return false;
