@@ -1,7 +1,6 @@
 package org.jibe77.hermanas.image;
 
 import org.jibe77.hermanas.controller.camera.CameraController;
-import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.retry.annotation.Backoff;

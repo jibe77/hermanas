@@ -27,7 +27,7 @@ public class DoorService {
     public boolean close(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("closing door now  ...");
         doorController.closeDoorWithPictureAnalysis(Boolean.parseBoolean(force));
-        logger.info("... done !");
+        logger.info("... the door has been closed !");
         return true;
     }
 
@@ -43,14 +43,14 @@ public class DoorService {
     public void turnClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
         logger.info("turning servomotor clockwise  ...");
         doorController.turnServoClockwise(Integer.valueOf(duration));
-        logger.info("... done !");
+        logger.info("... servomotor done !");
     }
 
     @GetMapping("/door/turnCounterClockwise")
     public void turnCounterClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
         logger.info("turning servomotor counter-clockwise  ...");
         doorController.turnServoCounterClockwise(Integer.valueOf(duration));
-        logger.info("... done !");
+        logger.info("... servomotor done !");
     }
 
     @GetMapping("/door/status")

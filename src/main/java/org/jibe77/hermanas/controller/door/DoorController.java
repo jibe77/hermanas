@@ -2,7 +2,6 @@ package org.jibe77.hermanas.controller.door;
 
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
-import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.jibe77.hermanas.image.PredictionException;
 import org.slf4j.Logger;
