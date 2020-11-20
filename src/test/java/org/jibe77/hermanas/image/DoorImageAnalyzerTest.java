@@ -40,22 +40,4 @@ class DoorImageAnalyzerTest {
         }
     }
 
-    @Test
-    void testDifficultToPredictFolder() throws IOException {
-        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer(null);
-        File difficultToPredictFolder = new File("src/test/resources/pictures/difficult to predict");
-
-        for (File picture : difficultToPredictFolder.listFiles()) {
-            if (!picture.getName().equals(".DS_Store")) {
-                logger.info("Processing file {}.", picture.getAbsolutePath());
-                PredictionException predictionException = null;
-                try {
-                    doorPictureAnalizer.isDoorClosed(picture);
-                } catch (PredictionException e) {
-                    predictionException = e;
-                }
-                assertNotNull(predictionException);
-            }
-        }
-    }
 }
