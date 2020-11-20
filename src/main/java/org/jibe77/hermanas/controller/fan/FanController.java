@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.time.LocalDateTime;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -27,6 +28,9 @@ public class FanController {
 
     @Value("${fan.security.timer.delay}")
     private long fanSecurityTimerDelay;
+
+    @Value("${fan.security.timer.multiplier}")
+    private long fanSecurityTimerMultiplier;
 
     GpioPinDigitalOutput gpioPinDigitalOutput;
 
@@ -57,14 +61,17 @@ public class FanController {
         if (fanSecurityStopTimer != null) {
             fanSecurityStopTimer.cancel();
         }
+        int month = LocalDateTime.now().getMonthValue();
+        long duration = (month > 3 && month < 10) ?
+                fanSecurityTimerMultiplier * fanSecurityTimerDelay : fanSecurityTimerDelay;
         fanSecurityStopTimer = new Timer("Fan security stop");
         fanSecurityStopTimer.schedule(new TimerTask() {
                                           public void run() {
-                                              logger.info("stopping fan after {} ms.", fanSecurityTimerDelay);
+                                              logger.info("stopping fan after {} ms.", duration);
                                               switchOff();
                                           }
                                       },
-                fanSecurityTimerDelay);
+                duration);
     }
 
     public synchronized void switchOff() {
