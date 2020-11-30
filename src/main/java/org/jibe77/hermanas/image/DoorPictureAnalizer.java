@@ -14,18 +14,16 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Component
 public class DoorPictureAnalizer {
 
-    public static final int ordinateStart = 810;
-    public static final int ordinateEnd = 1040;
-    public static final int abscissaStart = 163;
-    public static final int abscissaEnd = 320;
-    public static final int CLOSED_STATUS_MAX_VALUE = 100;
+    public static final int ORDINATE_START = 810;
+    public static final int ORDINATE_END = 1040;
+    public static final int ABSCISSA_START = 163;
+    public static final int ABSCISSA_END = 320;
 
     private final CameraController cameraController;
 
@@ -101,7 +99,9 @@ public class DoorPictureAnalizer {
     }
 
     public static Color computeAverage(Color[] array) {
-        int r = 0, g = 0, b = 0;
+        int r = 0;
+        int g = 0;
+        int b = 0;
         for (Color c : array) {
             r += c.getRed();
             g += c.getGreen();
@@ -143,14 +143,14 @@ public class DoorPictureAnalizer {
     }
 
     private List<Color> computeColorAverageList(BufferedImage originalImgage) {
-        List<Color> results = new ArrayList<>(ordinateEnd - ordinateStart);
-        double m = (double)(abscissaEnd - abscissaStart) / (ordinateEnd - ordinateStart);
-        for (int y = ordinateStart; y <= ordinateEnd; y++) {
+        List<Color> results = new ArrayList<>(ORDINATE_END - ORDINATE_START);
+        double m = (double)(ABSCISSA_END - ABSCISSA_START) / (ORDINATE_END - ORDINATE_START);
+        for (int y = ORDINATE_START; y <= ORDINATE_END; y++) {
             Color[] list = new Color[10];
 
             for (int x = 0 ; x < 10 ; x++) {
-                double offset = ((y - ordinateStart) * m);
-                int computedX = abscissaStart + x + (int)offset;
+                double offset = ((y - ORDINATE_START) * m);
+                int computedX = ABSCISSA_START + x + (int)offset;
                 list[x] = new Color(originalImgage.getRGB(computedX, y));
             }
             Color average = computeAverage(list);

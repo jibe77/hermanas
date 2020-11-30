@@ -2,7 +2,7 @@ package org.jibe77.hermanas.image;
 
 public class PredictionException extends RuntimeException {
 
-    DoorStatus doorStatus;
+    final DoorStatus doorStatus;
 
     public PredictionException(DoorStatus doorStatus) {
         this.doorStatus = doorStatus;
