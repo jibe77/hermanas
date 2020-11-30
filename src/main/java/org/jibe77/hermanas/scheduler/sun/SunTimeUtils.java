@@ -15,7 +15,6 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 @Component
-@Scope("singleton")
 public class SunTimeUtils {
 
     @Value("${suntime.latitude}")

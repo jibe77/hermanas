@@ -7,6 +7,7 @@ import org.jibe77.hermanas.controller.fan.FanController;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.job.SunRelatedJob;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,10 +24,10 @@ class ManageLightSwitchOnEventTest {
     SunTimeManager sunTimeManager;
     LightController lightController;
     DoorController doorController;
-    MusicController musicController;
     LocalDateTime eventAlwaysInTheFutur;
     LocalDateTime eventAlwaysInThePast;
     FanController fanController;
+    ConsumptionModeManager consumptionMode;
 
 
     @BeforeEach
@@ -38,8 +39,9 @@ class ManageLightSwitchOnEventTest {
         lightController = mock(LightController.class);
         doorController = mock(DoorController.class);
         fanController = mock(FanController.class);
+        consumptionMode = mock(ConsumptionModeManager.class);
 
-        manageLightSwitchingOnEvent = new ManageLightSwitchingOnEvent(sunTimeManager, lightController, musicController, doorController, fanController);
+        manageLightSwitchingOnEvent = new ManageLightSwitchingOnEvent(sunTimeManager, lightController, doorController, fanController, consumptionMode);
     }
 
     @Test

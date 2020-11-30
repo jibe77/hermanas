@@ -4,6 +4,7 @@ import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
+import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,17 +30,23 @@ public class ManageDoorClosingEvent {
 
     MessageSource messageSource;
 
+    MusicController musicController;
+
     @Value("${email.notification.sunset.subject}")
     private String emailNotificationSunsetSubject;
 
+    @Value("${play.song.at.sunset}")
+    private boolean playSongAtSunset;
+
     Logger logger = LoggerFactory.getLogger(ManageDoorClosingEvent.class);
 
-    public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController, CameraController cameraController, EmailService emailService, MessageSource messageSource) {
+    public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController, CameraController cameraController, EmailService emailService, MessageSource messageSource, MusicController musicController) {
         this.sunTimeManager = sunTimeManager;
         this.doorController = doorController;
         this.cameraController = cameraController;
         this.emailService = emailService;
         this.messageSource = messageSource;
+        this.musicController = musicController;
     }
 
     public void manageDoorClosingEvent(LocalDateTime currentTime) {
@@ -67,6 +74,9 @@ public class ManageDoorClosingEvent {
             } else {
                 logger.info("door has already been closed before, nothing to do in this event.");
             }
+            if (playSongAtSunset) {
+                musicController.playMusicRandomly();
+            }
             sunTimeManager.reloadDoorClosingTime();
         }
     }
@@ -80,5 +90,9 @@ public class ManageDoorClosingEvent {
             emailService.sendMail(emailNotificationSunsetSubject,
                     textIfNoPicture);
         }
+    }
+
+    protected void setPlaySongAtSunset(boolean playSongAtSunset) {
+        this.playSongAtSunset = playSongAtSunset;
     }
 }

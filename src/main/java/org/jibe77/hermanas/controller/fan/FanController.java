@@ -2,6 +2,7 @@ package org.jibe77.hermanas.controller.fan;
 
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,11 +27,14 @@ public class FanController {
     @Value("${fan.relay.enabled}")
     private boolean fanEnabled;
 
-    @Value("${fan.security.timer.delay}")
-    private long fanSecurityTimerDelay;
+    @Value("${fan.security.timer.delay.eco}")
+    private long fanSecurityTimerDelayEco;
 
-    @Value("${fan.security.timer.multiplier}")
-    private long fanSecurityTimerMultiplier;
+    @Value("${fan.security.timer.delay.regular}")
+    private long fanSecurityTimerDelayRegular;
+
+    @Value("${fan.security.timer.delay.sunny}")
+    private long fanSecurityTimerDelaySunny;
 
     GpioPinDigitalOutput gpioPinDigitalOutput;
 
@@ -38,8 +42,11 @@ public class FanController {
 
     Timer fanSecurityStopTimer;
 
-    public FanController(GpioHermanasController gpioHermanasController) {
+    ConsumptionModeManager consumptionModeManager;
+
+    public FanController(GpioHermanasController gpioHermanasController, ConsumptionModeManager consumptionModeManager) {
         this.gpioHermanasController = gpioHermanasController;
+        this.consumptionModeManager = consumptionModeManager;
     }
 
     @PostConstruct
@@ -61,9 +68,9 @@ public class FanController {
         if (fanSecurityStopTimer != null) {
             fanSecurityStopTimer.cancel();
         }
-        int month = LocalDateTime.now().getMonthValue();
-        long duration = (month > 3 && month < 10) ?
-                fanSecurityTimerMultiplier * fanSecurityTimerDelay : fanSecurityTimerDelay;
+        long duration = consumptionModeManager.getDuration(
+                fanSecurityTimerDelayEco, fanSecurityTimerDelayRegular, fanSecurityTimerDelaySunny);
+        
         fanSecurityStopTimer = new Timer("Fan security stop");
         fanSecurityStopTimer.schedule(new TimerTask() {
                                           public void run() {

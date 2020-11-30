@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.controller.music;
 
 import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -20,6 +21,9 @@ class MusicControllerTest {
 
     @MockBean
     ProcessLauncher processLauncher;
+
+    @MockBean
+    ConsumptionModeManager consumptionModeManager;
 
     @Test
     void testStopWithoutCurrentProcess() {

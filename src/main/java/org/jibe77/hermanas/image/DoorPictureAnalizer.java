@@ -4,6 +4,7 @@ import org.jibe77.hermanas.controller.camera.CameraController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
@@ -14,10 +15,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Component
 public class DoorPictureAnalizer {
+
+    public static final int ordinateStart = 810;
+    public static final int ordinateEnd = 1040;
+    public static final int abscissaStart = 163;
+    public static final int abscissaEnd = 320;
+    public static final int CLOSED_STATUS_MAX_VALUE = 100;
 
     private final CameraController cameraController;
 
@@ -43,6 +51,18 @@ public class DoorPictureAnalizer {
     }
 
     /**
+     * This method is called when "isDoorClosed" doesn't know if the door is closed or not,
+     * because PredictionException has been thrown too many times.
+     * @param e thrown exception
+     * @return
+     */
+    @Recover
+    public boolean isDoorClosedRecover(PredictionException e) {
+        logger.warn("Can't predict if the door is closed or not, so it's supposed to be {}.", e.getDoorStatus());
+        return e.getDoorStatus().equals(DoorStatus.SEEMS_CLOSED);
+    }
+
+    /**
      * Analyze image
      * @param sourceFile file to analyse
      * @return true if the door is closed
@@ -50,13 +70,15 @@ public class DoorPictureAnalizer {
      */
     public boolean isDoorClosed(File sourceFile) throws IOException {
         BufferedImage originalImgage = ImageIO.read(sourceFile);
-        return isDoorClosed(originalImgage);
-    }
-
-    protected boolean isDoorClosed(String sourcePath) throws IOException {
-        logger.info("Analyse of source path {}.", sourcePath);
-        File picture = new File(sourcePath);
-        return isDoorClosed(picture);
+        DoorStatus doorStatus = getDoorStatus(originalImgage);
+        switch (doorStatus) {
+            case CLOSED:
+                return true;
+            case OPENED:
+                return false;
+            default:
+                throw new PredictionException(doorStatus);
+        }
     }
 
     /**
@@ -64,8 +86,36 @@ public class DoorPictureAnalizer {
      * @param bufferedImage picture to process.
      * @return true if the door is closed, false if the door is closed
      */
-    private boolean isDoorClosed(BufferedImage bufferedImage) {
-        java.util.List<Double> results = new ArrayList<>(184);
+    private DoorStatus getDoorStatus(BufferedImage bufferedImage) {
+        java.util.List<Color> results = computeColorAverageList(bufferedImage);
+        // fetch the index of the last blue pixel
+        int lastIndexWithBluePixel = getLastIndexWithBluePixel(results);
+
+        if (lastIndexWithBluePixel == results.size()-1) {
+            return DoorStatus.CLOSED;
+        } else if (lastIndexWithBluePixel < (results.size() -1)) {
+            return DoorStatus.OPENED;
+        } else {
+            return DoorStatus.SEEMS_CLOSED;
+        }
+    }
+
+    public static Color computeAverage(Color[] array) {
+        int r = 0, g = 0, b = 0;
+        for (Color c : array) {
+            r += c.getRed();
+            g += c.getGreen();
+            b += c.getBlue();
+        }
+        return new Color(
+                 r / array.length,
+                 g / array.length,
+                 b / array.length);
+    }
+
+    public int getClosedStatus(File file) throws IOException {
+        BufferedImage originalImgage = ImageIO.read(file);
+
         // analyser toutes les lignes depuis
         // x = 60   y = 155
         // x =  165 y = 339
@@ -73,41 +123,39 @@ public class DoorPictureAnalizer {
         // pour chaque 2 ajout en abscisse, on ajoute 1 en ordonnée, on va donc retomber sur x = 152
         // on récupère les 10 pixels en ordonnées,  on prend le rouge, et on fait la moyenne sur 10
         // ça doit être entre 60 et 80
-        int offset = 0;
-        for (int y = 855 ; y <=1079 ; y++) {
-            int[] list = new int[10];
-            for (int x = 0 ; x < 10 ; x++) {
-                int computedX = 200 + x + (offset/2);
-                list[x] = new Color(bufferedImage.getRGB(computedX, y)).getRed();
-            }
-            double average = computeAverage(list);
-            results.add(average);
-            offset++;
-        }
-        double max = Collections.max(results);
-        double min = Collections.min(results);
-        double dif = max - min;
-        logger.info("result is between {} and {}.", min, max);
-        if (min > 55 && max < 85 && dif < 25 && dif >= 5) {
-            logger.info("door is closed.");
-            return true;
-        } else if (min > 50 && max < 70 && dif <= 16 && dif >= 8) {
-            logger.info("door seems to be closed but there is probably a chick in front.");
-            return true;
-        } else if (min > 50 && max < 58 && dif < 5) {
-            logger.info("door seems to be closed but there is a problem with light.");
-            return true;
-        } else {
-            logger.info("door is opened");
-            return false;
-        }
+        List<Color> results = computeColorAverageList(originalImgage);
+
+        // fetch the index of the last blue pixel
+        int lastIndexWithBluePixel = getLastIndexWithBluePixel(results);
+        return (lastIndexWithBluePixel * 100) / (results.size() -1);
     }
 
-    public static double computeAverage(int[] array) {
-        int sum = 0;
-        for (int value : array) {
-            sum += value;
+    private int getLastIndexWithBluePixel(List<Color> results) {
+        int lastIndexWithBluePixel = 0;
+        for (int i = 0 ;  i < results.size() ; i++) {
+            if (results.get(i).getBlue() > 75 && results.get(i).getBlue() < 110
+             && results.get(i).getRed() > 45 && results.get(i).getRed() < 65
+             && results.get(i).getGreen() > 45 && results.get(i).getGreen() < 65) {
+                lastIndexWithBluePixel = i;
+            }
         }
-        return (double) sum / array.length;
+        return lastIndexWithBluePixel;
+    }
+
+    private List<Color> computeColorAverageList(BufferedImage originalImgage) {
+        List<Color> results = new ArrayList<>(ordinateEnd - ordinateStart);
+        double m = (double)(abscissaEnd - abscissaStart) / (ordinateEnd - ordinateStart);
+        for (int y = ordinateStart; y <= ordinateEnd; y++) {
+            Color[] list = new Color[10];
+
+            for (int x = 0 ; x < 10 ; x++) {
+                double offset = ((y - ordinateStart) * m);
+                int computedX = abscissaStart + x + (int)offset;
+                list[x] = new Color(originalImgage.getRGB(computedX, y));
+            }
+            Color average = computeAverage(list);
+            results.add(average);
+        }
+        return results;
     }
 }

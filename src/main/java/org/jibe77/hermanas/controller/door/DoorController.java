@@ -198,7 +198,7 @@ public class DoorController {
         logger.info(
                 "Turn the servo clockwise with gear position {} for {} ms ...",
                 doorClosingPosition,
-                doorClosingDuration);
+                duration);
         servo.setPosition(doorClosingPosition, duration);
     }
 
@@ -206,7 +206,7 @@ public class DoorController {
         logger.info(
                 "Turn the servo counter-clockwise with gear position {} for {} ms ...",
                 doorOpeningPosition,
-                doorOpeningDuration);
-        servo.setPosition(doorClosingPosition, duration);
+                duration);
+        servo.setPosition(doorOpeningPosition, duration);
     }
 }

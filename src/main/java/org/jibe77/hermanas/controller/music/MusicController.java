@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.controller.music;
 
 import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,8 +49,14 @@ public class MusicController {
     @Value("${music.volume.regular}")
     private String volumeLevelRegular;
 
-    @Value("${music.security.timer.delay}")
-    private long musicSecurityTimerDelay;
+    @Value("${music.security.timer.delay.eco}")
+    private long musicSecurityTimerDelayEco;
+
+    @Value("${music.security.timer.delay.regular}")
+    private long musicSecurityTimerDelayRegular;
+
+    @Value("${music.security.timer.delay.sunny}")
+    private long musicSecurityTimerDelaySunny;
 
     @Value("${music.enabled}")
     private boolean musicEnabled;
@@ -58,12 +65,15 @@ public class MusicController {
 
     private Process currentMusicProcess;
 
+    private ConsumptionModeManager consumptionModeManager;
+
     private Timer musicSecurityStopTimer;
 
     Logger logger = LoggerFactory.getLogger(MusicController.class);
 
-    public MusicController(ProcessLauncher processLauncher) {
+    public MusicController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager) {
         this.processLauncher = processLauncher;
+        this.consumptionModeManager = consumptionModeManager;
     }
 
     public boolean playMusicRandomly() {
@@ -115,13 +125,15 @@ public class MusicController {
             musicSecurityStopTimer.cancel();
         }
         musicSecurityStopTimer = new Timer("Music security stop");
+        long duration = consumptionModeManager.getDuration(
+                musicSecurityTimerDelayEco, musicSecurityTimerDelayRegular, musicSecurityTimerDelaySunny);
         musicSecurityStopTimer.schedule(new TimerTask() {
                                             public void run() {
-                                                logger.info("stopping music after {} ms.", musicSecurityTimerDelay);
+                                                logger.info("stopping music after {} ms.", duration);
                                                 stop();
                                             }
                                         },
-                musicSecurityTimerDelay);
+                duration);
     }
 
     private File pickSong(File[] array) {

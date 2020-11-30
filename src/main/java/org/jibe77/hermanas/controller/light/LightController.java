@@ -2,6 +2,7 @@ package org.jibe77.hermanas.controller.light;
 
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,17 +27,26 @@ public class LightController {
     @Value("${light.relay.enabled}")
     private boolean lightEnabled;
 
-    @Value("${light.security.timer.delay}")
-    private long lightSecurityTimerDelay;
+    @Value("${light.security.timer.delay.eco}")
+    private long lightSecurityTimerDelayEco;
+
+    @Value("${light.security.timer.delay.regular}")
+    private long lightSecurityTimerDelayRegular;
+
+    @Value("${light.security.timer.delay.sunny}")
+    private long lightSecurityTimerDelaySunny;
 
     private Timer lightSecurityStopTimer;
 
     GpioPinDigitalOutput gpioPinDigitalOutput;
 
+    ConsumptionModeManager consumptionModeManager;
+
     Logger logger = LoggerFactory.getLogger(LightController.class);
 
-    public LightController(GpioHermanasController gpioHermanasController) {
+    public LightController(GpioHermanasController gpioHermanasController, ConsumptionModeManager consumptionModeManager) {
         this.gpioHermanasController = gpioHermanasController;
+        this.consumptionModeManager = consumptionModeManager;
     }
 
     @PostConstruct
@@ -82,13 +92,15 @@ public class LightController {
             lightSecurityStopTimer.cancel();
         }
         lightSecurityStopTimer = new Timer("Light security stop");
+        long duration = consumptionModeManager.getDuration(
+                lightSecurityTimerDelayEco, lightSecurityTimerDelayRegular, lightSecurityTimerDelaySunny);
         lightSecurityStopTimer.schedule(new TimerTask() {
                                             public void run() {
-                                                logger.info("stopping light after {} ms.", lightSecurityTimerDelay);
+                                                logger.info("stopping light after {} ms.", duration);
                                                 switchOff();
                                             }
                                         },
-                lightSecurityTimerDelay);
+                duration);
     }
 
     @PreDestroy

@@ -28,6 +28,7 @@ class ManageDoorClosingTest {
     LocalDateTime eventAlwaysInThePast;
     LocalDateTime eventToLaunch;
     MessageSource messageSource;
+    MusicController musicController;
 
 
     @BeforeEach
@@ -40,8 +41,9 @@ class ManageDoorClosingTest {
         emailService = mock(EmailService.class);
         doorController = mock(DoorController.class);
         messageSource = mock(MessageSource.class);
+        musicController = mock(MusicController.class);
 
-        manageDoorClosingEvent = new ManageDoorClosingEvent(sunTimeManager, doorController, cameraController, emailService, messageSource);
+        manageDoorClosingEvent = new ManageDoorClosingEvent(sunTimeManager, doorController, cameraController, emailService, messageSource, musicController);
     }
 
     @Test
@@ -49,7 +51,9 @@ class ManageDoorClosingTest {
         when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInThePast);
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
+        manageDoorClosingEvent.setPlaySongAtSunset(true);
         manageDoorClosingEvent.manageDoorClosingEvent(LocalDateTime.now());
         verify(doorController, times(1)).closeDoorWithPictureAnalysis(false);
+        verify(musicController, times(1)).playMusicRandomly();
     }
 }

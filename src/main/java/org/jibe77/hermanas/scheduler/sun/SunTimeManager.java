@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-@Scope("singleton")
 public class SunTimeManager {
 
     SunTimeUtils sunTimeUtils;
