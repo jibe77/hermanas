@@ -68,13 +68,7 @@ public class DoorController {
     public void closeDoorWithPictureAnalysis(boolean force) {
         if (force || !doorIsClosed()) {
             closeDoor();
-            boolean doorIsClosed;
-            try {
-                doorIsClosed = doorPictureAnalizer.isDoorClosed();
-            } catch (PredictionException e) {
-                logger.info("Can't predict, so the door is supposed to be closed.", e);
-                doorIsClosed = true;
-            }
+            boolean doorIsClosed = closeDoorWithPictureAnalyser();
             if (!doorIsClosed) {
                 logger.error("Bottom position not reached correctly. The door is being reopened now.");
                 // if the door has been closed twice, opening the door is actually closing the door .
@@ -88,11 +82,45 @@ public class DoorController {
         }
     }
 
+    private boolean closeDoorWithPictureAnalyser() {
+        boolean doorIsClosed = false;
+        int doorClosingStatus = 0;
+        int closingRate = 0;
+        int dif = 0;
+        int attempt = 0;
+        try {
+            do {
+                closingRate = getClosingRate();
+                logger.info("Closing rate is {}.", closingRate);
+                dif = closingRate - doorClosingStatus;
+                doorClosingStatus = closingRate;
+                if (closingRate == 100) {
+                    doorIsClosed = true;
+                } else {
+                    turnServoClockwise(20);
+                }
+                if (dif == 0) {
+                    attempt++;
+                } else {
+                    attempt = 0;
+                }
+            } while (!doorIsClosed && dif >= 0 && attempt <= 3);
+
+            if (dif < 0) {
+                turnServoCounterClockwise(20);
+            }
+        } catch (PredictionException e) {
+            logger.info("Can't predict, so the door is supposed to be closed.", e);
+            doorIsClosed = true;
+        }
+        return doorIsClosed;
+    }
+
     /**
      * Close door.
      * @param force if force is set to true, force door to close even if it is closed.
      */
-    private void closeDoor() {
+    protected void closeDoor() {
         logger.info(
                 "Close the door moving servo clockwise with gear position {} for {} ms ...",
                 doorClosingPosition,
@@ -149,7 +177,7 @@ public class DoorController {
                 try {
                     return !doorPictureAnalizer.isDoorClosed(picture.get());
                 } catch (IOException e) {
-                    logger.error("Can't read picture.", e);
+                    logger.error("Can't read picture before analysis.", e);
                 }
             }
             return false;
@@ -208,5 +236,20 @@ public class DoorController {
                 doorOpeningPosition,
                 duration);
         servo.setPosition(doorOpeningPosition, duration);
+    }
+
+    public int getClosingRate() {
+        logger.info("Returning the door closing rate.");
+        Optional<File> picture = cameraController.takePictureNoException(true);
+        if (picture.isPresent()) {
+            try {
+                int result = doorPictureAnalizer.getClosedStatus(picture.get());
+                logger.info("return {}.", result);
+                return result;
+            } catch (IOException e) {
+                logger.error("Can't read picture.", e);
+            }
+        }
+        return doorIsClosed() ? 100 : 0;
     }
 }

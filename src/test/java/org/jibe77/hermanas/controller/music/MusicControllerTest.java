@@ -43,6 +43,7 @@ class MusicControllerTest {
     @Test
     void testPlayMusic() throws IOException {
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
+        Mockito.when(consumptionModeManager.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(10000L);
         boolean hasWorked = musicController.playMusicRandomly();
         assertTrue(hasWorked);
         assertNotNull(musicController.getCurrentMusicProcess());
@@ -59,6 +60,7 @@ class MusicControllerTest {
     @Test
     void testCocorico() throws IOException {
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
+        Mockito.when(consumptionModeManager.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(10000L);
         boolean hasWorked = musicController.cocorico();
         assertTrue(hasWorked);
         assertNotNull(musicController.getCurrentMusicProcess());

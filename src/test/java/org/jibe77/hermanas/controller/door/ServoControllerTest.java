@@ -14,6 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
+
 @SpringBootTest(classes = {DoorController.class})
 class ServoControllerTest {
 
@@ -41,14 +45,13 @@ class ServoControllerTest {
     Logger logger = LoggerFactory.getLogger(ServoControllerTest.class);
 
     @Test
-    void testCloseDoor() {
+    void testCloseDoor() throws IOException {
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... started.");
         Mockito.when(
                 gpioHermanasController.provisionInput(
                         Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
-        Mockito.when(doorPictureAnalizer.isDoorClosed()).thenReturn(true);
-        controller.closeDoorWithPictureAnalysis(false);
+        controller.closeDoor();
         Mockito.verify(
                 servoMotorController,
                 Mockito.times(1)
