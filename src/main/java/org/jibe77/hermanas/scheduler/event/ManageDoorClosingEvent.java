@@ -57,7 +57,7 @@ public class ManageDoorClosingEvent {
                     logger.info("take picture before closing door.");
                     cameraController.takePictureNoException(true);
                     logger.info("close door");
-                    doorController.closeDoorWithPictureAnalysis(false);
+                    doorController.closeDoor(false);
                     logger.info("take picture once the door is closed and send it by email.");
                     notification(
                             messageSource.getMessage("event.closing.mail.with_picture.title", null, Locale.getDefault()),

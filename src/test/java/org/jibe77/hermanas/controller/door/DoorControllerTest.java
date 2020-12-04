@@ -30,10 +30,10 @@ class DoorControllerTest {
                 doorPictureAnalizer,
                 cameraController
                 );
-        assertEquals("CLOSED", doorController.status());
+        assertEquals("UNDEFINED", doorController.status());
 
-        doorController.closeDoorWithPictureAnalysis(true);
-        doorController.closeDoorWithPictureAnalysis(true);
+        doorController.closeDoor(true);
+        doorController.closeDoor(true);
         assertEquals("CLOSED", doorController.status());
 
         doorController.openDoor(true, false);

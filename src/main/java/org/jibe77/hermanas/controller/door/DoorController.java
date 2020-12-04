@@ -3,14 +3,10 @@ package org.jibe77.hermanas.controller.door;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
-import org.jibe77.hermanas.image.PredictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -58,81 +54,20 @@ public class DoorController {
     }
 
     /**
-     * Close the door moving the servomotor clockwise
-     * @param force if force is set to true, force door to close even if it is closed.
-     */
-    @Retryable(
-            value = { DoorNotClosedCorrectlyException.class},
-            maxAttempts = 5,
-            backoff = @Backoff(delay = 5000))
-    public void closeDoorWithPictureAnalysis(boolean force) {
-        if (force || !doorIsClosed()) {
-            closeDoor();
-            boolean doorIsClosed = closeDoorWithPictureAnalyser();
-            if (!doorIsClosed) {
-                logger.error("Bottom position not reached correctly. The door is being reopened now.");
-                // if the door has been closed twice, opening the door is actually closing the door .
-                openDoor(false, true);
-                throw new DoorNotClosedCorrectlyException();
-            }
-            logger.info("... done");
-            this.lastClosingTime = LocalDateTime.now();
-        } else {
-            logger.info("Door is not closed because is already closed state.");
-        }
-    }
-
-    private boolean closeDoorWithPictureAnalyser() {
-        boolean doorIsClosed = false;
-        int doorClosingStatus = 0;
-        int closingRate = 0;
-        int dif = 0;
-        int attempt = 0;
-        try {
-            do {
-                closingRate = getClosingRate();
-                logger.info("Closing rate is {}.", closingRate);
-                dif = closingRate - doorClosingStatus;
-                doorClosingStatus = closingRate;
-                if (closingRate == 100) {
-                    doorIsClosed = true;
-                } else {
-                    turnServoClockwise(20);
-                }
-                if (dif == 0) {
-                    attempt++;
-                } else {
-                    attempt = 0;
-                }
-            } while (!doorIsClosed && dif >= 0 && attempt <= 3);
-
-            if (dif < 0) {
-                turnServoCounterClockwise(20);
-            }
-        } catch (PredictionException e) {
-            logger.info("Can't predict, so the door is supposed to be closed.", e);
-            doorIsClosed = true;
-        }
-        return doorIsClosed;
-    }
-
-    /**
      * Close door.
      * @param force if force is set to true, force door to close even if it is closed.
      */
-    protected void closeDoor() {
-        logger.info(
-                "Close the door moving servo clockwise with gear position {} for {} ms ...",
-                doorClosingPosition,
-                doorClosingDuration);
-        servo.setPosition(doorClosingPosition, doorClosingDuration);
-    }
-
-    @Recover
-    private void closeDoorNoError(DoorNotClosedCorrectlyException e) {
-        logger.error("The door hasn't been closed correctly, closing it now with bottom button taken in charge.", e);
-        closeDoor();
-        this.lastClosingTime = LocalDateTime.now();
+    public void closeDoor(boolean force) {
+        if (force || !doorIsClosed()) {
+            logger.info(
+                    "Close the door moving servo clockwise with gear position {} for {} ms ...",
+                    doorClosingPosition,
+                    doorClosingDuration);
+            servo.setPosition(doorClosingPosition, doorClosingDuration);
+            this.lastClosingTime = LocalDateTime.now();
+        } else {
+            logger.info("Door is already closing, so the door won't be closed.");
+        }
     }
 
     /**
@@ -171,15 +106,7 @@ public class DoorController {
             logger.info("The opening time is known but closing time unknown, the door is supposed to be opened.");
             return true;
         } else {
-            logger.info("No closing data available, analysing picture.");
-            Optional<File> picture = cameraController.takePictureNoException(true);
-            if (picture.isPresent()) {
-                try {
-                    return !doorPictureAnalizer.isDoorClosed(picture.get());
-                } catch (IOException e) {
-                    logger.error("Can't read picture before analysis.", e);
-                }
-            }
+            logger.info("No closing data available, returning false.");
             return false;
         }
     }
@@ -199,15 +126,6 @@ public class DoorController {
             logger.info("The closing time is know but opening time unknown, the door is supposed to be closed.");
             return true;
         } else {
-            logger.info("Some data is missing so the door is supposed not to be closed.");
-            Optional<File> picture = cameraController.takePictureNoException(true);
-            if (picture.isPresent()) {
-                try {
-                    return doorPictureAnalizer.isDoorClosed(picture.get());
-                } catch (IOException e) {
-                    logger.error("Can't read picture.", e);
-                }
-            }
             return false;
         }
     }

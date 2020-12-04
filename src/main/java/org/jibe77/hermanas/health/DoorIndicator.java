@@ -21,7 +21,7 @@ public class DoorIndicator implements HealthIndicator {
     public Health health() {
         // this test is done only if the door is opened.
         if (doorController.doorIsOpened()) {
-            doorController.closeDoorWithPictureAnalysis(false);
+            doorController.closeDoor(false);
             if (doorController.doorIsClosed()) {
                 doorController.openDoor(false, false);
                 return Health.up().build();
