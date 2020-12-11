@@ -2,7 +2,6 @@ package org.jibe77.hermanas.image;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.retry.annotation.Recover;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -22,18 +21,6 @@ public class DoorPictureAnalizer {
     public static final int ABSCISSA_END = 320;
 
     Logger logger = LoggerFactory.getLogger(DoorPictureAnalizer.class);
-
-    /**
-     * This method is called when "isDoorClosed" doesn't know if the door is closed or not,
-     * because PredictionException has been thrown too many times.
-     * @param e thrown exception
-     * @return
-     */
-    @Recover
-    public boolean isDoorClosedRecover(PredictionException e) {
-        logger.warn("Can't predict if the door is closed or not, so it's supposed to be {}.", e.getDoorStatus());
-        return e.getDoorStatus().equals(DoorStatus.SEEMS_CLOSED);
-    }
 
     /**
      * Analyze image
