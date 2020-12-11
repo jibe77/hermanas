@@ -26,7 +26,7 @@ public class DoorService {
     @GetMapping("/door/close")
     public boolean close(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("closing door now  ...");
-        doorController.closeDoor(Boolean.parseBoolean(force));
+        doorController.closeDoorWithBottormButtonManagement(Boolean.parseBoolean(force));
         logger.info("... the door has been closed !");
         return true;
     }
