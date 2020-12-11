@@ -11,7 +11,7 @@
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
 	<version>0.1.39</version>
-	<packaging>jar</packaging>m
+	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
 
