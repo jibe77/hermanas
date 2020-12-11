@@ -62,9 +62,11 @@ public class DoorController {
             if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
                 logger.error("Bottom position not reached correctly. The door is being reopened now.");
                 // if the door has been closed twice, opening the door is actually closing the door .
-                openDoor(false, true);
+                openDoor(force, true);
                 if (!bottomButtonController.isBottomButtonHasBeenPressed())
                     throw new DoorNotClosedCorrectlyException();
+            } else {
+                logger.info("bottom position has been reached.");
             }
             logger.info("... done");
             this.lastClosingTime = LocalDateTime.now();
