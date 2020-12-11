@@ -1,18 +1,16 @@
 package org.jibe77.hermanas.controller.door;
 
-import org.jibe77.hermanas.controller.camera.CameraController;
+import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
-import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 /**
  * A controller for a servo motor at GPIO pin 1 using software Pulse Width Modulation (Soft PWD).
@@ -20,15 +18,12 @@ import java.util.Optional;
  * Class used for BlueJ on Raspberry Pi tutorial.
  */
 @Component
-@Scope("singleton")
 public class DoorController {
 
     // the servo motor
     private final ServoMotorController servo;
 
-    private final CameraController cameraController;
-
-    final DoorPictureAnalizer doorPictureAnalizer;
+    final BottomButtonController bottomButtonController;
 
     Logger logger = LoggerFactory.getLogger(DoorController.class);
 
@@ -47,10 +42,37 @@ public class DoorController {
     private LocalDateTime lastClosingTime;
     private LocalDateTime lastOpeningTime;
 
-    public DoorController(ServoMotorController servo, DoorPictureAnalizer doorPictureAnalizer, CameraController cameraController) {
+    public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController) {
         this.servo = servo;
-        this.doorPictureAnalizer = doorPictureAnalizer;
-        this.cameraController = cameraController;
+        this.bottomButtonController = bottomButtonController;
+    }
+
+    /**
+     * Close the door moving the servomotor clockwise
+     * @param force if force is set to true, force door to close even if it is closed.
+     */
+    @Retryable(
+            value = { DoorNotClosedCorrectlyException.class },
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 5000))
+    public void closeDoorWithBottormButtonManagement(boolean force) {
+        if (force || !doorIsClosed()) {
+            bottomButtonController.provisionButton();
+            bottomButtonController.resetBottomButtonHasBeenPressed();
+            closeDoor(force);
+            if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
+                logger.error("Bottom position not reached correctly. The door is being reopened now.");
+                // if the door has been closed twice, opening the door is actually closing the door .
+                openDoor(false, true);
+                if (!bottomButtonController.isBottomButtonHasBeenPressed())
+                    throw new DoorNotClosedCorrectlyException();
+            }
+            logger.info("... done");
+            this.lastClosingTime = LocalDateTime.now();
+            bottomButtonController.unprovisionButton();
+        } else {
+            logger.info("Door is not closed because is already closed state.");
+        }
     }
 
     /**
@@ -154,20 +176,5 @@ public class DoorController {
                 doorOpeningPosition,
                 duration);
         servo.setPosition(doorOpeningPosition, duration);
-    }
-
-    public int getClosingRate() {
-        logger.info("Returning the door closing rate.");
-        Optional<File> picture = cameraController.takePictureNoException(true);
-        if (picture.isPresent()) {
-            try {
-                int result = doorPictureAnalizer.getClosedStatus(picture.get());
-                logger.info("return {}.", result);
-                return result;
-            } catch (IOException e) {
-                logger.error("Can't read picture.", e);
-            }
-        }
-        return doorIsClosed() ? 100 : 0;
     }
 }

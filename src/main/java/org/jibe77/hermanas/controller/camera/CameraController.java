@@ -6,6 +6,7 @@ import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.controller.light.LightController;
+import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,8 @@ public class CameraController {
 
     private PictureRepository pictureRepository;
 
+    private DoorPictureAnalizer doorPictureAnalizer;
+
     @Value("${camera.path.root}")
     private String rootPath;
 
@@ -39,11 +42,13 @@ public class CameraController {
     private String streamingCommand;
 
     public CameraController(LightController lightController, GpioHermanasController gpioHermanasController,
-                            PictureRepository pictureRepository, ProcessLauncher processLauncher) {
+                            PictureRepository pictureRepository, ProcessLauncher processLauncher,
+                            DoorPictureAnalizer doorPictureAnalizer) {
         this.lightController = lightController;
         this.gpioHermanasController = gpioHermanasController;
         this.pictureRepository = pictureRepository;
         this.processLauncher = processLauncher;
+        this.doorPictureAnalizer = doorPictureAnalizer;
     }
 
     public synchronized File takePicture(boolean highQuality) throws IOException {
@@ -168,5 +173,20 @@ public class CameraController {
             processLauncher.launch("/bin/kill", "-9", Long.toString(currentStreamingProcess.pid()));
             currentStreamingProcess = null;
         }
+    }
+
+    public int getClosingRate() {
+        logger.info("Returning the door closing rate.");
+        Optional<File> picture = takePictureNoException(true);
+        if (picture.isPresent()) {
+            try {
+                int result = doorPictureAnalizer.getClosedStatus(picture.get());
+                logger.info("return {}.", result);
+                return result;
+            } catch (IOException e) {
+                logger.error("Can't read picture.", e);
+            }
+        }
+        return -1;
     }
 }

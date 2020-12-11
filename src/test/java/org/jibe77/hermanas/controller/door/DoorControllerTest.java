@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.controller.door;
 
 import org.jibe77.hermanas.controller.camera.CameraController;
+import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.junit.jupiter.api.Test;
@@ -27,8 +28,7 @@ class DoorControllerTest {
         when(doorPictureAnalizer.isDoorClosed(any())).thenReturn(true);
         DoorController doorController = new DoorController(
                 mock(ServoMotorController.class),
-                doorPictureAnalizer,
-                cameraController
+                mock(BottomButtonController.class)
                 );
         assertEquals("UNDEFINED", doorController.status());
 

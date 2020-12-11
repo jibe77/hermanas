@@ -59,9 +59,4 @@ public class DoorService {
     public String status() {
         return doorController.status();
     }
-
-    @GetMapping("/door/closingRate")
-    public int closingRate() {
-        return doorController.getClosingRate();
-    }
 }

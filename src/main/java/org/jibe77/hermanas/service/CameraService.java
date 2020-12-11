@@ -90,4 +90,9 @@ public class CameraService {
     public void stopStream() throws InterruptedException, IOException {
         cameraController.stopStream();
     }
+
+    @GetMapping("/camera/closingRate")
+    public int closingRate() {
+        return cameraController.getClosingRate();
+    }
 }

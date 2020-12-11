@@ -3,6 +3,7 @@ package org.jibe77.hermanas.controller.door;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
 import org.jibe77.hermanas.controller.camera.CameraController;
+import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
@@ -34,10 +35,7 @@ class ServoControllerTest {
     GpioController gpioController;
 
     @MockBean
-    DoorPictureAnalizer doorPictureAnalizer;
-
-    @MockBean
-    CameraController cameraController;
+    BottomButtonController bottomButtonController;
 
     @MockBean
     GpioPinDigitalInput gpioPinDigitalInput;
