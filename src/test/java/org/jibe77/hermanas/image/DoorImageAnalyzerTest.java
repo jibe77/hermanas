@@ -18,7 +18,7 @@ class DoorImageAnalyzerTest {
 
     @Test
     void testOpenedFolder() throws IOException {
-        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer(null);
+        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer();
         File openedFolder = new File("src/test/resources/pictures/is opened");
 
         for (File openedDoorPicture : openedFolder.listFiles()) {
@@ -31,7 +31,7 @@ class DoorImageAnalyzerTest {
 
     @Test
     void testClosedFolder() throws IOException {
-        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer(null);
+        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer();
         File closedFolder = new File("src/test/resources/pictures/is closed");
 
         for (File closedDoorPicture : closedFolder.listFiles()) {
@@ -84,7 +84,7 @@ class DoorImageAnalyzerTest {
 
     @Test
     void testOpenedStatusByNight() throws IOException {
-        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer(null);
+        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer();
 
         File file = new File(
                 "src/test/resources/pictures/closing_status_by_night/2020-11-27-22-17.png");
@@ -96,7 +96,7 @@ class DoorImageAnalyzerTest {
 
     @Test
     void testOpenedStatusByNight2() throws IOException {
-        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer(null);
+        DoorPictureAnalizer doorPictureAnalizer = new DoorPictureAnalizer();
 
         File file = new File(
                 "src/test/resources/pictures/closing_status_by_night/2020-11-27-22-17-2.png");

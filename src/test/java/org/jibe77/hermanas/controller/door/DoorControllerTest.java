@@ -21,7 +21,7 @@ class DoorControllerTest {
     void status() throws IOException {
         DoorPictureAnalizer doorPictureAnalizer =
                 mock(DoorPictureAnalizer.class);
-        when(doorPictureAnalizer.isDoorClosed()).thenReturn(true);
+        when(doorPictureAnalizer.isDoorClosed(null)).thenReturn(true);
         CameraController cameraController = mock(CameraController.class);
         when(cameraController.takePictureNoException(true)).thenReturn(Optional.of(new File("")));
         when(doorPictureAnalizer.getClosedStatus(any())).thenReturn(100);

@@ -1,11 +1,8 @@
 package org.jibe77.hermanas.image;
 
-import org.jibe77.hermanas.controller.camera.CameraController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -15,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class DoorPictureAnalizer {
@@ -25,28 +21,7 @@ public class DoorPictureAnalizer {
     public static final int ABSCISSA_START = 163;
     public static final int ABSCISSA_END = 320;
 
-    private final CameraController cameraController;
-
     Logger logger = LoggerFactory.getLogger(DoorPictureAnalizer.class);
-
-    public DoorPictureAnalizer(CameraController cameraController) {
-        this.cameraController = cameraController;
-    }
-
-    @Retryable(
-            value = { PredictionException.class},
-            maxAttempts = 5,
-            backoff = @Backoff(delay = 5000))
-    public boolean isDoorClosed() {
-        Optional<File> picture = cameraController.takePictureNoException(true);
-        try {
-            return (picture.isPresent() && isDoorClosed(picture.get()));
-        } catch (IOException e) {
-            logger.error("Can't process picture.", e);
-            // impossible to analyse, the door is supposed to be closed correctly.
-            return true;
-        }
-    }
 
     /**
      * This method is called when "isDoorClosed" doesn't know if the door is closed or not,
