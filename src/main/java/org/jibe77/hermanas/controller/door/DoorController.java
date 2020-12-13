@@ -98,7 +98,7 @@ public class DoorController {
 
     public boolean openDoorWithUpButtonManagment(boolean force, boolean openingDoorAfterClosingProblem) {
         boolean returnedValue = false;
-        if (force || !doorIsClosed()) {
+        if (force || !doorIsOpened()) {
             upButtonController.provisionButton();
             upButtonController.resetBottomButtonHasBeenPressed();
             if (openDoor(force, openingDoorAfterClosingProblem) && upButtonController.isUpButtonHasBeenPressed()) {
