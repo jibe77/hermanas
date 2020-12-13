@@ -61,4 +61,11 @@ public class BottomButtonController {
     void setBottomButtonHasBeenPressed(boolean bottomButtonHasBeenPressed) {
         this.bottomButtonHasBeenPressed = bottomButtonHasBeenPressed;
     }
+
+    public synchronized boolean isBottomButtonPressed() {
+        provisionButton();
+        boolean isHigh = bottomButton.isHigh();
+        unprovisionButton();
+        return isHigh;
+    }
 }

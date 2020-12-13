@@ -49,6 +49,13 @@ public class UpButtonController {
         }
     }
 
+    public synchronized boolean isUpButtonPressed() {
+        provisionButton();
+        boolean isHigh = upButton.isHigh();
+        unprovisionButton();
+        return isHigh;
+    }
+
     public void resetBottomButtonHasBeenPressed() {
         upButtonHasBeenPressed = false;
     }

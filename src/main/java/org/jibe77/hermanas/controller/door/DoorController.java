@@ -65,7 +65,7 @@ public class DoorController {
             if (bottomButtonController.isBottomButtonHasBeenPressed()) {
                 logger.info("bottom position has been reached.");
             } else {
-                logger.error("Bottom position not reached correctly. The door is being reopened now.");
+                logger.error("Bottom position not reached correctly. The door is reopened now.");
                 // if the door has been closed twice, opening the door is actually closing the door .
                 openDoor(force, true);
                 if (!bottomButtonController.isBottomButtonHasBeenPressed())
@@ -120,7 +120,7 @@ public class DoorController {
      * @param force if force is set to true, force door to open even if it is opened.
      */
     protected boolean openDoor(boolean force, boolean openingDoorAfterClosingProblem) {
-        if (force || !doorIsOpened()) {
+        if (force || openingDoorAfterClosingProblem || !doorIsOpened()) {
             logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
                     doorOpeningPosition,
                     doorOpeningDuration);
@@ -142,18 +142,7 @@ public class DoorController {
      *          true if the opening or closing time is unknown.
      */
     public boolean doorIsOpened() {
-        logger.info(
-                "doorIsOpened() method is comparing last closing time {} with lastOpeningTime {}.",
-                lastClosingTime, lastOpeningTime);
-        if (lastClosingTime != null && lastOpeningTime != null) {
-            return lastOpeningTime.isAfter(lastClosingTime);
-        } else if (lastOpeningTime != null) {
-            logger.info("The opening time is known but closing time unknown, the door is supposed to be opened.");
-            return true;
-        } else {
-            logger.info("No closing data available, returning false.");
-            return false;
-        }
+        return upButtonController.isUpButtonHasBeenPressed();
     }
 
     /**
@@ -162,17 +151,7 @@ public class DoorController {
      *          true if the opening or closing time is unknown.
      */
     public boolean doorIsClosed() {
-        logger.info(
-                "doorIsClosed() method is comparing last closing time {} with lastOpeningTime {}.",
-                lastClosingTime, lastOpeningTime);
-        if (lastClosingTime != null && lastOpeningTime != null) {
-            return lastClosingTime.isAfter(lastOpeningTime);
-        } else if (lastClosingTime != null) {
-            logger.info("The closing time is know but opening time unknown, the door is supposed to be closed.");
-            return true;
-        } else {
-            return false;
-        }
+        return bottomButtonController.isBottomButtonPressed();
     }
 
     public String status() {
