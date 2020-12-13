@@ -44,7 +44,7 @@ public class ManageLightSwitchingOnEvent {
             }
             if (!doorController.doorIsOpened()) {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
-                doorController.openDoor(false, false);
+                doorController.openDoorWithUpButtonManagment(false, false);
             }
             fanController.switchOn();
             sunTimeManager.reloadLightOnTime();

@@ -54,6 +54,6 @@ class ManageDoorOpeningTest {
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInThePast);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
         manageDoorOpeningEvent.manageDoorOpeningEvent(LocalDateTime.now());
-        verify(doorController, times(1)).openDoor(false, false);
+        verify(doorController, times(1)).openDoorWithUpButtonManagment(false, false);
     }
 }

@@ -34,7 +34,7 @@ public class DoorService {
     @GetMapping("/door/open")
     public boolean open(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("opening door now  ...");
-        boolean result = doorController.openDoor(Boolean.parseBoolean(force), false);
+        boolean result = doorController.openDoorWithUpButtonManagment(Boolean.parseBoolean(force), false);
         logger.info("... done with result {} !", result);
         return result;
     }

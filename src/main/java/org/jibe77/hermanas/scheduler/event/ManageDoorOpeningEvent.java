@@ -42,7 +42,7 @@ public class ManageDoorOpeningEvent {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
             logger.info("door opening event is starting now.");
             cameraController.takePictureNoException(true);
-            doorController.openDoor(false, false);
+            doorController.openDoorWithUpButtonManagment(false, false);
             if (cocoricoAtSunriseEnabled) {
                 musicController.cocorico();
             }

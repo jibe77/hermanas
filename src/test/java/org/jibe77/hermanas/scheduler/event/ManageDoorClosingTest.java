@@ -53,7 +53,7 @@ class ManageDoorClosingTest {
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
         manageDoorClosingEvent.setPlaySongAtSunset(true);
         manageDoorClosingEvent.manageDoorClosingEvent(LocalDateTime.now());
-        verify(doorController, times(1)).closeDoor(false);
+        verify(doorController, times(1)).closeDoorWithBottormButtonManagement(false);
         verify(musicController, times(1)).playMusicRandomly();
     }
 }
