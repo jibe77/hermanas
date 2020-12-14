@@ -5,6 +5,7 @@ import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.controller.door.upbutton.UpButtonController;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
+import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -30,16 +31,17 @@ class DoorControllerTest {
         DoorController doorController = new DoorController(
                 mock(ServoMotorController.class),
                 mock(BottomButtonController.class),
-                mock(UpButtonController.class)
+                mock(UpButtonController.class),
+                mock(SunTimeManager.class)
                 );
-        assertEquals("UNDEFINED", doorController.status());
+        assertEquals(DoorStatus.UNDEFINED, doorController.status());
 
         doorController.closeDoor(true);
         doorController.closeDoor(true);
-        assertEquals("CLOSED", doorController.status());
+        assertEquals(DoorStatus.CLOSED, doorController.status());
 
         doorController.openDoor(true, false);
         doorController.openDoor(true, false);
-        assertEquals("OPENED", doorController.status());
+        assertEquals(DoorStatus.OPENED, doorController.status());
     }
 }

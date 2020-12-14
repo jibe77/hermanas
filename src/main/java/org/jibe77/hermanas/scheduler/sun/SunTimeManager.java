@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.scheduler.sun;
 
+import org.jibe77.hermanas.controller.door.DoorStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,4 +66,12 @@ public class SunTimeManager {
         logger.info("revoke cache on light switching on time.");
     }
 
+    public DoorStatus getExpectedDoorStatus() {
+        int currentDay = LocalDateTime.now().getDayOfMonth();
+        if (currentDay != getNextDoorOpeningTime().getDayOfMonth() && currentDay == getNextDoorClosingTime().getDayOfMonth()) {
+            return DoorStatus.OPENED;
+        } else {
+            return DoorStatus.CLOSED;
+        }
+    }
 }

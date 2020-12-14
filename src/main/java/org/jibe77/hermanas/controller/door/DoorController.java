@@ -3,6 +3,7 @@ package org.jibe77.hermanas.controller.door;
 import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.controller.door.upbutton.UpButtonController;
+import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 
 /**
@@ -23,8 +25,10 @@ public class DoorController {
     // the servo motor
     private final ServoMotorController servo;
 
-    final BottomButtonController bottomButtonController;
-    final UpButtonController upButtonController;
+    private final BottomButtonController bottomButtonController;
+    private final UpButtonController upButtonController;
+
+    private final SunTimeManager sunTimeManager;
 
     Logger logger = LoggerFactory.getLogger(DoorController.class);
 
@@ -43,10 +47,22 @@ public class DoorController {
     private LocalDateTime lastClosingTime;
     private LocalDateTime lastOpeningTime;
 
-    public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController, UpButtonController upButtonController) {
+    public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController,
+                          UpButtonController upButtonController, SunTimeManager sunTimeManager) {
         this.servo = servo;
         this.bottomButtonController = bottomButtonController;
         this.upButtonController = upButtonController;
+        this.sunTimeManager = sunTimeManager;
+    }
+
+    @PostConstruct
+    private void initDoorAccordingToSunTime() {
+        DoorStatus doorStatus = sunTimeManager.getExpectedDoorStatus();
+        if (doorStatus == DoorStatus.OPENED) {
+            openDoorWithUpButtonManagment(false, false);
+        } else if (doorStatus == DoorStatus.CLOSED) {
+            closeDoorWithBottormButtonManagement(false);
+        }
     }
 
     /**
@@ -142,7 +158,7 @@ public class DoorController {
      *          true if the opening or closing time is unknown.
      */
     public boolean doorIsOpened() {
-        return upButtonController.isUpButtonHasBeenPressed();
+        return upButtonController.isUpButtonPressed();
     }
 
     /**
@@ -154,13 +170,13 @@ public class DoorController {
         return bottomButtonController.isBottomButtonPressed();
     }
 
-    public String status() {
+    public DoorStatus status() {
         if (doorIsOpened()) {
-            return "OPENED";
+            return DoorStatus.OPENED;
         } else if (doorIsClosed()) {
-            return "CLOSED";
+            return DoorStatus.CLOSED;
         } else {
-            return "UNDEFINED";
+            return DoorStatus.UNDEFINED;
         }
     }
 

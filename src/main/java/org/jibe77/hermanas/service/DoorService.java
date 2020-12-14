@@ -57,6 +57,6 @@ public class DoorService {
 
     @GetMapping("/door/status")
     public String status() {
-        return doorController.status();
+        return doorController.status().toString();
     }
 }

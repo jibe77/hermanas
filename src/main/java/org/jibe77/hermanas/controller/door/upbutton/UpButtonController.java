@@ -50,9 +50,14 @@ public class UpButtonController {
     }
 
     public synchronized boolean isUpButtonPressed() {
-        provisionButton();
+        boolean isButtonNull = upButton == null;
+        if (isButtonNull) {
+            provisionButton();
+        }
         boolean isHigh = upButton.isHigh();
-        unprovisionButton();
+        if (isButtonNull) {
+            unprovisionButton();
+        }
         return isHigh;
     }
 

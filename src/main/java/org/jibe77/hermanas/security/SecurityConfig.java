@@ -44,6 +44,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         http.authorizeRequests()
                 // list of allowed urls for GUEST user.
                 .antMatchers(HttpMethod.GET, "/light/status").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/door/status").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/camera/takePicture").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/camera/stream").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/camera/stopStream").hasAnyRole(ROLE_USER, ROLE_GUEST)

@@ -63,9 +63,14 @@ public class BottomButtonController {
     }
 
     public synchronized boolean isBottomButtonPressed() {
-        provisionButton();
+        boolean isButtonNull = bottomButton == null;
+        if (isButtonNull) {
+            provisionButton();
+        }
         boolean isHigh = bottomButton.isHigh();
-        unprovisionButton();
+        if (isButtonNull) {
+            unprovisionButton();
+        }
         return isHigh;
     }
 }
