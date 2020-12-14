@@ -14,8 +14,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class DoorControllerTest {
 
@@ -25,23 +24,22 @@ class DoorControllerTest {
                 mock(DoorPictureAnalizer.class);
         when(doorPictureAnalizer.isDoorClosed(null)).thenReturn(true);
         CameraController cameraController = mock(CameraController.class);
+        BottomButtonController bottomButtonController = mock(BottomButtonController.class);
+        UpButtonController upButtonController = mock(UpButtonController.class);
         when(cameraController.takePictureNoException(true)).thenReturn(Optional.of(new File("")));
         when(doorPictureAnalizer.getClosedStatus(any())).thenReturn(100);
         when(doorPictureAnalizer.isDoorClosed(any())).thenReturn(true);
         DoorController doorController = new DoorController(
                 mock(ServoMotorController.class),
-                mock(BottomButtonController.class),
-                mock(UpButtonController.class),
+                bottomButtonController,
+                upButtonController,
                 mock(SunTimeManager.class)
                 );
         assertEquals(DoorStatus.UNDEFINED, doorController.status());
 
-        doorController.closeDoor(true);
-        doorController.closeDoor(true);
+        when(bottomButtonController.isBottomButtonPressed()).thenReturn(true);
         assertEquals(DoorStatus.CLOSED, doorController.status());
-
-        doorController.openDoor(true, false);
-        doorController.openDoor(true, false);
+        when(upButtonController.isUpButtonPressed()).thenReturn(true);
         assertEquals(DoorStatus.OPENED, doorController.status());
     }
 }
