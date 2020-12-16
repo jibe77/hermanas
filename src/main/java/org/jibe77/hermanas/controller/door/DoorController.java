@@ -175,9 +175,27 @@ public class DoorController {
             return DoorStatus.OPENED;
         } else if (doorIsClosed()) {
             return DoorStatus.CLOSED;
+        } else if (openingTimeIsProbablyTheMostRecent()) {
+            logger.info("the door is probably opened but not completly, " +
+                    "let's turn the servo counter clockwise a little bit.");
+            turnServoCounterClockwise(doorOpeningDuration / 100);
+            if (doorIsOpened()) {
+                logger.info("the door is completly opened now !");
+                return DoorStatus.OPENED;
+            } else {
+                logger.info("put it back like it was before.");
+                turnServoClockwise(doorClosingDuration / 100);
+                return DoorStatus.UNDEFINED;
+            }
         } else {
             return DoorStatus.UNDEFINED;
         }
+    }
+
+    private boolean openingTimeIsProbablyTheMostRecent() {
+        return lastOpeningTime != null &&
+                ((lastClosingTime == null && lastOpeningTime != null) ||
+                (lastOpeningTime.isAfter(lastClosingTime)));
     }
 
     public void turnServoClockwise(Integer duration) {
