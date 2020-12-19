@@ -91,6 +91,7 @@ public class MusicController {
     @PostConstruct
     private void init() {
         if (musicEnabled) {
+            logger.info("provisioning audio card pin on {}.", musicRelayGpioAddress);
             gpioPinDigitalOutput = gpioHermanasController.provisionOutput(musicRelayGpioAddress);
         }
     }
