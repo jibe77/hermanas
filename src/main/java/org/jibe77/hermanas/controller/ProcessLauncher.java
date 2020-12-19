@@ -39,6 +39,7 @@ public class ProcessLauncher {
                         }
                     } catch (IOException e) {
                         logger.error("can't read process errors.", e);
+                        break;
                     }
                 } while (line != null);
                 logger.info("process error stream is finished (debug only).");
