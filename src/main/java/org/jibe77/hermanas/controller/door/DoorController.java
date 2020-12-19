@@ -7,6 +7,7 @@ import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -71,7 +72,7 @@ public class DoorController {
      */
     @Retryable(
             value = { DoorNotClosedCorrectlyException.class },
-            maxAttempts = 5,
+            maxAttempts = 20,
             backoff = @Backoff(delay = 5000))
     public void closeDoorWithBottormButtonManagement(boolean force) {
         if (force || !doorIsClosed()) {
@@ -83,7 +84,7 @@ public class DoorController {
             } else {
                 logger.error("Bottom position not reached correctly. The door is reopened now.");
                 // if the door has been closed twice, opening the door is actually closing the door .
-                openDoor(force, true);
+                openDoorWithUpButtonManagment(force, true);
                 if (!bottomButtonController.isBottomButtonHasBeenPressed())
                     throw new DoorNotClosedCorrectlyException();
             }

@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.controller.music;
 
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,9 @@ class MusicControllerTest {
     @MockBean
     ConsumptionModeManager consumptionModeManager;
 
+    @MockBean
+    GpioHermanasController gpioHermanasController;
+
     @Test
     void testStopWithoutCurrentProcess() {
         musicController.setCurrentMusicProcess(null);
@@ -34,6 +39,7 @@ class MusicControllerTest {
 
     @Test
     void testStopWithCurrentProcess() throws IOException {
+        musicController.setGpioPinDigitalOutput(Mockito.mock(GpioPinDigitalOutput.class));
         Process process = Mockito.mock(Process.class);
         musicController.setCurrentMusicProcess(process);
         musicController.stop();
@@ -42,6 +48,7 @@ class MusicControllerTest {
 
     @Test
     void testPlayMusic() throws IOException {
+        musicController.setGpioPinDigitalOutput(Mockito.mock(GpioPinDigitalOutput.class));
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
         Mockito.when(consumptionModeManager.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(10000L);
         boolean hasWorked = musicController.playMusicRandomly();
@@ -51,6 +58,7 @@ class MusicControllerTest {
 
     @Test
     void testPlayMusicWithIOException() throws IOException {
+        musicController.setGpioPinDigitalOutput(Mockito.mock(GpioPinDigitalOutput.class));
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenThrow(new IOException());
         boolean hasWorked = musicController.playMusicRandomly();
         assertFalse(hasWorked);
@@ -59,6 +67,7 @@ class MusicControllerTest {
 
     @Test
     void testCocorico() throws IOException {
+        musicController.setGpioPinDigitalOutput(Mockito.mock(GpioPinDigitalOutput.class));
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
         Mockito.when(consumptionModeManager.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(10000L);
         boolean hasWorked = musicController.cocorico();
@@ -68,6 +77,7 @@ class MusicControllerTest {
 
     @Test
     void testCocoricoWithException() throws IOException {
+        musicController.setGpioPinDigitalOutput(Mockito.mock(GpioPinDigitalOutput.class));
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenThrow(new IOException());
         boolean hasWorked = musicController.cocorico();
         assertFalse(hasWorked);

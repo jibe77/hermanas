@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.controller.music;
 
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.*;
 import java.security.SecureRandom;
@@ -61,6 +64,9 @@ public class MusicController {
     @Value("${music.enabled}")
     private boolean musicEnabled;
 
+    @Value("${music.relay.gpio.address}")
+    private int musicRelayGpioAddress;
+
     ProcessLauncher processLauncher;
 
     private Process currentMusicProcess;
@@ -69,15 +75,35 @@ public class MusicController {
 
     private Timer musicSecurityStopTimer;
 
+    private GpioHermanasController gpioHermanasController;
+
+    private GpioPinDigitalOutput gpioPinDigitalOutput;
+
     Logger logger = LoggerFactory.getLogger(MusicController.class);
 
-    public MusicController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager) {
+    public MusicController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager,
+                           GpioHermanasController gpioHermanasController) {
         this.processLauncher = processLauncher;
         this.consumptionModeManager = consumptionModeManager;
+        this.gpioHermanasController = gpioHermanasController;
+    }
+
+    @PostConstruct
+    private void init() {
+        if (musicEnabled) {
+            gpioPinDigitalOutput = gpioHermanasController.provisionOutput(musicRelayGpioAddress);
+        }
     }
 
     public boolean playMusicRandomly() {
         if (musicEnabled) {
+            gpioPinDigitalOutput.high();
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                logger.info("Interrupted sleep.");
+                Thread.currentThread().interrupt();
+            }
             stop();
             try {
                 setMusicLevel(volumeLevelRegular);
@@ -93,16 +119,27 @@ public class MusicController {
         }
     }
 
-    private void playMusic(File musicFile) throws IOException {
+    private void playMusic(File musicFile, long duration) throws IOException {
         List<String> listOfFile = new ArrayList<>(1);
         listOfFile.add(musicFile.getAbsolutePath());
-        playMusic(listOfFile);
+        playMusic(listOfFile, duration);
     }
 
     private void playMusic(List<String> listOfFile) throws IOException {
+        playMusic(listOfFile, -1L);
+    }
+
+    private void playMusic(List<String> listOfFile, long duration) throws IOException {
         logger.info("Play music with command {} {} {}  {}.",
                 musicPlayerStartCmd, musicPlayerNoDispParam
                 , musicPlayerShuffle, listOfFile);
+        gpioPinDigitalOutput.high();
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            logger.info("Interrupted sleep.");
+            Thread.currentThread().interrupt();
+        }
         List<String> commandWithParams = new ArrayList<>(listOfFile.size() + 3);
         commandWithParams.add(musicPlayerStartCmd);
         commandWithParams.add(musicPlayerNoDispParam);
@@ -110,7 +147,7 @@ public class MusicController {
         commandWithParams.addAll(listOfFile);
         currentMusicProcess = processLauncher.launch(commandWithParams);
         processLauncher.printErrorStreamInThread(currentMusicProcess);
-        startSecurityTimer();
+        startSecurityTimer(duration);
     }
 
     private List<String> getListOfFiles(String pathToFolder) {
@@ -120,13 +157,15 @@ public class MusicController {
                 .map(File::getAbsolutePath).collect(Collectors.toList());
     }
 
-    private void startSecurityTimer() {
+    private void startSecurityTimer(long durationParam) {
         if (musicSecurityStopTimer != null) {
             musicSecurityStopTimer.cancel();
         }
         musicSecurityStopTimer = new Timer("Music security stop");
-        long duration = consumptionModeManager.getDuration(
-                musicSecurityTimerDelayEco, musicSecurityTimerDelayRegular, musicSecurityTimerDelaySunny);
+        final long duration = durationParam >= 0 ?
+                durationParam :
+                consumptionModeManager.getDuration(
+                    musicSecurityTimerDelayEco, musicSecurityTimerDelayRegular, musicSecurityTimerDelaySunny);
         musicSecurityStopTimer.schedule(new TimerTask() {
                                             public void run() {
                                                 logger.info("stopping music after {} ms.", duration);
@@ -150,6 +189,13 @@ public class MusicController {
                 musicSecurityStopTimer.cancel();
                 musicSecurityStopTimer = null;
             }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                logger.info("Interrupted sleep.");
+                Thread.currentThread().interrupt();
+            }
+            gpioPinDigitalOutput.low();
         }
     }
 
@@ -162,7 +208,7 @@ public class MusicController {
                 File mixFolder = new File(pathToRooster);
                 File[] filesAvailable = mixFolder.listFiles();
                 File pickedFile = pickSong(filesAvailable);
-                playMusic(pickedFile);
+                playMusic(pickedFile, 30000L);
                 return true;
             } catch (IOException e) {
                 logger.error("Can't play cocorico.", e);
@@ -208,5 +254,9 @@ public class MusicController {
 
     void setCurrentMusicProcess(Process currentMusicProcess) {
         this.currentMusicProcess = currentMusicProcess;
+    }
+
+    protected void setGpioPinDigitalOutput(GpioPinDigitalOutput gpioPinDigitalOutput) {
+        this.gpioPinDigitalOutput = gpioPinDigitalOutput;
     }
 }
