@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class WifiController {
@@ -42,9 +43,10 @@ public class WifiController {
             logger.info("Turning on wifi on wlan0.");
             processLauncher.launch("/usr/sbin/rfkill", "unblock", "0");
             Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "on");
+            process.waitFor(10, TimeUnit.SECONDS);
             logger.info("Returned value {}.", process.exitValue());
             return process.exitValue() == 0;
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             logger.error("Exception when turning on the wifi card : ", e);
             return false;
         }
@@ -54,9 +56,10 @@ public class WifiController {
         try {
             logger.info("Turning off wifi on wlan0.");
             Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
+            process.waitFor(10, TimeUnit.SECONDS);
             logger.info("Returned value {}.", process.exitValue());
             return process.exitValue() == 0;
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             logger.error("Exception when turning off the wifi card : ", e);
             return false;
         }
