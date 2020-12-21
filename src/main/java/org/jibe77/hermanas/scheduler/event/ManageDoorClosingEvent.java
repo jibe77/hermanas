@@ -4,6 +4,7 @@ import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
+import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
@@ -32,6 +33,8 @@ public class ManageDoorClosingEvent {
 
     MusicController musicController;
 
+    WifiController wifiController;
+
     @Value("${email.notification.sunset.subject}")
     private String emailNotificationSunsetSubject;
 
@@ -40,19 +43,21 @@ public class ManageDoorClosingEvent {
 
     Logger logger = LoggerFactory.getLogger(ManageDoorClosingEvent.class);
 
-    public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController, CameraController cameraController, EmailService emailService, MessageSource messageSource, MusicController musicController) {
+    public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController, CameraController cameraController, EmailService emailService, MessageSource messageSource, MusicController musicController, WifiController wifiController) {
         this.sunTimeManager = sunTimeManager;
         this.doorController = doorController;
         this.cameraController = cameraController;
         this.emailService = emailService;
         this.messageSource = messageSource;
         this.musicController = musicController;
+        this.wifiController = wifiController;
     }
 
     public void manageDoorClosingEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorClosingTime())) {
             if (!doorController.doorIsClosed()) {
                 try {
+                    wifiController.turnOn();
                     logger.info("start door closing job at sunset.");
                     logger.info("take picture before closing door.");
                     cameraController.takePictureNoException(true);

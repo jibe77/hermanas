@@ -17,11 +17,6 @@ public class EcoModeRelatedJob {
         this.consumptionModeManager = consumptionModeManager;
     }
 
-    @Scheduled(cron = "0 0 7 * * ?")
-    void turnOnWifiInTheMorning() {
-        wifiController.turnOn();
-    }
-
     @Scheduled(cron = "0 0 21 * * ?")
     void turnOffWifiInTheEveningInEcoMode() {
         if (consumptionModeManager.isEcoMode())

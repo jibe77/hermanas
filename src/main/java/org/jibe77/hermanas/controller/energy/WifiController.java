@@ -41,12 +41,14 @@ public class WifiController {
         }
     }
 
-    public void turnOff() {
+    public boolean turnOff() {
         try {
             logger.info("Turning off wifi on wlan0.");
             processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
+            return true;
         } catch (IOException e) {
             logger.error("Exception when turning off the wifi card : ", e);
+            return false;
         }
     }
 }
