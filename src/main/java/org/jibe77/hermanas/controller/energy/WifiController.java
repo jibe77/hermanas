@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -34,12 +35,17 @@ public class WifiController {
 
     @PostConstruct
     private synchronized void init() {
-        if (consumptionModeManager.isEcoMode() && doorController.doorIsClosed()) {
+        if (wifiSwitchEnabled && consumptionModeManager.isEcoMode() && doorController.doorIsClosed()) {
             logger.info("Init Wifi controller in eco mode. Stopping wifi now.");
             turnOff();
         } else {
             turnOn();
         }
+    }
+
+    @PreDestroy
+    private synchronized  void tearDown() {
+        turnOn();
     }
 
     public synchronized boolean turnOn() {
@@ -61,20 +67,23 @@ public class WifiController {
     }
 
     public synchronized boolean turnOff() {
-        try {
-            logger.info("Turning off wifi on wlan0.");
-            Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
-            process.waitFor(10, TimeUnit.SECONDS);
-            logger.info("Returned value {}.", process.exitValue());
-            return process.exitValue() == 0;
-        } catch (IOException e) {
-            logger.error("Exception when turning off the wifi card : ", e);
-            return false;
-        } catch (InterruptedException e) {
-            logger.error("Interrupted when turning on the wifi card : ", e);
-            Thread.currentThread().interrupt();
-            return false;
+        if (wifiSwitchEnabled) {
+            try {
+                logger.info("Turning off wifi on wlan0.");
+                Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
+                process.waitFor(10, TimeUnit.SECONDS);
+                logger.info("Returned value {}.", process.exitValue());
+                return process.exitValue() == 0;
+            } catch (IOException e) {
+                logger.error("Exception when turning off the wifi card : ", e);
+                return false;
+            } catch (InterruptedException e) {
+                logger.error("Interrupted when turning on the wifi card : ", e);
+                Thread.currentThread().interrupt();
+                return false;
+            }
         }
+        return false;
     }
 
     // TODO : status
