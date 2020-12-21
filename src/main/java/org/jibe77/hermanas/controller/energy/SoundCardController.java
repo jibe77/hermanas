@@ -25,12 +25,14 @@ public class SoundCardController {
     }
 
     public void turnOn() throws IOException {
-        processLauncher.launch("/home/pi/usb_on.sh");
+        logger.info("Turn on sound card.");
+        processLauncher.launch("/bin/bash", "/home/pi/usb_on.sh");
     }
 
     public void turnOff() {
         try {
-            processLauncher.launch("/home/pi/usb_off.sh");
+            logger.info("Turn off sound card.");
+            processLauncher.launch("/bin/bash", "/home/pi/usb_off.sh");
         } catch (IOException e) {
             logger.error("Exception when turning off the sound card : ", e);
         }

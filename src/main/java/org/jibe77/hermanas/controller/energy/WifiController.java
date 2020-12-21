@@ -5,6 +5,7 @@ import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -19,6 +20,9 @@ public class WifiController {
     ConsumptionModeManager consumptionModeManager;
 
     DoorController doorController;
+
+    @Value("${wifi.switch.enabled}")
+    private boolean wifiSwitchEnabled;
 
     Logger logger = LoggerFactory.getLogger(WifiController.class);
 
@@ -46,8 +50,12 @@ public class WifiController {
             process.waitFor(10, TimeUnit.SECONDS);
             logger.info("Returned value {}.", process.exitValue());
             return process.exitValue() == 0;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             logger.error("Exception when turning on the wifi card : ", e);
+            return false;
+        } catch (InterruptedException e) {
+            logger.error("Interrupted when turning on the wifi card : ", e);
+            Thread.currentThread().interrupt();
             return false;
         }
     }
@@ -59,9 +67,15 @@ public class WifiController {
             process.waitFor(10, TimeUnit.SECONDS);
             logger.info("Returned value {}.", process.exitValue());
             return process.exitValue() == 0;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             logger.error("Exception when turning off the wifi card : ", e);
+            return false;
+        } catch (InterruptedException e) {
+            logger.error("Interrupted when turning on the wifi card : ", e);
+            Thread.currentThread().interrupt();
             return false;
         }
     }
+
+    // TODO : status
 }
