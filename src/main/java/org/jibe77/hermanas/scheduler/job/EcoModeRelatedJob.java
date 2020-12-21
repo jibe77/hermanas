@@ -17,13 +17,13 @@ public class EcoModeRelatedJob {
         this.consumptionModeManager = consumptionModeManager;
     }
 
-    @Scheduled()
+    @Scheduled(cron = "0 0 7 * * ?")
     void turnOnWifiInTheMorning() {
         wifiController.turnOn();
     }
 
-    @Scheduled()
-    void turnOffWifiInTheEvening() {
+    @Scheduled(cron = "0 0 21 * * ?")
+    void turnOffWifiInTheEveningInEcoMode() {
         if (consumptionModeManager.isEcoMode())
             wifiController.turnOff();
     }
