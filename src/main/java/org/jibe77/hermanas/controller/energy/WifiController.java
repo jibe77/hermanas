@@ -4,10 +4,12 @@ import org.jibe77.hermanas.controller.ProcessLauncher;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 
+@Component
 public class WifiController {
 
     ProcessLauncher processLauncher;
