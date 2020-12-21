@@ -32,10 +32,12 @@ public class WifiController {
         if (consumptionModeManager.isEcoMode() && doorController.doorIsClosed()) {
             logger.info("Init Wifi controller in eco mode. Stopping wifi now.");
             turnOff();
+        } else {
+            turnOn();
         }
     }
 
-    public boolean turnOn() {
+    public synchronized boolean turnOn() {
         try {
             logger.info("Turning on wifi on wlan0.");
             processLauncher.launch("/usr/sbin/rfkill", "unblock", "0");
@@ -48,7 +50,7 @@ public class WifiController {
         }
     }
 
-    public boolean turnOff() {
+    public synchronized boolean turnOff() {
         try {
             logger.info("Turning off wifi on wlan0.");
             Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
