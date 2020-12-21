@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 
 @Component
@@ -16,6 +17,11 @@ public class SoundCardController {
 
     public SoundCardController(ProcessLauncher processLauncher) {
         this.processLauncher = processLauncher;
+    }
+
+    @PostConstruct
+    private synchronized void init() {
+        turnOff();
     }
 
     public void turnOn() throws IOException {

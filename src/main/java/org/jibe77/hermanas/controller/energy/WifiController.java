@@ -29,7 +29,7 @@ public class WifiController {
     }
 
     @PostConstruct
-    private void init() {
+    private synchronized void init() {
         if (consumptionModeManager.isEcoMode() && doorController.doorIsClosed()) {
             logger.info("Init Wifi controller in eco mode. Stopping wifi now.");
             turnOff();
