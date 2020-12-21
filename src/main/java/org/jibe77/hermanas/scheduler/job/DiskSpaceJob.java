@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.scheduler.job;
 
-import org.apache.tomcat.jni.Local;
 import org.jibe77.hermanas.client.email.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

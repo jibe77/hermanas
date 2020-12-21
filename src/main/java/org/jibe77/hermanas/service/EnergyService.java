@@ -4,8 +4,6 @@ import org.jibe77.hermanas.controller.energy.WifiController;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-
 @RestController
 public class EnergyService {
 
@@ -16,7 +14,7 @@ public class EnergyService {
     }
 
     @GetMapping(value = "/energy/wifi/stopUntilNextDoorEvent")
-    public boolean stopWifiUntilNextDoorEvent() throws IOException {
+    public boolean stopWifiUntilNextDoorEvent() {
         wifiController.turnOff();
         return true;
     }

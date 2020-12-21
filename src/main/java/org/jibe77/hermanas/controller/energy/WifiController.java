@@ -31,21 +31,25 @@ public class WifiController {
         }
     }
 
-    public void turnOn() {
+    public boolean turnOn() {
         try {
             logger.info("Turning on wifi on wlan0.");
             processLauncher.launch("/usr/sbin/rfkill", "unblock", "0");
-            processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "on");
+            Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "on");
+            logger.info("Returned value {}.", process.exitValue());
+            return process.exitValue() == 0;
         } catch (IOException e) {
             logger.error("Exception when turning on the wifi card : ", e);
+            return false;
         }
     }
 
     public boolean turnOff() {
         try {
             logger.info("Turning off wifi on wlan0.");
-            processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
-            return true;
+            Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
+            logger.info("Returned value {}.", process.exitValue());
+            return process.exitValue() == 0;
         } catch (IOException e) {
             logger.error("Exception when turning off the wifi card : ", e);
             return false;

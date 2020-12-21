@@ -3,6 +3,7 @@ package org.jibe77.hermanas.scheduler.event;
 import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
+import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.controller.fan.FanController;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.controller.music.MusicController;
@@ -29,6 +30,7 @@ class ManageDoorOpeningTest {
     LocalDateTime eventAlwaysInThePast;
     MessageSource messageSource;
     FanController fanController;
+    WifiController wifiController;
 
 
     @BeforeEach
@@ -43,9 +45,10 @@ class ManageDoorOpeningTest {
         musicController = mock(MusicController.class);
         messageSource = mock(MessageSource.class);
         fanController = mock(FanController.class);
+        wifiController = mock(WifiController.class);
 
         manageDoorOpeningEvent = new ManageDoorOpeningEvent(
-                sunTimeManager, cameraController, doorController, musicController, fanController);
+                sunTimeManager, cameraController, doorController, musicController, fanController, wifiController);
     }
 
     @Test
