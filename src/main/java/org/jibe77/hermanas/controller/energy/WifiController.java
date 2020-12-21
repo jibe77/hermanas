@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.controller.energy;
 
 import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,16 +17,19 @@ public class WifiController {
 
     ConsumptionModeManager consumptionModeManager;
 
+    DoorController doorController;
+
     Logger logger = LoggerFactory.getLogger(WifiController.class);
 
-    public WifiController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager) {
+    public WifiController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager, DoorController doorController) {
         this.processLauncher = processLauncher;
         this.consumptionModeManager = consumptionModeManager;
+        this.doorController = doorController;
     }
 
     @PostConstruct
     private void init() {
-        if (consumptionModeManager.isEcoMode()) {
+        if (consumptionModeManager.isEcoMode() && doorController.doorIsClosed()) {
             logger.info("Init Wifi controller in eco mode. Stopping wifi now.");
             turnOff();
         }
