@@ -42,6 +42,7 @@ public class WeatherClient {
         if (weatherInfoEnabled) {
             boolean initialWifiStatus = wifiController.wifiCardIsEnabled();
             if (!initialWifiStatus) {
+                log.info("weather client is enabling the wifi card for a request.");
                 wifiController.turnOn();
             }
             WeatherInfo weatherInfo = builder.build().getForObject(
@@ -52,6 +53,7 @@ public class WeatherClient {
                     weatherInfoKey);
             log.info("Weather info content : {}", weatherInfo);
             if (!initialWifiStatus) {
+                log.info("weather client is disabling the wifi card after a request.");
                 wifiController.turnOff();
             }
             return weatherInfo;

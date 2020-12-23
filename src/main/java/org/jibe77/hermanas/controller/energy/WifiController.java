@@ -39,6 +39,7 @@ public class WifiController {
             logger.info("Init Wifi controller in eco mode. Stopping wifi now.");
             turnOff();
         } else {
+            logger.info("Init wifi controller.");
             turnOn();
         }
     }
@@ -54,7 +55,7 @@ public class WifiController {
                 logger.info("Turning on wifi on wlan0.");
                 processLauncher.launch("/usr/sbin/rfkill", "unblock", "0");
                 Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "on");
-                process.waitFor(10, TimeUnit.SECONDS);
+                process.waitFor();
                 logger.info("Returned value {}.", process.exitValue());
                 return process.exitValue() == 0;
             } catch (IOException e) {
@@ -71,11 +72,13 @@ public class WifiController {
     }
 
     public synchronized boolean turnOff() {
-        if (wifiSwitchEnabled && wifiCardIsEnabled()) {
+        logger.info("turnoff method has been called.");
+        boolean isEnabled = wifiCardIsEnabled();
+        if (wifiSwitchEnabled && isEnabled) {
             try {
                 logger.info("Turning off wifi on wlan0.");
                 Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
-                process.waitFor(10, TimeUnit.SECONDS);
+                process.waitFor();
                 logger.info("Returned value {}.", process.exitValue());
                 return process.exitValue() == 0;
             } catch (IOException e) {
@@ -86,8 +89,12 @@ public class WifiController {
                 Thread.currentThread().interrupt();
                 return false;
             }
+        } else {
+            logger.info(
+                    "turnoff method is not taken in account : switch is enabled : {} and wifi card is enabled : {}.",
+                    wifiSwitchEnabled, isEnabled);
+            return false;
         }
-        return false;
     }
 
     /**
@@ -96,10 +103,12 @@ public class WifiController {
      */
     public synchronized boolean wifiCardIsEnabled() {
         try {
-            return "1".equals(
+            boolean isEnabled = "1".equals(
                     processLauncher.launchAndReturnResult(
                             "/bin/cat",
                             "/sys/class/net/wlan0/carrier"));
+            logger.info("wifi card is enabled : {}.", isEnabled);
+            return isEnabled;
         } catch (IOException e) {
             logger.error("Error checking wlan0 status.");
             return false;
