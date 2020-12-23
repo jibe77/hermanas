@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.client.weather;
 
+import org.jibe77.hermanas.controller.energy.WifiController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,18 +25,25 @@ public class WeatherClient {
     @Value("${weather.info.enabled}")
     public boolean weatherInfoEnabled;
 
+    WifiController wifiController;
+
     public static final Double DEFAULT_VALUE_IF_DISABLED = -100d;
 
     private static final Logger log = LoggerFactory.getLogger(WeatherClient.class);
 
     final RestTemplateBuilder builder;
 
-    public WeatherClient(RestTemplateBuilder builder) {
+    public WeatherClient(RestTemplateBuilder builder, WifiController wifiController) {
         this.builder = builder;
+        this.wifiController = wifiController;
     }
 
     public WeatherInfo getInfo() {
         if (weatherInfoEnabled) {
+            boolean initialWifiStatus = wifiController.wifiCardIsEnabled();
+            if (!initialWifiStatus) {
+                wifiController.turnOn();
+            }
             WeatherInfo weatherInfo = builder.build().getForObject(
                     weatherInfoUrl,
                     WeatherInfo.class,
@@ -43,6 +51,9 @@ public class WeatherClient {
                     longitude,
                     weatherInfoKey);
             log.info("Weather info content : {}", weatherInfo);
+            if (!initialWifiStatus) {
+                wifiController.turnOff();
+            }
             return weatherInfo;
         } else {
             // default value if disabled.

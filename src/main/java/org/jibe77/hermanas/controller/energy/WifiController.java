@@ -49,25 +49,29 @@ public class WifiController {
     }
 
     public synchronized boolean turnOn() {
-        try {
-            logger.info("Turning on wifi on wlan0.");
-            processLauncher.launch("/usr/sbin/rfkill", "unblock", "0");
-            Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "on");
-            process.waitFor(10, TimeUnit.SECONDS);
-            logger.info("Returned value {}.", process.exitValue());
-            return process.exitValue() == 0;
-        } catch (IOException e) {
-            logger.error("Exception when turning on the wifi card : ", e);
-            return false;
-        } catch (InterruptedException e) {
-            logger.error("Interrupted when turning on the wifi card : ", e);
-            Thread.currentThread().interrupt();
-            return false;
+        if (!wifiCardIsEnabled()) {
+            try {
+                logger.info("Turning on wifi on wlan0.");
+                processLauncher.launch("/usr/sbin/rfkill", "unblock", "0");
+                Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "on");
+                process.waitFor(10, TimeUnit.SECONDS);
+                logger.info("Returned value {}.", process.exitValue());
+                return process.exitValue() == 0;
+            } catch (IOException e) {
+                logger.error("Exception when turning on the wifi card : ", e);
+                return false;
+            } catch (InterruptedException e) {
+                logger.error("Interrupted when turning on the wifi card : ", e);
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        } else {
+            return true;
         }
     }
 
     public synchronized boolean turnOff() {
-        if (wifiSwitchEnabled) {
+        if (wifiSwitchEnabled && wifiCardIsEnabled()) {
             try {
                 logger.info("Turning off wifi on wlan0.");
                 Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
@@ -86,5 +90,19 @@ public class WifiController {
         return false;
     }
 
-    // TODO : status
+    /**
+     * Returns the status of the wifi card.
+     * @return true if the wifi card is enabled.
+     */
+    public synchronized boolean wifiCardIsEnabled() {
+        try {
+            return "1".equals(
+                    processLauncher.launchAndReturnResult(
+                            "/bin/cat",
+                            "/sys/class/net/wlan0/carrier"));
+        } catch (IOException e) {
+            logger.error("Error checking wlan0 status.");
+            return false;
+        }
+    }
 }

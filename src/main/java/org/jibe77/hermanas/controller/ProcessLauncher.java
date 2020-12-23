@@ -23,13 +23,26 @@ public class ProcessLauncher {
         return new ProcessBuilder(commandWithParams).start();
     }
 
+    public String launchAndReturnResult(String ... comandWithParams) throws IOException {
+        Process process = new ProcessBuilder(comandWithParams).start();
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder builder = new StringBuilder();
+        String line;
+        while ( (line = reader.readLine()) != null) {
+            builder.append(line);
+            builder.append(System.getProperty("line.separator"));
+        }
+        return builder.toString();
+    }
+
     public void printErrorStreamInThread(Process currentStreamingProcess) {
         InputStream errorStream = currentStreamingProcess.getErrorStream();
         if (errorStream != null) {
             BufferedReader bufferedReader = new BufferedReader(
                     new InputStreamReader(errorStream));
             new Thread(() -> {
-                String line = null;
+                String line;
                 logger.info("error stream is opened (debug only)...");
                 do {
                     try {
