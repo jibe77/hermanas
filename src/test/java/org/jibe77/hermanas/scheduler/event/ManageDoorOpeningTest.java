@@ -32,7 +32,6 @@ class ManageDoorOpeningTest {
     FanController fanController;
     WifiController wifiController;
 
-
     @BeforeEach
     void init() {
         eventAlwaysInTheFutur = LocalDateTime.now().plusHours(1);
@@ -48,7 +47,8 @@ class ManageDoorOpeningTest {
         wifiController = mock(WifiController.class);
 
         manageDoorOpeningEvent = new ManageDoorOpeningEvent(
-                sunTimeManager, cameraController, doorController, musicController, fanController, wifiController);
+                sunTimeManager, cameraController, doorController, musicController, fanController, wifiController,
+                emailService, messageSource);
     }
 
     @Test

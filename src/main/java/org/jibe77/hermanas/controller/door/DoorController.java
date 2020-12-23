@@ -56,7 +56,7 @@ public class DoorController {
     }
 
     @PostConstruct
-    private void initDoorAccordingToSunTime() {
+    private synchronized void initDoorAccordingToSunTime() {
         DoorStatus doorStatus = sunTimeManager.getExpectedDoorStatus();
         if (doorStatus == DoorStatus.OPENED) {
             openDoorWithUpButtonManagment(false, false);
@@ -73,7 +73,7 @@ public class DoorController {
             value = { DoorNotClosedCorrectlyException.class },
             maxAttempts = 20,
             backoff = @Backoff(delay = 5000))
-    public void closeDoorWithBottormButtonManagement(boolean force) {
+    public synchronized void closeDoorWithBottormButtonManagement(boolean force) {
         if (force || !doorIsClosed()) {
             bottomButtonController.provisionButton();
             bottomButtonController.resetBottomButtonHasBeenPressed();
@@ -99,7 +99,7 @@ public class DoorController {
      * Close door.
      * @param force if force is set to true, force door to close even if it is closed.
      */
-    protected void closeDoor(boolean force) {
+    protected synchronized void closeDoor(boolean force) {
         if (force || !doorIsClosed()) {
             logger.info(
                     "Close the door moving servo clockwise with gear position {} for {} ms ...",
@@ -112,7 +112,7 @@ public class DoorController {
         }
     }
 
-    public boolean openDoorWithUpButtonManagment(boolean force, boolean openingDoorAfterClosingProblem) {
+    public synchronized boolean openDoorWithUpButtonManagment(boolean force, boolean openingDoorAfterClosingProblem) {
         boolean returnedValue = false;
         if (force || !doorIsOpened()) {
             upButtonController.provisionButton();
@@ -135,7 +135,7 @@ public class DoorController {
      * Open the door moving the servomotor counter-clockwise.
      * @param force if force is set to true, force door to open even if it is opened.
      */
-    protected boolean openDoor(boolean force, boolean openingDoorAfterClosingProblem) {
+    protected synchronized boolean openDoor(boolean force, boolean openingDoorAfterClosingProblem) {
         if (force || openingDoorAfterClosingProblem || !doorIsOpened()) {
             logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
                     doorOpeningPosition,
@@ -157,7 +157,7 @@ public class DoorController {
      * @return true if the opening time is after the last closing time.
      *          true if the opening or closing time is unknown.
      */
-    public boolean doorIsOpened() {
+    public synchronized boolean doorIsOpened() {
         return upButtonController.isUpButtonPressed();
     }
 
@@ -166,11 +166,11 @@ public class DoorController {
      * @return true if the closing time is after the last opening time.
      *          true if the opening or closing time is unknown.
      */
-    public boolean doorIsClosed() {
+    public synchronized boolean doorIsClosed() {
         return bottomButtonController.isBottomButtonPressed();
     }
 
-    public DoorStatus status() {
+    public synchronized DoorStatus status() {
         if (doorIsOpened()) {
             return DoorStatus.OPENED;
         } else if (doorIsClosed()) {
@@ -192,13 +192,13 @@ public class DoorController {
         }
     }
 
-    private boolean openingTimeIsProbablyTheMostRecent() {
+    private synchronized boolean openingTimeIsProbablyTheMostRecent() {
         return lastOpeningTime != null &&
                 ((lastClosingTime == null && lastOpeningTime != null) ||
                 (lastOpeningTime.isAfter(lastClosingTime)));
     }
 
-    public void turnServoClockwise(Integer duration) {
+    public synchronized void turnServoClockwise(Integer duration) {
         logger.info(
                 "Turn the servo clockwise with gear position {} for {} ms ...",
                 doorClosingPosition,
@@ -206,7 +206,7 @@ public class DoorController {
         servo.setPosition(doorClosingPosition, duration);
     }
 
-    public void turnServoCounterClockwise(Integer duration) {
+    public synchronized void turnServoCounterClockwise(Integer duration) {
         logger.info(
                 "Turn the servo counter-clockwise with gear position {} for {} ms ...",
                 doorOpeningPosition,

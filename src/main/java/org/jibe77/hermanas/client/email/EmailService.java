@@ -55,7 +55,7 @@ public class EmailService {
         }
     }
 
-    public void sendMailWithAttachment(String subject, String body, File fileToAttach)
+    public void sendMailWithAttachment(String subject, String body, File ... filesToAttach)
     {
         if (enabled) {
             MimeMessagePreparator preparator = mimeMessage -> {
@@ -64,9 +64,13 @@ public class EmailService {
                 mimeMessage.setSubject(subject);
                 mimeMessage.setText(body);
 
-                FileSystemResource file = new FileSystemResource(fileToAttach);
                 MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-                helper.addAttachment("logo.jpg", file);
+
+                for (File fileToAttach : filesToAttach) {
+                    FileSystemResource file = new FileSystemResource(fileToAttach);
+                    helper.addAttachment("logo.jpg", file);
+                }
+
                 helper.setText(body, true);
             };
 

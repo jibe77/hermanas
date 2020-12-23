@@ -35,9 +35,6 @@ public class ManageDoorClosingEvent {
 
     WifiController wifiController;
 
-    @Value("${email.notification.sunset.subject}")
-    private String emailNotificationSunsetSubject;
-
     @Value("${play.song.at.sunset}")
     private boolean playSongAtSunset;
 
@@ -65,15 +62,19 @@ public class ManageDoorClosingEvent {
                     doorController.closeDoorWithBottormButtonManagement(false);
                     logger.info("take picture once the door is closed and send it by email.");
                     notification(
-                            messageSource.getMessage("event.closing.mail.with_picture.title", null, Locale.getDefault()),
-                            messageSource.getMessage("event.closing.mail.without_picture.title", null,
+                            messageSource.getMessage(
+                                    "event.mail.with_picture.sunset.title", null, Locale.getDefault()),
+                            messageSource.getMessage("event.mail.with_picture.message", null, Locale.getDefault()),
+                            messageSource.getMessage("event.mail.without_picture.message", null,
                                     Locale.getDefault()));
                 } catch (DoorNotClosedCorrectlyException e) {
                     logger.error("Didn't close the door correctly.");
                     notification(
-                            messageSource.getMessage("event.closing_with_problem.mail.with_picture.title",
+                            messageSource.getMessage(
+                                    "event.problem.mail.with_picture.title", null, Locale.getDefault()),
+                            messageSource.getMessage("event.problem.mail.with_picture.message",
                                     null, Locale.getDefault()),
-                            messageSource.getMessage("event.closing_with_problem.mail.without_picture.title",
+                            messageSource.getMessage("event.problem.mail.without_picture.message",
                                     null, Locale.getDefault()));
                 }
             } else {
@@ -86,13 +87,15 @@ public class ManageDoorClosingEvent {
         }
     }
 
-    private void notification(String textWithPicture, String textIfNoPicture) {
+    private void notification(String title, String textWithPicture, String textIfNoPicture) {
         Optional<File> picWithClosedDoor = cameraController.takePictureNoException(true);
         if (picWithClosedDoor.isPresent()) {
-            emailService.sendMailWithAttachment(emailNotificationSunsetSubject,
+            emailService.sendMailWithAttachment(
+                    title,
                     textWithPicture, picWithClosedDoor.get());
         } else {
-            emailService.sendMail(emailNotificationSunsetSubject,
+            emailService.sendMail(
+                    title,
                     textIfNoPicture);
         }
     }
