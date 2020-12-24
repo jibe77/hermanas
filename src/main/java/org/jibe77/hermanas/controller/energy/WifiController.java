@@ -55,7 +55,7 @@ public class WifiController {
                 logger.info("Turning on wifi on wlan0.");
                 processLauncher.launch("/usr/sbin/rfkill", "unblock", "0");
                 Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "on");
-                process.waitFor();
+                process.waitFor(10, TimeUnit.SECONDS);
                 logger.info("Returned value {}.", process.exitValue());
                 return process.exitValue() == 0;
             } catch (IOException e) {
@@ -78,7 +78,7 @@ public class WifiController {
             try {
                 logger.info("Turning off wifi on wlan0.");
                 Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
-                process.waitFor();
+                process.waitFor(10, TimeUnit.SECONDS);
                 logger.info("Returned value {}.", process.exitValue());
                 return process.exitValue() == 0;
             } catch (IOException e) {
