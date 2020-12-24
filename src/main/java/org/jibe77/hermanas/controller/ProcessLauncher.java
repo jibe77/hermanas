@@ -33,7 +33,7 @@ public class ProcessLauncher {
             builder.append(line);
             builder.append(System.getProperty("line.separator"));
         }
-        return builder.toString();
+        return builder.toString().trim();
     }
 
     public void printErrorStreamInThread(Process currentStreamingProcess) {
