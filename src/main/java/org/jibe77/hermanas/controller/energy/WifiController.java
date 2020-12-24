@@ -72,7 +72,6 @@ public class WifiController {
     }
 
     public synchronized boolean turnOff() {
-        logger.info("turnoff method has been called.");
         boolean isEnabled = wifiCardIsEnabled();
         if (wifiSwitchEnabled && isEnabled) {
             try {

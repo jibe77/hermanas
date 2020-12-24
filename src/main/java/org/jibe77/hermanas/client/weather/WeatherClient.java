@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
+
+import java.net.UnknownHostException;
 
 @Component
 public class WeatherClient {
@@ -45,24 +48,34 @@ public class WeatherClient {
                 log.info("weather client is enabling the wifi card for a request.");
                 wifiController.turnOn();
             }
-            WeatherInfo weatherInfo = builder.build().getForObject(
-                    weatherInfoUrl,
-                    WeatherInfo.class,
-                    latitude,
-                    longitude,
-                    weatherInfoKey);
-            log.info("Weather info content : {}", weatherInfo);
-            if (!initialWifiStatus) {
-                log.info("weather client is disabling the wifi card after a request.");
-                wifiController.turnOff();
+            try {
+                WeatherInfo weatherInfo = builder.build().getForObject(
+                        weatherInfoUrl,
+                        WeatherInfo.class,
+                        latitude,
+                        longitude,
+                        weatherInfoKey);
+                log.info("Weather info content : {}", weatherInfo);
+                return weatherInfo;
+            } catch (ResourceAccessException e) {
+                log.error("Can't process weather info request.", e);
+                return getDefaultWeatherInfo();
+            } finally {
+                if (!initialWifiStatus) {
+                    log.info("weather client is disabling the wifi card after a request.");
+                    wifiController.turnOff();
+                }
             }
-            return weatherInfo;
         } else {
-            // default value if disabled.
-            WeatherInfo weatherInfo = new WeatherInfo();
-            weatherInfo.setValues(DEFAULT_VALUE_IF_DISABLED, DEFAULT_VALUE_IF_DISABLED);
-            return weatherInfo;
+            return getDefaultWeatherInfo();
         }
+    }
+
+    private WeatherInfo getDefaultWeatherInfo() {
+        // default value if disabled.
+        WeatherInfo weatherInfo = new WeatherInfo();
+        weatherInfo.setValues(DEFAULT_VALUE_IF_DISABLED, DEFAULT_VALUE_IF_DISABLED);
+        return weatherInfo;
     }
 
     void setWeatherInfoEnabled(boolean weatherInfoEnabled) {
