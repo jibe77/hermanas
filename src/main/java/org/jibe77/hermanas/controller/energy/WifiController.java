@@ -74,6 +74,7 @@ public class WifiController {
 
     public synchronized boolean turnOff() {
         boolean isEnabled = wifiCardIsEnabled();
+        logger.info("Turn off method is called (status enable : {}, switch enabled : {}.", isEnabled, wifiSwitchEnabled);
         if (wifiSwitchEnabled && isEnabled) {
             try {
                 logger.info("Turning off wifi on wlan0.");
