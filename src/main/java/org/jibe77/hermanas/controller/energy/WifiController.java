@@ -103,10 +103,11 @@ public class WifiController {
      */
     public synchronized boolean wifiCardIsEnabled() {
         try {
-            boolean isEnabled = "1".equals(
-                    processLauncher.launchAndReturnResult(
-                            "/bin/cat",
-                            "/sys/class/net/wlan0/carrier"));
+            String returnedValue = processLauncher.launchAndReturnResult(
+                    "/bin/cat",
+                    "/sys/class/net/wlan0/carrier");
+            logger.info("wifi status is {}.", returnedValue);
+            boolean isEnabled = "1".equals(returnedValue);
             logger.info("wifi card is enabled : {}.", isEnabled);
             return isEnabled;
         } catch (IOException e) {

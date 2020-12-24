@@ -82,13 +82,6 @@ public class MusicController {
         this.soundCardController = soundCardController;
     }
 
-    @PostConstruct
-    private void init() {
-        if (musicEnabled) {
-            soundCardController.turnOff();
-        }
-    }
-
     public boolean playMusicRandomly() {
         if (musicEnabled) {
             try {
