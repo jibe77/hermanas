@@ -10,6 +10,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 
 import java.io.File;
+import java.util.Optional;
 
 @SpringBootTest(classes = {EmailService.class})
 class EmailServiceTest {
@@ -57,7 +58,7 @@ class EmailServiceTest {
     void testEmailWithAttachmentEnabled() {
         emailService.setEnabled(true);
 
-        emailService.sendMailWithAttachment("Subject Test", "Subject body", new File("test.txt"));
+        emailService.sendMail("Subject Test", "Subject body", Optional.of(new File("test.txt")));
 
         Mockito.verify(javaMailSender, Mockito.times(1))
                 .send((MimeMessagePreparator) Mockito.any());
@@ -67,7 +68,7 @@ class EmailServiceTest {
     void testEmailWithAttachmentDisabled() {
         emailService.setEnabled(false);
 
-        emailService.sendMailWithAttachment("Subject Test", "Subject body", new File("test.txt"));
+        emailService.sendMail("Subject Test", "Subject body", Optional.of(new File("test.txt")));
 
         Mockito.verify(javaMailSender, Mockito.times(0))
                 .send((MimeMessagePreparator) Mockito.any());
@@ -80,7 +81,7 @@ class EmailServiceTest {
                 .when(javaMailSender)
                 .send((MimeMessagePreparator) Mockito.any());
 
-        emailService.sendMailWithAttachment("Subject Test", "Subject body", new File("test.txt"));
+        emailService.sendMail("Subject Test", "Subject body", Optional.of(new File("test.txt")));
 
         Mockito.verify(javaMailSender, Mockito.times(1))
                 .send((MimeMessagePreparator) Mockito.any());

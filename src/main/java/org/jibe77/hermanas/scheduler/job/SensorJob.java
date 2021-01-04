@@ -4,7 +4,7 @@ import org.jibe77.hermanas.client.weather.WeatherClient;
 import org.jibe77.hermanas.client.weather.WeatherInfo;
 import org.jibe77.hermanas.data.entity.Sensor;
 import org.jibe77.hermanas.data.repository.SensorRepository;
-import org.jibe77.hermanas.controller.sensor.DHT22;
+import org.jibe77.hermanas.controller.sensor.SensorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SensorJob {
 
-    private DHT22 dht22;
+    private SensorController sensorController;
 
     private SensorRepository sensorRepository;
 
@@ -21,8 +21,8 @@ public class SensorJob {
 
     Logger logger = LoggerFactory.getLogger(SensorJob.class);
 
-    public SensorJob(DHT22 dht22, SensorRepository sensorRepository, WeatherClient weatherClient) {
-        this.dht22 = dht22;
+    public SensorJob(SensorController sensorController, SensorRepository sensorRepository, WeatherClient weatherClient) {
+        this.sensorController = sensorController;
         this.sensorRepository = sensorRepository;
         this.weatherClient = weatherClient;
     }
@@ -31,7 +31,7 @@ public class SensorJob {
     public void execute() {
         try {
             logger.info("Sensor scheduled job is taking temperature and humidity now.");
-            Sensor sensor = dht22.refreshData();
+            Sensor sensor = sensorController.refreshData();
 
             WeatherInfo weatherInfo = weatherClient.getInfo();
             sensor.setExternalTemperature(weatherInfo.getTemp());

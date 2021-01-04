@@ -40,6 +40,8 @@ public class CameraConfiguration {
     @Value("${camera.rotation}")
     private int photoRotation;
 
+    @Value("${camera.brightness}")
+    private int photoBrightness;
 
     @Bean(name = "CameraHighQualityConfig")
     public uk.co.caprica.picam.CameraConfiguration initHighQuality() {
@@ -49,7 +51,8 @@ public class CameraConfiguration {
                 .encoding(Encoding.valueOf(photoEncoding))
                 .quality(photoHighQuality)
                 .delay(photoHighDelay)
-                .rotation(photoRotation);
+                .rotation(photoRotation)
+                .brightness(photoBrightness);
     }
 
     @Bean(name = "CameraRegularQualityConfig")

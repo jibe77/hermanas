@@ -1,17 +1,16 @@
 package org.jibe77.hermanas.scheduler.sun;
 
+import org.jibe77.hermanas.controller.door.DoorStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @Component
-@Scope("singleton")
 public class SunTimeManager {
 
     SunTimeUtils sunTimeUtils;
@@ -19,32 +18,27 @@ public class SunTimeManager {
     @Value("${suntime.scheduler.light.on.time_before_sunset}")
     private long lightOnTimeBeforeSunset;
 
-    @Value("${suntime.scheduler.light.off.time_after_sunset}")
-    private long lightOffTimeAfterSunset;
-
     @Value("${suntime.scheduler.door.close.time_after_sunset}")
     private long doorCloseTimeAfterSunset;
 
     @Value("${suntime.scheduler.door.open.time_after_sunrise}")
     private long doorOpenTimeAfterSunrise;
 
+    public static final String HH_MM = "HH:mm";
+
+    private ConsumptionModeManager consumptionModeManager;
+
     Logger logger = LoggerFactory.getLogger(SunTimeManager.class);
 
-    public SunTimeManager(SunTimeUtils sunTimeUtils) {
+    public SunTimeManager(SunTimeUtils sunTimeUtils, ConsumptionModeManager consumptionModeManager) {
         this.sunTimeUtils = sunTimeUtils;
+        this.consumptionModeManager = consumptionModeManager;
     }
 
     @Cacheable(value = "light-on")
     public LocalDateTime getNextLightOnTime() {
         LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(-1 * lightOnTimeBeforeSunset);
         logger.info("computing next light switching on time : {}", localDateTime);
-        return localDateTime;
-    }
-
-    @Cacheable(value = "light-off")
-    public LocalDateTime getNextLightOffTime() {
-        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(lightOffTimeAfterSunset);
-        logger.info("computing next light switching off time : {}", localDateTime);
         return localDateTime;
     }
 
@@ -57,7 +51,9 @@ public class SunTimeManager {
 
     @Cacheable(value = "door-closing")
     public LocalDateTime getNextDoorClosingTime() {
-        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset);
+        // in winter, the door is closed 10 minutes earlier.
+        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset)
+                .minusMinutes(consumptionModeManager.isEcoMode() ? 10 : 0);
         logger.info("computing next door closing time : {}", localDateTime);
         return localDateTime;
     }
@@ -77,9 +73,12 @@ public class SunTimeManager {
         logger.info("revoke cache on light switching on time.");
     }
 
-    @CacheEvict("light-off")
-    public void reloadLightOffTime() {
-        logger.info("revoke cache on light switching off time.");
+    public DoorStatus getExpectedDoorStatus() {
+        int currentDay = LocalDateTime.now().getDayOfMonth();
+        if (currentDay != getNextDoorOpeningTime().getDayOfMonth() && currentDay == getNextDoorClosingTime().getDayOfMonth()) {
+            return DoorStatus.OPENED;
+        } else {
+            return DoorStatus.CLOSED;
+        }
     }
-
 }

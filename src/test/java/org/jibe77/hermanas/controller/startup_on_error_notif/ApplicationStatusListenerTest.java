@@ -7,6 +7,7 @@ import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.MessageSource;
 
@@ -15,8 +16,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ApplicationStatusListenerTest {
 
@@ -44,9 +44,8 @@ class ApplicationStatusListenerTest {
 
         applicationStatusListener.init();
 
-        Mockito.verify(eventRepository, Mockito.times(1)).save(any(Event.class));
-        Mockito.verify(emailService,Mockito.times(0)).sendMailWithAttachment(Mockito.anyString(), Mockito.anyString(), any(File.class));
-        Mockito.verify(emailService,Mockito.times(0)).sendMail(Mockito.anyString(), Mockito.anyString());
+        verify(eventRepository, Mockito.times(1)).save(any(Event.class));
+        verify(emailService,Mockito.times(0)).sendMail(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
@@ -55,13 +54,12 @@ class ApplicationStatusListenerTest {
         event.setEventType(EventType.STARTUP);
         Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any())).thenReturn(event);
         Optional<File> o = Optional.of(new File(""));
-        Mockito.when(cameraController.takePictureNoException(false)).thenReturn(o);
+        Mockito.when(cameraController.takePictureNoException(true)).thenReturn(o);
 
         applicationStatusListener.init();
 
-        Mockito.verify(eventRepository, Mockito.times(1)).save(any(Event.class));
-        Mockito.verify(emailService,Mockito.times(1)).sendMailWithAttachment(Mockito.anyString(), Mockito.anyString(), any(File.class));
-        Mockito.verify(emailService,Mockito.times(0)).sendMail(Mockito.anyString(), Mockito.anyString());
+        verify(eventRepository, Mockito.times(1)).save(any(Event.class));
+        verify(emailService,Mockito.times(1)).sendMail(Mockito.anyString(), Mockito.anyString(), any(Optional.class));
     }
 
     @Test
@@ -74,16 +72,15 @@ class ApplicationStatusListenerTest {
 
         applicationStatusListener.init();
 
-        Mockito.verify(eventRepository, Mockito.times(1)).save(any(Event.class));
-        Mockito.verify(emailService,Mockito.times(0)).sendMailWithAttachment(Mockito.anyString(), Mockito.anyString(), any(File.class));
-        Mockito.verify(emailService,Mockito.times(1)).sendMail(Mockito.anyString(), Mockito.anyString());
+        verify(eventRepository, Mockito.times(1)).save(any(Event.class));
+        verify(emailService,Mockito.times(1)).sendMail(Mockito.anyString(), Mockito.anyString(), Mockito.any(Optional.class));
     }
 
     @Test
     void testDestroy(){
         applicationStatusListener.destroy();
 
-        Mockito.verify(eventRepository, Mockito.times(1)).save(any(Event.class));
-        Mockito.verify(eventRepository).save(Mockito.argThat((Event event) -> event.getEventType() == EventType.SHUTDOWN));
+        verify(eventRepository, Mockito.times(1)).save(any(Event.class));
+        verify(eventRepository).save(Mockito.argThat((Event event) -> event.getEventType() == EventType.SHUTDOWN));
     }
 }

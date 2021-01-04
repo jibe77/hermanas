@@ -6,12 +6,9 @@ import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
-@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class BottomButtonController {
 
     final
@@ -65,7 +62,15 @@ public class BottomButtonController {
         this.bottomButtonHasBeenPressed = bottomButtonHasBeenPressed;
     }
 
-    void setBottomButton(GpioPinDigitalInput bottomButton) {
-        this.bottomButton = bottomButton;
+    public synchronized boolean isBottomButtonPressed() {
+        boolean isButtonNull = bottomButton == null;
+        if (isButtonNull) {
+            provisionButton();
+        }
+        boolean isHigh = bottomButton.isHigh();
+        if (isButtonNull) {
+            unprovisionButton();
+        }
+        return isHigh;
     }
 }

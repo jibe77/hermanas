@@ -2,17 +2,11 @@ package org.jibe77.hermanas.controller.birdhouse;
 
 import com.pi4j.io.gpio.GpioPin;
 import com.pi4j.io.gpio.GpioPinDigitalInput;
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.controller.light.LightController;
-import org.jibe77.hermanas.controller.sensor.DHT22;
-import org.jibe77.hermanas.data.entity.Sensor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

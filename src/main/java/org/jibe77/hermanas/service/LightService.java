@@ -29,7 +29,7 @@ public class LightService {
         lightController.switchOff();
     }
 
-    @GetMapping(value = "/light/isSwitchedOn")
+    @GetMapping(value = "/light/status")
     public boolean isSwitchedOn() {
         return lightController.isSwitchedOn();
     }

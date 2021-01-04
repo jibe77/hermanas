@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.health;
 
+import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -9,9 +10,11 @@ import org.springframework.stereotype.Component;
 public class DoorIndicator implements HealthIndicator {
 
     DoorController doorController;
+    CameraController cameraController;
 
-    public DoorIndicator(DoorController doorController) {
+    public DoorIndicator(DoorController doorController, CameraController cameraController) {
         this.doorController = doorController;
+        this.cameraController = cameraController;
     }
 
     @Override
@@ -20,7 +23,7 @@ public class DoorIndicator implements HealthIndicator {
         if (doorController.doorIsOpened()) {
             doorController.closeDoorWithBottormButtonManagement(false);
             if (doorController.doorIsClosed()) {
-                doorController.openDoor(false);
+                doorController.openDoorWithUpButtonManagment(false, false);
                 return Health.up().build();
             }
             return Health.down().build();

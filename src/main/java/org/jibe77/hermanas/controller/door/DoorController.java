@@ -2,15 +2,16 @@ package org.jibe77.hermanas.controller.door;
 
 import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
+import org.jibe77.hermanas.controller.door.upbutton.UpButtonController;
+import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
 import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 
 /**
@@ -19,13 +20,15 @@ import java.time.LocalDateTime;
  * Class used for BlueJ on Raspberry Pi tutorial.
  */
 @Component
-@Scope("singleton")
 public class DoorController {
 
     // the servo motor
     private final ServoMotorController servo;
 
-    final BottomButtonController bottomButtonController;
+    private final BottomButtonController bottomButtonController;
+    private final UpButtonController upButtonController;
+
+    private final SunTimeManager sunTimeManager;
 
     Logger logger = LoggerFactory.getLogger(DoorController.class);
 
@@ -44,9 +47,22 @@ public class DoorController {
     private LocalDateTime lastClosingTime;
     private LocalDateTime lastOpeningTime;
 
-    public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController) {
+    public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController,
+                          UpButtonController upButtonController, SunTimeManager sunTimeManager) {
         this.servo = servo;
         this.bottomButtonController = bottomButtonController;
+        this.upButtonController = upButtonController;
+        this.sunTimeManager = sunTimeManager;
+    }
+
+    @PostConstruct
+    private synchronized void initDoorAccordingToSunTime() {
+        DoorStatus doorStatus = sunTimeManager.getExpectedDoorStatus();
+        if (doorStatus == DoorStatus.OPENED) {
+            openDoorWithUpButtonManagment(false, false);
+        } else if (doorStatus == DoorStatus.CLOSED) {
+            closeDoorWithBottormButtonManagement(false);
+        }
     }
 
     /**
@@ -55,21 +71,24 @@ public class DoorController {
      */
     @Retryable(
             value = { DoorNotClosedCorrectlyException.class },
-            maxAttempts = 5,
+            maxAttempts = 20,
             backoff = @Backoff(delay = 5000))
-    public void closeDoorWithBottormButtonManagement(boolean force) {
+    public synchronized void closeDoorWithBottormButtonManagement(boolean force) {
         if (force || !doorIsClosed()) {
             bottomButtonController.provisionButton();
             bottomButtonController.resetBottomButtonHasBeenPressed();
-            closeDoor();
-            if (!bottomButtonController.isBottomButtonHasBeenPressed()) {
-                logger.error("Bottom position not reached correctly. The door is being reopened now.");
+            closeDoor(force);
+            if (bottomButtonController.isBottomButtonHasBeenPressed()) {
+                logger.info("bottom position has been reached.");
+            } else {
+                logger.error("Bottom position not reached correctly. The door is reopened now.");
                 // if the door has been closed twice, opening the door is actually closing the door .
-                openDoor(false);
+                openDoorWithUpButtonManagment(force, true);
                 if (!bottomButtonController.isBottomButtonHasBeenPressed())
                     throw new DoorNotClosedCorrectlyException();
             }
-            logger.info("... done");
+            logger.info("... the door has been closed !");
+            this.lastClosingTime = LocalDateTime.now();
             bottomButtonController.unprovisionButton();
         } else {
             logger.info("Door is not closed because is already closed state.");
@@ -80,36 +99,56 @@ public class DoorController {
      * Close door.
      * @param force if force is set to true, force door to close even if it is closed.
      */
-    private void closeDoor() {
-        logger.info(
-                "Close the door moving servo clockwise with gear position {} for {} ms ...",
-                doorClosingPosition,
-                doorClosingDuration);
-        servo.setPosition(doorClosingPosition, doorClosingDuration);
-        this.lastClosingTime = LocalDateTime.now();
+    protected synchronized void closeDoor(boolean force) {
+        if (force || !doorIsClosed()) {
+            logger.info(
+                    "Close the door moving servo clockwise with gear position {} for {} ms ...",
+                    doorClosingPosition,
+                    doorClosingDuration);
+            servo.setPosition(doorClosingPosition, doorClosingDuration);
+            this.lastClosingTime = LocalDateTime.now();
+        } else {
+            logger.info("Door is already closing, so the door won't be closed.");
+        }
     }
 
-    @Recover
-    private void closeDoorNoError(DoorNotClosedCorrectlyException e) {
-        logger.error("The door hasn't been closed correctly, closing it now with bottom button taken in charge.", e);
-        closeDoor();
+    public synchronized boolean openDoorWithUpButtonManagment(boolean force, boolean openingDoorAfterClosingProblem) {
+        boolean returnedValue = false;
+        if (force || !doorIsOpened()) {
+            upButtonController.provisionButton();
+            upButtonController.resetBottomButtonHasBeenPressed();
+            if (openDoor(force, openingDoorAfterClosingProblem) && upButtonController.isUpButtonHasBeenPressed()) {
+                logger.info("up position has been reached.");
+                returnedValue = true;
+            } else {
+                logger.info("up button has not been pressed.");
+            }
+            logger.info("... done");
+            upButtonController.unprovisionButton();
+        } else {
+            logger.info("Door is not opened because is already closed state.");
+        }
+        return returnedValue;
     }
 
     /**
      * Open the door moving the servomotor counter-clockwise.
      * @param force if force is set to true, force door to open even if it is opened.
      */
-    public void openDoor(boolean force)
-    {
-        if (force || !doorIsOpened()) {
+    protected synchronized boolean openDoor(boolean force, boolean openingDoorAfterClosingProblem) {
+        if (force || openingDoorAfterClosingProblem || !doorIsOpened()) {
             logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
                     doorOpeningPosition,
                     doorOpeningDuration);
             servo.setPosition(doorOpeningPosition, doorOpeningDuration);
-            this.lastOpeningTime = LocalDateTime.now();
+            if (!openingDoorAfterClosingProblem) {
+                this.lastOpeningTime = LocalDateTime.now();
+            }
             logger.info("... done");
+            return true;
         } else {
             logger.info("Door is not opened because is already opened state.");
+            return false;
         }
     }
 
@@ -118,19 +157,8 @@ public class DoorController {
      * @return true if the opening time is after the last closing time.
      *          true if the opening or closing time is unknown.
      */
-    public boolean doorIsOpened() {
-        logger.info(
-                "doorIsOpened() method is comparing last closing time {} with lastOpeningTime {}.",
-                lastClosingTime, lastOpeningTime);
-        if (lastClosingTime != null && lastOpeningTime != null) {
-            return lastOpeningTime.isAfter(lastClosingTime);
-        } else if (lastOpeningTime != null) {
-            logger.info("The opening time is known but closing time unknown, the door is supposed to be opened.");
-          return true;
-        } else {
-            logger.info("No information, so the door is supposed not being opened.");
-            return false;
-        }
+    public synchronized boolean doorIsOpened() {
+        return upButtonController.isUpButtonPressed();
     }
 
     /**
@@ -138,28 +166,51 @@ public class DoorController {
      * @return true if the closing time is after the last opening time.
      *          true if the opening or closing time is unknown.
      */
-    public boolean doorIsClosed() {
-        logger.info(
-                "doorIsClosed() method is comparing last closing time {} with lastOpeningTime {}.",
-                lastClosingTime, lastOpeningTime);
-        if (lastClosingTime != null && lastOpeningTime != null) {
-            return lastClosingTime.isAfter(lastOpeningTime);
-        } else if (lastClosingTime != null) {
-            logger.info("The closing time is know but opening time unknown, the door is supposed to be closed.");
-            return true;
+    public synchronized boolean doorIsClosed() {
+        return bottomButtonController.isBottomButtonPressed();
+    }
+
+    public synchronized DoorStatus status() {
+        if (doorIsOpened()) {
+            return DoorStatus.OPENED;
+        } else if (doorIsClosed()) {
+            return DoorStatus.CLOSED;
+        } else if (openingTimeIsProbablyTheMostRecent()) {
+            logger.info("the door is probably opened but not completly, " +
+                    "let's turn the servo counter clockwise a little bit.");
+            turnServoCounterClockwise(doorOpeningDuration / 100);
+            if (doorIsOpened()) {
+                logger.info("the door is completly opened now !");
+                return DoorStatus.OPENED;
+            } else {
+                logger.info("put it back like it was before.");
+                turnServoClockwise(doorClosingDuration / 100);
+                return DoorStatus.UNDEFINED;
+            }
         } else {
-            logger.info("Some data is missing so the door is supposed not to be closed.");
-            return false;
+            return DoorStatus.UNDEFINED;
         }
     }
 
-    public String status() {
-        if (doorIsOpened()) {
-            return "OPENED";
-        } else if (doorIsClosed()) {
-            return "CLOSED";
-        } else {
-            return "UNDEFINED";
-        }
+    private synchronized boolean openingTimeIsProbablyTheMostRecent() {
+        return lastOpeningTime != null &&
+                ((lastClosingTime == null && lastOpeningTime != null) ||
+                (lastOpeningTime.isAfter(lastClosingTime)));
+    }
+
+    public synchronized void turnServoClockwise(Integer duration) {
+        logger.info(
+                "Turn the servo clockwise with gear position {} for {} ms ...",
+                doorClosingPosition,
+                duration);
+        servo.setPosition(doorClosingPosition, duration);
+    }
+
+    public synchronized void turnServoCounterClockwise(Integer duration) {
+        logger.info(
+                "Turn the servo counter-clockwise with gear position {} for {} ms ...",
+                doorOpeningPosition,
+                duration);
+        servo.setPosition(doorOpeningPosition, duration);
     }
 }

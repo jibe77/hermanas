@@ -43,15 +43,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         logger.info("Configure authorizations.");
         http.authorizeRequests()
                 // list of allowed urls for GUEST user.
-                .antMatchers(HttpMethod.GET, "/light/isSwitchedOn").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/light/status").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/door/status").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/camera/takePicture").hasAnyRole(ROLE_USER, ROLE_GUEST)
-                .antMatchers(HttpMethod.GET, "/fan/isSwitchedOn").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/camera/stream").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/camera/stopStream").hasAnyRole(ROLE_USER, ROLE_GUEST)
+                .antMatchers(HttpMethod.GET, "/fan/status").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/scheduler/doorClosingTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/scheduler/doorOpeningTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
-                .antMatchers(HttpMethod.GET, "/scheduler/lightOffTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/sensor/info").hasAnyRole(ROLE_USER, ROLE_GUEST)
-                .antMatchers(HttpMethod.GET, "/camera/takePicture").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 // user is allowed to call all the services
                 .antMatchers("/**").hasRole(ROLE_USER)
                 .and()

@@ -1,5 +1,9 @@
 package org.jibe77.hermanas.controller.music;
 
+import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.controller.energy.SoundCardController;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -20,6 +24,15 @@ class MusicControllerTest {
     @MockBean
     ProcessLauncher processLauncher;
 
+    @MockBean
+    ConsumptionModeManager consumptionModeManager;
+
+    @MockBean
+    GpioHermanasController gpioHermanasController;
+
+    @MockBean
+    SoundCardController soundCardController;
+
     @Test
     void testStopWithoutCurrentProcess() {
         musicController.setCurrentMusicProcess(null);
@@ -38,6 +51,7 @@ class MusicControllerTest {
     @Test
     void testPlayMusic() throws IOException {
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
+        Mockito.when(consumptionModeManager.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(10000L);
         boolean hasWorked = musicController.playMusicRandomly();
         assertTrue(hasWorked);
         assertNotNull(musicController.getCurrentMusicProcess());
@@ -54,6 +68,7 @@ class MusicControllerTest {
     @Test
     void testCocorico() throws IOException {
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
+        Mockito.when(consumptionModeManager.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(10000L);
         boolean hasWorked = musicController.cocorico();
         assertTrue(hasWorked);
         assertNotNull(musicController.getCurrentMusicProcess());
