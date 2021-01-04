@@ -37,13 +37,17 @@ public class ManageDoorClosingEvent {
 
     Logger logger = LoggerFactory.getLogger(ManageDoorClosingEvent.class);
 
-    public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController, NotificationService notificationService, MessageSource messageSource, MusicController musicController, WifiController wifiController) {
+    public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController,
+                                  NotificationService notificationService, MessageSource messageSource,
+                                  MusicController musicController, WifiController wifiController,
+                                  ConsumptionModeManager consumptionModeManager) {
         this.sunTimeManager = sunTimeManager;
         this.doorController = doorController;
         this.notificationService = notificationService;
         this.messageSource = messageSource;
         this.musicController = musicController;
         this.wifiController = wifiController;
+        this.consumptionModeManager = consumptionModeManager;
     }
 
     public void manageDoorClosingEvent(LocalDateTime currentTime) {

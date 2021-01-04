@@ -32,7 +32,7 @@ public class EmailService {
 
     Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    public EmailService(JavaMailSender mailSender, CameraController cameraController) {
+    public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 

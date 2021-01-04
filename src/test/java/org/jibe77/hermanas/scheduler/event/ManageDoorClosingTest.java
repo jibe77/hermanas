@@ -32,6 +32,7 @@ class ManageDoorClosingTest {
     MusicController musicController;
     WifiController wifiController;
     NotificationService notificationService;
+    ConsumptionModeManager consumptionModeManager;
 
     @BeforeEach
     void init() {
@@ -46,8 +47,11 @@ class ManageDoorClosingTest {
         musicController = mock(MusicController.class);
         wifiController = mock(WifiController.class);
         notificationService = mock(NotificationService.class);
+        consumptionModeManager = mock(ConsumptionModeManager.class);
 
-        manageDoorClosingEvent = new ManageDoorClosingEvent(sunTimeManager, doorController, notificationService, messageSource, musicController, wifiController);
+        manageDoorClosingEvent = new ManageDoorClosingEvent(
+                sunTimeManager, doorController, notificationService,
+                messageSource, musicController, wifiController, consumptionModeManager);
     }
 
     @Test
