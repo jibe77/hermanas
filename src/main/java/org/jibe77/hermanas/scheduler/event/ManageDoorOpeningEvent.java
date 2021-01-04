@@ -1,11 +1,13 @@
 package org.jibe77.hermanas.scheduler.event;
 
 import org.jibe77.hermanas.client.email.EmailService;
+import org.jibe77.hermanas.client.email.NotificationService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.controller.fan.FanController;
 import org.jibe77.hermanas.controller.music.MusicController;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ManageDoorOpeningEvent {
@@ -33,9 +36,9 @@ public class ManageDoorOpeningEvent {
 
     WifiController wifiController;
 
-    EmailService emailService;
+    NotificationService notificationService;
 
-    MessageSource messageSource;
+    ConsumptionModeManager consumptionModeManager;
 
     @Value("${play.cocorico.at.sunrise.enabled}")
     private boolean cocoricoAtSunriseEnabled;
@@ -45,59 +48,40 @@ public class ManageDoorOpeningEvent {
     public ManageDoorOpeningEvent(SunTimeManager sunTimeManager, CameraController cameraController,
                                   DoorController doorController, MusicController musicController,
                                   FanController fanController, WifiController wifiController,
-                                  EmailService emailService, MessageSource messageSource) {
+                                  NotificationService notificationService,
+                                  ConsumptionModeManager consumptionModeManager) {
         this.sunTimeManager = sunTimeManager;
         this.cameraController = cameraController;
         this.doorController = doorController;
         this.musicController = musicController;
         this.fanController = fanController;
         this.wifiController = wifiController;
-        this.emailService = emailService;
-        this.messageSource = messageSource;
+        this.notificationService = notificationService;
+        this.consumptionModeManager = consumptionModeManager;
     }
 
     public void manageDoorOpeningEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
             if (!doorController.doorIsOpened()) {
                 logger.info("door opening event is starting now.");
-                if (cocoricoAtSunriseEnabled) {
+                if (cocoricoAtSunriseEnabled && !consumptionModeManager.isEcoMode()) {
                     musicController.cocorico();
                 }
                 wifiController.turnOn();
                 Optional<File> picBeforeOpening = cameraController.takePictureNoException(true);
-                boolean isCorreclyOpened = doorController.openDoorWithUpButtonManagment(false, false);
-                Optional<File> picAfterOpening = cameraController.takePictureNoException(true);
-                if (isCorreclyOpened) {
-                    if (picBeforeOpening.isPresent() && picAfterOpening.isPresent()) {
-                        emailService.sendMailWithAttachment(
-                                messageSource.getMessage("event.mail.with_picture.sunrise.title", null, Locale.getDefault()),
-                                messageSource.getMessage("event.mail.with_picture.message", null, Locale.getDefault()),
-                                picBeforeOpening.get(),
-                                picAfterOpening.get()
-                        );
-                    } else {
-                        emailService.sendMail(
-                                messageSource.getMessage("event.mail.with_picture.sunrise.title", null, Locale.getDefault()),
-                                messageSource.getMessage("event.mail.without_picture.message", null, Locale.getDefault())
-                        );
-                    }
-                } else {
-                    if (picBeforeOpening.isPresent() && picAfterOpening.isPresent()) {
-                        emailService.sendMailWithAttachment(
-                                messageSource.getMessage("event.problem.mail.with_picture.title", null, Locale.getDefault()),
-                                messageSource.getMessage("event.mail.with_picture.message", null, Locale.getDefault()),
-                                picBeforeOpening.get(),
-                                picAfterOpening.get()
-                        );
-                    } else {
-                        emailService.sendMail(
-                                messageSource.getMessage("event.problem.mail.with_picture.title", null, Locale.getDefault()),
-                                messageSource.getMessage("event.mail.without_picture.message", null, Locale.getDefault())
-                        );
-                    }
-                }
+                boolean isCorrectlyOpened = doorController.openDoorWithUpButtonManagment(false, false);
+
+                notificationService.doorOpeningEvent(
+                        isCorrectlyOpened,
+                        picBeforeOpening
+                );
             }
-            fanController.switchOn();
+            if (!consumptionModeManager.isEcoMode()) {
+                fanController.switchOn();
+            } else {
+                // turn off the wifi in 15 minutes
+                wifiController.turnOffAfter(900);
+            }
             sunTimeManager.reloadDoorOpeningTime();
         }
     }

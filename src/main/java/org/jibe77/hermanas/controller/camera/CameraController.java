@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
-@Scope("singleton")
 public class CameraController {
 
     private LightController lightController;

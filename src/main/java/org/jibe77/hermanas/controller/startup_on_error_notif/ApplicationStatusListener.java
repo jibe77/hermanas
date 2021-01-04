@@ -63,19 +63,13 @@ public class ApplicationStatusListener {
     private void sendShutdownErrorNotification() {
         logger.info("Sending a shutdown error notification by email.");
         Optional<File> pic = cameraController.takePictureNoException(true);
-        if (pic.isPresent()) {
-            emailService.sendMailWithAttachment(
-                    messageSource.getMessage("restarted.incorrectly.title", null, Locale.getDefault()),
-                    messageSource.getMessage("restarted.incorrectly.message", null, Locale.getDefault()) +
-                            messageSource.getMessage("restarted.incorrectly.message_with_picture", null, Locale.getDefault())
-                    ,
-                    pic.get());
-        } else {
-            emailService.sendMail(
-                messageSource.getMessage("restarted.incorrectly.title", null, Locale.getDefault()),
-                messageSource.getMessage("restarted.incorrectly.message", null, Locale.getDefault()) +
-                        messageSource.getMessage("restarted.incorrectly.message_without_picture", null, Locale.getDefault()));
-        }
+        emailService.sendMail(
+            messageSource.getMessage("restarted.incorrectly.title", null, Locale.getDefault()),
+            messageSource.getMessage("restarted.incorrectly.message", null, Locale.getDefault()) +
+                    messageSource.getMessage(pic.isPresent() ?
+                            "restarted.incorrectly.message_with_picture" :
+                            "restarted.incorrectly.message_without_picture", null, Locale.getDefault()),
+                pic);
     }
 
     @PreDestroy

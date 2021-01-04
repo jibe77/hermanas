@@ -108,7 +108,6 @@ public class WifiController {
             String returnedValue = processLauncher.launchAndReturnResult(
                     "/bin/cat",
                     "/sys/class/net/wlan0/carrier");
-            logger.info("wifi status is {}.", returnedValue);
             boolean isEnabled = "1".equals(returnedValue);
             logger.info("wifi card is enabled : {}.", isEnabled);
             return isEnabled;
@@ -116,5 +115,29 @@ public class WifiController {
             logger.error("Error checking wlan0 status.");
             return false;
         }
+    }
+
+    /**
+     * Turns off the wifi card asynchronously after the specified period of time.
+     * @param seconds period of time (in seconds)
+     */
+    public void turnOffAfter(int seconds) {
+        new Thread(() -> {
+            try {
+                logger.info("Wifi card will be disabled in {} seconds ...", seconds);
+                TimeUnit.SECONDS.sleep(seconds);
+                logger.info("Wifi card will be disabled now ...");
+                turnOff();
+                logger.info("... done, the wifi card is disabled.");
+            } catch (InterruptedException e) {
+                logger.error("Interrupted", e);
+                Thread.currentThread().interrupt();
+            }
+        }
+        ).start();
+    }
+
+    public void setWifiSwitchEnabled(boolean wifiSwitchEnabled) {
+        this.wifiSwitchEnabled = wifiSwitchEnabled;
     }
 }

@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.client.email;
 
+import org.jibe77.hermanas.controller.camera.CameraController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,8 +14,9 @@ import org.springframework.stereotype.Service;
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
+import java.util.Optional;
 
-@Service("emailService")
+@Service
 public class EmailService {
 
     private final JavaMailSender mailSender;
@@ -30,32 +32,11 @@ public class EmailService {
 
     Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender, CameraController cameraController) {
         this.mailSender = mailSender;
     }
 
-    public void sendMail(String subject, String body)
-    {
-        if (enabled) {
-            MimeMessagePreparator preparator = mimeMessage -> {
-                mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(emailNotificationTo));
-                mimeMessage.setFrom(new InternetAddress(from));
-                mimeMessage.setSubject(subject);
-                mimeMessage.setText(body);
-
-                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-                helper.setText(body, true);
-            };
-
-            try {
-                mailSender.send(preparator);
-            } catch (MailException ex) {
-                logger.error("Can't send email", ex);
-            }
-        }
-    }
-
-    public void sendMailWithAttachment(String subject, String body, File ... filesToAttach)
+    public void sendMail(String subject, String body, Optional<File>... filesToAttach)
     {
         if (enabled) {
             MimeMessagePreparator preparator = mimeMessage -> {
@@ -66,9 +47,11 @@ public class EmailService {
 
                 MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
-                for (File fileToAttach : filesToAttach) {
-                    FileSystemResource file = new FileSystemResource(fileToAttach);
-                    helper.addAttachment("logo.jpg", file);
+                for (Optional<File> fileToAttach : filesToAttach) {
+                    if (fileToAttach.isPresent()) {
+                        FileSystemResource file = new FileSystemResource(fileToAttach.get());
+                        helper.addAttachment(file.getFilename(), file);
+                    }
                 }
 
                 helper.setText(body, true);

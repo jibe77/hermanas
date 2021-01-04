@@ -45,7 +45,6 @@ class ApplicationStatusListenerTest {
         applicationStatusListener.init();
 
         Mockito.verify(eventRepository, Mockito.times(1)).save(any(Event.class));
-        Mockito.verify(emailService,Mockito.times(0)).sendMailWithAttachment(Mockito.anyString(), Mockito.anyString(), any(File.class));
         Mockito.verify(emailService,Mockito.times(0)).sendMail(Mockito.anyString(), Mockito.anyString());
     }
 
@@ -60,8 +59,7 @@ class ApplicationStatusListenerTest {
         applicationStatusListener.init();
 
         Mockito.verify(eventRepository, Mockito.times(1)).save(any(Event.class));
-        Mockito.verify(emailService,Mockito.times(1)).sendMailWithAttachment(Mockito.anyString(), Mockito.anyString(), any(File.class));
-        Mockito.verify(emailService,Mockito.times(0)).sendMail(Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(emailService,Mockito.times(1)).sendMail(Mockito.anyString(), Mockito.anyString(), any(Optional.class));
     }
 
     @Test
@@ -75,7 +73,6 @@ class ApplicationStatusListenerTest {
         applicationStatusListener.init();
 
         Mockito.verify(eventRepository, Mockito.times(1)).save(any(Event.class));
-        Mockito.verify(emailService,Mockito.times(0)).sendMailWithAttachment(Mockito.anyString(), Mockito.anyString(), any(File.class));
         Mockito.verify(emailService,Mockito.times(1)).sendMail(Mockito.anyString(), Mockito.anyString());
     }
 

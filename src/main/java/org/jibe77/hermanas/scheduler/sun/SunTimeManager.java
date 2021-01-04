@@ -24,10 +24,15 @@ public class SunTimeManager {
     @Value("${suntime.scheduler.door.open.time_after_sunrise}")
     private long doorOpenTimeAfterSunrise;
 
+    public static final String HH_MM = "HH:mm";
+
+    private ConsumptionModeManager consumptionModeManager;
+
     Logger logger = LoggerFactory.getLogger(SunTimeManager.class);
 
-    public SunTimeManager(SunTimeUtils sunTimeUtils) {
+    public SunTimeManager(SunTimeUtils sunTimeUtils, ConsumptionModeManager consumptionModeManager) {
         this.sunTimeUtils = sunTimeUtils;
+        this.consumptionModeManager = consumptionModeManager;
     }
 
     @Cacheable(value = "light-on")
@@ -46,7 +51,9 @@ public class SunTimeManager {
 
     @Cacheable(value = "door-closing")
     public LocalDateTime getNextDoorClosingTime() {
-        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset);
+        // in winter, the door is closed 10 minutes earlier.
+        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset)
+                .minusMinutes(consumptionModeManager.isEcoMode() ? 10 : 0);
         logger.info("computing next door closing time : {}", localDateTime);
         return localDateTime;
     }

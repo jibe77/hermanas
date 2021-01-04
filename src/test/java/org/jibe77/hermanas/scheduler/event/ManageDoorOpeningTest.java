@@ -1,12 +1,14 @@
 package org.jibe77.hermanas.scheduler.event;
 
 import org.jibe77.hermanas.client.email.EmailService;
+import org.jibe77.hermanas.client.email.NotificationService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.controller.fan.FanController;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.controller.music.MusicController;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,8 @@ class ManageDoorOpeningTest {
     MessageSource messageSource;
     FanController fanController;
     WifiController wifiController;
+    NotificationService notificationService;
+    ConsumptionModeManager consumptionModeManager;
 
     @BeforeEach
     void init() {
@@ -45,10 +49,12 @@ class ManageDoorOpeningTest {
         messageSource = mock(MessageSource.class);
         fanController = mock(FanController.class);
         wifiController = mock(WifiController.class);
+        notificationService = mock(NotificationService.class);
+        consumptionModeManager = mock(ConsumptionModeManager.class);
 
         manageDoorOpeningEvent = new ManageDoorOpeningEvent(
                 sunTimeManager, cameraController, doorController, musicController, fanController, wifiController,
-                emailService, messageSource);
+                notificationService, consumptionModeManager);
     }
 
     @Test

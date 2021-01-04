@@ -38,8 +38,10 @@ public class ManageLightSwitchingOnEvent {
 
     public void manageLightSwitchingOnEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextLightOnTime())) {
-            logger.info("light switching on event is starting now.");
-            if (!consumptionModeManager.isEcoMode()) {
+            if (consumptionModeManager.isEcoMode()) {
+                logger.info("light switching on event is disabled with eco mode.");
+            } else {
+                logger.info("light switching on event is starting now.");
                 lightController.switchOn();
             }
             if (!doorController.doorIsOpened()) {
