@@ -8,8 +8,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 
-import java.net.UnknownHostException;
-
 @Component
 public class WeatherClient {
 

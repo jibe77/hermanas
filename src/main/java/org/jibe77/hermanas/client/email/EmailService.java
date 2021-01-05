@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.client.email;
 
-import org.jibe77.hermanas.controller.camera.CameraController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

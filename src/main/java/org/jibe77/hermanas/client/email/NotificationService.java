@@ -61,11 +61,16 @@ public class NotificationService {
 
             // add pictures
             Optional<File> picWithClosedDoor = cameraController.takePictureNoException(true);
+            String messageKey;
+            if (picBeforeOpening.isPresent() && picWithClosedDoor.isPresent()) {
+                messageKey = "event.mail.with_pictures.message";
+            } else if (picBeforeOpening.isPresent() || picWithClosedDoor.isPresent()) {
+                messageKey = "event.mail.with_picture.message";
+            } else {
+                messageKey = "event.mail.without_picture.message";
+            }
             message.append(messageSource.getMessage(
-                    picBeforeOpening.isPresent() && picWithClosedDoor.isPresent() ?
-                            "event.mail.with_pictures.message" :
-                            picBeforeOpening.isPresent() || picWithClosedDoor.isPresent() ?
-                                    "event.mail.with_picture.message" : "event.mail.without_picture.message",
+                    messageKey,
                     null, Locale.getDefault()));
 
             emailService.sendMail(

@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.scheduler.event;
 
-import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.client.email.NotificationService;
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
@@ -12,14 +11,11 @@ import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.Locale;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class ManageDoorOpeningEvent {
