@@ -139,5 +139,8 @@ public class WifiController {
 
     public void setWifiSwitchEnabled(boolean wifiSwitchEnabled) {
         this.wifiSwitchEnabled = wifiSwitchEnabled;
+        if (!wifiSwitchEnabled) {
+            turnOffAfter(3);
+        }
     }
 }
