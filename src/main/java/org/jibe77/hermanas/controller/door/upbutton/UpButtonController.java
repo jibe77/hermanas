@@ -40,7 +40,7 @@ public class UpButtonController {
     }
 
     public synchronized void unprovisionButton() {
-        resetBottomButtonHasBeenPressed();
+        resetUpButtonState();
         if (upButton != null) {
             logger.info("unprovision door button on gpio instance.");
             upButton.removeAllListeners();
@@ -61,7 +61,7 @@ public class UpButtonController {
         return isHigh;
     }
 
-    public void resetBottomButtonHasBeenPressed() {
+    public void resetUpButtonState() {
         upButtonHasBeenPressed = false;
     }
 

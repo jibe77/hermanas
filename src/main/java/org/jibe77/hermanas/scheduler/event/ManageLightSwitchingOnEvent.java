@@ -48,7 +48,9 @@ public class ManageLightSwitchingOnEvent {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
                 doorController.openDoorWithUpButtonManagment(false, false);
             }
-            fanController.switchOn();
+            if (!consumptionModeManager.isEcoMode()) {
+                fanController.switchOn();
+            }
             sunTimeManager.reloadLightOnTime();
         }
     }

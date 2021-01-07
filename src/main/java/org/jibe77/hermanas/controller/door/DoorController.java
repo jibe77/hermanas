@@ -76,7 +76,7 @@ public class DoorController {
     public synchronized void closeDoorWithBottormButtonManagement(boolean force) {
         if (force || !doorIsClosed()) {
             bottomButtonController.provisionButton();
-            bottomButtonController.resetBottomButtonHasBeenPressed();
+            bottomButtonController.resetBottomButtonState();
             closeDoor(force);
             if (bottomButtonController.isBottomButtonHasBeenPressed()) {
                 logger.info("bottom position has been reached.");
@@ -116,7 +116,7 @@ public class DoorController {
         boolean returnedValue = false;
         if (force || !doorIsOpened()) {
             upButtonController.provisionButton();
-            upButtonController.resetBottomButtonHasBeenPressed();
+            upButtonController.resetUpButtonState();
             if (openDoor(force, openingDoorAfterClosingProblem) && upButtonController.isUpButtonHasBeenPressed()) {
                 logger.info("up position has been reached.");
                 returnedValue = true;

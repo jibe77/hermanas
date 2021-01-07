@@ -13,12 +13,17 @@ import org.springframework.stereotype.Service;
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
+    private List<MimeMessagePreparator> sendingQueue = new ArrayList<>();
 
     @Value("${email.notification.to}")
     private String emailNotificationTo;
@@ -55,13 +60,24 @@ public class EmailService {
 
                 helper.setText(body, true);
             };
+            sendingQueue.add(preparator);
+        }
+    }
 
+    public synchronized void processSendingQueue() {
+        Iterator<MimeMessagePreparator> it = sendingQueue.iterator();
+        while (it.hasNext()) {
             try {
-                mailSender.send(preparator);
+                mailSender.send(it.next());
+                it.remove();
             } catch (MailException ex) {
                 logger.error("Can't send email", ex);
             }
         }
+    }
+
+    public boolean isSendingQueueEmpty() {
+        return sendingQueue.isEmpty();
     }
 
     void setEnabled(boolean enabled) {

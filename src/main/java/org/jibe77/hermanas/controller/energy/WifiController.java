@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.controller.energy;
 
+import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.ProcessLauncher;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
@@ -22,15 +23,18 @@ public class WifiController {
 
     DoorController doorController;
 
+    EmailService emailService;
+
     @Value("${wifi.switch.enabled}")
     private boolean wifiSwitchEnabled;
 
     Logger logger = LoggerFactory.getLogger(WifiController.class);
 
-    public WifiController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager, DoorController doorController) {
+    public WifiController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager, DoorController doorController, EmailService emailService) {
         this.processLauncher = processLauncher;
         this.consumptionModeManager = consumptionModeManager;
         this.doorController = doorController;
+        this.emailService = emailService;
     }
 
     @PostConstruct
@@ -57,8 +61,8 @@ public class WifiController {
                 Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "on");
                 process.waitFor();
                 TimeUnit.SECONDS.sleep(10); // give 10 seconds to the system before using the connection.
-                logger.info("Returned value {}.", process.exitValue());
-                return process.exitValue() == 0;
+                emailService.processSendingQueue();
+                return process.exitValue() == 0 || process.exitValue() == 249;
             } catch (IOException e) {
                 logger.error("Exception when turning on the wifi card : ", e);
                 return false;
@@ -77,10 +81,16 @@ public class WifiController {
         logger.info("Turn off method is called (status enable : {}, switch enabled : {}.", isEnabled, wifiSwitchEnabled);
         if (wifiSwitchEnabled && isEnabled) {
             try {
+                int retry = 0;
+                while (!emailService.isSendingQueueEmpty() && retry < 3) {
+                    int waitingPeriod = 100;
+                    logger.info("Email sending queue is not empty, waiting {} second ...", waitingPeriod);
+                    TimeUnit.SECONDS.sleep(waitingPeriod); // give 10 seconds to the system before using the connection.
+                    retry++;
+                }
                 logger.info("Turning off wifi on wlan0.");
                 Process process = processLauncher.launch("/sbin/iwconfig", "wlan0", "txpower", "off");
                 process.waitFor();
-                TimeUnit.SECONDS.sleep(10); // give 10 seconds to the system before using the connection.
                 logger.info("Returned value {}.", process.exitValue());
                 return process.exitValue() == 0;
             } catch (IOException e) {

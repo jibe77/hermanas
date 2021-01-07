@@ -2,9 +2,11 @@ package org.jibe77.hermanas.controller.startup_on_error_notif;
 
 import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
+import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -26,13 +28,18 @@ public class ApplicationStatusListener {
     CameraController cameraController;
     EmailService emailService;
     MessageSource messageSource;
+    WifiController wifiController;
+    ConsumptionModeManager consumptionModeManager;
 
     public ApplicationStatusListener(EventRepository eventRepository, EmailService emailService,
-                                     CameraController cameraController, MessageSource messageSource) {
+                                     CameraController cameraController, MessageSource messageSource,
+                                     WifiController wifiController, ConsumptionModeManager consumptionModeManager) {
         this.eventRepository = eventRepository;
         this.emailService = emailService;
         this.cameraController = cameraController;
         this.messageSource = messageSource;
+        this.wifiController = wifiController;
+        this.consumptionModeManager = consumptionModeManager;
     }
 
     @PostConstruct
@@ -62,6 +69,7 @@ public class ApplicationStatusListener {
 
     private void sendShutdownErrorNotification() {
         logger.info("Sending a shutdown error notification by email.");
+        wifiController.turnOn();
         Optional<File> pic = cameraController.takePictureNoException(true);
         emailService.sendMail(
             messageSource.getMessage("restarted.incorrectly.title", null, Locale.getDefault()),
@@ -70,6 +78,9 @@ public class ApplicationStatusListener {
                             "restarted.incorrectly.message_with_picture" :
                             "restarted.incorrectly.message_without_picture", null, Locale.getDefault()),
                 pic);
+        if (consumptionModeManager.isEcoMode()) {
+            wifiController.turnOff();
+        }
     }
 
     @PreDestroy
