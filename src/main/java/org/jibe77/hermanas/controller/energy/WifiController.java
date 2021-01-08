@@ -41,12 +41,6 @@ public class WifiController {
     private synchronized void init() {
         logger.info("Init wifi controller.");
         turnOn();
-
-        if (wifiSwitchEnabled && consumptionModeManager.isEcoMode() && doorController.doorIsClosed()) {
-            logger.info("Init Wifi controller in eco mode. " +
-                    "Stopping wifi in 300 seconds when the app has finished loading..");
-            turnOffAfter(300);
-        }
     }
 
     @PreDestroy
