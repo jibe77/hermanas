@@ -69,7 +69,11 @@ public class ApplicationStatusListener {
 
     private void sendShutdownErrorNotification() {
         logger.info("Sending a shutdown error notification by email.");
-        wifiController.turnOn();
+        boolean initialWifiStatus = wifiController.wifiCardIsEnabled();
+        if (!initialWifiStatus) {
+            logger.info("application status listener is enabling the wifi card for sending an email.");
+            wifiController.turnOn();
+        }
         Optional<File> pic = cameraController.takePictureNoException(true);
         emailService.sendMail(
             messageSource.getMessage("restarted.incorrectly.title", null, Locale.getDefault()),
@@ -78,7 +82,8 @@ public class ApplicationStatusListener {
                             "restarted.incorrectly.message_with_picture" :
                             "restarted.incorrectly.message_without_picture", null, Locale.getDefault()),
                 pic);
-        if (consumptionModeManager.isEcoMode()) {
+        if (!initialWifiStatus) {
+            logger.info("application status listener is disabling the wifi card for sending an email.");
             wifiController.turnOff();
         }
     }

@@ -12,6 +12,9 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 import java.io.File;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @SpringBootTest(classes = {EmailService.class})
 class EmailServiceTest {
 
@@ -27,6 +30,8 @@ class EmailServiceTest {
 
         emailService.sendMail("Subject Test", "Subject body");
 
+        assertTrue(emailService.isSendingQueueEmpty());
+
         Mockito.verify(javaMailSender, Mockito.times(1))
                 .send((MimeMessagePreparator) Mockito.any());
     }
@@ -36,7 +41,7 @@ class EmailServiceTest {
         emailService.setEnabled(false);
 
         emailService.sendMail("Subject Test", "Subject body");
-
+        assertTrue(emailService.isSendingQueueEmpty());
         Mockito.verify(javaMailSender, Mockito.times(0))
                 .send((MimeMessagePreparator) Mockito.any());
     }
@@ -49,7 +54,9 @@ class EmailServiceTest {
                 .send((MimeMessagePreparator) Mockito.any());
 
         emailService.sendMail("Subject Test", "Subject body");
-
+        assertFalse(emailService.isSendingQueueEmpty());
+        emailService.emptySendingQueue();
+        assertTrue(emailService.isSendingQueueEmpty());
         Mockito.verify(javaMailSender, Mockito.times(1))
                 .send((MimeMessagePreparator) Mockito.any());
     }
@@ -59,7 +66,7 @@ class EmailServiceTest {
         emailService.setEnabled(true);
 
         emailService.sendMail("Subject Test", "Subject body", Optional.of(new File("test.txt")));
-
+        assertTrue(emailService.isSendingQueueEmpty());
         Mockito.verify(javaMailSender, Mockito.times(1))
                 .send((MimeMessagePreparator) Mockito.any());
     }
@@ -69,7 +76,7 @@ class EmailServiceTest {
         emailService.setEnabled(false);
 
         emailService.sendMail("Subject Test", "Subject body", Optional.of(new File("test.txt")));
-
+        assertTrue(emailService.isSendingQueueEmpty());
         Mockito.verify(javaMailSender, Mockito.times(0))
                 .send((MimeMessagePreparator) Mockito.any());
     }
@@ -82,7 +89,9 @@ class EmailServiceTest {
                 .send((MimeMessagePreparator) Mockito.any());
 
         emailService.sendMail("Subject Test", "Subject body", Optional.of(new File("test.txt")));
-
+        assertFalse(emailService.isSendingQueueEmpty());
+        emailService.emptySendingQueue();
+        assertTrue(emailService.isSendingQueueEmpty());
         Mockito.verify(javaMailSender, Mockito.times(1))
                 .send((MimeMessagePreparator) Mockito.any());
     }

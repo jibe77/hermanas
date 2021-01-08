@@ -2,9 +2,11 @@ package org.jibe77.hermanas.controller.startup_on_error_notif;
 
 import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.camera.CameraController;
+import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -30,9 +32,14 @@ class ApplicationStatusListenerTest {
 
     MessageSource messageSource = mock(MessageSource.class);
 
+    WifiController wifiController = mock(WifiController.class);
+
+    ConsumptionModeManager consumptionModeManager = mock(ConsumptionModeManager.class);
+
     @BeforeEach
     public void setUp() {
-        applicationStatusListener = new ApplicationStatusListener(eventRepository, emailService, cameraController, messageSource);
+        applicationStatusListener = new ApplicationStatusListener(eventRepository, emailService, cameraController,
+                messageSource, wifiController, consumptionModeManager);
         when(messageSource.getMessage(anyString(), any(), any())).thenReturn("test");
     }
 

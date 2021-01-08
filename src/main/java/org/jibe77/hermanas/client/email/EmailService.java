@@ -61,6 +61,7 @@ public class EmailService {
                 helper.setText(body, true);
             };
             sendingQueue.add(preparator);
+            processSendingQueue();
         }
     }
 
@@ -68,7 +69,8 @@ public class EmailService {
         Iterator<MimeMessagePreparator> it = sendingQueue.iterator();
         while (it.hasNext()) {
             try {
-                mailSender.send(it.next());
+                MimeMessagePreparator mimeMessagePreparator = it.next();
+                mailSender.send(mimeMessagePreparator);
                 it.remove();
             } catch (MailException ex) {
                 logger.error("Can't send email", ex);
@@ -78,6 +80,10 @@ public class EmailService {
 
     public boolean isSendingQueueEmpty() {
         return sendingQueue.isEmpty();
+    }
+
+    public void emptySendingQueue() {
+        sendingQueue.clear();
     }
 
     void setEnabled(boolean enabled) {
