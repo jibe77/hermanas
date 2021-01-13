@@ -57,7 +57,7 @@ class ServoControllerTest {
                 gpioHermanasController.provisionInput(
                         Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
-        controller.closeDoor(true);
+        controller.closeDoor(true, false);
         Mockito.verify(
                 servoMotorController,
                 Mockito.times(1)

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
@@ -77,7 +78,7 @@ public class DoorController {
         if (force || !doorIsClosed()) {
             bottomButtonController.provisionButton();
             bottomButtonController.resetBottomButtonState();
-            closeDoor(force);
+            closeDoor(force, true);
             if (bottomButtonController.isBottomButtonHasBeenPressed()) {
                 logger.info("bottom position has been reached.");
             } else {
@@ -95,16 +96,22 @@ public class DoorController {
         }
     }
 
+    @Recover
+    private void closeDoorWithoutBottomButtonManagement(DoorNotClosedCorrectlyException e) {
+        logger.info("Close door without button management.");
+        closeDoor(false, false);
+    }
+
     /**
      * Close door.
      * @param force if force is set to true, force door to close even if it is closed.
      */
-    protected synchronized void closeDoor(boolean force) {
+    protected synchronized void closeDoor(boolean force, boolean addTenPercent) {
         if (force || !doorIsClosed()) {
             logger.info(
                     "Close the door moving servo clockwise with gear position {} for {} ms ...",
-                    doorClosingPosition,
-                    doorClosingDuration);
+                    doorClosingPosition * (addTenPercent ? 1.1 : 1),
+                    doorClosingDuration * (addTenPercent ? 1.1 : 1));
             servo.setPosition(doorClosingPosition, doorClosingDuration);
             this.lastClosingTime = LocalDateTime.now();
         } else {
