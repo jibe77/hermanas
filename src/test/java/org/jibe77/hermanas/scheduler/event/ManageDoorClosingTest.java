@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.scheduler.event;
 
-import org.aspectj.weaver.ast.Not;
 import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.client.email.NotificationService;
 import org.jibe77.hermanas.controller.camera.CameraController;

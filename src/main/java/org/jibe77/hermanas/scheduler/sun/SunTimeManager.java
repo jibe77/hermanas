@@ -53,10 +53,13 @@ public class SunTimeManager {
     @Cacheable(value = "door-closing")
     public LocalDateTime getNextDoorClosingTime() {
         // in winter, the door is closed 10 minutes earlier.
-        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset - (consumptionModeManager.isEcoMode() ? MINUTES_TO_SUBSTRACT_IN_ECO_MODE : 0));
+        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(getDoorCloseTimeAfterSunset());
         logger.info("computing next door closing time : {}", localDateTime);
-        return localDateTime
-                .minusMinutes(consumptionModeManager.isEcoMode() ? MINUTES_TO_SUBSTRACT_IN_ECO_MODE : 0);
+        return localDateTime;
+    }
+
+    private long getDoorCloseTimeAfterSunset() {
+        return  doorCloseTimeAfterSunset - (consumptionModeManager.isEcoMode() ? MINUTES_TO_SUBSTRACT_IN_ECO_MODE : 0);
     }
 
     @CacheEvict(value = "door-closing")
