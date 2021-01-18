@@ -73,12 +73,13 @@ public class WifiController {
 
     public synchronized boolean turnOff() {
         boolean isEnabled = wifiCardIsEnabled();
-        logger.info("Turn off method is called (status enable : {}, switch enabled : {}.", isEnabled, wifiSwitchEnabled);
+        logger.info("Turn off method is called (status enable : {}, switch enabled : {}).", isEnabled, wifiSwitchEnabled);
         if (wifiSwitchEnabled && isEnabled) {
             try {
                 int retry = 0;
-                while (!emailService.isSendingQueueEmpty() && retry < 3) {
-                    int waitingPeriod = 100;
+                while (!emailService.isSendingQueueEmpty() && retry < 10) {
+                    emailService.processSendingQueue();
+                    int waitingPeriod = 200;
                     logger.info("Email sending queue is not empty, waiting {} second ...", waitingPeriod);
                     TimeUnit.SECONDS.sleep(waitingPeriod); // give 10 seconds to the system before using the connection.
                     retry++;
