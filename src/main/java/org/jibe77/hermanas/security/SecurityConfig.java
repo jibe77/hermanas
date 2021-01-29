@@ -49,7 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/camera/stream").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/camera/stopStream").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/fan/status").hasAnyRole(ROLE_USER, ROLE_GUEST)
-                .antMatchers(HttpMethod.GET, "/scheduler/doorClosingTime").anonymous()
+                .antMatchers(HttpMethod.GET, "/scheduler/doorClosingTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/scheduler/doorOpeningTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").hasAnyRole(ROLE_USER, ROLE_GUEST)
                 .antMatchers(HttpMethod.GET, "/sensor/info").hasAnyRole(ROLE_USER, ROLE_GUEST)
