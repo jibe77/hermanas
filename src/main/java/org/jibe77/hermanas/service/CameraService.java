@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +26,7 @@ public class CameraService {
 
     Logger logger = LoggerFactory.getLogger(CameraService.class);
 
+    @CrossOrigin
     @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
     public @ResponseBody byte[] takePicture(@RequestParam(defaultValue = "false") String highQuality) throws IOException {
         File picture = cameraController.takePicture(Boolean.parseBoolean(highQuality));
@@ -38,6 +36,7 @@ public class CameraService {
         }
     }
 
+    @CrossOrigin
     @GetMapping(value = "/camera/stream", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StreamingResponseBody> stream(final HttpServletResponse response) throws IOException {
         cameraController.stream();
@@ -86,11 +85,13 @@ public class CameraService {
         return new ResponseEntity<>(streamingResponseBody, HttpStatus.OK);
     }
 
+    @CrossOrigin
     @GetMapping(value = "/camera/stopStream")
     public void stopStream() throws InterruptedException, IOException {
         cameraController.stopStream();
     }
 
+    @CrossOrigin
     @GetMapping("/camera/closingRate")
     public int closingRate() {
         return cameraController.getClosingRate();

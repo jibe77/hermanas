@@ -3,6 +3,7 @@ package org.jibe77.hermanas.service;
 import org.jibe77.hermanas.controller.energy.WifiController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,7 @@ public class EnergyService {
         this.wifiController = wifiController;
     }
 
+    @CrossOrigin
     @GetMapping(value = "/energy/wifi/stopUntilNextDoorEvent")
     public boolean stopWifiUntilNextDoorEvent() {
         logger.info("The network wifi card is going to be disabled.");
@@ -24,6 +26,7 @@ public class EnergyService {
         return true;
     }
 
+    @CrossOrigin
     @GetMapping(value = "/energy/wifi/wifiSwitchEnabled")
     public boolean wifiSwitchEnabled(boolean wifiSwitchEnabled) {
         wifiController.setWifiSwitchEnabled(wifiSwitchEnabled);

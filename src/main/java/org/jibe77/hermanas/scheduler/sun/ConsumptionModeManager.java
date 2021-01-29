@@ -8,10 +8,9 @@ import java.time.LocalDateTime;
 public class ConsumptionModeManager {
 
     public long getDuration(long ecoModeDuration, long regularModeDuration, long sunnyModeDuration) {
-        int monthValue = LocalDateTime.now().getMonthValue();
-        if (isEcoMode(monthValue)) {
+        if (isEcoMode(LocalDateTime.now())) {
             return ecoModeDuration;
-        } else if (isSunnyMode(monthValue)) {
+        } else if (isSunnyMode(LocalDateTime.now())) {
             return sunnyModeDuration;
         } else {
             return regularModeDuration;
@@ -19,13 +18,18 @@ public class ConsumptionModeManager {
     }
 
     public boolean isEcoMode() {
-        return isEcoMode(LocalDateTime.now().getMonthValue());
+        return isEcoMode(LocalDateTime.now());
     }
 
-    public boolean isEcoMode(int monthValue) {
-        switch(monthValue) {
+    /**
+     * Eco mode is between 1st of december to 15th of january.
+     * @param time
+     * @return true if currently in eco mode.
+     */
+    public boolean isEcoMode(LocalDateTime time) {
+        switch(time.getMonthValue()) {
             case 1:
-            case 11:
+                return time.getDayOfMonth() < 15;
             case 12:
                 return true;
             default:
@@ -33,8 +37,8 @@ public class ConsumptionModeManager {
         }
     }
 
-    public boolean isSunnyMode(int monthValue) {
-        switch (monthValue) {
+    public boolean isSunnyMode(LocalDateTime time) {
+        switch (time.getMonthValue()) {
             case 5:
             case 6:
             case 7:

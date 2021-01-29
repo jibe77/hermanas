@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Component
 public class SunTimeManager {
 
-    public static final int MINUTES_TO_SUBSTRACT_IN_ECO_MODE = 10;
     SunTimeUtils sunTimeUtils;
 
     @Value("${suntime.scheduler.light.on.time_before_sunset}")
@@ -27,13 +26,10 @@ public class SunTimeManager {
 
     public static final String HH_MM = "HH:mm";
 
-    private ConsumptionModeManager consumptionModeManager;
-
     Logger logger = LoggerFactory.getLogger(SunTimeManager.class);
 
-    public SunTimeManager(SunTimeUtils sunTimeUtils, ConsumptionModeManager consumptionModeManager) {
-        this.sunTimeUtils = sunTimeUtils;
-        this.consumptionModeManager = consumptionModeManager;
+    public SunTimeManager(SunTimeUtils sunTimeUtils) {
+        this.sunTimeUtils = sunTimeUtils;;
     }
 
     @Cacheable(value = "light-on")
@@ -53,13 +49,9 @@ public class SunTimeManager {
     @Cacheable(value = "door-closing")
     public LocalDateTime getNextDoorClosingTime() {
         // in winter, the door is closed 10 minutes earlier.
-        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(getDoorCloseTimeAfterSunset());
+        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset);
         logger.info("computing next door closing time : {}", localDateTime);
         return localDateTime;
-    }
-
-    private long getDoorCloseTimeAfterSunset() {
-        return  doorCloseTimeAfterSunset - (consumptionModeManager.isEcoMode() ? MINUTES_TO_SUBSTRACT_IN_ECO_MODE : 0);
     }
 
     @CacheEvict(value = "door-closing")

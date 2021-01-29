@@ -408,4 +408,24 @@ public class DefaultGpioPinDigital implements GpioPinDigitalInput, GpioPinDigita
     public void setState(boolean state) {
         // default implementation
     }
+
+    @Override
+    public void pulseSync(long l) throws InterruptedException {
+
+    }
+
+    @Override
+    public void pulseSync(long l, TimeUnit timeUnit) throws InterruptedException {
+
+    }
+
+    @Override
+    public void pulseSync(long l, PinState pinState) throws InterruptedException {
+
+    }
+
+    @Override
+    public void pulseSync(long l, PinState pinState, TimeUnit timeUnit) throws InterruptedException {
+
+    }
 }

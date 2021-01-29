@@ -10,6 +10,7 @@ public class ConsumptionModeManagerTest {
 
     @Test
     public void testEcoMode() {
-        assertTrue(new ConsumptionModeManager().isEcoMode(1));
+        assertTrue(new ConsumptionModeManager().isEcoMode(
+                LocalDateTime.of(2020, 12, 05, 12, 00)));
     }
 }

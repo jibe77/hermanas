@@ -3,6 +3,7 @@ package org.jibe77.hermanas.service;
 import org.jibe77.hermanas.controller.music.MusicController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,25 +18,28 @@ public class MusicService {
         this.musicController = musicController;
     }
 
+    @CrossOrigin
     @GetMapping(value = "/music/play")
     public boolean play() {
         logger.info("Play music");
         return musicController.playMusicRandomly();
     }
 
+    @CrossOrigin
     @GetMapping(value = "/music/stop")
     public void stop() {
         logger.info("Stop music");
         musicController.stop();
     }
 
+    @CrossOrigin
     @GetMapping(value = "/music/status")
     public boolean isPlaying() {
         logger.info("return music player status");
         return musicController.isPlaying();
     }
 
-
+    @CrossOrigin
     @GetMapping(value = "/music/cocorico")
     public boolean cocorico() {
         logger.info("Cocorico !");

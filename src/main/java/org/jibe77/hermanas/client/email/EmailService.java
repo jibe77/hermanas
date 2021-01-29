@@ -8,6 +8,8 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import javax.mail.Message;
@@ -66,16 +68,28 @@ public class EmailService {
     }
 
     public synchronized void processSendingQueue() {
+        logger.info("start processing sending queue.");
         Iterator<MimeMessagePreparator> it = sendingQueue.iterator();
         while (it.hasNext()) {
             try {
                 MimeMessagePreparator mimeMessagePreparator = it.next();
-                mailSender.send(mimeMessagePreparator);
+                send(mimeMessagePreparator);
                 it.remove();
             } catch (MailException ex) {
                 logger.error("Can't send email", ex);
             }
         }
+        logger.info("sending queue has been processed.");
+    }
+
+    @Retryable(
+            value = { MailException.class },
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 5000))
+    private synchronized void send(MimeMessagePreparator mimeMessagePreparator) {
+        logger.info("send mail now ...");
+        mailSender.send(mimeMessagePreparator);
+        logger.info("mail has been sent.");
     }
 
     public boolean isSendingQueueEmpty() {
