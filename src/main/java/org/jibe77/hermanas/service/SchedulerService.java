@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.format.DateTimeFormatter;
 
+@CrossOrigin
 @RestController
 public class SchedulerService {
 
