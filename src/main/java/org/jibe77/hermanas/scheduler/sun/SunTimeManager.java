@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.scheduler.sun;
 
 import org.jibe77.hermanas.controller.door.DoorStatus;
+import org.jibe77.hermanas.scheduler.sun.model.NextEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,6 +53,10 @@ public class SunTimeManager {
         LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset);
         logger.info("computing next door closing time : {}", localDateTime);
         return localDateTime;
+    }
+
+    public NextEvents getNextEvents() {
+        return new NextEvents(getNextDoorOpeningTime(), getNextLightOnTime(), getNextDoorClosingTime());
     }
 
     @CacheEvict(value = "door-closing")
