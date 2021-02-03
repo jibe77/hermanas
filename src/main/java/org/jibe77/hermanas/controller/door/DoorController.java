@@ -179,7 +179,7 @@ public class DoorController {
         return bottomButtonController.isBottomButtonPressed();
     }
 
-    public synchronized DoorStatus status() {
+    public synchronized DoorStatus statusInfo() {
         if (doorIsOpened()) {
             return new DoorStatus(DoorStatusEnum.OPENED, lastOpeningTime);
         } else if (doorIsClosed()) {

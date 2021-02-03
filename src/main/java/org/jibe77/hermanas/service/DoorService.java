@@ -2,7 +2,6 @@ package org.jibe77.hermanas.service;
 
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.model.DoorStatus;
-import org.jibe77.hermanas.controller.door.model.DoorStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,7 +57,7 @@ public class DoorService {
     }
 
     @GetMapping("/door/status")
-    public DoorStatus status() {
-        return doorController.status();
+    public DoorStatus statusInfo() {
+        return doorController.statusInfo();
     }
 }

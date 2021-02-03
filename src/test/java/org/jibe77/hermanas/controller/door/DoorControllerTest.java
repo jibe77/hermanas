@@ -36,11 +36,11 @@ class DoorControllerTest {
                 upButtonController,
                 mock(SunTimeManager.class)
                 );
-        assertEquals(DoorStatusEnum.UNDEFINED, doorController.status());
+        assertEquals(DoorStatusEnum.UNDEFINED, doorController.statusInfo().getStatus());
 
         when(bottomButtonController.isBottomButtonPressed()).thenReturn(true);
-        assertEquals(DoorStatusEnum.CLOSED, doorController.status());
+        assertEquals(DoorStatusEnum.CLOSED, doorController.statusInfo().getStatus());
         when(upButtonController.isUpButtonPressed()).thenReturn(true);
-        assertEquals(DoorStatusEnum.OPENED, doorController.status());
+        assertEquals(DoorStatusEnum.OPENED, doorController.statusInfo().getStatus());
     }
 }
