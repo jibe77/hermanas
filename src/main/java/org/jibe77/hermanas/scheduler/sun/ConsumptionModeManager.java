@@ -1,11 +1,15 @@
 package org.jibe77.hermanas.scheduler.sun;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @Component
 public class ConsumptionModeManager {
+
+    @Value("${consumption.mode.eco.force}")
+    private boolean consumptionModeEcoForce;
 
     public long getDuration(long ecoModeDuration, long regularModeDuration, long sunnyModeDuration) {
         if (isEcoMode(LocalDateTime.now())) {
@@ -18,7 +22,11 @@ public class ConsumptionModeManager {
     }
 
     public boolean isEcoMode() {
-        return isEcoMode(LocalDateTime.now());
+        if (consumptionModeEcoForce) {
+            return true;
+        } else {
+            return isEcoMode(LocalDateTime.now());
+        }
     }
 
     /**
@@ -28,9 +36,10 @@ public class ConsumptionModeManager {
      */
     public boolean isEcoMode(LocalDateTime time) {
         switch(time.getMonthValue()) {
-            case 1:
-                return time.getDayOfMonth() < 15;
+            case 11:
+                return time.getDayOfMonth() > 20;
             case 12:
+            case 1:
                 return true;
             default:
                 return false;

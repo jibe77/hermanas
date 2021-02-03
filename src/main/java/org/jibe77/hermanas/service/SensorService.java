@@ -22,7 +22,14 @@ public class SensorService {
         this.weatherClient = weatherClient;
     }
 
-    @CrossOrigin
+    /**
+     * exemple de résultat :
+     *
+     * {"temperature":7.2,"externalTemperature":5.0,"humidity":99.9,"externalHumidity":93.0,"dateTime":"2021-01-30T15:49:47.993426"}
+     *
+     * @return
+     * @throws IOException
+     */
     @GetMapping(value = "/sensor/info")
     public Sensor getInfo() throws IOException {
         Sensor sensor = sensorController.refreshData();

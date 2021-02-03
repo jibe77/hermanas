@@ -18,21 +18,18 @@ public class LightService {
 
     Logger logger = LoggerFactory.getLogger(LightService.class);
 
-    @CrossOrigin
     @GetMapping(value = "/light/on", produces = "application/json")
     public void switchOn() {
         logger.info("Rest service is switching the light on.");
         lightController.switchOn();
     }
 
-    @CrossOrigin
     @GetMapping(value = "/light/off", produces = "application/json")
     public void switchOff() {
         logger.info("Rest service is switching the light off.");
         lightController.switchOff();
     }
 
-    @CrossOrigin
     @GetMapping(value = "/light/status")
     public boolean isSwitchedOn() {
         return lightController.isSwitchedOn();

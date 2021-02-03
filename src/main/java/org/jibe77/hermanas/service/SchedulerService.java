@@ -18,13 +18,11 @@ public class SchedulerService {
         this.sunTimeManager = sunTimeManager;
     }
 
-    @CrossOrigin
     @GetMapping(value = "/scheduler/doorClosingTime")
     public String getNextDoorClosingTime() {
         return sunTimeManager.getNextDoorClosingTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
     }
 
-    @CrossOrigin
     @GetMapping(value = "/scheduler/doorOpeningTime")
     public String getNextDoorOpeningTime() {
         return sunTimeManager.getNextDoorOpeningTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
@@ -35,7 +33,12 @@ public class SchedulerService {
         return sunTimeManager.getNextLightOnTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
     }
 
-    @CrossOrigin
+    /**
+     * result example :
+     *
+     * {"nextDoorOpeningTime":"2021-01-31T08:14:47","nextLightOnTime":"2021-01-30T17:28:49","nextDoorClosingTime":"2021-01-30T17:58:49"}
+     * @return
+     */
     @GetMapping(value = "/scheduler/nextEvents")
     public NextEvents getNextEvents() {
         return sunTimeManager.getNextEvents();

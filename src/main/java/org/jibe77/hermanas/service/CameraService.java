@@ -26,7 +26,6 @@ public class CameraService {
 
     Logger logger = LoggerFactory.getLogger(CameraService.class);
 
-    @CrossOrigin
     @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
     public @ResponseBody byte[] takePicture(@RequestParam(defaultValue = "false") String highQuality) throws IOException {
         File picture = cameraController.takePicture(Boolean.parseBoolean(highQuality));
@@ -36,7 +35,6 @@ public class CameraService {
         }
     }
 
-    @CrossOrigin
     @GetMapping(value = "/camera/stream", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StreamingResponseBody> stream(final HttpServletResponse response) throws IOException {
         cameraController.stream();
@@ -85,13 +83,11 @@ public class CameraService {
         return new ResponseEntity<>(streamingResponseBody, HttpStatus.OK);
     }
 
-    @CrossOrigin
     @GetMapping(value = "/camera/stopStream")
     public void stopStream() throws InterruptedException, IOException {
         cameraController.stopStream();
     }
 
-    @CrossOrigin
     @GetMapping("/camera/closingRate")
     public int closingRate() {
         return cameraController.getClosingRate();

@@ -14,13 +14,11 @@ public class ConfigService {
         this.configController = configController;
     }
 
-    @CrossOrigin
     @GetMapping(value = "/config/shutdown")
     public void shutdown() {
         configController.shutdown();
     }
 
-    @CrossOrigin
     @GetMapping(value = "/config/reboot")
     public void reboot() {
         configController.reboot();

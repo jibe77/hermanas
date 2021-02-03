@@ -18,21 +18,18 @@ public class FanService {
 
     Logger logger = LoggerFactory.getLogger(FanService.class);
 
-    @CrossOrigin
     @GetMapping(value = "/fan/on")
     public void switchOn() {
         logger.info("Rest service is switching the fan on.");
         fanController.switchOn();
     }
 
-    @CrossOrigin
     @GetMapping(value = "/fan/off")
     public void switchOff() {
         logger.info("Rest service is switching the fan off.");
         fanController.switchOff();
     }
 
-    @CrossOrigin
     @GetMapping(value = "/fan/status")
     public boolean isSwitchedOn() {
         return fanController.isSwitchedOn();

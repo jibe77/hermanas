@@ -18,7 +18,6 @@ public class EnergyService {
         this.wifiController = wifiController;
     }
 
-    @CrossOrigin
     @GetMapping(value = "/energy/wifi/stopUntilNextDoorEvent")
     public boolean stopWifiUntilNextDoorEvent() {
         logger.info("The network wifi card is going to be disabled.");
@@ -26,7 +25,6 @@ public class EnergyService {
         return true;
     }
 
-    @CrossOrigin
     @GetMapping(value = "/energy/wifi/wifiSwitchEnabled")
     public boolean wifiSwitchEnabled(boolean wifiSwitchEnabled) {
         wifiController.setWifiSwitchEnabled(wifiSwitchEnabled);

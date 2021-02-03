@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.service;
 
 import org.jibe77.hermanas.controller.door.DoorController;
+import org.jibe77.hermanas.controller.door.DoorStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -24,7 +25,6 @@ public class DoorService {
      * @return true if the bottom button has been pressed,
      *          false if the door has been closed without touching the bottom button.
      */
-    @CrossOrigin
     @GetMapping("/door/close")
     public boolean close(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("closing door now  ...");
@@ -33,7 +33,6 @@ public class DoorService {
         return true;
     }
 
-    @CrossOrigin
     @GetMapping("/door/open")
     public boolean open(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("opening door now  ...");
@@ -42,7 +41,6 @@ public class DoorService {
         return result;
     }
 
-    @CrossOrigin
     @GetMapping("/door/turnClockwise")
     public String turnClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
         logger.info("turning servomotor clockwise  ...");
@@ -51,7 +49,6 @@ public class DoorService {
         return "done";
     }
 
-    @CrossOrigin
     @GetMapping("/door/turnCounterClockwise")
     public String turnCounterClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
         logger.info("turning servomotor counter-clockwise  ...");
@@ -60,9 +57,8 @@ public class DoorService {
         return "done";
     }
 
-    @CrossOrigin
     @GetMapping("/door/status")
-    public String status() {
-        return doorController.status().toString();
+    public DoorStatus status() {
+        return doorController.status();
     }
 }
