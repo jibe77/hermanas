@@ -185,13 +185,13 @@ public class DoorController {
         } else if (openingTimeIsProbablyTheMostRecent()) {
             logger.info("the door is probably opened but not completly, " +
                     "let's turn the servo counter clockwise a little bit.");
-            turnServoCounterClockwise(doorOpeningDuration / 100);
+            turnServoCounterClockwise(doorOpeningDuration / 10);
             if (doorIsOpened()) {
                 logger.info("the door is completly opened now !");
                 return DoorStatus.OPENED;
             } else {
                 logger.info("put it back like it was before.");
-                turnServoClockwise(doorClosingDuration / 100);
+                turnServoClockwise(doorClosingDuration / 10);
                 return DoorStatus.UNDEFINED;
             }
         } else {
