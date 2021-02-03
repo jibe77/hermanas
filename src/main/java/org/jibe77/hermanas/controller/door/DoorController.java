@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.controller.door;
 
 import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
+import org.jibe77.hermanas.controller.door.model.DoorStatus;
+import org.jibe77.hermanas.controller.door.model.DoorStatusEnum;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.controller.door.upbutton.UpButtonController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
@@ -58,10 +60,10 @@ public class DoorController {
 
     @PostConstruct
     private synchronized void initDoorAccordingToSunTime() {
-        DoorStatus doorStatus = sunTimeManager.getExpectedDoorStatus();
-        if (doorStatus == DoorStatus.OPENED) {
+        DoorStatusEnum doorStatusEnum = sunTimeManager.getExpectedDoorStatus();
+        if (doorStatusEnum == DoorStatusEnum.OPENED) {
             openDoorWithUpButtonManagment(false, false);
-        } else if (doorStatus == DoorStatus.CLOSED) {
+        } else if (doorStatusEnum == DoorStatusEnum.CLOSED) {
             closeDoorWithBottormButtonManagement(false);
         }
     }
@@ -179,24 +181,33 @@ public class DoorController {
 
     public synchronized DoorStatus status() {
         if (doorIsOpened()) {
-            return DoorStatus.OPENED;
+            return new DoorStatus(DoorStatusEnum.OPENED, lastOpeningTime);
         } else if (doorIsClosed()) {
-            return DoorStatus.CLOSED;
+            return new DoorStatus(DoorStatusEnum.CLOSED, lastClosingTime);
         } else if (openingTimeIsProbablyTheMostRecent()) {
             logger.info("the door is probably opened but not completly, " +
                     "let's turn the servo counter clockwise a little bit.");
             turnServoCounterClockwise(doorOpeningDuration / 10);
             if (doorIsOpened()) {
                 logger.info("the door is completly opened now !");
-                return DoorStatus.OPENED;
+                return new DoorStatus(DoorStatusEnum.OPENED, lastOpeningTime);
             } else {
                 logger.info("put it back like it was before.");
                 turnServoClockwise(doorClosingDuration / 10);
-                return DoorStatus.UNDEFINED;
             }
-        } else {
-            return DoorStatus.UNDEFINED;
         }
+        if (lastOpeningTime == null && lastClosingTime == null) {
+            return new DoorStatus(DoorStatusEnum.UNDEFINED, null);
+        } else if (lastOpeningTime != null && lastClosingTime == null) {
+            return new DoorStatus(DoorStatusEnum.SEEMS_OPENED, lastOpeningTime);
+        } else if (lastOpeningTime == null && lastClosingTime != null) {
+            return new DoorStatus(DoorStatusEnum.SEEMS_CLOSED, lastClosingTime);
+        } else if (lastOpeningTime.isAfter(lastClosingTime)) {
+            return new DoorStatus(DoorStatusEnum.SEEMS_OPENED, lastOpeningTime);
+        } else {
+            return new DoorStatus(DoorStatusEnum.SEEMS_CLOSED, lastClosingTime);
+        }
+
     }
 
     private synchronized boolean openingTimeIsProbablyTheMostRecent() {

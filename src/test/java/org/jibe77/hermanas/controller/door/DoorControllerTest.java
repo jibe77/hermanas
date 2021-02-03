@@ -2,6 +2,7 @@ package org.jibe77.hermanas.controller.door;
 
 import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
+import org.jibe77.hermanas.controller.door.model.DoorStatusEnum;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.controller.door.upbutton.UpButtonController;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
@@ -35,11 +36,11 @@ class DoorControllerTest {
                 upButtonController,
                 mock(SunTimeManager.class)
                 );
-        assertEquals(DoorStatus.UNDEFINED, doorController.status());
+        assertEquals(DoorStatusEnum.UNDEFINED, doorController.status());
 
         when(bottomButtonController.isBottomButtonPressed()).thenReturn(true);
-        assertEquals(DoorStatus.CLOSED, doorController.status());
+        assertEquals(DoorStatusEnum.CLOSED, doorController.status());
         when(upButtonController.isUpButtonPressed()).thenReturn(true);
-        assertEquals(DoorStatus.OPENED, doorController.status());
+        assertEquals(DoorStatusEnum.OPENED, doorController.status());
     }
 }
