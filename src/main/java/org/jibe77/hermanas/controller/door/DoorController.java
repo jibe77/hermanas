@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A controller for a servo motor at GPIO pin 1 using software Pulse Width Modulation (Soft PWD).
@@ -81,6 +82,7 @@ public class DoorController {
             bottomButtonController.provisionButton();
             bottomButtonController.resetBottomButtonState();
             closeDoor(force, true);
+            waitALittle();
             if (bottomButtonController.isBottomButtonHasBeenPressed()) {
                 logger.info("bottom position has been reached.");
             } else {
@@ -95,6 +97,14 @@ public class DoorController {
             bottomButtonController.unprovisionButton();
         } else {
             logger.info("Door is not closed because is already closed state.");
+        }
+    }
+
+    private void waitALittle() {
+        try {
+            TimeUnit.SECONDS.sleep(2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -150,6 +160,7 @@ public class DoorController {
                     doorOpeningPosition,
                     doorOpeningDuration);
             servo.setPosition(doorOpeningPosition, doorOpeningDuration);
+            waitALittle();
             if (!openingDoorAfterClosingProblem) {
                 this.lastOpeningTime = LocalDateTime.now();
             }
