@@ -19,17 +19,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter
 {
-    public static final String ROLE_GUEST = "GUEST";
     public static final String ROLE_USER = "USER";
     Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
     @Value("${security.user.name}")
     private String user;
     @Value("${security.user.password}")
     private String password;
-    @Value("${security.guest.name}")
-    private String guestUser;
-    @Value("${security.guest.password}")
-    private String guestPassword;
 
     /**
      * See doc about configuration
@@ -83,10 +78,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         auth.inMemoryAuthentication()
             .withUser(user)
             .password("{noop}" + password)
-            .roles(ROLE_USER)
-            .and()
-                .withUser(guestUser)
-                .password("{noop}" + guestPassword)
-                .roles(ROLE_GUEST);
+            .roles(ROLE_USER);
     }
 }
