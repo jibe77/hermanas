@@ -84,8 +84,8 @@ public class EmailService {
 
     @Retryable(
             value = { MailException.class },
-            maxAttempts = 5,
-            backoff = @Backoff(delay = 5000))
+            maxAttempts = 10,
+            backoff = @Backoff(delay = 60000))
     private synchronized void send(MimeMessagePreparator mimeMessagePreparator) {
         logger.info("send mail now ...");
         mailSender.send(mimeMessagePreparator);
