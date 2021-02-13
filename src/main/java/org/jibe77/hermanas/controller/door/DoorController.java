@@ -82,8 +82,8 @@ public class DoorController {
             bottomButtonController.provisionButton();
             bottomButtonController.resetBottomButtonState();
             closeDoor(force, true);
-            waitALittle();
-            if (bottomButtonController.isBottomButtonHasBeenPressed()) {
+            if (bottomButtonController.isBottomButtonHasBeenPressed()
+                    || (waitALittle() && bottomButtonController.isBottomButtonHasBeenPressed())) {
                 logger.info("bottom position has been reached.");
             } else {
                 logger.error("Bottom position not reached correctly. The door is reopened now.");
@@ -100,12 +100,13 @@ public class DoorController {
         }
     }
 
-    private void waitALittle() {
+    private boolean waitALittle() {
         try {
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(3);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        return true;
     }
 
     @Recover
@@ -160,7 +161,6 @@ public class DoorController {
                     doorOpeningPosition,
                     doorOpeningDuration);
             servo.setPosition(doorOpeningPosition, doorOpeningDuration);
-            waitALittle();
             if (!openingDoorAfterClosingProblem) {
                 this.lastOpeningTime = LocalDateTime.now();
             }
@@ -199,7 +199,7 @@ public class DoorController {
             logger.info("the door is probably opened but not completly, " +
                     "let's turn the servo counter clockwise a little bit.");
             turnServoCounterClockwise(doorOpeningDuration / 10);
-            if (doorIsOpened()) {
+            if (doorIsOpened() || (waitALittle() && doorIsOpened())) {
                 logger.info("the door is completly opened now !");
                 return new DoorStatus(DoorStatusEnum.OPENED, lastOpeningTime);
             } else {

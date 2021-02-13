@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import uk.co.caprica.picam.Camera;
@@ -21,6 +22,11 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -81,6 +87,16 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     @Override
     public void takePicture(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
+        CompletableFuture<Void> future= takePictureAsync(filePictureCaptureHandler, highQuality);
+        try {
+            future.get( 10, SECONDS);
+        } catch (InterruptedException|ExecutionException|TimeoutException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Async
+    public CompletableFuture<Void> takePictureAsync(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
         try (Camera camera = new Camera(highQuality ? highQualityConfig : regularQualityconfig)){
             camera.takePicture(filePictureCaptureHandler);
         } catch (CaptureFailedException e) {
@@ -88,6 +104,7 @@ public class GpioHermanasRpiController implements GpioHermanasController {
         } catch (Exception e) {
             throw new IOException(e);
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     @PreDestroy
