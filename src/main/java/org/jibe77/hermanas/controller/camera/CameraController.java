@@ -2,6 +2,7 @@ package org.jibe77.hermanas.controller.camera;
 
 import org.apache.commons.io.FileUtils;
 import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
@@ -113,7 +114,7 @@ public class CameraController {
      * Switch on the light managing the previous state of the light.
      */
     private void switchLightOn() {
-        if (lightController.isSwitchedOn()) {
+        if (StatusEnum.ON.equals(lightController.getStatus().getStatusEnum())) {
             logger.debug("light is already on, it's useless to switch it on again.");
             lightSwitchedOnByCamera = false;
         } else {

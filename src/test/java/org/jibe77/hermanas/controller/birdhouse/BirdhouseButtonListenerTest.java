@@ -1,10 +1,9 @@
 package org.jibe77.hermanas.controller.birdhouse;
 
-import com.pi4j.io.gpio.GpioPin;
-import com.pi4j.io.gpio.GpioPinDigitalInput;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
+import org.jibe77.hermanas.controller.abstract_model.Status;
+import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ class BirdhouseButtonListenerTest {
     void testBirdhouseIsOpenedAndLightIsAlreadyOn() {
         GpioPinDigitalStateChangeEvent event = Mockito.mock(GpioPinDigitalStateChangeEvent.class);
         Mockito.when(event.getState()).thenReturn(PinState.HIGH);
-        Mockito.when(lightController.isSwitchedOn()).thenReturn(true);
+        Mockito.when(lightController.getStatus()).thenReturn(new Status(StatusEnum.ON, -1));
 
         birdhouseButtonListener.handleGpioPinDigitalStateChangeEvent(event);
 
@@ -38,7 +37,7 @@ class BirdhouseButtonListenerTest {
     void testBirdhouseIsOpened() {
         GpioPinDigitalStateChangeEvent event = Mockito.mock(GpioPinDigitalStateChangeEvent.class);
         Mockito.when(event.getState()).thenReturn(PinState.HIGH);
-        Mockito.when(lightController.isSwitchedOn()).thenReturn(false);
+        Mockito.when(lightController.getStatus()).thenReturn(new Status(StatusEnum.OFF, -1));
 
         birdhouseButtonListener.handleGpioPinDigitalStateChangeEvent(event);
 

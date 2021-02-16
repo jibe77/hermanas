@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.controller.music;
 
 import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.controller.abstract_model.Status;
+import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.energy.SoundCardController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
@@ -199,11 +201,13 @@ public class MusicController {
      *
      * @return true if music is playing
      */
-    public boolean isPlaying() {
+    public Status isPlaying() {
         logger.info("status of player is request, current process is null : {} and is alive : {}",
                 currentMusicProcess != null,
                 currentMusicProcess != null && currentMusicProcess.isAlive());
-        return (currentMusicProcess != null && currentMusicProcess.isAlive());
+        return new Status (
+                (currentMusicProcess != null && currentMusicProcess.isAlive()) ? StatusEnum.ON : StatusEnum.OFF,
+                -1);
     }
 
     private void setMusicLevel(String volumeLevel) throws IOException {

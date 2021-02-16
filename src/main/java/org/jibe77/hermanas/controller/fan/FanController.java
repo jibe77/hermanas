@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.controller.fan;
 
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import org.jibe77.hermanas.controller.abstract_model.Status;
+import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
@@ -104,9 +106,10 @@ public class FanController {
      *
      * @return true if the light is on.
      */
-    public boolean isSwitchedOn() {
-        return fanEnabled &&
+    public Status getStatus() {
+        return new Status(
+         fanEnabled &&
                 gpioPinDigitalOutput.getState() != null &&
-                gpioPinDigitalOutput.getState().isHigh();
+                gpioPinDigitalOutput.getState().isHigh() ? StatusEnum.ON : StatusEnum.OFF, -1);
     }
 }

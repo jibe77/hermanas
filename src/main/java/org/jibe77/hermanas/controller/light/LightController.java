@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.controller.light;
 
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import org.jibe77.hermanas.controller.abstract_model.Status;
+import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
 import org.slf4j.Logger;
@@ -81,10 +83,10 @@ public class LightController {
      * if the light is enabled and the pin is high, then returns true
      * @return true if the light is on.
      */
-    public boolean isSwitchedOn() {
-        return lightEnabled &&
+    public Status getStatus() {
+        return new Status(lightEnabled &&
                 gpioPinDigitalOutput.getState() != null &&
-                gpioPinDigitalOutput.getState().isHigh();
+                gpioPinDigitalOutput.getState().isHigh() ? StatusEnum.ON : StatusEnum.OFF, -1);
     }
 
     private void startSecurityTimer() {

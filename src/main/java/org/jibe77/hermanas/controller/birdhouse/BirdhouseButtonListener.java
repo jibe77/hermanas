@@ -2,6 +2,7 @@ package org.jibe77.hermanas.controller.birdhouse;
 
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
+import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class BirdhouseButtonListener implements GpioPinListenerDigital {
     public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
         if (event.getState().isHigh()) {
             logger.info("Birdhouse button is pressed.");
-            if (lightController.isSwitchedOn()) {
+            if (StatusEnum.ON.equals(lightController.getStatus().getStatusEnum())) {
                 birdhouseButtonController.setLightHasBeenSwitchedOnByBirdhouseDoor(false);
             } else {
                 birdhouseButtonController.setLightHasBeenSwitchedOnByBirdhouseDoor(true);

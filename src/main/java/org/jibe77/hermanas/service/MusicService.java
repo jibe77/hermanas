@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.service;
 
+import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.music.MusicController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class MusicService {
     }
 
     @GetMapping(value = "/music/status")
-    public boolean isPlaying() {
+    public Status isPlaying() {
         logger.info("return music player status");
         return musicController.isPlaying();
     }

@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.health;
 
+import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.service.LightService;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -16,9 +17,9 @@ public class LightIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-        if (lightService.isSwitchedOn()) {
+        if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
             lightService.switchOff();
-            if (lightService.isSwitchedOn()) {
+            if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
                return Health.down().build();
             } else {
                 lightService.switchOn();
@@ -26,7 +27,7 @@ public class LightIndicator implements HealthIndicator {
             }
         } else {
             lightService.switchOn();
-            if (lightService.isSwitchedOn()) {
+            if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
                 lightService.switchOff();
                 return Health.up().build();
             } else {
