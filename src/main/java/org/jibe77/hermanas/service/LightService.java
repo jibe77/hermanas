@@ -30,6 +30,16 @@ public class LightService {
         lightController.switchOff();
     }
 
+    @GetMapping(value = "/light/switch", produces = "application/json")
+    public void switcher(boolean param) {
+        logger.info("Rest service is switching the light off.");
+        if (param) {
+            lightController.switchOn();
+        } else {
+            lightController.switchOff();
+        }
+    }
+
     @GetMapping(value = "/light/status")
     public Status getStatus() {
         return lightController.getStatus();
