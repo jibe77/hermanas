@@ -18,17 +18,17 @@ public class LightIndicator implements HealthIndicator {
     @Override
     public Health health() {
         if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
-            lightService.switchOff();
+            lightService.switcher(false);
             if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
                return Health.down().build();
             } else {
-                lightService.switchOn();
+                lightService.switcher(true);
                 return Health.up().build();
             }
         } else {
-            lightService.switchOn();
+            lightService.switcher(true);
             if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
-                lightService.switchOff();
+                lightService.switcher(false);
                 return Health.up().build();
             } else {
                 return Health.down().build();

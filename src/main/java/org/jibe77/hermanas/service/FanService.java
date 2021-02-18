@@ -16,18 +16,9 @@ public class FanService {
         this.fanController = fanController;
     }
 
-    Logger logger = LoggerFactory.getLogger(FanService.class);
-
-    @GetMapping(value = "/fan/on")
-    public void switchOn() {
-        logger.info("Rest service is switching the fan on.");
-        fanController.switchOn();
-    }
-
-    @GetMapping(value = "/fan/off")
-    public void switchOff() {
-        logger.info("Rest service is switching the fan off.");
-        fanController.switchOff();
+    @GetMapping(value = "/fan/switch", produces = "application/json")
+    public Status switcher(boolean param) {
+        return fanController.switcher(param);
     }
 
     @GetMapping(value = "/fan/status")

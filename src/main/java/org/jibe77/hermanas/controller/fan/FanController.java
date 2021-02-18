@@ -112,4 +112,13 @@ public class FanController {
                 gpioPinDigitalOutput.getState() != null &&
                 gpioPinDigitalOutput.getState().isHigh() ? StatusEnum.ON : StatusEnum.OFF, -1);
     }
+
+    public Status switcher(boolean param) {
+        if (param) {
+            switchOn();
+        } else {
+            switchOff();
+        }
+        return getStatus();
+    }
 }

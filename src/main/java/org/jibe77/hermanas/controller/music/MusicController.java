@@ -201,7 +201,7 @@ public class MusicController {
      *
      * @return true if music is playing
      */
-    public Status isPlaying() {
+    public Status getStatus() {
         logger.info("status of player is request, current process is null : {} and is alive : {}",
                 currentMusicProcess != null,
                 currentMusicProcess != null && currentMusicProcess.isAlive());
@@ -226,5 +226,14 @@ public class MusicController {
 
     void setCurrentMusicProcess(Process currentMusicProcess) {
         this.currentMusicProcess = currentMusicProcess;
+    }
+
+    public Status switcher(boolean param) {
+        if (param) {
+            playMusicRandomly();
+        } else {
+            stop();
+        }
+        return getStatus();
     }
 }

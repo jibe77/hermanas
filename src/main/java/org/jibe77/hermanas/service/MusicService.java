@@ -4,7 +4,6 @@ import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.music.MusicController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,22 +18,15 @@ public class MusicService {
         this.musicController = musicController;
     }
 
-    @GetMapping(value = "/music/play")
-    public boolean play() {
-        logger.info("Play music");
-        return musicController.playMusicRandomly();
-    }
-
-    @GetMapping(value = "/music/stop")
-    public void stop() {
-        logger.info("Stop music");
-        musicController.stop();
+    @GetMapping(value = "/music/switch", produces = "application/json")
+    public Status switcher(boolean param) {
+        return musicController.switcher(param);
     }
 
     @GetMapping(value = "/music/status")
-    public Status isPlaying() {
+    public Status getStatus() {
         logger.info("return music player status");
-        return musicController.isPlaying();
+        return musicController.getStatus();
     }
 
     @GetMapping(value = "/music/cocorico")

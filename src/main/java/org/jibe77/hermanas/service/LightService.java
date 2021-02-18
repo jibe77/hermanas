@@ -16,28 +16,9 @@ public class LightService {
         this.lightController = lightController;
     }
 
-    Logger logger = LoggerFactory.getLogger(LightService.class);
-
-    @GetMapping(value = "/light/on", produces = "application/json")
-    public void switchOn() {
-        logger.info("Rest service is switching the light on.");
-        lightController.switchOn();
-    }
-
-    @GetMapping(value = "/light/off", produces = "application/json")
-    public void switchOff() {
-        logger.info("Rest service is switching the light off.");
-        lightController.switchOff();
-    }
-
     @GetMapping(value = "/light/switch", produces = "application/json")
-    public void switcher(boolean param) {
-        logger.info("Rest service is switching the light off.");
-        if (param) {
-            lightController.switchOn();
-        } else {
-            lightController.switchOff();
-        }
+    public Status switcher(boolean param) {
+        return lightController.switcher(param);
     }
 
     @GetMapping(value = "/light/status")

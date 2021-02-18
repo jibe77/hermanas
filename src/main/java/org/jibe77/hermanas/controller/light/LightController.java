@@ -59,6 +59,14 @@ public class LightController {
         }
     }
 
+    public synchronized Status switcher(boolean param) {
+        if (param) {
+            switchOn();
+        } else {
+            switchOff();
+        }
+        return getStatus();
+    }
 
     public synchronized void switchOn() {
         if (lightEnabled) {
