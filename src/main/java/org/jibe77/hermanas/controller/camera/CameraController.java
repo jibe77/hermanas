@@ -144,6 +144,7 @@ public class CameraController {
 
     public void stream() throws IOException {
         if (currentStreamingProcess == null) {
+            logger.info("current streaming process is null, starting processs.");
             switchLightOn();
             currentStreamingProcess = processLauncher.launch(
                     "/bin/bash", "-c",
@@ -151,6 +152,8 @@ public class CameraController {
             );
             processLauncher.printErrorStreamInThread(currentStreamingProcess);
             streamClientsCount++;
+        } else {
+            logger.info("current steaming process is not null, nothing to start.");
         }
     }
 
@@ -159,18 +162,21 @@ public class CameraController {
         streamClientsCount--;
         logger.info("client has disconnected, it remains {} clients now.", streamClientsCount);
         if (streamClientsCount == 0 && currentStreamingProcess != null) {
-            logger.info("Stop stream destroying process.");
-            currentStreamingProcess.destroy();
-            boolean hasExited = currentStreamingProcess.waitFor(3, TimeUnit.SECONDS);
-            logger.info("Process has exited {}.", hasExited);
-            if (!hasExited) {
-                logger.info("Force destroy.");
-                currentStreamingProcess.destroyForcibly();
+            try {
+                logger.info("Stop stream destroying process.");
+                currentStreamingProcess.destroy();
+                boolean hasExited = currentStreamingProcess.waitFor(3, TimeUnit.SECONDS);
+                logger.info("Process has exited {}.", hasExited);
+                if (!hasExited) {
+                    logger.info("Force destroy.");
+                    currentStreamingProcess.destroyForcibly();
+                }
+                logger.info("Process has exited {}, is alive {}, exit value {}",
+                        hasExited, currentStreamingProcess.isAlive(), currentStreamingProcess.exitValue());
+            } finally {
+                processLauncher.launch("/bin/kill", "-9", Long.toString(currentStreamingProcess.pid()));
+                currentStreamingProcess = null;
             }
-            logger.info("Process has exited {}, is alive {}, exit value {}",
-                    hasExited, currentStreamingProcess.isAlive(), currentStreamingProcess.exitValue());
-            processLauncher.launch("/bin/kill", "-9", Long.toString(currentStreamingProcess.pid()));
-            currentStreamingProcess = null;
         }
     }
 
