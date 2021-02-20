@@ -28,7 +28,7 @@ public class CameraService {
     Logger logger = LoggerFactory.getLogger(CameraService.class);
 
     @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
-    public @ResponseBody byte[] takePicture(@RequestParam(defaultValue = "false") String highQuality) throws IOException {
+    public @ResponseBody byte[] takePicture(@RequestParam(defaultValue = "false") String highQuality) throws IOException, InterruptedException {
         File picture = cameraController.takePicture(Boolean.parseBoolean(highQuality));
         logger.info("return picture from {}.", picture.getAbsolutePath());
         try (FileInputStream fileInputStream = new FileInputStream(picture)) {

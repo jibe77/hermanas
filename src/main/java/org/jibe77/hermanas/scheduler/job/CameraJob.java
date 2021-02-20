@@ -33,7 +33,7 @@ public class CameraJob {
             try {
                 logger.info("Camera scheduled job is taking a picture now.");
                 cameraController.takePicture(true);
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 logger.error("Can't take picture or write picture of filesystem.", e);
             }
         } else {
