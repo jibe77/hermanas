@@ -50,7 +50,10 @@ public class CameraController {
         this.doorPictureAnalizer = doorPictureAnalizer;
     }
 
-    public synchronized File takePicture(boolean highQuality) throws IOException {
+    public synchronized File takePicture(boolean highQuality) throws IOException, InterruptedException {
+        if (currentStreamingProcess != null) {
+            stopStream();
+        }
         logger.info("taking a picture in root path {}.", rootPath);
         switchLightOn();
         LocalDateTime localDateTime = LocalDateTime.now();
@@ -130,7 +133,7 @@ public class CameraController {
     public Optional<File> takePictureNoException(boolean highQuality) {
         try {
             return Optional.ofNullable(takePicture(highQuality));
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             logger.error("Can't take picture.", e);
             return Optional.empty();
         }
@@ -139,8 +142,6 @@ public class CameraController {
     ProcessLauncher processLauncher;
 
     private Process currentStreamingProcess;
-
-    int streamClientsCount = 0;
 
     public void stream() throws IOException {
         if (currentStreamingProcess == null) {
@@ -151,7 +152,6 @@ public class CameraController {
                     streamingCommand
             );
             processLauncher.printErrorStreamInThread(currentStreamingProcess);
-            streamClientsCount++;
         } else {
             logger.info("current steaming process is not null, nothing to start.");
         }
@@ -159,9 +159,8 @@ public class CameraController {
 
     public void stopStream() throws InterruptedException, IOException {
         switchOffLight();
-        streamClientsCount--;
-        logger.info("client has disconnected, it remains {} clients now.", streamClientsCount);
-        if (streamClientsCount == 0 && currentStreamingProcess != null) {
+        logger.info("client has disconnected, it remains {} clients now.");
+        if (currentStreamingProcess != null) {
             try {
                 logger.info("Stop stream destroying process.");
                 currentStreamingProcess.destroy();

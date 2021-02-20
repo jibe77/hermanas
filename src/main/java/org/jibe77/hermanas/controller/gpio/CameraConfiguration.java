@@ -63,6 +63,7 @@ public class CameraConfiguration {
                 .encoding(Encoding.valueOf(photoEncoding))
                 .quality(photoRegularQuality)
                 .delay(photoRegularDelay)
-                .rotation(photoRotation);
+                .rotation(photoRotation)
+                .brightness(photoBrightness);
     }
 }

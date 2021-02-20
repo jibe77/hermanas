@@ -39,14 +39,13 @@ public class CameraService {
     @GetMapping(value = "/camera/stream", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StreamingResponseBody> stream(final HttpServletResponse response) throws IOException {
         cameraController.stream();
+        logger.info("stream has been called in camera controller, wait 500 milli-seconds ....");
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
             logger.info("Interrupted sleep.");
             Thread.currentThread().interrupt();
         }
-        logger.info("stream has been called in camera controller, wait 1 seconds ....");
-
         response.setContentType("multipart/x-mixed-replace;boundary=boundarydonotcross");
         response.setHeader("Cache-Control",
                 "no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0");
