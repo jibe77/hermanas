@@ -49,7 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").anonymous()
                 .antMatchers(HttpMethod.GET, "/scheduler/nextEvents").anonymous()
                 .antMatchers(HttpMethod.GET, "/sensor/info").anonymous()
-                .antMatchers(HttpMethod.GET, "/socket/**").anonymous()
+                .antMatchers(HttpMethod.GET, "/socket/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/progress").anonymous()
                 // user is allowed to call all the services
                 .antMatchers("/**").hasRole(ROLE_USER)
