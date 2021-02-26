@@ -61,11 +61,15 @@ public class DoorController {
 
     @PostConstruct
     private synchronized void initDoorAccordingToSunTime() {
-        DoorStatusEnum doorStatusEnum = sunTimeManager.getExpectedDoorStatus();
-        if (doorStatusEnum == DoorStatusEnum.OPENED) {
-            openDoorWithUpButtonManagment(false, false);
-        } else if (doorStatusEnum == DoorStatusEnum.CLOSED) {
-            closeDoorWithBottormButtonManagement(false);
+        try {
+            DoorStatusEnum doorStatusEnum = sunTimeManager.getExpectedDoorStatus();
+            if (doorStatusEnum == DoorStatusEnum.OPENED) {
+                openDoorWithUpButtonManagment(false, false);
+            } else if (doorStatusEnum == DoorStatusEnum.CLOSED) {
+                closeDoorWithBottormButtonManagement(false);
+            }
+        } catch (DoorNotClosedCorrectlyException e) {
+            logger.error("The door status couldn't get initialized.");
         }
     }
 
