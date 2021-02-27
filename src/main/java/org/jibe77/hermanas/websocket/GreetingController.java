@@ -19,29 +19,8 @@ public class GreetingController {
     @MessageMapping("/progress")
     @SendTo("/socket/progress")
     public Greeting websocketDemo(HelloMessage message) throws Exception {
-        logger.info("sending message from /process, send to /socket/progress.");
+        logger.info("sending message from /process, send to /socket/progress with message {}.", message.getName());
         Thread.sleep(1000); // simulated delay
         return new Greeting("Hello, " + HtmlUtils.htmlEscape(message.getName()) + "!");
-    }
-
-    int i = 0;
-
-    /**
-     * Generate random numbers publish with WebSocket protocol each 3 seconds.
-     * @return a command line runner.
-     */
-    @Bean
-    public CommandLineRunner websocketDemo() {
-        return (args) -> {
-            while (true) {
-                try {
-                    Thread.sleep(3*1000); // Each 3 sec.
-                    logger.info("publishing test ... ", i++);
-                    websocketDemo(new HelloMessage("ceci est un test : " + i));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        };
     }
 }
