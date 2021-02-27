@@ -29,8 +29,7 @@ public class HermanasApplication {
 	static Logger logger = LoggerFactory.getLogger(HermanasApplication.class);
 
 	public static void main(String[] args) {
-		String userDirectory = new File("").getAbsolutePath();
-		logger.info("Current directory : {}.", userDirectory);
+		logger.info("Current directory : {}.", new File("").getAbsolutePath());
 		SpringApplication.run(HermanasApplication.class, args);
 	}
 
@@ -41,34 +40,6 @@ public class HermanasApplication {
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE").allowedHeaders("*")
 						.allowedOrigins("*");
-			}
-		};
-	}
-
-	int i = 0;
-
-	@Autowired
-	GreetingController greetingController;
-
-	@Autowired
-	MessageSendingOperations<String> wsTemplate;
-
-	/**
-	 * Generate random numbers publish with WebSocket protocol each 3 seconds.
-	 * @return a command line runner.
-	 */
-	@Bean
-	public CommandLineRunner websocketDemo() {
-		return (args) -> {
-			while (true) {
-				try {
-					Thread.sleep(3*1000); // Each 3 sec.
-					logger.info("publishing test {} ... ", i++);
-					greetingController.websocketDemo(new HelloMessage("ceci est un test : " + i));
-					this.wsTemplate.convertAndSend("/socket/progress", new HelloMessage("poupou"));
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
 			}
 		};
 	}
