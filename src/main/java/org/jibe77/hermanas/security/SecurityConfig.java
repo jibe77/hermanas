@@ -39,6 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         http.cors().and().authorizeRequests()
                 // list of allowed urls for GUEST user.
                 .antMatchers(HttpMethod.GET, "/light/status").anonymous()
+                .antMatchers(HttpMethod.GET, "/music/status").anonymous()
                 .antMatchers(HttpMethod.GET, "/door/status").anonymous()
                 .antMatchers(HttpMethod.GET, "/camera/takePicture").anonymous()
                 .antMatchers(HttpMethod.GET, "/camera/stream").anonymous()
