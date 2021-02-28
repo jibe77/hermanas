@@ -5,6 +5,9 @@ import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.websocket.Appliance;
+import org.jibe77.hermanas.websocket.CoopStatus;
+import org.jibe77.hermanas.websocket.NotificationController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +41,8 @@ public class LightController {
     @Value("${light.security.timer.delay.sunny}")
     private long lightSecurityTimerDelaySunny;
 
+    NotificationController notificationController;
+
     private Timer lightSecurityStopTimer;
 
     GpioPinDigitalOutput gpioPinDigitalOutput;
@@ -46,9 +51,11 @@ public class LightController {
 
     Logger logger = LoggerFactory.getLogger(LightController.class);
 
-    public LightController(GpioHermanasController gpioHermanasController, ConsumptionModeManager consumptionModeManager) {
+    public LightController(GpioHermanasController gpioHermanasController, ConsumptionModeManager consumptionModeManager,
+                           NotificationController notificationController) {
         this.gpioHermanasController = gpioHermanasController;
         this.consumptionModeManager = consumptionModeManager;
+        this.notificationController = notificationController;
     }
 
     @PostConstruct
@@ -73,6 +80,7 @@ public class LightController {
             logger.info("Switching on light.");
             gpioPinDigitalOutput.high();
             startSecurityTimer();
+            notificationController.notify(new CoopStatus(Appliance.LIGHT, StatusEnum.ON));
         }
     }
 
@@ -84,6 +92,7 @@ public class LightController {
                 lightSecurityStopTimer.cancel();
                 lightSecurityStopTimer = null;
             }
+            notificationController.notify(new CoopStatus(Appliance.LIGHT, StatusEnum.OFF));
         }
     }
 

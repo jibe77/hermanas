@@ -4,11 +4,13 @@ import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.model.DoorStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Service
 public class DoorService {
 
     DoorController doorController;
