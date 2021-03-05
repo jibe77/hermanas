@@ -4,6 +4,7 @@ import org.jibe77.hermanas.controller.ProcessLauncher;
 import org.jibe77.hermanas.controller.energy.SoundCardController;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.websocket.NotificationController;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,6 +33,9 @@ class MusicControllerTest {
 
     @MockBean
     SoundCardController soundCardController;
+
+    @MockBean
+    NotificationController notificationController;
 
     @Test
     void testStopWithoutCurrentProcess() {

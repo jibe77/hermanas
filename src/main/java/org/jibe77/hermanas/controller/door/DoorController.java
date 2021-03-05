@@ -1,11 +1,15 @@
 package org.jibe77.hermanas.controller.door;
 
+import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.model.DoorStatus;
 import org.jibe77.hermanas.controller.door.model.DoorStatusEnum;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.controller.door.upbutton.UpButtonController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
+import org.jibe77.hermanas.websocket.Appliance;
+import org.jibe77.hermanas.websocket.CoopStatus;
+import org.jibe77.hermanas.websocket.NotificationController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,12 +55,16 @@ public class DoorController {
     private LocalDateTime lastClosingTime;
     private LocalDateTime lastOpeningTime;
 
+    private NotificationController notificationController;
+
     public DoorController(ServoMotorController servo, BottomButtonController bottomButtonController,
-                          UpButtonController upButtonController, SunTimeManager sunTimeManager) {
+                          UpButtonController upButtonController, SunTimeManager sunTimeManager,
+                          NotificationController notificationController) {
         this.servo = servo;
         this.bottomButtonController = bottomButtonController;
         this.upButtonController = upButtonController;
         this.sunTimeManager = sunTimeManager;
+        this.notificationController = notificationController;
     }
 
     @PostConstruct
@@ -83,14 +91,17 @@ public class DoorController {
             backoff = @Backoff(delay = 5000))
     public synchronized void closeDoorWithBottormButtonManagement(boolean force) {
         if (force || !doorIsClosed()) {
+            notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSING));
             bottomButtonController.provisionButton();
             bottomButtonController.resetBottomButtonState();
             closeDoor(force, true);
             if (bottomButtonController.isBottomButtonHasBeenPressed()
                     || (waitALittle() && bottomButtonController.isBottomButtonHasBeenPressed())) {
                 logger.info("bottom position has been reached.");
+                notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSED));
             } else {
                 logger.error("Bottom position not reached correctly. The door is reopened now.");
+                notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSED_INCORRECTLY));
                 // if the door has been closed twice, opening the door is actually closing the door .
                 openDoorWithUpButtonManagment(force, true);
                 if (!bottomButtonController.isBottomButtonHasBeenPressed())
@@ -116,7 +127,9 @@ public class DoorController {
     @Recover
     private void closeDoorWithoutBottomButtonManagement(DoorNotClosedCorrectlyException e) {
         logger.info("Close door without button management.");
+        notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSING));
         closeDoor(false, false);
+        notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSED));
     }
 
     /**
@@ -141,11 +154,14 @@ public class DoorController {
         if (force || !doorIsOpened()) {
             upButtonController.provisionButton();
             upButtonController.resetUpButtonState();
+            notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENING));
             if (openDoor(force, openingDoorAfterClosingProblem) && upButtonController.isUpButtonHasBeenPressed()) {
                 logger.info("up position has been reached.");
+                notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENED));
                 returnedValue = true;
             } else {
                 logger.info("up button has not been pressed.");
+                notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENED_INCORRECLY));
             }
             logger.info("... done");
             upButtonController.unprovisionButton();
@@ -164,10 +180,12 @@ public class DoorController {
             logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
                     doorOpeningPosition,
                     doorOpeningDuration);
+            notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENING));
             servo.setPosition(doorOpeningPosition, doorOpeningDuration);
             if (!openingDoorAfterClosingProblem) {
                 this.lastOpeningTime = LocalDateTime.now();
             }
+            notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENED));
             logger.info("... done");
             return true;
         } else {
@@ -222,7 +240,6 @@ public class DoorController {
         } else {
             return new DoorStatus(DoorStatusEnum.SEEMS_CLOSED, lastClosingTime);
         }
-
     }
 
     private synchronized boolean openingTimeIsProbablyTheMostRecent() {

@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.websocket;
 
-import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.core.MessageSendingOperations;

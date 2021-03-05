@@ -5,6 +5,9 @@ import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.websocket.Appliance;
+import org.jibe77.hermanas.websocket.CoopStatus;
+import org.jibe77.hermanas.websocket.NotificationController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,9 +48,15 @@ public class FanController {
 
     ConsumptionModeManager consumptionModeManager;
 
-    public FanController(GpioHermanasController gpioHermanasController, ConsumptionModeManager consumptionModeManager) {
+    NotificationController notificationController;
+
+    public FanController(
+            GpioHermanasController gpioHermanasController,
+            ConsumptionModeManager consumptionModeManager,
+            NotificationController notificationController) {
         this.gpioHermanasController = gpioHermanasController;
         this.consumptionModeManager = consumptionModeManager;
+        this.notificationController = notificationController;
     }
 
     @PostConstruct
@@ -62,6 +71,7 @@ public class FanController {
             logger.info("Switching on fan.");
             gpioPinDigitalOutput.high();
             startSecurityTimer();
+            notificationController.notify(new CoopStatus(Appliance.FAN, StatusEnum.ON));
         }
     }
 
@@ -90,6 +100,7 @@ public class FanController {
                 fanSecurityStopTimer.cancel();
                 fanSecurityStopTimer = null;
             }
+            notificationController.notify(new CoopStatus(Appliance.FAN, StatusEnum.OFF));
         }
     }
 

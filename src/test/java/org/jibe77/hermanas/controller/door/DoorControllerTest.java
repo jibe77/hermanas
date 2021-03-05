@@ -7,6 +7,7 @@ import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.controller.door.upbutton.UpButtonController;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
+import org.jibe77.hermanas.websocket.NotificationController;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -34,7 +35,8 @@ class DoorControllerTest {
                 mock(ServoMotorController.class),
                 bottomButtonController,
                 upButtonController,
-                mock(SunTimeManager.class)
+                mock(SunTimeManager.class),
+                mock(NotificationController.class)
                 );
         assertEquals(DoorStatusEnum.UNDEFINED, doorController.statusInfo().getStatus());
 

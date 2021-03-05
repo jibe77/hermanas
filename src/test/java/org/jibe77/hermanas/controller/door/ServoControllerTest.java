@@ -9,6 +9,7 @@ import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
+import org.jibe77.hermanas.websocket.NotificationController;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -47,6 +48,9 @@ class ServoControllerTest {
 
     @MockBean
     GpioPinDigitalInput gpioPinDigitalInput;
+
+    @MockBean
+    NotificationController notificationController;
 
     Logger logger = LoggerFactory.getLogger(ServoControllerTest.class);
 

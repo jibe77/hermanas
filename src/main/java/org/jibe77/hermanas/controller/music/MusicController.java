@@ -5,6 +5,9 @@ import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.energy.SoundCardController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.websocket.Appliance;
+import org.jibe77.hermanas.websocket.CoopStatus;
+import org.jibe77.hermanas.websocket.NotificationController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,13 +77,16 @@ public class MusicController {
 
     private SoundCardController soundCardController;
 
+    private NotificationController notificationController;
+
     Logger logger = LoggerFactory.getLogger(MusicController.class);
 
     public MusicController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager,
-                           SoundCardController soundCardController) {
+                           SoundCardController soundCardController, NotificationController notificationController) {
         this.processLauncher = processLauncher;
         this.consumptionModeManager = consumptionModeManager;
         this.soundCardController = soundCardController;
+        this.notificationController = notificationController;
     }
 
     public boolean playMusicRandomly() {
@@ -123,6 +129,7 @@ public class MusicController {
         currentMusicProcess = processLauncher.launch(commandWithParams);
         processLauncher.printErrorStreamInThread(currentMusicProcess);
         startSecurityTimer(duration);
+        notificationController.notify(new CoopStatus(Appliance.MUSIC, StatusEnum.ON));
     }
 
     private List<String> getListOfFiles(String pathToFolder) {
@@ -166,6 +173,7 @@ public class MusicController {
                 musicSecurityStopTimer = null;
             }
             soundCardController.turnOff();
+            notificationController.notify(new CoopStatus(Appliance.MUSIC, StatusEnum.OFF));
         }
     }
 
