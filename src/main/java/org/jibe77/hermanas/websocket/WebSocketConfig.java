@@ -28,7 +28,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         StompWebSocketEndpointRegistration registration = registry.addEndpoint("/socket");
         if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
             logger.info("setting allowed origin to {}.", allowedOrigins);
-            registration = registration.setAllowedOrigins(allowedOrigins);
+            registration = registration.setAllowedOriginPatterns(allowedOrigins);
         } else {
             logger.info("no allowed origin to web-socket.");
         }
