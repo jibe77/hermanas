@@ -161,7 +161,7 @@ public class DoorController {
                 returnedValue = true;
             } else {
                 logger.info("up button has not been pressed.");
-                notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENED_INCORRECLY));
+                notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENED_INCORRECTLY));
             }
             logger.info("... done");
             upButtonController.unprovisionButton();
