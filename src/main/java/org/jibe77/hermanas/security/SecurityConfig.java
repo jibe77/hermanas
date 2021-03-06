@@ -36,7 +36,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     protected void configure(HttpSecurity http) throws Exception
     {
         logger.info("Configure authorizations.");
-        http.cors().and().authorizeRequests()
+        http.cors().and().headers().frameOptions().disable().and().csrf().disable().authorizeRequests()
                 // list of allowed urls for GUEST user.
                 .antMatchers(HttpMethod.GET, "/light/status").anonymous()
                 .antMatchers(HttpMethod.GET, "/music/status").anonymous()
