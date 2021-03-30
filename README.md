@@ -1,13 +1,10 @@
-# hermanas
-Chicken coop automation
+# Hermanas
 
-Data to store : 
-* temperature every hour
-* humidity every hour
-* photo every hour 
-    * just the path, the file is saved in the filesystem
-    * detected chicken in photo
-    * detected eggs in photo
+This application is an automation solution for your chicken coop.
+It's main feature is to schedule door closing and opening according to the sunrise and sunset.
+It also offers integration of light, music, fan as well as notification.
 
-Security with role : 
-https://howtodoinjava.com/spring-boot2/security-rest-basic-auth-example/
+## Architecture
+
+Running on top of a Raspberry-pi, it is powered on Spring Boot.
+All the monitoring and remote facilities are remotely available through Rest services.
