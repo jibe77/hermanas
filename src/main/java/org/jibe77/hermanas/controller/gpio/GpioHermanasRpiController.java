@@ -51,6 +51,9 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     @Value("${camera.high.delay}")
     private int photoHighDelay;
 
+    @Value("${camera.picam.jni.implementation}")
+    private String picamJniImplementation;
+
     public GpioHermanasRpiController(@Qualifier("CameraHighQualityConfig") CameraConfiguration highQualityConfig,
                                      @Qualifier("CameraRegularQualityConfig") CameraConfiguration regularQualityconfig) {
         this.highQualityConfig = highQualityConfig;
@@ -62,7 +65,7 @@ public class GpioHermanasRpiController implements GpioHermanasController {
         logger.info("Initialise GPIO ...");
         try {
             logger.info("Extract the bundled picam native library to a temporary file and load it.");
-            PicamNativeLibrary.installTempLibrary();
+            System.load(picamJniImplementation);
 
             gpio = GpioFactory.getInstance();
 
@@ -88,8 +91,6 @@ public class GpioHermanasRpiController implements GpioHermanasController {
             }
         } catch (UnsatisfiedLinkError e) {
             logger.error("Can't find wiringpi, is it installed on your machine ?", e);
-        } catch (NativeLibraryException e) {
-            logger.error("Can't install picam native library.", e);
         }
         logger.info("... initialisation done.");
     }
