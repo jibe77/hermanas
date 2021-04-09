@@ -19,9 +19,6 @@ public class CameraConfiguration {
     @Value("${camera.high.quality}")
     private int photoHighQuality;
 
-    @Value("${camera.high.delay}")
-    private int photoHighDelay;
-
     @Value("${camera.regular.width}")
     private int photoRegularWidth;
 

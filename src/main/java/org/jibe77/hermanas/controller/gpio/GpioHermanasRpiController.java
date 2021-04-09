@@ -50,6 +50,9 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     @Value("${camera.regular.delay}")
     private int photoRegularDelay;
 
+    @Value("${camera.high.delay}")
+    private int photoHighDelay;
+
     public GpioHermanasRpiController(@Qualifier("CameraHighQualityConfig") CameraConfiguration highQualityConfig,
                                      @Qualifier("CameraRegularQualityConfig") CameraConfiguration regularQualityconfig) {
         this.highQualityConfig = highQualityConfig;
@@ -101,7 +104,7 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     @Async
     public CompletableFuture<Void> takePictureAsync(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
         try (Camera camera = new Camera(highQuality ? highQualityConfig : regularQualityconfig)){
-            camera.takePicture(filePictureCaptureHandler, photoRegularDelay);
+            camera.takePicture(filePictureCaptureHandler, highQuality ? photoHighDelay : photoRegularDelay);
         } catch (CaptureFailedException e) {
             throw new IOException("Can't capture a picture.", e);
         } catch (Exception e) {
