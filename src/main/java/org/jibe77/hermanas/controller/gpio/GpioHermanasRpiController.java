@@ -64,7 +64,11 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     private void initialiseGpioPins() {
         logger.info("Initialise GPIO ...");
         try {
-            logger.info("Extract the bundled picam native library to a temporary file and load it.");
+            logger.info("Load picam JNI implementation from .so file {}.",  picamJniImplementation);
+
+            // Loading native implementation doesn't work from spring boot fatjarù
+            // PicamNativeLibrary.installTempLibrary();
+            // Here is a workaround, consisting in charging extracted .so from filesystem.
             System.load(picamJniImplementation);
 
             gpio = GpioFactory.getInstance();
