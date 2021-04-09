@@ -52,6 +52,7 @@ public class CameraController {
 
     public synchronized File takePicture(boolean highQuality) throws IOException, InterruptedException {
         if (currentStreamingProcess != null) {
+            logger.info("stopping current stream before taking picture.");
             stopStream();
         }
         logger.info("taking a picture in root path {}.", rootPath);

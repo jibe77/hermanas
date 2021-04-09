@@ -31,9 +31,6 @@ public class CameraConfiguration {
     @Value("${camera.regular.quality}")
     private int photoRegularQuality;
 
-    @Value("${camera.regular.delay}")
-    private int photoRegularDelay;
-
     @Value("${camera.encoding}")
     private String photoEncoding;
 
@@ -50,7 +47,6 @@ public class CameraConfiguration {
                 .height(photoHighHeight)
                 .encoding(Encoding.valueOf(photoEncoding))
                 .quality(photoHighQuality)
-                .delay(photoHighDelay)
                 .rotation(photoRotation)
                 .brightness(photoBrightness);
     }
@@ -62,7 +58,6 @@ public class CameraConfiguration {
                 .height(photoRegularHeight)
                 .encoding(Encoding.valueOf(photoEncoding))
                 .quality(photoRegularQuality)
-                .delay(photoRegularDelay)
                 .rotation(photoRotation)
                 .brightness(photoBrightness);
     }
