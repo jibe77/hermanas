@@ -13,10 +13,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import uk.co.caprica.picam.Camera;
+import uk.co.caprica.picam.*;
 import uk.co.caprica.picam.CameraConfiguration;
-import uk.co.caprica.picam.CaptureFailedException;
-import uk.co.caprica.picam.FilePictureCaptureHandler;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -63,6 +61,9 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     private void initialiseGpioPins() {
         logger.info("Initialise GPIO ...");
         try {
+            logger.info("Extract the bundled picam native library to a temporary file and load it.");
+            PicamNativeLibrary.installTempLibrary();
+
             gpio = GpioFactory.getInstance();
 
             /*
@@ -87,6 +88,8 @@ public class GpioHermanasRpiController implements GpioHermanasController {
             }
         } catch (UnsatisfiedLinkError e) {
             logger.error("Can't find wiringpi, is it installed on your machine ?", e);
+        } catch (NativeLibraryException e) {
+            logger.error("Can't install picam native library.", e);
         }
         logger.info("... initialisation done.");
     }
