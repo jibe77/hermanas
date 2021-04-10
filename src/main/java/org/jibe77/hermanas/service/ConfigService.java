@@ -23,4 +23,9 @@ public class ConfigService {
     public void reboot() {
         configController.reboot();
     }
+
+    @GetMapping(value = "/config/version")
+    public void version() {
+        configController.reboot();
+    }
 }
