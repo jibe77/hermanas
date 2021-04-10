@@ -52,6 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/sensor/info").anonymous()
                 .antMatchers(HttpMethod.GET, "/socket/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/progress").anonymous()
+                .antMatchers(HttpMethod.GET, "/info").anonymous()
                 // user is allowed to call all the services
                 .antMatchers("/**").hasRole(ROLE_USER)
                 .and()

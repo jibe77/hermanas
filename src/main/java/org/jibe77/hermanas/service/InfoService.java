@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.service;
 
-import org.jibe77.hermanas.controller.config.ConfigController;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,8 +13,9 @@ public class InfoService {
         this.buildProperties = buildProperties;
     }
 
-    @GetMapping(value = "/info/version")
-    public String version() {
-        return buildProperties.getVersion();
+    @GetMapping(value = "/info")
+    public BuildProperties version() {
+        return buildProperties;
     }
+
 }
