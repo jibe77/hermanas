@@ -10,6 +10,10 @@ public class InfoService {
 
     BuildProperties buildProperties;
 
+    public InfoService() {
+       // default constructor, when build properties are not available.
+    }
+
     @Autowired(required = false)
     public InfoService(BuildProperties buildProperties) {
         this.buildProperties = buildProperties;
