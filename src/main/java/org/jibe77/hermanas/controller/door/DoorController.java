@@ -87,8 +87,8 @@ public class DoorController {
      */
     @Retryable(
             value = { DoorNotClosedCorrectlyException.class },
-            maxAttempts = 20,
-            backoff = @Backoff(delay = 5000))
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 2000))
     public synchronized void closeDoorWithBottormButtonManagement(boolean force) {
         if (force || !doorIsClosed()) {
             notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSING));
