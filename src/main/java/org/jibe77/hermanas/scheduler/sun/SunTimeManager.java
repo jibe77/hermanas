@@ -75,11 +75,6 @@ public class SunTimeManager {
     }
 
     public DoorStatusEnum getExpectedDoorStatus() {
-        int currentDay = LocalDateTime.now().getDayOfMonth();
-        if (currentDay != getNextDoorOpeningTime().getDayOfMonth() && currentDay == getNextDoorClosingTime().getDayOfMonth()) {
-            return DoorStatusEnum.OPENED;
-        } else {
-            return DoorStatusEnum.CLOSED;
-        }
+        return getNextDoorOpeningTime().isBefore(getNextDoorClosingTime()) ? DoorStatusEnum.CLOSED : DoorStatusEnum.OPENED;
     }
 }
