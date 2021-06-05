@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -83,9 +85,9 @@ public class EmailService {
     }
 
     @Retryable(
-            value = { MailException.class },
-            maxAttempts = 10,
-            backoff = @Backoff(delay = 60000))
+            value = {MailSendException.class, MailException.class, IOException.class},
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 20000))
     private synchronized void send(MimeMessagePreparator mimeMessagePreparator) {
         logger.info("send mail now ...");
         mailSender.send(mimeMessagePreparator);

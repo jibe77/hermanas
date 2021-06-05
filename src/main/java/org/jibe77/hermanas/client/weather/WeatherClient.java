@@ -26,26 +26,18 @@ public class WeatherClient {
     @Value("${weather.info.enabled}")
     public boolean weatherInfoEnabled;
 
-    WifiController wifiController;
-
     public static final Double DEFAULT_VALUE_IF_DISABLED = -100d;
 
     private static final Logger log = LoggerFactory.getLogger(WeatherClient.class);
 
     final RestTemplateBuilder builder;
 
-    public WeatherClient(RestTemplateBuilder builder, WifiController wifiController) {
+    public WeatherClient(RestTemplateBuilder builder) {
         this.builder = builder;
-        this.wifiController = wifiController;
     }
 
     public WeatherInfo getInfo() {
         if (weatherInfoEnabled) {
-            boolean initialWifiStatus = wifiController.wifiCardIsEnabled();
-            if (!initialWifiStatus) {
-                log.info("weather client is enabling the wifi card for a request.");
-                wifiController.turnOn();
-            }
             try {
                 WeatherInfo weatherInfo = builder.build().getForObject(
                         weatherInfoUrl,
@@ -58,11 +50,6 @@ public class WeatherClient {
             } catch (ResourceAccessException e) {
                 log.error("Can't process weather info request.", e);
                 return getDefaultWeatherInfo();
-            } finally {
-                if (!initialWifiStatus) {
-                    log.info("weather client is disabling the wifi card after a request.");
-                    wifiController.turnOff();
-                }
             }
         } else {
             return getDefaultWeatherInfo();
