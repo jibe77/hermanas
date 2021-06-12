@@ -67,6 +67,7 @@ public class WifiController {
                 return false;
             }
         } else {
+            emailService.processSendingQueue();
             return true;
         }
     }

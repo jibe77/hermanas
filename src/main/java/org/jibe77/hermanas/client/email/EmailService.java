@@ -13,6 +13,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
+import javax.mail.AuthenticationFailedException;
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
@@ -85,7 +86,7 @@ public class EmailService {
     }
 
     @Retryable(
-            value = {MailSendException.class, MailException.class, IOException.class},
+            value = {MailSendException.class, MailException.class, IOException.class, AuthenticationFailedException.class},
             maxAttempts = 5,
             backoff = @Backoff(delay = 20000))
     private synchronized void send(MimeMessagePreparator mimeMessagePreparator) {
