@@ -38,21 +38,36 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         logger.info("Configure authorizations.");
         http.cors().and().headers().frameOptions().disable().and().csrf().disable().authorizeRequests()
                 // list of allowed urls for GUEST user.
-                .antMatchers(HttpMethod.GET, "/light/status").anonymous()
-                .antMatchers(HttpMethod.GET, "/music/status").anonymous()
-                .antMatchers(HttpMethod.GET, "/door/status").anonymous()
-                .antMatchers(HttpMethod.GET, "/camera/takePicture").anonymous()
-                .antMatchers(HttpMethod.GET, "/camera/stream").anonymous()
-                .antMatchers(HttpMethod.GET, "/camera/stopStream").anonymous()
-                .antMatchers(HttpMethod.GET, "/fan/status").anonymous()
-                .antMatchers(HttpMethod.GET, "/scheduler/doorClosingTime").anonymous()
-                .antMatchers(HttpMethod.GET, "/scheduler/doorOpeningTime").anonymous()
-                .antMatchers(HttpMethod.GET, "/scheduler/lightOnTime").anonymous()
-                .antMatchers(HttpMethod.GET, "/scheduler/nextEvents").anonymous()
-                .antMatchers(HttpMethod.GET, "/sensor/info").anonymous()
+                .antMatchers(HttpMethod.GET,
+                        "/light/status",
+                        "/music/status",
+                        "/door/status",
+                        "/camera/takePicture",
+                        "/camera/stream",
+                        "/camera/stopStream",
+                        "/fan/status",
+                        "/scheduler/doorClosingTime",
+                        "/scheduler/doorOpeningTime",
+                        "/scheduler/lightOnTime",
+                        "/scheduler/nextEvents",
+                        "/sensor/info",
+                        "/info"
+                        ).anonymous()
+
+                // web socket
                 .antMatchers(HttpMethod.GET, "/socket/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/progress").anonymous()
-                .antMatchers(HttpMethod.GET, "/info").anonymous()
+
+                // swagger ui
+                .antMatchers(HttpMethod.GET,"/v2/api-docs",
+                        "/configuration/ui",
+                        "/swagger-resources/**",
+                        "/configuration/security",
+                        "/swagger-ui.html",
+                        "/webjars/**",
+                        "/csrf",
+                        "/").permitAll()
+
                 // user is allowed to call all the services
                 .antMatchers("/**").hasRole(ROLE_USER)
                 .and()

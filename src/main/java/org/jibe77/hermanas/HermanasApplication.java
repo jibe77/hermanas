@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.io.File;
 
@@ -20,7 +20,7 @@ import java.io.File;
 @EnableCaching
 @EnableScheduling
 @EnableAsync
-@EnableSwagger2WebMvc
+@EnableSwagger2
 public class HermanasApplication {
 
 	static Logger logger = LoggerFactory.getLogger(HermanasApplication.class);
