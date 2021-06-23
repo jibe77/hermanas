@@ -8,6 +8,9 @@ import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
+import org.jibe77.hermanas.websocket.Appliance;
+import org.jibe77.hermanas.websocket.CoopStatus;
+import org.jibe77.hermanas.websocket.NotificationController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +35,8 @@ public class CameraController {
 
     private DoorPictureAnalizer doorPictureAnalizer;
 
+    private NotificationController notificationController;
+
     @Value("${camera.path.root}")
     private String rootPath;
 
@@ -42,12 +47,13 @@ public class CameraController {
 
     public CameraController(LightController lightController, GpioHermanasController gpioHermanasController,
                             PictureRepository pictureRepository, ProcessLauncher processLauncher,
-                            DoorPictureAnalizer doorPictureAnalizer) {
+                            DoorPictureAnalizer doorPictureAnalizer, NotificationController notificationController) {
         this.lightController = lightController;
         this.gpioHermanasController = gpioHermanasController;
         this.pictureRepository = pictureRepository;
         this.processLauncher = processLauncher;
         this.doorPictureAnalizer = doorPictureAnalizer;
+        this.notificationController = notificationController;
     }
 
     public synchronized File takePicture(boolean highQuality) throws IOException, InterruptedException {
@@ -153,6 +159,7 @@ public class CameraController {
                     streamingCommand
             );
             processLauncher.printErrorStreamInThread(currentStreamingProcess);
+            notificationController.notify(new CoopStatus(Appliance.WEBCAM, StatusEnum.ON));
         } else {
             logger.info("current steaming process is not null, nothing to start.");
         }
@@ -176,6 +183,7 @@ public class CameraController {
             } finally {
                 processLauncher.launch("/bin/kill", "-9", Long.toString(currentStreamingProcess.pid()));
                 currentStreamingProcess = null;
+                notificationController.notify(new CoopStatus(Appliance.WEBCAM, StatusEnum.OFF));
             }
         }
     }
