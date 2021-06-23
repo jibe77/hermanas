@@ -160,7 +160,7 @@ public class CameraController {
 
     public void stopStream() throws InterruptedException, IOException {
         switchOffLight();
-        logger.info("client has disconnected, it remains {} clients now.");
+        logger.info("client has disconnected, it remains no client now.");
         if (currentStreamingProcess != null) {
             try {
                 logger.info("Stop stream destroying process.");

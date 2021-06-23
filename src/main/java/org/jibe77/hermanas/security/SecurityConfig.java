@@ -66,6 +66,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/swagger-ui.html",
                         "/webjars/**",
                         "/csrf",
+                        "/swagger-ui/index.html",
                         "/").permitAll()
 
                 // user is allowed to call all the services
