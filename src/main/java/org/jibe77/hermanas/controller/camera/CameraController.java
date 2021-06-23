@@ -159,7 +159,6 @@ public class CameraController {
                     streamingCommand
             );
             processLauncher.printErrorStreamInThread(currentStreamingProcess);
-            notificationController.notify(new CoopStatus(Appliance.WEBCAM, StatusEnum.ON));
         } else {
             logger.info("current steaming process is not null, nothing to start.");
         }
@@ -183,7 +182,6 @@ public class CameraController {
             } finally {
                 processLauncher.launch("/bin/kill", "-9", Long.toString(currentStreamingProcess.pid()));
                 currentStreamingProcess = null;
-                notificationController.notify(new CoopStatus(Appliance.WEBCAM, StatusEnum.OFF));
             }
         }
     }

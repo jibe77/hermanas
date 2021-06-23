@@ -59,7 +59,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/progress").anonymous()
 
                 // swagger ui
-                .antMatchers(HttpMethod.GET,"/v2/api-docs",
+                .antMatchers(HttpMethod.GET,"/v2/api-docs", "/v3/api-docs",
                         "/configuration/ui",
                         "/swagger-resources/**",
                         "/configuration/security",
