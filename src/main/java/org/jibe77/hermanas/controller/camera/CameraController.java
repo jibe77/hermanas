@@ -8,9 +8,6 @@ import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
-import org.jibe77.hermanas.websocket.Appliance;
-import org.jibe77.hermanas.websocket.CoopStatus;
-import org.jibe77.hermanas.websocket.NotificationController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,8 +32,6 @@ public class CameraController {
 
     private DoorPictureAnalizer doorPictureAnalizer;
 
-    private NotificationController notificationController;
-
     @Value("${camera.path.root}")
     private String rootPath;
 
@@ -47,13 +42,12 @@ public class CameraController {
 
     public CameraController(LightController lightController, GpioHermanasController gpioHermanasController,
                             PictureRepository pictureRepository, ProcessLauncher processLauncher,
-                            DoorPictureAnalizer doorPictureAnalizer, NotificationController notificationController) {
+                            DoorPictureAnalizer doorPictureAnalizer) {
         this.lightController = lightController;
         this.gpioHermanasController = gpioHermanasController;
         this.pictureRepository = pictureRepository;
         this.processLauncher = processLauncher;
         this.doorPictureAnalizer = doorPictureAnalizer;
-        this.notificationController = notificationController;
     }
 
     public synchronized File takePicture(boolean highQuality) throws IOException, InterruptedException {
