@@ -59,6 +59,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .antMatchers(HttpMethod.GET, "/progress").anonymous()
 
                 // swagger ui
+                // https://poulailler57.ddns.net:5780/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config
                 .antMatchers(HttpMethod.GET,"/v2/api-docs", "/v3/api-docs",
                         "/configuration/ui",
                         "/swagger-resources/**",
@@ -67,6 +68,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/webjars/**",
                         "/csrf",
                         "/swagger-ui/**",
+                        "/v3/api-docs/swagger-config",
                         "/").permitAll()
 
                 // user is allowed to call all the services
