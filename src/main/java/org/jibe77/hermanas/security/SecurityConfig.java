@@ -50,6 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/scheduler/doorOpeningTime",
                         "/scheduler/lightOnTime",
                         "/scheduler/nextEvents",
+                        "/scheduler/currentMode",
                         "/sensor/info",
                         "/info"
                         ).anonymous()

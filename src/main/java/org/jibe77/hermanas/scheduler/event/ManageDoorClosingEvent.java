@@ -5,7 +5,7 @@ import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.controller.music.MusicController;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class ManageDoorClosingEvent {
 
     WifiController wifiController;
 
-    ConsumptionModeManager consumptionModeManager;
+    ConsumptionModeController consumptionModeController;
 
     @Value("${play.song.at.sunset}")
     private boolean playSongAtSunset;
@@ -40,14 +40,14 @@ public class ManageDoorClosingEvent {
     public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController,
                                   NotificationService notificationService, MessageSource messageSource,
                                   MusicController musicController, WifiController wifiController,
-                                  ConsumptionModeManager consumptionModeManager) {
+                                  ConsumptionModeController consumptionModeController) {
         this.sunTimeManager = sunTimeManager;
         this.doorController = doorController;
         this.notificationService = notificationService;
         this.messageSource = messageSource;
         this.musicController = musicController;
         this.wifiController = wifiController;
-        this.consumptionModeManager = consumptionModeManager;
+        this.consumptionModeController = consumptionModeController;
     }
 
     public void manageDoorClosingEvent(LocalDateTime currentTime) {
@@ -67,7 +67,7 @@ public class ManageDoorClosingEvent {
             } else {
                 logger.info("door has already been closed before, nothing to do in this event.");
             }
-            if (consumptionModeManager.isEcoMode()) {
+            if (consumptionModeController.isEcoMode(LocalDateTime.now())) {
                 // turn off the wifi in 15 minutes
                 wifiController.turnOffAfter(900);
             } else if (playSongAtSunset) {

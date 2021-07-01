@@ -4,7 +4,7 @@ import org.jibe77.hermanas.controller.ProcessLauncher;
 import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.energy.SoundCardController;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.Appliance;
 import org.jibe77.hermanas.websocket.CoopStatus;
 import org.jibe77.hermanas.websocket.NotificationController;
@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PreDestroy;
 import java.io.*;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,7 +72,7 @@ public class MusicController {
 
     private Process currentMusicProcess;
 
-    private ConsumptionModeManager consumptionModeManager;
+    private ConsumptionModeController consumptionModeController;
 
     private Timer musicSecurityStopTimer;
 
@@ -81,10 +82,10 @@ public class MusicController {
 
     Logger logger = LoggerFactory.getLogger(MusicController.class);
 
-    public MusicController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager,
+    public MusicController(ProcessLauncher processLauncher, ConsumptionModeController consumptionModeController,
                            SoundCardController soundCardController, NotificationController notificationController) {
         this.processLauncher = processLauncher;
-        this.consumptionModeManager = consumptionModeManager;
+        this.consumptionModeController = consumptionModeController;
         this.soundCardController = soundCardController;
         this.notificationController = notificationController;
     }
@@ -147,8 +148,8 @@ public class MusicController {
         musicSecurityStopTimer = new Timer("Music security stop");
         final long duration = durationParam >= 0 ?
                 durationParam :
-                consumptionModeManager.getDuration(
-                    musicSecurityTimerDelayEco, musicSecurityTimerDelayRegular, musicSecurityTimerDelaySunny);
+                consumptionModeController.getDuration(
+                    musicSecurityTimerDelayEco, musicSecurityTimerDelayRegular, musicSecurityTimerDelaySunny, LocalDateTime.now());
         musicSecurityStopTimer.schedule(new TimerTask() {
                                             public void run() {
                                                 logger.info("stopping music after {} ms.", duration);

@@ -3,7 +3,7 @@ package org.jibe77.hermanas.controller.music;
 import org.jibe77.hermanas.controller.ProcessLauncher;
 import org.jibe77.hermanas.controller.energy.SoundCardController;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.NotificationController;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,7 +27,7 @@ class MusicControllerTest {
     ProcessLauncher processLauncher;
 
     @MockBean
-    ConsumptionModeManager consumptionModeManager;
+    ConsumptionModeController consumptionModeController;
 
     @MockBean
     GpioHermanasController gpioHermanasController;
@@ -55,7 +56,7 @@ class MusicControllerTest {
     @Test
     void testPlayMusic() throws IOException {
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
-        Mockito.when(consumptionModeManager.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(10000L);
+        Mockito.when(consumptionModeController.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(), Mockito.any(LocalDateTime.class))).thenReturn(10000L);
         boolean hasWorked = musicController.playMusicRandomly();
         assertTrue(hasWorked);
         assertNotNull(musicController.getCurrentMusicProcess());
@@ -72,7 +73,7 @@ class MusicControllerTest {
     @Test
     void testCocorico() throws IOException {
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
-        Mockito.when(consumptionModeManager.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(10000L);
+        Mockito.when(consumptionModeController.getDuration(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(), Mockito.any(LocalDateTime.class))).thenReturn(10000L);
         boolean hasWorked = musicController.cocorico();
         assertTrue(hasWorked);
         assertNotNull(musicController.getCurrentMusicProcess());

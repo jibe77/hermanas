@@ -4,7 +4,7 @@ import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.Appliance;
 import org.jibe77.hermanas.websocket.CoopStatus;
 import org.jibe77.hermanas.websocket.NotificationController;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.time.LocalDateTime;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,16 +47,16 @@ public class FanController {
 
     Timer fanSecurityStopTimer;
 
-    ConsumptionModeManager consumptionModeManager;
+    ConsumptionModeController consumptionModeController;
 
     NotificationController notificationController;
 
     public FanController(
             GpioHermanasController gpioHermanasController,
-            ConsumptionModeManager consumptionModeManager,
+            ConsumptionModeController consumptionModeController,
             NotificationController notificationController) {
         this.gpioHermanasController = gpioHermanasController;
-        this.consumptionModeManager = consumptionModeManager;
+        this.consumptionModeController = consumptionModeController;
         this.notificationController = notificationController;
     }
 
@@ -79,8 +80,8 @@ public class FanController {
         if (fanSecurityStopTimer != null) {
             fanSecurityStopTimer.cancel();
         }
-        long duration = consumptionModeManager.getDuration(
-                fanSecurityTimerDelayEco, fanSecurityTimerDelayRegular, fanSecurityTimerDelaySunny);
+        long duration = consumptionModeController.getDuration(
+                fanSecurityTimerDelayEco, fanSecurityTimerDelayRegular, fanSecurityTimerDelaySunny, LocalDateTime.now());
         
         fanSecurityStopTimer = new Timer("Fan security stop");
         fanSecurityStopTimer.schedule(new TimerTask() {

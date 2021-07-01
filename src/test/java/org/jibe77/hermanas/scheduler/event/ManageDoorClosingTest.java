@@ -6,7 +6,7 @@ import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.controller.music.MusicController;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class ManageDoorClosingTest {
     MusicController musicController;
     WifiController wifiController;
     NotificationService notificationService;
-    ConsumptionModeManager consumptionModeManager;
+    ConsumptionModeController consumptionModeController;
 
     @BeforeEach
     void init() {
@@ -46,11 +46,11 @@ class ManageDoorClosingTest {
         musicController = mock(MusicController.class);
         wifiController = mock(WifiController.class);
         notificationService = mock(NotificationService.class);
-        consumptionModeManager = mock(ConsumptionModeManager.class);
+        consumptionModeController = mock(ConsumptionModeController.class);
 
         manageDoorClosingEvent = new ManageDoorClosingEvent(
                 sunTimeManager, doorController, notificationService,
-                messageSource, musicController, wifiController, consumptionModeManager);
+                messageSource, musicController, wifiController, consumptionModeController);
     }
 
     @Test

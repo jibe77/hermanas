@@ -1,17 +1,12 @@
 package org.jibe77.hermanas.scheduler.event;
 
-import org.jibe77.hermanas.client.email.EmailService;
-import org.jibe77.hermanas.controller.camera.CameraController;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.fan.FanController;
 import org.jibe77.hermanas.controller.light.LightController;
-import org.jibe77.hermanas.controller.music.MusicController;
-import org.jibe77.hermanas.scheduler.job.SunRelatedJob;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.MessageSource;
 
 import java.time.LocalDateTime;
 
@@ -27,7 +22,7 @@ class ManageLightSwitchOnEventTest {
     LocalDateTime eventAlwaysInTheFutur;
     LocalDateTime eventAlwaysInThePast;
     FanController fanController;
-    ConsumptionModeManager consumptionMode;
+    ConsumptionModeController consumptionMode;
 
 
     @BeforeEach
@@ -39,7 +34,7 @@ class ManageLightSwitchOnEventTest {
         lightController = mock(LightController.class);
         doorController = mock(DoorController.class);
         fanController = mock(FanController.class);
-        consumptionMode = mock(ConsumptionModeManager.class);
+        consumptionMode = mock(ConsumptionModeController.class);
 
         manageLightSwitchingOnEvent = new ManageLightSwitchingOnEvent(sunTimeManager, lightController, doorController, fanController, consumptionMode);
     }

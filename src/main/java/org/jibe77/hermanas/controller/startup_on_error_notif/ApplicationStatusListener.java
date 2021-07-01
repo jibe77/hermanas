@@ -6,7 +6,7 @@ import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -29,17 +29,17 @@ public class ApplicationStatusListener {
     EmailService emailService;
     MessageSource messageSource;
     WifiController wifiController;
-    ConsumptionModeManager consumptionModeManager;
+    ConsumptionModeController consumptionModeController;
 
     public ApplicationStatusListener(EventRepository eventRepository, EmailService emailService,
                                      CameraController cameraController, MessageSource messageSource,
-                                     WifiController wifiController, ConsumptionModeManager consumptionModeManager) {
+                                     WifiController wifiController, ConsumptionModeController consumptionModeController) {
         this.eventRepository = eventRepository;
         this.emailService = emailService;
         this.cameraController = cameraController;
         this.messageSource = messageSource;
         this.wifiController = wifiController;
-        this.consumptionModeManager = consumptionModeManager;
+        this.consumptionModeController = consumptionModeController;
     }
 
     @PostConstruct

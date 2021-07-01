@@ -6,10 +6,9 @@ import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.MessageSource;
 
@@ -34,12 +33,12 @@ class ApplicationStatusListenerTest {
 
     WifiController wifiController = mock(WifiController.class);
 
-    ConsumptionModeManager consumptionModeManager = mock(ConsumptionModeManager.class);
+    ConsumptionModeController consumptionModeController = mock(ConsumptionModeController.class);
 
     @BeforeEach
     public void setUp() {
         applicationStatusListener = new ApplicationStatusListener(eventRepository, emailService, cameraController,
-                messageSource, wifiController, consumptionModeManager);
+                messageSource, wifiController, consumptionModeController);
         when(messageSource.getMessage(anyString(), any(), any())).thenReturn("test");
     }
 

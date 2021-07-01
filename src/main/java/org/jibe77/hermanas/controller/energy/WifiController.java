@@ -3,7 +3,7 @@ package org.jibe77.hermanas.controller.energy;
 import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.controller.ProcessLauncher;
 import org.jibe77.hermanas.controller.door.DoorController;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +19,7 @@ public class WifiController {
 
     ProcessLauncher processLauncher;
 
-    ConsumptionModeManager consumptionModeManager;
+    ConsumptionModeController consumptionModeController;
 
     DoorController doorController;
 
@@ -30,9 +30,9 @@ public class WifiController {
 
     Logger logger = LoggerFactory.getLogger(WifiController.class);
 
-    public WifiController(ProcessLauncher processLauncher, ConsumptionModeManager consumptionModeManager, DoorController doorController, EmailService emailService) {
+    public WifiController(ProcessLauncher processLauncher, ConsumptionModeController consumptionModeController, DoorController doorController, EmailService emailService) {
         this.processLauncher = processLauncher;
-        this.consumptionModeManager = consumptionModeManager;
+        this.consumptionModeController = consumptionModeController;
         this.doorController = doorController;
         this.emailService = emailService;
     }

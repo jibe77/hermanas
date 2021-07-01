@@ -6,7 +6,7 @@ import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.controller.fan.FanController;
 import org.jibe77.hermanas.controller.music.MusicController;
-import org.jibe77.hermanas.scheduler.sun.ConsumptionModeManager;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class ManageDoorOpeningEvent {
 
     NotificationService notificationService;
 
-    ConsumptionModeManager consumptionModeManager;
+    ConsumptionModeController consumptionModeController;
 
     @Value("${play.cocorico.at.sunrise.enabled}")
     private boolean cocoricoAtSunriseEnabled;
@@ -45,7 +45,7 @@ public class ManageDoorOpeningEvent {
                                   DoorController doorController, MusicController musicController,
                                   FanController fanController, WifiController wifiController,
                                   NotificationService notificationService,
-                                  ConsumptionModeManager consumptionModeManager) {
+                                  ConsumptionModeController consumptionModeController) {
         this.sunTimeManager = sunTimeManager;
         this.cameraController = cameraController;
         this.doorController = doorController;
@@ -53,14 +53,14 @@ public class ManageDoorOpeningEvent {
         this.fanController = fanController;
         this.wifiController = wifiController;
         this.notificationService = notificationService;
-        this.consumptionModeManager = consumptionModeManager;
+        this.consumptionModeController = consumptionModeController;
     }
 
     public void manageDoorOpeningEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
             if (!doorController.doorIsOpened()) {
                 logger.info("door opening event is starting now.");
-                if (cocoricoAtSunriseEnabled && !consumptionModeManager.isEcoMode()) {
+                if (cocoricoAtSunriseEnabled && !consumptionModeController.isEcoMode(LocalDateTime.now())) {
                     musicController.cocorico();
                 }
                 wifiController.turnOn();
@@ -72,7 +72,7 @@ public class ManageDoorOpeningEvent {
                         picBeforeOpening
                 );
             }
-            if (!consumptionModeManager.isEcoMode()) {
+            if (!consumptionModeController.isEcoMode(LocalDateTime.now())) {
                 fanController.switchOn();
             } else {
                 // turn off the wifi in 15 minutes
