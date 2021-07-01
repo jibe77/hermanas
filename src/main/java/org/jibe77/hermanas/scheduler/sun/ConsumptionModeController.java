@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.scheduler.sun;
 
 import org.jibe77.hermanas.controller.energy.EnergyMode;
+import org.jibe77.hermanas.controller.energy.EnergyModeConfig;
 import org.jibe77.hermanas.controller.energy.EnergyModeEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,51 @@ public class ConsumptionModeController {
 
     @Value("${consumption.mode.eco.force}")
     private boolean consumptionModeEcoForce;
+
+    @Value("${light.security.timer.delay.eco}")
+    private long lightSecurityTimerDelayEco;
+
+    @Value("${light.security.timer.delay.regular}")
+    private long lightSecurityTimerDelayRegular;
+
+    @Value("${light.security.timer.delay.sunny}")
+    private long lightSecurityTimerDelaySunny;
+
+    @Value("${fan.security.timer.delay.eco}")
+    private long fanSecurityTimerDelayEco;
+
+    @Value("${fan.security.timer.delay.regular}")
+    private long fanSecurityTimerDelayRegular;
+
+    @Value("${fan.security.timer.delay.sunny}")
+    private long fanSecurityTimerDelaySunny;
+
+    @Value("${music.security.timer.delay.eco}")
+    private long musicSecurityTimerDelayEco;
+
+    @Value("${music.security.timer.delay.regular}")
+    private long musicSecurityTimerDelayRegular;
+
+    @Value("${music.security.timer.delay.sunny}")
+    private long musicSecurityTimerDelaySunny;
+
+    @Value("${machine.shutdown.eco}")
+    boolean machineShutdownInEcoMode;
+
+    @Value("${wifi.disabled.eco}")
+    boolean wifiDisabledInEcoMode;
+
+    @Value("${machine.shutdown.sunny}")
+    boolean machineShutdownInSunnyMode;
+
+    @Value("${wifi.disabled.sunny}")
+    boolean wifiDisabledInSunnyMode;
+
+    @Value("${machine.shutdown.regular}")
+    boolean machineShutdownInRegularMode;
+
+    @Value("${wifi.disabled.regular}")
+    boolean wifiDisabledInRegularMode;
 
     public long getDuration(long ecoModeDuration, long regularModeDuration, long sunnyModeDuration, LocalDateTime time) {
         switch (getCurrentMode(time)) {
@@ -120,5 +166,34 @@ public class ConsumptionModeController {
 
     protected void setConsumptionModeEcoForce(boolean consumptionModeEcoForce) {
         this.consumptionModeEcoForce = consumptionModeEcoForce;
+    }
+
+    public EnergyModeConfig getEnergyModeConfig(EnergyModeEnum energyModeEnum) {
+        EnergyModeConfig energyModeConfig = new EnergyModeConfig();
+        energyModeConfig.setEnergyMode(energyModeEnum);
+        switch (energyModeEnum) {
+            case ECO:
+                energyModeConfig.setDurationOfFanInMilliseconds(fanSecurityTimerDelayEco);
+                energyModeConfig.setDurationOfLightInMilliseconds(lightSecurityTimerDelayEco);
+                energyModeConfig.setDurationOfMusicInMilliseconds(musicSecurityTimerDelayEco);
+                energyModeConfig.setMachineShutdown(machineShutdownInEcoMode);
+                energyModeConfig.setWifiDisabled(wifiDisabledInEcoMode);
+                break;
+            case SUNNY:
+                energyModeConfig.setDurationOfFanInMilliseconds(fanSecurityTimerDelaySunny);
+                energyModeConfig.setDurationOfLightInMilliseconds(lightSecurityTimerDelaySunny);
+                energyModeConfig.setDurationOfMusicInMilliseconds(musicSecurityTimerDelaySunny);
+                energyModeConfig.setMachineShutdown(machineShutdownInSunnyMode);
+                energyModeConfig.setWifiDisabled(wifiDisabledInSunnyMode);
+                break;
+            case REGULAR:
+                energyModeConfig.setDurationOfFanInMilliseconds(fanSecurityTimerDelayRegular);
+                energyModeConfig.setDurationOfLightInMilliseconds(lightSecurityTimerDelayRegular);
+                energyModeConfig.setDurationOfMusicInMilliseconds(musicSecurityTimerDelayRegular);
+                energyModeConfig.setMachineShutdown(machineShutdownInRegularMode);
+                energyModeConfig.setWifiDisabled(wifiDisabledInRegularMode);
+                break;
+        }
+        return energyModeConfig;
     }
 }

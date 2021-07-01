@@ -1,6 +1,5 @@
 package org.jibe77.hermanas.service;
 
-import org.jibe77.hermanas.controller.energy.EnergyMode;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.scheduler.sun.model.NextEvents;
@@ -8,7 +7,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @CrossOrigin
@@ -17,12 +15,9 @@ public class SchedulerService {
 
     SunTimeManager sunTimeManager;
 
-    ConsumptionModeController consumptionModeController;
-
     public SchedulerService(SunTimeManager sunTimeManager,
                             ConsumptionModeController consumptionModeController) {
         this.sunTimeManager = sunTimeManager;
-        this.consumptionModeController = consumptionModeController;
     }
 
     @GetMapping(value = "/scheduler/doorClosingTime")
@@ -50,10 +45,4 @@ public class SchedulerService {
     public NextEvents getNextEvents() {
         return sunTimeManager.getNextEvents();
     }
-
-    @GetMapping(value = "/scheduler/currentMode")
-    public EnergyMode getEnergyMode() {
-        return consumptionModeController.getCurrentEnergyMode(LocalDateTime.now());
-    }
-
 }
