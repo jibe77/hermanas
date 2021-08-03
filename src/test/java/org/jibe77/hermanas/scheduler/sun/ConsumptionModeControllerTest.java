@@ -1,9 +1,12 @@
 package org.jibe77.hermanas.scheduler.sun;
 
+import org.jibe77.hermanas.controller.config.ConfigController;
 import org.jibe77.hermanas.controller.energy.EnergyMode;
+import org.jibe77.hermanas.data.repository.ParameterRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -11,8 +14,11 @@ import java.time.Month;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(classes = {ConsumptionModeController.class})
+@SpringBootTest(classes = {ConsumptionModeController.class, ConfigController.class})
 public class ConsumptionModeControllerTest {
+
+    @MockBean
+    ParameterRepository parameterRepository;
 
     @Autowired
     ConsumptionModeController consumptionModeController;
@@ -32,15 +38,6 @@ public class ConsumptionModeControllerTest {
     }
 
     @Test
-    public void testSunnyMode() {
-        LocalDateTime d = LocalDateTime.of(2021, 6, 28, 5, 00);
-        consumptionModeController.setEcoModeNbrDaysAroundWinterSolstice(25);
-        consumptionModeController.setSunnyModeNbrDaysAroundSummerSolstice(100);
-        assertTrue(consumptionModeController.isSunnyMode(d));
-        assertTrue(!consumptionModeController.isEcoMode(d));
-    }
-
-    @Test
     public void testSolsticeDay() {
         assertEquals(355,
                 consumptionModeController.getWinterSolsticeDay(2021).getDayOfYear());
@@ -50,15 +47,15 @@ public class ConsumptionModeControllerTest {
 
     @Test
     public void testDuration() {
-        assertEquals(1, new ConsumptionModeController().getDuration(
+        assertEquals(1, consumptionModeController.getDuration(
                 1, 10, 100,
                 LocalDateTime.of(2020, 12, 21, 12, 00)));
-        assertEquals(100, new ConsumptionModeController().getDuration(
+        assertEquals(100, consumptionModeController.getDuration(
                 1, 10, 100,
                 LocalDateTime.of(2020, 6, 21, 12, 00)));
-        assertEquals(10, new ConsumptionModeController().getDuration(
+        assertEquals(10, consumptionModeController.getDuration(
                 1, 10, 100,
-                LocalDateTime.of(2020, 3, 21, 12, 00)));
+                LocalDateTime.of(2020, 3, 1, 12, 00)));
     }
 
     @Test
@@ -100,10 +97,11 @@ public class ConsumptionModeControllerTest {
     @Test
     public void testSolsticeAfterWinter() {
         LocalDateTime afterWinterSolstice = LocalDateTime.of(2020, 12, 31, 12, 00);
-        assertEquals(LocalDateTime.of(2020, 12, 21, 12, 00), consumptionModeController.getWinterSolstice(
-                afterWinterSolstice));
-        assertEquals(LocalDateTime.of(2021, 6, 21, 12, 00), consumptionModeController.getSummerSolstice(
-                afterWinterSolstice));
+        assertEquals(
+                LocalDateTime.of(2020, 12, 21, 12, 00),
+                consumptionModeController.getWinterSolstice(afterWinterSolstice));
+        assertEquals(LocalDateTime.of(2021, 6, 21, 12, 00),
+                consumptionModeController.getSummerSolstice(afterWinterSolstice));
     }
 
     @Test

@@ -3,6 +3,7 @@ package org.jibe77.hermanas.controller.light;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
+import org.jibe77.hermanas.controller.config.ConfigController;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.Appliance;
@@ -33,18 +34,11 @@ public class LightController {
     @Value("${light.relay.enabled}")
     private boolean lightEnabled;
 
-    @Value("${light.security.timer.delay.eco}")
-    private long lightSecurityTimerDelayEco;
-
-    @Value("${light.security.timer.delay.regular}")
-    private long lightSecurityTimerDelayRegular;
-
-    @Value("${light.security.timer.delay.sunny}")
-    private long lightSecurityTimerDelaySunny;
-
     NotificationController notificationController;
 
     private Timer lightSecurityStopTimer;
+
+    private ConfigController configController;
 
     GpioPinDigitalOutput gpioPinDigitalOutput;
 
@@ -53,10 +47,11 @@ public class LightController {
     Logger logger = LoggerFactory.getLogger(LightController.class);
 
     public LightController(GpioHermanasController gpioHermanasController, ConsumptionModeController consumptionModeController,
-                           NotificationController notificationController) {
+                           NotificationController notificationController, ConfigController configController) {
         this.gpioHermanasController = gpioHermanasController;
         this.consumptionModeController = consumptionModeController;
         this.notificationController = notificationController;
+        this.configController = configController;
     }
 
     @PostConstruct
@@ -113,7 +108,10 @@ public class LightController {
         }
         lightSecurityStopTimer = new Timer("Light security stop");
         long duration = consumptionModeController.getDuration(
-                lightSecurityTimerDelayEco, lightSecurityTimerDelayRegular, lightSecurityTimerDelaySunny, LocalDateTime.now());
+                configController.getLightSecurityTimerDelayEco(),
+                configController.getLightSecurityTimerDelayRegular(),
+                configController.getLightSecurityTimerDelaySunny(),
+                LocalDateTime.now());
         lightSecurityStopTimer.schedule(new TimerTask() {
                                             public void run() {
                                                 logger.info("stopping light after {} ms.", duration);

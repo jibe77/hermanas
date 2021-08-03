@@ -51,8 +51,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/scheduler/lightOnTime",
                         "/scheduler/nextEvents",
                         "/energy/currentMode",
+                        "/energy/dateRange",
                         "/sensor/info",
-                        "/info"
+                        "/info",
+                        "/system/version"
                         ).anonymous()
 
                 // web socket

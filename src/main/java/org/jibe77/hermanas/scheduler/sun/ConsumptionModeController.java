@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.scheduler.sun;
 
+import org.jibe77.hermanas.controller.config.ConfigController;
 import org.jibe77.hermanas.controller.energy.EnergyMode;
 import org.jibe77.hermanas.controller.energy.EnergyModeConfig;
 import org.jibe77.hermanas.controller.energy.EnergyModeEnum;
@@ -11,41 +12,8 @@ import java.time.LocalDateTime;
 @Component
 public class ConsumptionModeController {
 
-    @Value("${consumption.mode.eco.days.around.winter.solstice}")
-    private int ecoModeNbrDaysAroundWinterSolstice;
-
-    @Value("${consumption.mode.sunny.days.around.summer.solstice}")
-    private int sunnyModeNbrDaysAroundSummerSolstice;
-
     @Value("${consumption.mode.eco.force}")
     private boolean consumptionModeEcoForce;
-
-    @Value("${light.security.timer.delay.eco}")
-    private long lightSecurityTimerDelayEco;
-
-    @Value("${light.security.timer.delay.regular}")
-    private long lightSecurityTimerDelayRegular;
-
-    @Value("${light.security.timer.delay.sunny}")
-    private long lightSecurityTimerDelaySunny;
-
-    @Value("${fan.security.timer.delay.eco}")
-    private long fanSecurityTimerDelayEco;
-
-    @Value("${fan.security.timer.delay.regular}")
-    private long fanSecurityTimerDelayRegular;
-
-    @Value("${fan.security.timer.delay.sunny}")
-    private long fanSecurityTimerDelaySunny;
-
-    @Value("${music.security.timer.delay.eco}")
-    private long musicSecurityTimerDelayEco;
-
-    @Value("${music.security.timer.delay.regular}")
-    private long musicSecurityTimerDelayRegular;
-
-    @Value("${music.security.timer.delay.sunny}")
-    private long musicSecurityTimerDelaySunny;
 
     @Value("${machine.shutdown.eco}")
     boolean machineShutdownInEcoMode;
@@ -64,6 +32,12 @@ public class ConsumptionModeController {
 
     @Value("${wifi.disabled.regular}")
     boolean wifiDisabledInRegularMode;
+
+    ConfigController configController;
+
+    public ConsumptionModeController(ConfigController configController) {
+        this.configController = configController;
+    }
 
     public long getDuration(long ecoModeDuration, long regularModeDuration, long sunnyModeDuration, LocalDateTime time) {
         switch (getCurrentMode(time)) {
@@ -92,6 +66,7 @@ public class ConsumptionModeController {
      * @return true if currently in eco mode.
      */
     public boolean isEcoMode(LocalDateTime time) {
+        int ecoModeNbrDaysAroundWinterSolstice = configController.getEcoModeNbrDaysAroundWinterSolstice();
         if (consumptionModeEcoForce|| time.getDayOfYear() < (ecoModeNbrDaysAroundWinterSolstice-10)) {
             return true;
         } else {
@@ -108,6 +83,7 @@ public class ConsumptionModeController {
 
     public boolean isSunnyMode(LocalDateTime time) {
         int summerDay = getSummerSolsticeDay(time.getYear()).getDayOfYear();
+        int sunnyModeNbrDaysAroundSummerSolstice = configController.getSunnyModeNbrDaysAroundSummerSolstice();
         return time.getDayOfYear() >= (summerDay - sunnyModeNbrDaysAroundSummerSolstice) &&
                 time.getDayOfYear() <= (summerDay + sunnyModeNbrDaysAroundSummerSolstice);
     }
@@ -121,6 +97,10 @@ public class ConsumptionModeController {
     }
 
     public EnergyMode getCurrentEnergyMode(LocalDateTime time) {
+        return getCurrentEnergyMode(time, configController.getEcoModeNbrDaysAroundWinterSolstice(), configController.getSunnyModeNbrDaysAroundSummerSolstice());
+    }
+
+    public EnergyMode getCurrentEnergyMode(LocalDateTime time, int ecoModeNbrDaysAroundWinterSolstice, int sunnyModeNbrDaysAroundSummerSolstice) {
         EnergyMode energyMode = new EnergyMode();
         energyMode.setCurrentMode(getCurrentMode(time).name());
         energyMode.setEcoModeDaysAroundWinterSolstice(ecoModeNbrDaysAroundWinterSolstice);
@@ -134,11 +114,11 @@ public class ConsumptionModeController {
 
     protected LocalDateTime getWinterSolstice(LocalDateTime now) {
         LocalDateTime lastYearWinterSolstice = getWinterSolsticeDay(now.getYear()-1);
-        if (now.isBefore(lastYearWinterSolstice.plusDays(ecoModeNbrDaysAroundWinterSolstice))) {
+        if (now.isBefore(lastYearWinterSolstice.plusDays(configController.getEcoModeNbrDaysAroundWinterSolstice()))) {
             return getWinterSolsticeDay(now.getYear() -1);
         }
         LocalDateTime nextWinterSolstice = getWinterSolsticeDay(now.getYear());
-        if (now.isAfter(nextWinterSolstice.plusDays(ecoModeNbrDaysAroundWinterSolstice))) {
+        if (now.isAfter(nextWinterSolstice.plusDays(configController.getEcoModeNbrDaysAroundWinterSolstice()))) {
             return getWinterSolsticeDay(now.getYear()-1);
         }
         return nextWinterSolstice;
@@ -146,18 +126,10 @@ public class ConsumptionModeController {
 
     protected LocalDateTime getSummerSolstice(LocalDateTime now) {
         LocalDateTime nextSummerSolstice = getSummerSolsticeDay(now.getYear());
-        if (now.isAfter(nextSummerSolstice.plusDays(sunnyModeNbrDaysAroundSummerSolstice))) {
+        if (now.isAfter(nextSummerSolstice.plusDays(configController.getSunnyModeNbrDaysAroundSummerSolstice()))) {
             return getSummerSolsticeDay(now.getYear()+1);
         }
         return nextSummerSolstice;
-    }
-
-    protected void setEcoModeNbrDaysAroundWinterSolstice(int ecoModeNbrDaysAroundWinterSolstice) {
-        this.ecoModeNbrDaysAroundWinterSolstice = ecoModeNbrDaysAroundWinterSolstice;
-    }
-
-    protected void setSunnyModeNbrDaysAroundSummerSolstice(int sunnyModeNbrDaysAroundSummerSolstice) {
-        this.sunnyModeNbrDaysAroundSummerSolstice = sunnyModeNbrDaysAroundSummerSolstice;
     }
 
     public boolean isConsumptionModeEcoForce() {
@@ -173,27 +145,32 @@ public class ConsumptionModeController {
         energyModeConfig.setEnergyMode(energyModeEnum);
         switch (energyModeEnum) {
             case ECO:
-                energyModeConfig.setDurationOfFanInMilliseconds(fanSecurityTimerDelayEco);
-                energyModeConfig.setDurationOfLightInMilliseconds(lightSecurityTimerDelayEco);
-                energyModeConfig.setDurationOfMusicInMilliseconds(musicSecurityTimerDelayEco);
+                energyModeConfig.setDurationOfFanInMilliseconds(configController.getFanSecurityTimerDelayEco());
+                energyModeConfig.setDurationOfLightInMilliseconds(configController.getLightSecurityTimerDelayEco());
+                energyModeConfig.setDurationOfMusicInMilliseconds(configController.getMusicSecurityTimerDelayEco());
                 energyModeConfig.setMachineShutdown(machineShutdownInEcoMode);
                 energyModeConfig.setWifiDisabled(wifiDisabledInEcoMode);
                 break;
             case SUNNY:
-                energyModeConfig.setDurationOfFanInMilliseconds(fanSecurityTimerDelaySunny);
-                energyModeConfig.setDurationOfLightInMilliseconds(lightSecurityTimerDelaySunny);
-                energyModeConfig.setDurationOfMusicInMilliseconds(musicSecurityTimerDelaySunny);
+                energyModeConfig.setDurationOfFanInMilliseconds(configController.getFanSecurityTimerDelaySunny());
+                energyModeConfig.setDurationOfLightInMilliseconds(configController.getLightSecurityTimerDelaySunny());
+                energyModeConfig.setDurationOfMusicInMilliseconds(configController.getMusicSecurityTimerDelaySunny());
                 energyModeConfig.setMachineShutdown(machineShutdownInSunnyMode);
                 energyModeConfig.setWifiDisabled(wifiDisabledInSunnyMode);
                 break;
             case REGULAR:
-                energyModeConfig.setDurationOfFanInMilliseconds(fanSecurityTimerDelayRegular);
-                energyModeConfig.setDurationOfLightInMilliseconds(lightSecurityTimerDelayRegular);
-                energyModeConfig.setDurationOfMusicInMilliseconds(musicSecurityTimerDelayRegular);
+                energyModeConfig.setDurationOfFanInMilliseconds(configController.getFanSecurityTimerDelayRegular());
+                energyModeConfig.setDurationOfLightInMilliseconds(configController.getLightSecurityTimerDelayRegular());
+                energyModeConfig.setDurationOfMusicInMilliseconds(configController.getMusicSecurityTimerDelayRegular());
                 energyModeConfig.setMachineShutdown(machineShutdownInRegularMode);
                 energyModeConfig.setWifiDisabled(wifiDisabledInRegularMode);
                 break;
         }
+        return energyModeConfig;
+    }
+
+    public EnergyModeConfig updateEnergyModeConfig(EnergyModeConfig energyModeConfig) {
+        // TODO
         return energyModeConfig;
     }
 }

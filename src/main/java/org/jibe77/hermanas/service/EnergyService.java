@@ -8,6 +8,8 @@ import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -44,9 +46,18 @@ public class EnergyService {
         return consumptionModeController.getCurrentEnergyMode(LocalDateTime.now());
     }
 
+    @GetMapping(value = "/energy/dateRange")
+    public EnergyMode getEnergyDateRange(int daysAroundWinterSolstice, int daysAroundSummerSolstice) {
+        return consumptionModeController.getCurrentEnergyMode(LocalDateTime.now(), daysAroundWinterSolstice, daysAroundSummerSolstice);
+    }
+
     @GetMapping(value = "/energy/configMode")
     public EnergyModeConfig getEnergyConfigMode(EnergyModeEnum energyModeEnum) {
         return consumptionModeController.getEnergyModeConfig(energyModeEnum);
     }
 
+    @PutMapping(value = "/energy/updateMode")
+    public EnergyModeConfig updateEnergyConfigMode(EnergyModeConfig energyModeConfig) {
+        return consumptionModeController.updateEnergyModeConfig(energyModeConfig);
+    }
 }
