@@ -212,7 +212,7 @@ public class MusicController {
      */
     public Status getStatus() {
         logger.info("status of player is request, current process is null : {} and is alive : {}",
-                currentMusicProcess != null,
+                currentMusicProcess == null,
                 currentMusicProcess != null && currentMusicProcess.isAlive());
         return new Status (
                 (currentMusicProcess != null && currentMusicProcess.isAlive()) ? StatusEnum.ON : StatusEnum.OFF,
