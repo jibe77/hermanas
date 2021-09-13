@@ -83,7 +83,7 @@ public class ConfigController {
 
     @Cacheable(value = {"lightSecurityTimerDelayEco"})
     public long getLightSecurityTimerDelayEco() {
-        Parameter parameter = parameterRepository.findByKey("light.security.timer.delay.eco");
+        Parameter parameter = parameterRepository.findByEntryKey("light.security.timer.delay.eco");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Long.valueOf(parameter.getEntryValue());
         }
@@ -92,7 +92,7 @@ public class ConfigController {
 
     @Cacheable(value = {"lightSecurityTimerDelayRegular"})
     public long getLightSecurityTimerDelayRegular() {
-        Parameter parameter = parameterRepository.findByKey("light.security.timer.delay.regular");
+        Parameter parameter = parameterRepository.findByEntryKey("light.security.timer.delay.regular");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Long.valueOf(parameter.getEntryValue());
         }
@@ -101,7 +101,7 @@ public class ConfigController {
 
     @Cacheable(value = {"lightSecurityTimerDelaySunny"})
     public long getLightSecurityTimerDelaySunny() {
-        Parameter parameter = parameterRepository.findByKey("light.security.timer.delay.sunny");
+        Parameter parameter = parameterRepository.findByEntryKey("light.security.timer.delay.sunny");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Long.valueOf(parameter.getEntryValue());
         }
@@ -137,7 +137,7 @@ public class ConfigController {
 
     @Cacheable(value = {"fanSecurityTimerDelayEco"})
     public long getFanSecurityTimerDelayEco() {
-        Parameter parameter = parameterRepository.findByKey("fan.security.timer.delay.eco");
+        Parameter parameter = parameterRepository.findByEntryKey("fan.security.timer.delay.eco");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Long.valueOf(parameter.getEntryValue());
         }
@@ -146,7 +146,7 @@ public class ConfigController {
 
     @Cacheable(value = {"fanSecurityTimerDelayRegular"})
     public long getFanSecurityTimerDelayRegular() {
-        Parameter parameter = parameterRepository.findByKey("fan.security.timer.delay.regular");
+        Parameter parameter = parameterRepository.findByEntryKey("fan.security.timer.delay.regular");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Long.valueOf(parameter.getEntryValue());
         }
@@ -155,7 +155,7 @@ public class ConfigController {
 
     @Cacheable(value = {"fanSecurityTimerDelaySunny"})
     public long getFanSecurityTimerDelaySunny() {
-        Parameter parameter = parameterRepository.findByKey("fan.security.timer.delay.sunny");
+        Parameter parameter = parameterRepository.findByEntryKey("fan.security.timer.delay.sunny");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Long.valueOf(parameter.getEntryValue());
         }
@@ -191,7 +191,7 @@ public class ConfigController {
 
     @Cacheable(value = {"musicSecurityTimerDelayEco"})
     public long getMusicSecurityTimerDelayEco() {
-        Parameter parameter = parameterRepository.findByKey("music.security.timer.delay.eco");
+        Parameter parameter = parameterRepository.findByEntryKey("music.security.timer.delay.eco");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Long.valueOf(parameter.getEntryValue());
         }
@@ -200,7 +200,7 @@ public class ConfigController {
 
     @Cacheable(value = {"musicSecurityTimerDelayRegular"})
     public long getMusicSecurityTimerDelayRegular() {
-        Parameter parameter = parameterRepository.findByKey("music.security.timer.delay.regular");
+        Parameter parameter = parameterRepository.findByEntryKey("music.security.timer.delay.regular");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Long.valueOf(parameter.getEntryValue());
         }
@@ -209,7 +209,7 @@ public class ConfigController {
 
     @Cacheable(value = {"musicSecurityTimerDelaySunny"})
     public long getMusicSecurityTimerDelaySunny() {
-        Parameter parameter = parameterRepository.findByKey("music.security.timer.delay.sunny");
+        Parameter parameter = parameterRepository.findByEntryKey("music.security.timer.delay.sunny");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Long.valueOf(parameter.getEntryValue());
         }
@@ -218,7 +218,7 @@ public class ConfigController {
 
     @Cacheable(value = {"ecoModeNbrDaysAroundWinterSolstice"})
     public int getEcoModeNbrDaysAroundWinterSolstice() {
-        Parameter parameter = parameterRepository.findByKey("consumption.mode.eco.days.around.winter.solstice");
+        Parameter parameter = parameterRepository.findByEntryKey("consumption.mode.eco.days.around.winter.solstice");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Integer.valueOf(parameter.getEntryValue());
         }
@@ -227,7 +227,7 @@ public class ConfigController {
 
     @Cacheable(value = {"sunnyModeNbrDaysAroundSummerSolstice"})
     public int getSunnyModeNbrDaysAroundSummerSolstice() {
-        Parameter parameter = parameterRepository.findByKey("consumption.mode.sunny.days.around.summer.solstice");
+        Parameter parameter = parameterRepository.findByEntryKey("consumption.mode.sunny.days.around.summer.solstice");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
             return Integer.valueOf(parameter.getEntryValue());
         }
