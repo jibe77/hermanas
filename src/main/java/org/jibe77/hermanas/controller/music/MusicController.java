@@ -117,6 +117,16 @@ public class MusicController {
         playMusic(listOfFile, -1L);
     }
 
+    /**
+     * Launch VLC command. Warning : VLC is not supposed to be launched as root but Pi4j
+     * requires the application to be launched as root.
+     * TODO : run the following command before starting vlc
+     *  sed -i 's/geteuid/getppid/g' /usr/bin/vlc
+     * otherwise run this command each time VLC is updated.
+     * @param listOfFile
+     * @param duration
+     * @throws IOException
+     */
     private void playMusic(List<String> listOfFile, long duration) throws IOException {
         logger.info("Play music with command {} {} {}  {}.",
                 musicPlayerStartCmd, musicPlayerNoDispParam
