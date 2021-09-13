@@ -4,7 +4,6 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "param")
 public class Parameter {
 
     @Id
@@ -12,27 +11,27 @@ public class Parameter {
     private Long id;
 
     @Column(unique = true)
-    private String key;
+    private String entryKey;
 
-    private String value;
+    private String entryValue;
 
     public Parameter() {
     }
 
-    public String getKey() {
-        return key;
+    public String getEntryKey() {
+        return entryKey;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setEntryKey(String entryKey) {
+        this.entryKey = entryKey;
     }
 
-    public String getValue() {
-        return value;
+    public String getEntryValue() {
+        return entryValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setEntryValue(String entryValue) {
+        this.entryValue = entryValue;
     }
 
     @Override
@@ -40,20 +39,20 @@ public class Parameter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Parameter parameter = (Parameter) o;
-        return Objects.equals(key, parameter.key) &&
-                Objects.equals(value, parameter.value);
+        return Objects.equals(entryKey, parameter.entryValue) &&
+                Objects.equals(entryValue, parameter.entryValue);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(key, value);
+        return Objects.hash(entryKey, entryValue);
     }
 
     @Override
     public String toString() {
         return "Parameter{" +
-                "key='" + key + '\'' +
-                ", value='" + value + '\'' +
+                "entryKey='" + entryKey + '\'' +
+                ", entryValue='" + entryValue + '\'' +
                 '}';
     }
 }
