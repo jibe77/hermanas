@@ -3,6 +3,7 @@ package org.jibe77.hermanas.controller.music;
 import org.jibe77.hermanas.controller.ProcessLauncher;
 import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
+import org.jibe77.hermanas.controller.config.ConfigController;
 import org.jibe77.hermanas.controller.energy.SoundCardController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.Appliance;
@@ -56,17 +57,10 @@ public class MusicController {
     @Value("${music.volume.regular}")
     private String volumeLevelRegular;
 
-    @Value("${music.security.timer.delay.eco}")
-    private long musicSecurityTimerDelayEco;
-
-    @Value("${music.security.timer.delay.regular}")
-    private long musicSecurityTimerDelayRegular;
-
-    @Value("${music.security.timer.delay.sunny}")
-    private long musicSecurityTimerDelaySunny;
-
     @Value("${music.enabled}")
     private boolean musicEnabled;
+
+    private ConfigController configController;
 
     ProcessLauncher processLauncher;
 
@@ -83,11 +77,13 @@ public class MusicController {
     Logger logger = LoggerFactory.getLogger(MusicController.class);
 
     public MusicController(ProcessLauncher processLauncher, ConsumptionModeController consumptionModeController,
-                           SoundCardController soundCardController, NotificationController notificationController) {
+                           SoundCardController soundCardController, NotificationController notificationController,
+                           ConfigController configController) {
         this.processLauncher = processLauncher;
         this.consumptionModeController = consumptionModeController;
         this.soundCardController = soundCardController;
         this.notificationController = notificationController;
+        this.configController = configController;
     }
 
     public boolean playMusicRandomly() {
@@ -159,7 +155,10 @@ public class MusicController {
         final long duration = durationParam >= 0 ?
                 durationParam :
                 consumptionModeController.getDuration(
-                    musicSecurityTimerDelayEco, musicSecurityTimerDelayRegular, musicSecurityTimerDelaySunny, LocalDateTime.now());
+                        configController.getLightSecurityTimerDelayEco(),
+                        configController.getLightSecurityTimerDelayRegular(),
+                        configController.getLightSecurityTimerDelaySunny(),
+                        LocalDateTime.now());
         musicSecurityStopTimer.schedule(new TimerTask() {
                                             public void run() {
                                                 logger.info("stopping music after {} ms.", duration);

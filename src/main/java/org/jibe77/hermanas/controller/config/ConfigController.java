@@ -46,6 +46,27 @@ public class ConfigController {
     @Value("${consumption.mode.sunny.days.around.summer.solstice}")
     private int sunnyModeNbrDaysAroundSummerSolstice;
 
+    @Value("${consumption.mode.eco.force}")
+    private boolean consumptionModeEcoForce;
+
+    @Value("${machine.shutdown.eco}")
+    boolean machineShutdownInEcoMode;
+
+    @Value("${wifi.disabled.eco}")
+    boolean wifiDisabledInEcoMode;
+
+    @Value("${machine.shutdown.sunny}")
+    boolean machineShutdownInSunnyMode;
+
+    @Value("${wifi.disabled.sunny}")
+    boolean wifiDisabledInSunnyMode;
+
+    @Value("${machine.shutdown.regular}")
+    boolean machineShutdownInRegularMode;
+
+    @Value("${wifi.disabled.regular}")
+    boolean wifiDisabledInRegularMode;
+
     ParameterRepository parameterRepository;
 
     Logger logger = LoggerFactory.getLogger(ConfigController.class);
@@ -66,7 +87,7 @@ public class ConfigController {
     @CacheEvict(value = "lightSecurityTimerDelayRegular")
     public void setLightSecurityTimerDelayRegular(long lightSecurityTimerDelayRegular) {
         Parameter parameter = new Parameter();
-        parameter.setEntryKey("light.security.timer.delay.eco");
+        parameter.setEntryKey("light.security.timer.delay.regular");
         parameter.setEntryValue(String.valueOf(lightSecurityTimerDelayRegular));
         logger.info("Saving it db {}.", parameter.getEntryKey());
         parameterRepository.save(parameter);
@@ -75,7 +96,7 @@ public class ConfigController {
     @CacheEvict(value = "lightSecurityTimerDelaySunny")
     public void setLightSecurityTimerDelaySunny(long lightSecurityTimerDelaySunny) {
         Parameter parameter = new Parameter();
-        parameter.setEntryKey("light.security.timer.delay.eco");
+        parameter.setEntryKey("light.security.timer.delay.sunny");
         parameter.setEntryValue(String.valueOf(lightSecurityTimerDelaySunny));
         logger.info("Saving it db {}.", parameter.getEntryKey());
         parameterRepository.save(parameter);
@@ -120,7 +141,7 @@ public class ConfigController {
     @CacheEvict(value = "fanSecurityTimerDelayRegular")
     public void setFanSecurityTimerDelayRegular(long fanSecurityTimerDelayRegular) {
         Parameter parameter = new Parameter();
-        parameter.setEntryKey("fan.security.timer.delay.eco");
+        parameter.setEntryKey("fan.security.timer.delay.regular");
         parameter.setEntryValue(String.valueOf(fanSecurityTimerDelayRegular));
         logger.info("Saving it db {}.", parameter.getEntryKey());
         parameterRepository.save(parameter);
@@ -129,7 +150,7 @@ public class ConfigController {
     @CacheEvict(value = "fanSecurityTimerDelaySunny")
     public void setFanSecurityTimerDelaySunny(long fanSecurityTimerDelaySunny) {
         Parameter parameter = new Parameter();
-        parameter.setEntryKey("fan.security.timer.delay.eco");
+        parameter.setEntryKey("fan.security.timer.delay.sunny");
         parameter.setEntryValue(String.valueOf(fanSecurityTimerDelaySunny));
         logger.info("Saving it db {}.", parameter.getEntryKey());
         parameterRepository.save(parameter);
@@ -174,7 +195,7 @@ public class ConfigController {
     @CacheEvict(value = "musicSecurityTimerDelayRegular")
     public void setMusicSecurityTimerDelayRegular(long musicSecurityTimerDelayRegular) {
         Parameter parameter = new Parameter();
-        parameter.setEntryKey("music.security.timer.delay.eco");
+        parameter.setEntryKey("music.security.timer.delay.regular");
         parameter.setEntryValue(String.valueOf(musicSecurityTimerDelayRegular));
         logger.info("Saving in db {}.", parameter.getEntryKey());
         parameterRepository.save(parameter);
@@ -183,7 +204,7 @@ public class ConfigController {
     @CacheEvict(value = "musicSecurityTimerDelaySunny")
     public void setMusicSecurityTimerDelaySunny(long musicSecurityTimerDelaySunny) {
         Parameter parameter = new Parameter();
-        parameter.setEntryKey("music.security.timer.delay.eco");
+        parameter.setEntryKey("music.security.timer.delay.sunny");
         parameter.setEntryValue(String.valueOf(musicSecurityTimerDelaySunny));
         logger.info("Saving in db {}.", parameter.getEntryKey());
         parameterRepository.save(parameter);
@@ -248,6 +269,133 @@ public class ConfigController {
         Parameter parameter = new Parameter();
         parameter.setEntryKey("consumption.mode.sunny.days.around.summer.solstice");
         parameter.setEntryValue(String.valueOf(sunnyModeNbrDaysAroundSummerSolstice));
+        logger.info("Saving in db {}.", parameter.getEntryKey());
+        parameterRepository.save(parameter);
+    }
+
+    @Cacheable(value = {"consumptionModeEcoForce"})
+    public boolean isConsumptionModeEcoForce() {
+        Parameter parameter = parameterRepository.findByEntryKey("consumption.mode.eco.force");
+        if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
+            return Boolean.valueOf(parameter.getEntryValue());
+        }
+        return consumptionModeEcoForce;
+    }
+
+    @CacheEvict(value = "consumptionModeEcoForce")
+    public void setConsumptionModeEcoForce(boolean consumptionModeEcoForce) {
+        this.consumptionModeEcoForce = consumptionModeEcoForce;
+        Parameter parameter = new Parameter();
+        parameter.setEntryKey("consumption.mode.eco.force");
+        parameter.setEntryValue(String.valueOf(consumptionModeEcoForce));
+        logger.info("Saving in db {}.", parameter.getEntryKey());
+        parameterRepository.save(parameter);
+    }
+
+    @Cacheable(value = {"machineShutdownInEcoMode"})
+    public boolean isMachineShutdownInEcoMode() {
+        Parameter parameter = parameterRepository.findByEntryKey("machine.shutdown.eco");
+        if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
+            return Boolean.valueOf(parameter.getEntryValue());
+        }
+        return machineShutdownInEcoMode;
+    }
+
+    @CacheEvict(value = "machineShutdownInEcoMode")
+    public void setMachineShutdownInEcoMode(boolean machineShutdownInEcoMode) {
+        Parameter parameter = new Parameter();
+        parameter.setEntryKey("machine.shutdown.eco");
+        parameter.setEntryValue(String.valueOf(machineShutdownInEcoMode));
+        logger.info("Saving in db {}.", parameter.getEntryKey());
+        parameterRepository.save(parameter);
+    }
+
+    @Cacheable(value = {"wifiDisabledInEcoMode"})
+    public boolean isWifiDisabledInEcoMode() {
+        Parameter parameter = parameterRepository.findByEntryKey("wifi.disabled.eco");
+        if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
+            return Boolean.valueOf(parameter.getEntryValue());
+        }
+        return wifiDisabledInEcoMode;
+    }
+
+    @CacheEvict(value = "wifiDisabledInEcoMode")
+    public void setWifiDisabledInEcoMode(boolean wifiDisabledInEcoMode) {
+        Parameter parameter = new Parameter();
+        parameter.setEntryKey("wifi.disabled.eco");
+        parameter.setEntryValue(String.valueOf(wifiDisabledInEcoMode));
+        logger.info("Saving in db {}.", parameter.getEntryKey());
+        parameterRepository.save(parameter);
+    }
+
+    @Cacheable(value = {"machineShutdownInSunnyMode"})
+    public boolean isMachineShutdownInSunnyMode() {
+        Parameter parameter = parameterRepository.findByEntryKey("machine.shutdown.sunny");
+        if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
+            return Boolean.valueOf(parameter.getEntryValue());
+        }
+        return machineShutdownInSunnyMode;
+    }
+
+    @CacheEvict(value = "machineShutdownInSunnyMode")
+    public void setMachineShutdownInSunnyMode(boolean machineShutdownInSunnyMode) {
+        Parameter parameter = new Parameter();
+        parameter.setEntryKey("machine.shutdown.sunny");
+        parameter.setEntryValue(String.valueOf(machineShutdownInSunnyMode));
+        logger.info("Saving in db {}.", parameter.getEntryKey());
+        parameterRepository.save(parameter);
+    }
+
+    @Cacheable(value = {"wifiDisabledInSunnyMode"})
+    public boolean isWifiDisabledInSunnyMode() {
+        Parameter parameter = parameterRepository.findByEntryKey("wifi.disabled.sunny");
+        if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
+            return Boolean.valueOf(parameter.getEntryValue());
+        }
+        return wifiDisabledInSunnyMode;
+    }
+
+    @CacheEvict(value = "wifiDisabledInSunnyMode")
+    public void setWifiDisabledInSunnyMode(boolean wifiDisabledInSunnyMode) {
+        Parameter parameter = new Parameter();
+        parameter.setEntryKey("wifi.disabled.sunny");
+        parameter.setEntryValue(String.valueOf(wifiDisabledInSunnyMode));
+        logger.info("Saving in db {}.", parameter.getEntryKey());
+        parameterRepository.save(parameter);
+    }
+
+    @Cacheable(value = {"machineShutdownInRegularMode"})
+    public boolean isMachineShutdownInRegularMode() {
+        Parameter parameter = parameterRepository.findByEntryKey("machine.shutdown.regular");
+        if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
+            return Boolean.valueOf(parameter.getEntryValue());
+        }
+        return machineShutdownInRegularMode;
+    }
+
+    @CacheEvict(value = "machineShutdownInRegularMode")
+    public void setMachineShutdownInRegularMode(boolean machineShutdownInRegularMode) {
+        Parameter parameter = new Parameter();
+        parameter.setEntryKey("machine.shutdown.regular");
+        parameter.setEntryValue(String.valueOf(machineShutdownInRegularMode));
+        logger.info("Saving in db {}.", parameter.getEntryKey());
+        parameterRepository.save(parameter);
+    }
+
+    @Cacheable(value = {"wifiDisabledInRegularMode"})
+    public boolean isWifiDisabledInRegularMode() {
+        Parameter parameter = parameterRepository.findByEntryKey("wifi.disabled.regular");
+        if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
+            return Boolean.valueOf(parameter.getEntryValue());
+        }
+        return wifiDisabledInRegularMode;
+    }
+
+    @CacheEvict(value = "wifiDisabledInRegularMode")
+    public void setWifiDisabledInRegularMode(boolean machineShutdownInRegularMode) {
+        Parameter parameter = new Parameter();
+        parameter.setEntryKey("wifi.disabled.regular");
+        parameter.setEntryValue(String.valueOf(wifiDisabledInRegularMode));
         logger.info("Saving in db {}.", parameter.getEntryKey());
         parameterRepository.save(parameter);
     }

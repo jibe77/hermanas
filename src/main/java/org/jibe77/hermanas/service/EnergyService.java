@@ -8,7 +8,6 @@ import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -57,7 +56,7 @@ public class EnergyService {
     }
 
     @PutMapping(value = "/energy/updateMode")
-    public EnergyModeConfig updateEnergyConfigMode(EnergyModeConfig energyModeConfig) {
-        return consumptionModeController.updateEnergyModeConfig(energyModeConfig);
+    public void updateEnergyConfigMode(EnergyModeConfig energyModeConfig) {
+        consumptionModeController.updateEnergyModeConfig(energyModeConfig);
     }
 }

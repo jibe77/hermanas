@@ -21,6 +21,9 @@ public class ConsumptionModeControllerTest {
     ParameterRepository parameterRepository;
 
     @Autowired
+    ConfigController configController;
+
+    @Autowired
     ConsumptionModeController consumptionModeController;
 
     @Test
@@ -60,8 +63,8 @@ public class ConsumptionModeControllerTest {
 
     @Test
     public void testDurationEcoModeForce() {
-        consumptionModeController.setConsumptionModeEcoForce(true);
-        assertTrue(consumptionModeController.isConsumptionModeEcoForce());
+        configController.setConsumptionModeEcoForce(true);
+        assertTrue(configController.isConsumptionModeEcoForce());
         assertEquals(1, consumptionModeController.getDuration(
                 1, 10, 100,
                 LocalDateTime.of(2020, 12, 21, 12, 00)));
@@ -71,12 +74,13 @@ public class ConsumptionModeControllerTest {
         assertEquals(1, consumptionModeController.getDuration(
                 1, 10, 100,
                 LocalDateTime.of(2020, 3, 21, 12, 00)));
+        configController.setConsumptionModeEcoForce(false);
     }
 
     @Test
     public void testSolsticeBeforeWinterInRegularMode() {
-        consumptionModeController.setConsumptionModeEcoForce(false);
-        assertTrue(!consumptionModeController.isConsumptionModeEcoForce());
+        configController.setConsumptionModeEcoForce(false);
+        assertTrue(!configController.isConsumptionModeEcoForce());
         LocalDateTime beforeWinterSolsticeInRegularMode = LocalDateTime.of(2020, 11, 10, 12, 00);
         assertEquals(LocalDateTime.of(2020, 12, 21, 12, 00), consumptionModeController.getWinterSolstice(
                 beforeWinterSolsticeInRegularMode));
@@ -86,7 +90,7 @@ public class ConsumptionModeControllerTest {
 
     @Test
     public void testSolsticeBeforeWinter() {
-        consumptionModeController.setConsumptionModeEcoForce(false);
+        configController.setConsumptionModeEcoForce(false);
         LocalDateTime beforeWinterSolstice = LocalDateTime.of(2020, 12, 10, 12, 00);
         assertEquals(LocalDateTime.of(2020, 12, 21, 12, 00), consumptionModeController.getWinterSolstice(
                 beforeWinterSolstice));

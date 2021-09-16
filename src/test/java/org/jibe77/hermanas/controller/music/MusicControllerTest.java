@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.controller.music;
 
 import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.controller.config.ConfigController;
 import org.jibe77.hermanas.controller.energy.SoundCardController;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
@@ -37,6 +38,9 @@ class MusicControllerTest {
 
     @MockBean
     NotificationController notificationController;
+
+    @MockBean
+    ConfigController configController;
 
     @Test
     void testStopWithoutCurrentProcess() {

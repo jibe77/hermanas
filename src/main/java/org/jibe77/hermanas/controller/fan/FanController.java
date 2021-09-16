@@ -3,6 +3,7 @@ package org.jibe77.hermanas.controller.fan;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
+import org.jibe77.hermanas.controller.config.ConfigController;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.Appliance;
@@ -32,14 +33,7 @@ public class FanController {
     @Value("${fan.relay.enabled}")
     private boolean fanEnabled;
 
-    @Value("${fan.security.timer.delay.eco}")
-    private long fanSecurityTimerDelayEco;
-
-    @Value("${fan.security.timer.delay.regular}")
-    private long fanSecurityTimerDelayRegular;
-
-    @Value("${fan.security.timer.delay.sunny}")
-    private long fanSecurityTimerDelaySunny;
+    private ConfigController configController;
 
     GpioPinDigitalOutput gpioPinDigitalOutput;
 
@@ -54,10 +48,12 @@ public class FanController {
     public FanController(
             GpioHermanasController gpioHermanasController,
             ConsumptionModeController consumptionModeController,
-            NotificationController notificationController) {
+            NotificationController notificationController,
+            ConfigController configController) {
         this.gpioHermanasController = gpioHermanasController;
         this.consumptionModeController = consumptionModeController;
         this.notificationController = notificationController;
+        this.configController = configController;
     }
 
     @PostConstruct
@@ -81,7 +77,10 @@ public class FanController {
             fanSecurityStopTimer.cancel();
         }
         long duration = consumptionModeController.getDuration(
-                fanSecurityTimerDelayEco, fanSecurityTimerDelayRegular, fanSecurityTimerDelaySunny, LocalDateTime.now());
+                configController.getFanSecurityTimerDelayEco(),
+                configController.getFanSecurityTimerDelayRegular(),
+                configController.getFanSecurityTimerDelaySunny(),
+                LocalDateTime.now());
         
         fanSecurityStopTimer = new Timer("Fan security stop");
         fanSecurityStopTimer.schedule(new TimerTask() {
