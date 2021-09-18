@@ -4,12 +4,10 @@ import org.jibe77.hermanas.client.email.NotificationService;
 import org.jibe77.hermanas.controller.door.DoorController;
 import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.controller.energy.WifiController;
-import org.jibe77.hermanas.controller.music.MusicController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
@@ -26,26 +24,20 @@ public class ManageDoorClosingEvent {
 
     MessageSource messageSource;
 
-    MusicController musicController;
-
     WifiController wifiController;
 
     ConsumptionModeController consumptionModeController;
-
-    @Value("${play.song.at.sunset}")
-    private boolean playSongAtSunset;
 
     Logger logger = LoggerFactory.getLogger(ManageDoorClosingEvent.class);
 
     public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController,
                                   NotificationService notificationService, MessageSource messageSource,
-                                  MusicController musicController, WifiController wifiController,
+                                  WifiController wifiController,
                                   ConsumptionModeController consumptionModeController) {
         this.sunTimeManager = sunTimeManager;
         this.doorController = doorController;
         this.notificationService = notificationService;
         this.messageSource = messageSource;
-        this.musicController = musicController;
         this.wifiController = wifiController;
         this.consumptionModeController = consumptionModeController;
     }
@@ -70,14 +62,8 @@ public class ManageDoorClosingEvent {
             if (consumptionModeController.isEcoMode(LocalDateTime.now())) {
                 // turn off the wifi in 15 minutes
                 wifiController.turnOffAfter(900);
-            } else if (playSongAtSunset) {
-                musicController.playMusicRandomly();
             }
             sunTimeManager.reloadDoorClosingTime();
         }
-    }
-
-    protected void setPlaySongAtSunset(boolean playSongAtSunset) {
-        this.playSongAtSunset = playSongAtSunset;
     }
 }
