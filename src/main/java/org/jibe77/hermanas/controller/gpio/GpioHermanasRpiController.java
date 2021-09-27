@@ -2,11 +2,7 @@ package org.jibe77.hermanas.controller.gpio;
 
 import com.pi4j.Pi4J;
 import com.pi4j.context.Context;
-import com.pi4j.io.gpio.*;
-import com.pi4j.io.gpio.digital.DigitalInput;
-import com.pi4j.io.gpio.digital.DigitalInputConfigBuilder;
-import com.pi4j.io.gpio.digital.DigitalOutput;
-import com.pi4j.io.gpio.digital.PullResistance;
+import com.pi4j.io.gpio.digital.*;
 import com.pi4j.io.pwm.Pwm;
 import com.pi4j.io.pwm.PwmConfig;
 import com.pi4j.io.pwm.PwmType;
@@ -38,7 +34,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @Profile("gpio-rpi")
 public class GpioHermanasRpiController implements GpioHermanasController {
 
-    private Context gpio;
+    private Context pi4j;
 
     private CameraConfiguration highQualityConfig;
 
@@ -73,21 +69,21 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     private void initialiseGpioPins() {
         logger.info("Initialise GPIO ...");
         try {
-            logger.info("Load picam JNI implementation from .so file {}.",  picamJniImplementation);
+            logger.info("Load picam JNI implementation from .so file {}.", picamJniImplementation);
 
             // Loading native implementation doesn't work from spring boot fatjarù
             // PicamNativeLibrary.installTempLibrary();
             // Here is a workaround, consisting in charging extracted .so from filesystem.
             System.load(picamJniImplementation);
-
-            gpio = Pi4J.newAutoContext();
+            logger.info("Init pi4j context.");
+            pi4j = Pi4J.newAutoContext();
 
             //Set the PinNumber pin to be a PWM pin, with values changing from 0 to 250
             //this will give enough resolution to the servo motor
-            PwmConfig pwmConfig = Pwm.newConfigBuilder(gpio).id("servo").name("Servo")
+            PwmConfig pwmConfig = Pwm.newConfigBuilder(pi4j).id("servo").name("Servo")
                     .address(doorServoGpioAddress).pwmType(PwmType.SOFTWARE)
                     .initial(0).shutdown(0).build();
-            this.pwm = gpio.create(pwmConfig);
+            this.pwm = pi4j.create(pwmConfig);
 
         } catch (UnsatisfiedLinkError e) {
             logger.error("Can't find wiringpi, is it installed on your machine ?", e);
@@ -97,17 +93,17 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     @Override
     public void takePicture(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
-        CompletableFuture<Void> future= takePictureAsync(filePictureCaptureHandler, highQuality);
+        CompletableFuture<Void> future = takePictureAsync(filePictureCaptureHandler, highQuality);
         try {
-            future.get( 10, SECONDS);
-        } catch (InterruptedException|ExecutionException|TimeoutException e) {
+            future.get(10, SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new IOException(e);
         }
     }
 
     @Async
     public CompletableFuture<Void> takePictureAsync(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
-        try (Camera camera = new Camera(highQuality ? highQualityConfig : regularQualityconfig)){
+        try (Camera camera = new Camera(highQuality ? highQualityConfig : regularQualityconfig)) {
             camera.takePicture(filePictureCaptureHandler, highQuality ? photoHighDelay : photoRegularDelay);
         } catch (CaptureFailedException e) {
             throw new IOException("Can't capture a picture.", e);
@@ -120,7 +116,7 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     @PreDestroy
     private void tearDown() {
         logger.info("Shutdown gpio instance.");
-        gpio.shutdown();
+        pi4j.shutdown();
     }
 
     public void moveServo(int doorServoGpioAddress, int positionNumber) {
@@ -129,14 +125,14 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     }
 
     public DigitalInput provisionInput(String id, String name, int gpioAddress) {
-        DigitalInputConfigBuilder d = DigitalInput.newConfigBuilder(gpio)
+        DigitalInputConfigBuilder d = DigitalInput.newConfigBuilder(pi4j)
                 .id(id)
                 .name(name)
                 .address(gpioAddress)
                 .pull(PullResistance.PULL_DOWN)
                 .debounce(3000L)
                 .provider("pigpio-digital-input");
-        return gpio.create(d);
+        return pi4j.create(d);
 
         //return gpio.provisionDigitalInputPin(
         //        RaspiPin.getPinByAddress(gpioAddress), PinPullResistance.PULL_DOWN);
@@ -144,6 +140,12 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     @Override
     public DigitalOutput provisionOutput(int gpioAddress) {
-        return gpio.dout().create(gpioAddress);
+        DigitalOutput digitalOutput = pi4j.dout().create(gpioAddress);
+        digitalOutput.config().shutdownState(DigitalState.LOW);
+        digitalOutput.addListener(event -> {
+            logger.info("Event on {} on address {}, state is now {}",
+                    event.source().getId(), event.source().getAddress(), event.state());
+        });
+        return digitalOutput;
     }
 }
