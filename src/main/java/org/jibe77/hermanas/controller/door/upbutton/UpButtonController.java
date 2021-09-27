@@ -35,9 +35,11 @@ public class UpButtonController {
     @PostConstruct
     public synchronized void provisionButton() {
         logger.info("provision door button on gpio instance.");
-        upButton = gpioHermanasController.provisionInput(
-                "door_up_button", "Door up button", doorButtonUpGpioAddress);
-        upButton.addListener(event -> manageEvent(event));
+        if (upButton == null) {
+            upButton = gpioHermanasController.provisionInput(
+                    "door_up_button", "Door up button", doorButtonUpGpioAddress);
+            upButton.addListener(event -> manageEvent(event));
+        }
     }
 
     private void manageEvent(DigitalStateChangeEvent event) {
