@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.controller.light;
 
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.digital.DigitalOutput;
 import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.config.ConfigController;
@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.time.LocalDateTime;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,7 +39,7 @@ public class LightController {
 
     private ConfigController configController;
 
-    GpioPinDigitalOutput gpioPinDigitalOutput;
+    DigitalOutput gpioPinDigitalOutput;
 
     ConsumptionModeController consumptionModeController;
 
@@ -98,8 +97,8 @@ public class LightController {
      */
     public Status getStatus() {
         return new Status(lightEnabled &&
-                gpioPinDigitalOutput.getState() != null &&
-                gpioPinDigitalOutput.getState().isHigh() ? StatusEnum.ON : StatusEnum.OFF, -1);
+                gpioPinDigitalOutput.state() != null &&
+                gpioPinDigitalOutput.state().isHigh() ? StatusEnum.ON : StatusEnum.OFF, -1);
     }
 
     private void startSecurityTimer() {
@@ -119,13 +118,5 @@ public class LightController {
                                             }
                                         },
                 duration);
-    }
-
-    @PreDestroy
-    private void tearDown() {
-        if (lightEnabled) {
-            switchOff();
-            gpioHermanasController.unprovisionPin(gpioPinDigitalOutput);
-        }
     }
 }

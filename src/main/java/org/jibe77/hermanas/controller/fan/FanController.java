@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.controller.fan;
 
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.digital.DigitalOutput;
 import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.config.ConfigController;
@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.time.LocalDateTime;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,7 +34,7 @@ public class FanController {
 
     private ConfigController configController;
 
-    GpioPinDigitalOutput gpioPinDigitalOutput;
+    DigitalOutput gpioPinDigitalOutput;
 
     Logger logger = LoggerFactory.getLogger(FanController.class);
 
@@ -104,14 +103,6 @@ public class FanController {
         }
     }
 
-    @PreDestroy
-    private void tearDown() {
-        if (fanEnabled) {
-            switchOff();
-            gpioHermanasController.unprovisionPin(gpioPinDigitalOutput);
-        }
-    }
-
     /**
      * if the light is enabled and the pin is high, then returns true
      *
@@ -120,8 +111,8 @@ public class FanController {
     public Status getStatus() {
         return new Status(
          fanEnabled &&
-                gpioPinDigitalOutput.getState() != null &&
-                gpioPinDigitalOutput.getState().isHigh() ? StatusEnum.ON : StatusEnum.OFF, -1);
+                gpioPinDigitalOutput.state() != null &&
+                gpioPinDigitalOutput.state().isHigh() ? StatusEnum.ON : StatusEnum.OFF, -1);
     }
 
     public Status switcher(boolean param) {

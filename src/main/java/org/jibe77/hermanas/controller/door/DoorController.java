@@ -109,7 +109,6 @@ public class DoorController {
             }
             logger.info("... the door has been closed !");
             this.lastClosingTime = LocalDateTime.now();
-            bottomButtonController.unprovisionButton();
         } else {
             logger.info("Door is not closed because is already closed state.");
         }
@@ -164,7 +163,6 @@ public class DoorController {
                 notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENED_INCORRECTLY));
             }
             logger.info("... done");
-            upButtonController.unprovisionButton();
         } else {
             logger.info("Door is not opened because is already closed state.");
         }

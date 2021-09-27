@@ -1,13 +1,10 @@
 package org.jibe77.hermanas.controller.door;
 
-import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioPinDigitalInput;
-import org.jibe77.hermanas.controller.camera.CameraController;
+import com.pi4j.io.gpio.digital.DigitalInput;
 import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
 import org.jibe77.hermanas.controller.door.upbutton.UpButtonController;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
-import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.websocket.NotificationController;
 import org.junit.jupiter.api.Test;
@@ -17,10 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Optional;
 
 @SpringBootTest(classes = {DoorController.class})
 class ServoControllerTest {
@@ -35,9 +28,6 @@ class ServoControllerTest {
     GpioHermanasController gpioHermanasController;
 
     @MockBean
-    GpioController gpioController;
-
-    @MockBean
     BottomButtonController bottomButtonController;
 
     @MockBean
@@ -47,7 +37,7 @@ class ServoControllerTest {
     SunTimeManager sunTimeManager;
 
     @MockBean
-    GpioPinDigitalInput gpioPinDigitalInput;
+    DigitalInput gpioPinDigitalInput;
 
     @MockBean
     NotificationController notificationController;
@@ -59,7 +49,7 @@ class ServoControllerTest {
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... started.");
         Mockito.when(
                 gpioHermanasController.provisionInput(
-                        Mockito.anyInt())
+                        Mockito.anyString(), Mockito.anyString(), Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
         controller.closeDoor(true, false);
         Mockito.verify(

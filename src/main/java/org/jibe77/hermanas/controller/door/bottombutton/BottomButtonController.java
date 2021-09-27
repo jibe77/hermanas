@@ -1,52 +1,54 @@
 package org.jibe77.hermanas.controller.door.bottombutton;
 
-import com.pi4j.io.gpio.GpioPinDigitalInput;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
+import com.pi4j.io.gpio.digital.DigitalInput;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
 @Component
 public class BottomButtonController {
 
-    final
-    ServoMotorController servoMotorController;
+    final GpioHermanasController gpioHermanasController;
 
-    final
-    GpioHermanasController gpioHermanasController;
+    final ServoMotorController servoMotorController;
 
     @Value("${door.button.bottom.gpio.address}")
     private int doorButtonBottomGpioAddress;
 
-    private GpioPinDigitalInput bottomButton;
+    private DigitalInput bottomButton;
+
 
     boolean bottomButtonHasBeenPressed = false;
 
     Logger logger = LoggerFactory.getLogger(BottomButtonController.class);
 
-    public BottomButtonController(ServoMotorController servoMotorController, GpioHermanasController gpioHermanasController) {
-        this.servoMotorController = servoMotorController;
+    public BottomButtonController(GpioHermanasController gpioHermanasController, ServoMotorController servoMotorController) {
         this.gpioHermanasController = gpioHermanasController;
+        this.servoMotorController = servoMotorController;
     }
 
+    @PostConstruct
     public synchronized void provisionButton() {
         if (bottomButton == null) {
             logger.info("provision door button on gpio instance.");
-            bottomButton = gpioHermanasController.provisionInput(doorButtonBottomGpioAddress);
-            bottomButton.setShutdownOptions(true);
-            bottomButton.addListener(new BottomButtonListener(this, servoMotorController));
-        }
-    }
-
-    public synchronized void unprovisionButton() {
-        resetBottomButtonState();
-        if (bottomButton != null) {
-            logger.info("unprovision door button on gpio instance.");
-            bottomButton.removeAllListeners();
-            gpioHermanasController.unprovisionPin(bottomButton);
-            bottomButton = null;
+            bottomButton = gpioHermanasController.provisionInput(
+                    "door_bottom_button",
+                    "Door bottom button",
+                    doorButtonBottomGpioAddress);
+            bottomButton.addListener(event -> {
+                if (event.state().isHigh()) {
+                    logger.info("Door has reached the bottom, stop servomotor now !");
+                    this.bottomButtonHasBeenPressed = true;
+                    servoMotorController.stop();
+                } else if (event.state().isLow()) {
+                    logger.info("Bottom button is not pressed anymore.");
+                }
+            });
         }
     }
 
@@ -58,19 +60,7 @@ public class BottomButtonController {
         return bottomButtonHasBeenPressed;
     }
 
-    void setBottomButtonHasBeenPressed(boolean bottomButtonHasBeenPressed) {
-        this.bottomButtonHasBeenPressed = bottomButtonHasBeenPressed;
-    }
-
     public synchronized boolean isBottomButtonPressed() {
-        boolean isButtonNull = bottomButton == null;
-        if (isButtonNull) {
-            provisionButton();
-        }
-        boolean isHigh = bottomButton.isHigh();
-        if (isButtonNull) {
-            unprovisionButton();
-        }
-        return isHigh;
+        return bottomButton.isHigh();
     }
 }

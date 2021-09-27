@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.controller.birdhouse;
 
-import com.pi4j.io.gpio.GpioPinDigitalInput;
+import com.pi4j.io.gpio.digital.DigitalInput;
+import com.pi4j.io.gpio.digital.DigitalStateChangeEvent;
+import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.jibe77.hermanas.controller.light.LightController;
 import org.slf4j.Logger;
@@ -11,7 +13,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -20,7 +21,7 @@ public class BirdhouseButtonController {
     @Value("${birdhouse.button.gpio.address}")
     private int buttonGpioAddress;
 
-    private GpioPinDigitalInput button;
+    private DigitalInput button;
 
     private GpioHermanasController gpioHermanasController;
 
@@ -36,32 +37,29 @@ public class BirdhouseButtonController {
     }
 
     @PostConstruct
-    void init() {
-        logger.info("Init Birdhouse controller at startup.");
-        provisionButton();
-    }
-
-    private synchronized void provisionButton() {
+    synchronized void initButton() {
+        logger.info("provision birdhouse button on gpio instance.");
         if (button == null) {
-            logger.info("provision birdhouse button on gpio instance.");
-            button = gpioHermanasController.provisionInput(buttonGpioAddress);
-            button.setShutdownOptions(true);
-            button.addListener(new BirdhouseButtonListener(this, lightController));
+            button = gpioHermanasController.provisionInput("birdhouse_button", "Birdhouse button", buttonGpioAddress);
+            button.addListener(event -> manageEvent(event));
         }
     }
 
-    @PreDestroy
-    void tearDown() {
-        logger.info("Tear down Birdhouse controller at shutdown.");
-        unprovisionButton();
-    }
-
-    private synchronized void unprovisionButton() {
-        if (button != null) {
-            logger.info("unprovision door button on gpio instance.");
-            button.removeAllListeners();
-            gpioHermanasController.unprovisionPin(button);
-            button = null;
+    void manageEvent(DigitalStateChangeEvent event) {
+        if (event.state().isHigh()) {
+            logger.info("Birdhouse button is pressed.");
+            if (StatusEnum.ON.equals(lightController.getStatus().getStatusEnum())) {
+                setLightHasBeenSwitchedOnByBirdhouseDoor(false);
+            } else {
+                setLightHasBeenSwitchedOnByBirdhouseDoor(true);
+                lightController.switchOn();
+            }
+        } else if (event.state().isLow()) {
+            logger.info("Birdhouse button is not pressed anymore.");
+            if (isLightHasBeenSwitchedOnByBirdhouseDoor()) {
+                lightController.switchOff();
+            }
+            setLightHasBeenSwitchedOnByBirdhouseDoor(false);
         }
     }
 
@@ -73,7 +71,7 @@ public class BirdhouseButtonController {
         return this.lightHasBeenSwitchedOnByBirdhouseDoor;
     }
 
-    void setButton(GpioPinDigitalInput button) {
+    void setButton(DigitalInput button) {
         this.button = button;
     }
 }

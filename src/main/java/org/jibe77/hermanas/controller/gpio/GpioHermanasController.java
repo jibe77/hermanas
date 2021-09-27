@@ -1,25 +1,18 @@
 package org.jibe77.hermanas.controller.gpio;
 
-import com.pi4j.io.gpio.GpioPin;
-import com.pi4j.io.gpio.GpioPinDigitalInput;
-import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.digital.DigitalInput;
+import com.pi4j.io.gpio.digital.DigitalOutput;
 import uk.co.caprica.picam.FilePictureCaptureHandler;
 
 import java.io.IOException;
 
 public interface GpioHermanasController {
 
-    GpioPinDigitalInput provisionInput(int gpioAddress);
+    DigitalInput provisionInput(String id, String name, int gpioAddress);
 
-    GpioPinDigitalOutput provisionOutput(int gpioAddress);
-
-    void unprovisionPin(GpioPin pin);
+    DigitalOutput provisionOutput(int gpioAddress);
 
     void moveServo(int doorServoGpioAddress, int positionNumber);
 
     void takePicture(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQualityConfig) throws IOException;
-
-    void initSensor(int pinNumber);
-
-    void sendStartSignal(int pinNumber);
 }

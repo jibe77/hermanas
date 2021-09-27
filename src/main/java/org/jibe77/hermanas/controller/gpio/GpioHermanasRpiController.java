@@ -1,8 +1,15 @@
 package org.jibe77.hermanas.controller.gpio;
 
+import com.pi4j.Pi4J;
+import com.pi4j.context.Context;
 import com.pi4j.io.gpio.*;
-import com.pi4j.wiringpi.Gpio;
-import com.pi4j.wiringpi.SoftPwm;
+import com.pi4j.io.gpio.digital.DigitalInput;
+import com.pi4j.io.gpio.digital.DigitalInputConfigBuilder;
+import com.pi4j.io.gpio.digital.DigitalOutput;
+import com.pi4j.io.gpio.digital.PullResistance;
+import com.pi4j.io.pwm.Pwm;
+import com.pi4j.io.pwm.PwmConfig;
+import com.pi4j.io.pwm.PwmType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,11 +38,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @Profile("gpio-rpi")
 public class GpioHermanasRpiController implements GpioHermanasController {
 
-    private GpioController gpio;
+    private Context gpio;
 
     private CameraConfiguration highQualityConfig;
 
     private CameraConfiguration regularQualityconfig;
+
+    private Pwm pwm;
 
     Logger logger = LoggerFactory.getLogger(GpioHermanasRpiController.class);
 
@@ -71,28 +80,15 @@ public class GpioHermanasRpiController implements GpioHermanasController {
             // Here is a workaround, consisting in charging extracted .so from filesystem.
             System.load(picamJniImplementation);
 
-            gpio = GpioFactory.getInstance();
-
-            /*
-             * Before interacting with Pi4J, you must first create a new GPIO
-             *  controller instance. The GpioFactory includes a createInstance
-             * method to create the GPIO controller. Your project should only
-             * instantiate a single GPIO controller instance and that instance
-             * should be shared across your project.
-             */
-            Gpio.wiringPiSetup();
+            gpio = Pi4J.newAutoContext();
 
             //Set the PinNumber pin to be a PWM pin, with values changing from 0 to 250
             //this will give enough resolution to the servo motor
-            int returnValue = SoftPwm.softPwmCreate(
-                    doorServoGpioAddress,
-                    0,
-                    doorSettingRange);
-            if (returnValue != 0) {
-                logger.warn("The door setting doesn't seem to initialise correctly, return value : {}", returnValue);
-            } else {
-                logger.info("The door servomotor has been initialised.");
-            }
+            PwmConfig pwmConfig = Pwm.newConfigBuilder(gpio).id("servo").name("Servo")
+                    .address(doorServoGpioAddress).pwmType(PwmType.SOFTWARE)
+                    .initial(0).shutdown(0).build();
+            this.pwm = gpio.create(pwmConfig);
+
         } catch (UnsatisfiedLinkError e) {
             logger.error("Can't find wiringpi, is it installed on your machine ?", e);
         }
@@ -129,38 +125,25 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     public void moveServo(int doorServoGpioAddress, int positionNumber) {
         //send the value to the motor.
-        SoftPwm.softPwmWrite(doorServoGpioAddress, positionNumber);
+        pwm.on(doorSettingRange, positionNumber);
     }
 
-    public GpioPinDigitalInput provisionInput(int gpioAddress) {
-        return gpio.provisionDigitalInputPin(
-                RaspiPin.getPinByAddress(gpioAddress), PinPullResistance.PULL_DOWN);
-    }
+    public DigitalInput provisionInput(String id, String name, int gpioAddress) {
+        DigitalInputConfigBuilder d = DigitalInput.newConfigBuilder(gpio)
+                .id(id)
+                .name(name)
+                .address(gpioAddress)
+                .pull(PullResistance.PULL_DOWN)
+                .debounce(3000L)
+                .provider("pigpio-digital-input");
+        return gpio.create(d);
 
-    @Override
-    public GpioPinDigitalOutput provisionOutput(int gpioAddress) {
-        GpioPinDigitalOutput gpioPinDigitalOutput = gpio.provisionDigitalOutputPin(
-                RaspiPin.getPinByAddress(gpioAddress));
-        gpioPinDigitalOutput.setShutdownOptions(true, PinState.LOW, PinPullResistance.OFF);
-        return gpioPinDigitalOutput;
-    }
-
-    public void unprovisionPin(GpioPin bottomButton) {
-        gpio.unprovisionPin(bottomButton);
+        //return gpio.provisionDigitalInputPin(
+        //        RaspiPin.getPinByAddress(gpioAddress), PinPullResistance.PULL_DOWN);
     }
 
     @Override
-    public void initSensor(int pinNumber) {
-        Gpio.pinMode(pinNumber, Gpio.OUTPUT);
-        Gpio.digitalWrite(pinNumber, Gpio.HIGH);
-    }
-
-    @Override
-    public void sendStartSignal(int pinNumber) {
-        // Send start signal.
-        Gpio.pinMode(pinNumber, Gpio.OUTPUT);
-        Gpio.digitalWrite(pinNumber, Gpio.LOW);
-        Gpio.delay(10);
-        Gpio.digitalWrite(pinNumber, Gpio.HIGH);
+    public DigitalOutput provisionOutput(int gpioAddress) {
+        return gpio.dout().create(gpioAddress);
     }
 }
