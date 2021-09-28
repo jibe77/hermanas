@@ -80,9 +80,15 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
             //Set the PinNumber pin to be a PWM pin, with values changing from 0 to 250
             //this will give enough resolution to the servo motor
-            PwmConfig pwmConfig = Pwm.newConfigBuilder(pi4j).id("servo").name("Servo")
-                    .address(doorServoGpioAddress).pwmType(PwmType.SOFTWARE)
-                    .initial(0).shutdown(0).build();
+            PwmConfig pwmConfig = Pwm.newConfigBuilder(pi4j)
+                    .id("servo")
+                    .name("Servo")
+                    .address(doorServoGpioAddress)
+                    .pwmType(PwmType.SOFTWARE)
+                    .initial(0)
+                    .shutdown(0)
+                    .provider("pigpio-pwm")
+                    .build();
             this.pwm = pi4j.create(pwmConfig);
 
         } catch (UnsatisfiedLinkError e) {
