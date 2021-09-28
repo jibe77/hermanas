@@ -60,7 +60,7 @@ public class GpioHermanasFakeController implements GpioHermanasController {
     }
 
     @Override
-    public DigitalOutput provisionOutput(int gpioAddress) {
+    public DigitalOutput provisionOutput(String id, String name, int gpioAddress) {
         logger.info("Fake GPIO : provision output pin on GPIO address {}.", gpioAddress);
         return new DigitalOutput() {
             @Override

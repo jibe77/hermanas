@@ -10,7 +10,7 @@ public interface GpioHermanasController {
 
     DigitalInput provisionInput(String id, String name, int gpioAddress);
 
-    DigitalOutput provisionOutput(int gpioAddress);
+    DigitalOutput provisionOutput(String id, String name, int gpioAddress);
 
     void moveServo(int doorServoGpioAddress, int positionNumber);
 

@@ -58,7 +58,8 @@ public class FanController {
     @PostConstruct
     private void init() {
         if (fanEnabled) {
-            gpioPinDigitalOutput = gpioHermanasController.provisionOutput(fanRelayGpioAddress);
+            gpioPinDigitalOutput = gpioHermanasController.provisionOutput(
+                    "fan_relay", "Fan Relay", fanRelayGpioAddress);
         }
     }
 

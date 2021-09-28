@@ -139,9 +139,15 @@ public class GpioHermanasRpiController implements GpioHermanasController {
     }
 
     @Override
-    public DigitalOutput provisionOutput(int gpioAddress) {
-        DigitalOutput digitalOutput = pi4j.dout().create(gpioAddress);
-        digitalOutput.config().shutdownState(DigitalState.LOW);
+    public DigitalOutput provisionOutput(String id, String name, int gpioAddress) {
+        DigitalOutputConfigBuilder d = DigitalOutput.newConfigBuilder(pi4j)
+                .id(id)
+                .name(name)
+                .address(gpioAddress)
+                .initial(DigitalState.LOW)
+                .shutdown(DigitalState.LOW)
+                .provider("pigpio-digital-output"); // or raspberrypi-digital-output
+        DigitalOutput digitalOutput = pi4j.create(d);
         digitalOutput.addListener(event -> {
             logger.info("Event on {} on address {}, state is now {}",
                     event.source().getId(), event.source().getAddress(), event.state());

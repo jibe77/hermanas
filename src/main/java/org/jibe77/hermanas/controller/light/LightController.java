@@ -57,7 +57,8 @@ public class LightController {
     private void init() {
         if (lightEnabled && gpioPinDigitalOutput == null) {
             logger.info("initialising light relay on gpio pin {}.", lightRelayGpioAddress);
-            gpioPinDigitalOutput = gpioHermanasController.provisionOutput(lightRelayGpioAddress);
+            gpioPinDigitalOutput = gpioHermanasController.provisionOutput(
+                    "light_relay", "Light relay", lightRelayGpioAddress);
         }
     }
 
