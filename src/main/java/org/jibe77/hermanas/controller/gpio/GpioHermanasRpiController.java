@@ -40,15 +40,7 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     private CameraConfiguration regularQualityconfig;
 
-    private Pwm pwm;
-
     Logger logger = LoggerFactory.getLogger(GpioHermanasRpiController.class);
-
-    @Value("${door.servo.gpio.address}")
-    private int doorServoGpioAddress;
-
-    @Value("${door.servo.gpio.range}")
-    private int doorSettingRange;
 
     @Value("${camera.regular.delay}")
     private int photoRegularDelay;
@@ -77,20 +69,6 @@ public class GpioHermanasRpiController implements GpioHermanasController {
             System.load(picamJniImplementation);
             logger.info("Init pi4j context.");
             pi4j = Pi4J.newAutoContext();
-
-            //Set the PinNumber pin to be a PWM pin, with values changing from 0 to 250
-            //this will give enough resolution to the servo motor
-            PwmConfig pwmConfig = Pwm.newConfigBuilder(pi4j)
-                    .id("servo")
-                    .name("Servo")
-                    .address(doorServoGpioAddress)
-                    .pwmType(PwmType.SOFTWARE)
-                    .initial(0)
-                    .shutdown(0)
-                    .provider("pigpio-pwm")
-                    .build();
-            this.pwm = pi4j.create(pwmConfig);
-
         } catch (UnsatisfiedLinkError e) {
             logger.error("Can't find wiringpi, is it installed on your machine ?", e);
         }
@@ -125,11 +103,6 @@ public class GpioHermanasRpiController implements GpioHermanasController {
         pi4j.shutdown();
     }
 
-    public void moveServo(int doorServoGpioAddress, int positionNumber) {
-        //send the value to the motor.
-        pwm.on(doorSettingRange, positionNumber);
-    }
-
     public DigitalInput provisionInput(String id, String name, int gpioAddress) {
         DigitalInputConfigBuilder d = DigitalInput.newConfigBuilder(pi4j)
                 .id(id)
@@ -159,5 +132,20 @@ public class GpioHermanasRpiController implements GpioHermanasController {
                     event.source().getId(), event.source().getAddress(), event.state());
         });
         return digitalOutput;
+    }
+
+    public Pwm provisionPwm(String id, String name, int gpioAddress) {
+        //Set the PinNumber pin to be a PWM pin, with values changing from 0 to 250
+        //this will give enough resolution to the servo motor
+        PwmConfig pwmConfig = Pwm.newConfigBuilder(pi4j)
+                .id(id)
+                .name(name)
+                .address(gpioAddress)
+                .pwmType(PwmType.SOFTWARE)
+                .initial(0)
+                .shutdown(0)
+                .provider("pigpio-pwm")
+                .build();
+        return pi4j.create(pwmConfig);
     }
 }

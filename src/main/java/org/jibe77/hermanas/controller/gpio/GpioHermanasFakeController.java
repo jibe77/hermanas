@@ -6,6 +6,7 @@ import com.pi4j.exception.InitializeException;
 import com.pi4j.exception.ShutdownException;
 import com.pi4j.io.binding.DigitalBinding;
 import com.pi4j.io.gpio.digital.*;
+import com.pi4j.io.pwm.Pwm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -62,121 +63,11 @@ public class GpioHermanasFakeController implements GpioHermanasController {
     @Override
     public DigitalOutput provisionOutput(String id, String name, int gpioAddress) {
         logger.info("Fake GPIO : provision output pin on GPIO address {}.", gpioAddress);
-        return new DigitalOutput() {
-            @Override
-            public DigitalOutput state(DigitalState state) throws com.pi4j.io.exception.IOException {
-                return null;
-            }
+        return new DefaultGpioPinDigitalOutput();
+    }
 
-            @Override
-            public DigitalOutput pulse(int interval, TimeUnit unit, DigitalState state, Callable<Void> callback) throws com.pi4j.io.exception.IOException {
-                return null;
-            }
-
-            @Override
-            public Future<?> pulseAsync(int interval, TimeUnit unit, DigitalState state, Callable<Void> callback) {
-                return null;
-            }
-
-            @Override
-            public DigitalOutput blink(int delay, int duration, TimeUnit unit, DigitalState state, Callable<Void> callback) {
-                return null;
-            }
-
-            @Override
-            public Future<?> blinkAsync(int delay, int duration, TimeUnit unit, DigitalState state, Callable<Void> callback) {
-                return null;
-            }
-
-            @Override
-            public DigitalOutput on() throws com.pi4j.io.exception.IOException {
-                return null;
-            }
-
-            @Override
-            public DigitalOutput off() throws com.pi4j.io.exception.IOException {
-                return null;
-            }
-
-            @Override
-            public DigitalState state() {
-                return null;
-            }
-
-            @Override
-            public DigitalOutput addListener(DigitalStateChangeListener... listener) {
-                return null;
-            }
-
-            @Override
-            public DigitalOutput removeListener(DigitalStateChangeListener... listener) {
-                return null;
-            }
-
-            @Override
-            public DigitalOutputConfig config() {
-                return null;
-            }
-
-            @Override
-            public DigitalOutput name(String name) {
-                return null;
-            }
-
-            @Override
-            public DigitalOutput description(String description) {
-                return null;
-            }
-
-            @Override
-            public DigitalOutputProvider provider() {
-                return null;
-            }
-
-            @Override
-            public String id() {
-                return null;
-            }
-
-            @Override
-            public String name() {
-                return null;
-            }
-
-            @Override
-            public String description() {
-                return null;
-            }
-
-            @Override
-            public Metadata metadata() {
-                return null;
-            }
-
-            @Override
-            public Object initialize(Context context) throws InitializeException {
-                return null;
-            }
-
-            @Override
-            public Object shutdown(Context context) throws ShutdownException {
-                return null;
-            }
-
-            @Override
-            public boolean isOn() {
-                return false;
-            }
-
-            @Override
-            public DigitalOutput bind(DigitalBinding... binding) {
-                return null;
-            }
-
-            @Override
-            public DigitalOutput unbind(DigitalBinding... binding) {
-                return null;
-            }
-        };
+    @Override
+    public Pwm provisionPwm(String id, String name, int gpioAddress) {
+        return new DefaultGpioPwm();
     }
 }

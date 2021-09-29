@@ -1,8 +1,10 @@
 package org.jibe77.hermanas.controller.door;
 
+import org.jibe77.hermanas.controller.gpio.DefaultGpioPwm;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasFakeController;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,12 +39,24 @@ class ServoMotorControllerTest {
 
     @Test
     void testServoMotorClockwise() {
+        Mockito.when(
+                gpioHermanasController.provisionPwm(
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyInt())).thenReturn(new DefaultGpioPwm());
+        servoMotorController.provisionPwm();
         servoMotorController.setPosition(14, 100);
         assertTrue(true, "The door is supposed to move right now !");
     }
 
     @Test
     void testServoMotorCounterClockwise() {
+        Mockito.when(
+                gpioHermanasController.provisionPwm(
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyInt())).thenReturn(new DefaultGpioPwm());
+        servoMotorController.provisionPwm();
         servoMotorController.setPosition(15, 100);
         assertTrue(true, "The door is supposed to move right now !");
     }

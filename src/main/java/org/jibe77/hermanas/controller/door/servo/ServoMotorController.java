@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.controller.door.servo;
 
+import com.pi4j.io.pwm.Pwm;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 
 /**
  * This class manipulates a servo motor.
@@ -25,6 +28,8 @@ public class ServoMotorController
     @Value("${door.servo.gpio.address}")
     private int doorServoGpioAddress;
 
+    private Pwm pwm;
+
     private static final int SERVO_STOP_POSITION = 0;
     // clockwise positions
     private static final int SERVO_CLOSING_MIN_POSITION = 5;
@@ -40,11 +45,19 @@ public class ServoMotorController
         this.gpioHermanasController = gpioHermanasController;
     }
 
+    @PostConstruct
+    public void provisionPwm() {
+        logger.info("provision pwm servo motor on gpio instance.");
+        if (pwm == null) {
+            pwm = gpioHermanasController.provisionPwm("servo", "Servo", doorServoGpioAddress);
+        }
+    }
+
     public synchronized void setPosition(int positionNumber, int sleep) {
         // if the motor is moving clockwise, it means the door is closing
         if ((positionNumber >= SERVO_CLOSING_MIN_POSITION && positionNumber <= SERVO_CLOSING_MAX_POSITION)
                 || (positionNumber >= SERVO_OPENING_MIN_POSITION && positionNumber <= SERVO_OPENING_MAX_POSITION)) {
-            gpioHermanasController.moveServo(doorServoGpioAddress, positionNumber);
+            moveServo(positionNumber);
             //give time to the motor to reach the position
             sleepMillisec(sleep);
             //stop sending orders to the motor.
@@ -60,7 +73,12 @@ public class ServoMotorController
      */
     public void stop(){
         //zero tells the motor to turn itself off and wait for more instructions.
-        gpioHermanasController.moveServo(doorServoGpioAddress, SERVO_STOP_POSITION);
+        moveServo(SERVO_STOP_POSITION);
+    }
+
+    private void moveServo(int positionNumber) {
+        //send the value to the motor.
+        pwm.on(positionNumber);
     }
 
     /**
