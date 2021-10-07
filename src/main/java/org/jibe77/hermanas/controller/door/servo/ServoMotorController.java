@@ -28,6 +28,9 @@ public class ServoMotorController
     @Value("${door.servo.gpio.address}")
     private int doorServoGpioAddress;
 
+    @Value("${door.servo.gpio.range}")
+    private int doorSettingRange;
+
     private Pwm pwm;
 
     // clockwise positions
@@ -56,10 +59,10 @@ public class ServoMotorController
         // if the motor is moving clockwise, it means the door is closing
         if ((positionNumber >= SERVO_CLOSING_MIN_POSITION && positionNumber <= SERVO_CLOSING_MAX_POSITION)
                 || (positionNumber >= SERVO_OPENING_MIN_POSITION && positionNumber <= SERVO_OPENING_MAX_POSITION)) {
-            moveServo(positionNumber);
+            moveServo(positionNumber, doorSettingRange);
             //give time to the motor to reach the position
             sleepMillisec(sleep);
-            //stop sending orders to the motor.
+            // stop sending orders to the motor.
             stop();
         } else {
             throw new IllegalArgumentException("Nothing done, positionNumber has to be between " +
@@ -75,16 +78,16 @@ public class ServoMotorController
         pwm.off();
     }
 
-    private void moveServo(int positionNumber) {
+    public void moveServo(int dutyCycle, int frequency) {
         //send the value to the motor.
-        pwm.on(positionNumber);
+        pwm.on(dutyCycle, frequency);
     }
 
     /**
      * Wait for a number of milliseconds
      * @param millisec the number of milliseconds to wait.
      */
-    private void sleepMillisec(int millisec){
+    public void sleepMillisec(int millisec){
         try
         {
             Thread.sleep(millisec);

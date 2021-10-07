@@ -261,4 +261,14 @@ public class DoorController {
                 duration);
         servo.setPosition(doorOpeningPosition, duration);
     }
+
+    public synchronized void turnServo(int dutyCycle, int frequency, int duration) {
+        logger.info("Turn the servo with dutyCycle {} and frequency {} during {} ms ...",
+                dutyCycle,
+                frequency,
+                duration);
+        servo.moveServo(dutyCycle, frequency);
+        servo.sleepMillisec(duration);
+        servo.stop();
+    }
 }
