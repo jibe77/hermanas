@@ -58,8 +58,8 @@ public class DoorService {
         return "done";
     }
 
-    @GetMapping("/door/turnCounterClockwise")
-    public String turnCounterClockwise(String dutyCycle, String frequency, String duration) {
+    @GetMapping("/door/turnServo")
+    public String turnServo(String dutyCycle, String frequency, String duration) {
         logger.info("turning servomotor counter-clockwise  ...");
         doorController.turnServo(
                 Integer.valueOf(dutyCycle),
