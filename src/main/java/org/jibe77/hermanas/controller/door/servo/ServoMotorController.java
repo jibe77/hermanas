@@ -30,7 +30,6 @@ public class ServoMotorController
 
     private Pwm pwm;
 
-    private static final int SERVO_STOP_POSITION = 0;
     // clockwise positions
     private static final int SERVO_CLOSING_MIN_POSITION = 5;
     private static final int SERVO_CLOSING_MAX_POSITION = 14;
@@ -73,7 +72,7 @@ public class ServoMotorController
      */
     public void stop(){
         //zero tells the motor to turn itself off and wait for more instructions.
-        moveServo(SERVO_STOP_POSITION);
+        pwm.off();
     }
 
     private void moveServo(int positionNumber) {
