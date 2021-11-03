@@ -54,6 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/energy/dateRange",
                         "/sensor/info",
                         "/sensor/history/today",
+                        "/sensor/history/week",
                         "/sensor/history/month",
                         "/sensor/history/year",
                         "/info",

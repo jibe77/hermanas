@@ -50,6 +50,11 @@ public class SensorService {
         return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusDays(1));
     }
 
+    @GetMapping(value = "/sensor/history/week")
+    public List<Sensor> getHistoryLastWeek() {
+        return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusWeeks(1));
+    }
+
     @GetMapping(value = "/sensor/history/month")
     public List<Sensor> getTodayLastMonth() {
         return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusMonths(1));
