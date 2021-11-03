@@ -66,14 +66,14 @@ public class SensorService {
 
     @GetMapping(value = "/sensor/history/year")
     public List<Sensor> getHistoryYear(@RequestParam(required = false, defaultValue = "") String year) {
-        logger.info("fetching history with year oarameter : ?", year);
+        logger.info("fetching history with year oarameter : {}.", year);
         LocalDateTime startDate = LocalDateTime.now().withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0);
         LocalDateTime endDate = LocalDateTime.now().withMonth(12).withDayOfMonth(31).withHour(23).withMinute(59);
         if (!year.isEmpty()) {
             startDate = startDate.withYear(Integer.valueOf(year));
             endDate = endDate.withYear(Integer.valueOf(year));
         }
-        logger.info("start date is ? and end date parameter is ?", startDate, endDate);
+        logger.info("start date is {} and end date parameter is {}.", startDate, endDate);
         return sensorRepository.findByDateTimeGreaterThanAndDateTimeGreaterThan(startDate, endDate);
     }
 
