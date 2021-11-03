@@ -7,6 +7,7 @@ import org.jibe77.hermanas.controller.sensor.SensorController;
 import org.jibe77.hermanas.data.repository.SensorRepository;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -61,8 +62,14 @@ public class SensorService {
     }
 
     @GetMapping(value = "/sensor/history/year")
-    public List<Sensor> getHistoryLastYear() {
-        return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusYears(1));
+    public List<Sensor> getHistoryYear(@RequestParam(required = false) int year) {
+        LocalDateTime startDate = LocalDateTime.now().withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0);
+        LocalDateTime endDate = LocalDateTime.now().withMonth(12).withDayOfMonth(31).withHour(23).withMinute(59);
+        if (year != 0) {
+            startDate = startDate.withYear(year);
+            endDate = endDate.withYear(year);
+        }
+        return sensorRepository.findByDateTimeGreaterThanAndDateTimeGreaterThan(startDate, endDate);
     }
 
     @GetMapping(value = "/sensor/history/all")

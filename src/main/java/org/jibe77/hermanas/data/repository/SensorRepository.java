@@ -9,4 +9,6 @@ import java.util.List;
 public interface SensorRepository extends CrudRepository<Sensor, Long> {
 
     List<Sensor> findByDateTimeGreaterThan(LocalDateTime minusDays);
+
+    List<Sensor> findByDateTimeGreaterThanAndDateTimeGreaterThan(LocalDateTime startDate, LocalDateTime endDate);
 }
