@@ -5,7 +5,8 @@ import org.jibe77.hermanas.client.weather.WeatherInfo;
 import org.jibe77.hermanas.data.entity.Sensor;
 import org.jibe77.hermanas.controller.sensor.SensorController;
 import org.jibe77.hermanas.data.repository.SensorRepository;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,8 @@ import java.util.List;
 
 @RestController
 public class SensorService {
+
+    Logger logger = LoggerFactory.getLogger(SensorService.class);
 
     SensorController sensorController;
 
@@ -62,13 +65,15 @@ public class SensorService {
     }
 
     @GetMapping(value = "/sensor/history/year")
-    public List<Sensor> getHistoryYear(@RequestParam(required = false) int year) {
+    public List<Sensor> getHistoryYear(@RequestParam(required = false, defaultValue = "") String year) {
+        logger.info("fetching history with year oarameter : ?", year);
         LocalDateTime startDate = LocalDateTime.now().withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0);
         LocalDateTime endDate = LocalDateTime.now().withMonth(12).withDayOfMonth(31).withHour(23).withMinute(59);
-        if (year != 0) {
-            startDate = startDate.withYear(year);
-            endDate = endDate.withYear(year);
+        if (!year.isEmpty()) {
+            startDate = startDate.withYear(Integer.valueOf(year));
+            endDate = endDate.withYear(Integer.valueOf(year));
         }
+        logger.info("start date is ? and end date parameter is ?", startDate, endDate);
         return sensorRepository.findByDateTimeGreaterThanAndDateTimeGreaterThan(startDate, endDate);
     }
 
