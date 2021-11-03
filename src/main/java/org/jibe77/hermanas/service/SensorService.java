@@ -8,7 +8,7 @@ import org.jibe77.hermanas.data.repository.SensorRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -70,7 +70,7 @@ public class SensorService {
     }
 
     @GetMapping(value = "/sensor/history/year/{year}")
-    public List<Sensor> getHistoryYear(String year) {
+    public List<Sensor> getHistoryYear(@PathVariable(name="year") String year) {
         logger.info("fetching history with year parameter : {}.", year);
         LocalDateTime startDate =
                 LocalDateTime.now().withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0)
