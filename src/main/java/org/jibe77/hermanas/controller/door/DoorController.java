@@ -13,6 +13,7 @@ import org.jibe77.hermanas.websocket.NotificationController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -78,6 +79,8 @@ public class DoorController {
             }
         } catch (DoorNotClosedCorrectlyException e) {
             logger.error("The door status couldn't get initialized.");
+        } catch (NullPointerException e) {
+            logger.error("The door couldn't be initialized.");
         }
     }
 

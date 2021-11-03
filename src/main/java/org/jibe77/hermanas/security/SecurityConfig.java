@@ -53,6 +53,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/energy/currentMode",
                         "/energy/dateRange",
                         "/sensor/info",
+                        "/sensor/history/day",
+                        "/sensor/history/month",
+                        "/sensor/history/year",
                         "/info",
                         "/system/version"
                         ).anonymous()

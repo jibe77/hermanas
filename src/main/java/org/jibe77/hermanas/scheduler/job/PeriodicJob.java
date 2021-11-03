@@ -8,11 +8,13 @@ import org.jibe77.hermanas.data.repository.SensorRepository;
 import org.jibe77.hermanas.controller.sensor.SensorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 
 @Component
+@Profile("gpio-rpi")
 public class PeriodicJob {
 
     private SensorController sensorController;

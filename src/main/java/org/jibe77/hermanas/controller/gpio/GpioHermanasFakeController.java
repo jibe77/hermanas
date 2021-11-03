@@ -1,11 +1,7 @@
 package org.jibe77.hermanas.controller.gpio;
 
-import com.pi4j.common.Metadata;
-import com.pi4j.context.Context;
-import com.pi4j.exception.InitializeException;
-import com.pi4j.exception.ShutdownException;
-import com.pi4j.io.binding.DigitalBinding;
-import com.pi4j.io.gpio.digital.*;
+import com.pi4j.io.gpio.digital.DigitalInput;
+import com.pi4j.io.gpio.digital.DigitalOutput;
 import com.pi4j.io.pwm.Pwm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +14,6 @@ import uk.co.caprica.picam.FilePictureCaptureHandler;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 @Controller
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
