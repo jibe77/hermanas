@@ -58,6 +58,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/sensor/history/month",
                         "/sensor/history/year",
                         "/sensor/history/year/*",
+                        "/sensor/history/years",
                         "/sensor/history/all",
                         "/info",
                         "/system/version"
