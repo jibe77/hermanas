@@ -80,7 +80,7 @@ public class SensorService {
                         .withSecond(59).withYear(Integer.valueOf(year));
 
         logger.info("start date is {} and end date parameter is {}.", startDate, endDate);
-        return sensorRepository.findByDateTimeGreaterThanAndDateTimeGreaterThan(startDate, endDate);
+        return sensorRepository.findByDateTimeBetween(startDate, endDate);
     }
 
     @GetMapping(value = "/sensor/history/years")

@@ -11,7 +11,7 @@ public interface SensorRepository extends CrudRepository<Sensor, Long> {
 
     List<Sensor> findByDateTimeGreaterThan(LocalDateTime minusDays);
 
-    List<Sensor> findByDateTimeGreaterThanAndDateTimeGreaterThan(LocalDateTime startDate, LocalDateTime endDate);
+    List<Sensor> findByDateTimeBetween(LocalDateTime startDate, LocalDateTime endDate);
 
     @Query(value="select distinct date_format(date_time,'%Y') from sensor", nativeQuery=true)
     List<String> getHistoryYearList();
