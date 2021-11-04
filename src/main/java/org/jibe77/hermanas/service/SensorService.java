@@ -83,6 +83,11 @@ public class SensorService {
         return sensorRepository.findByDateTimeGreaterThanAndDateTimeGreaterThan(startDate, endDate);
     }
 
+    @GetMapping(value = "/sensor/history/years")
+    public List<String> getHistoryYearList() {
+        return sensorRepository.getHistoryYearList();
+    }
+
     @GetMapping(value = "/sensor/history/all")
     public Iterable<Sensor> getHistoryAll() {
         return sensorRepository.findAll();
