@@ -74,10 +74,10 @@ public class SensorService {
         logger.info("fetching history with year parameter : {}.", year);
         LocalDateTime startDate =
                 LocalDateTime.now().withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0)
-                        .withYear(Integer.valueOf(year));
+                        .withSecond(0).withYear(Integer.valueOf(year));
         LocalDateTime endDate =
                 LocalDateTime.now().withMonth(12).withDayOfMonth(31).withHour(23).withMinute(59)
-                        .withYear(Integer.valueOf(year));
+                        .withSecond(59).withYear(Integer.valueOf(year));
 
         logger.info("start date is {} and end date parameter is {}.", startDate, endDate);
         return sensorRepository.findByDateTimeGreaterThanAndDateTimeGreaterThan(startDate, endDate);
