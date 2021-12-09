@@ -60,6 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/sensor/history/year/*",
                         "/sensor/history/years",
                         "/sensor/history/all",
+                        "/sensor/history/*/*",
                         "/info",
                         "/system/version"
                         ).anonymous()
