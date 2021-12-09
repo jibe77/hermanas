@@ -7,12 +7,15 @@ import org.jibe77.hermanas.controller.sensor.SensorController;
 import org.jibe77.hermanas.data.repository.SensorRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -83,6 +86,13 @@ public class SensorService {
         return sensorRepository.findByDateTimeBetween(startDate, endDate);
     }
 
+    @GetMapping(value = "/sensor/history/{from}/{to}")
+    public List<Sensor> getHistory(@PathVariable(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from, @PathVariable(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) {
+        logger.info("fetching history from {} to {}.", from, to);
+        return sensorRepository.findByDateTimeBetween(convertToLocalDateTimeViaInstant(from), convertToLocalDateTimeViaInstant(to));
+
+    }
+
     @GetMapping(value = "/sensor/history/years")
     public List<String> getHistoryYearList() {
         return sensorRepository.getHistoryYearList();
@@ -91,5 +101,11 @@ public class SensorService {
     @GetMapping(value = "/sensor/history/all")
     public Iterable<Sensor> getHistoryAll() {
         return sensorRepository.findAll();
+    }
+
+    public LocalDateTime convertToLocalDateTimeViaInstant(Date dateToConvert) {
+        return dateToConvert.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
     }
 }
