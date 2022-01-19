@@ -83,13 +83,13 @@ public class SensorService {
                         .withSecond(59).withYear(Integer.valueOf(year));
 
         logger.info("start date is {} and end date parameter is {}.", startDate, endDate);
-        return sensorRepository.findByDateTimeBetween(startDate, endDate);
+        return sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(startDate, endDate);
     }
 
     @GetMapping(value = "/sensor/history/{from}/{to}")
-    public List<Sensor> getHistory(@PathVariable(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from, @PathVariable(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) {
+    public List<Sensor> getHistory(@PathVariable(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd-hh-mm") Date from, @PathVariable(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd-hh-mm") Date to) {
         logger.info("fetching history from {} to {}.", from, to);
-        return sensorRepository.findByDateTimeBetween(convertToLocalDateTimeViaInstant(from), convertToLocalDateTimeViaInstant(to));
+        return sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(convertToLocalDateTimeViaInstant(from), convertToLocalDateTimeViaInstant(to));
 
     }
 

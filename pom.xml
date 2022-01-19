@@ -5,19 +5,19 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.1</version>
+		<version>2.6.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.6.2</version>
+	<version>0.6.3</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
 
 	<properties>
 		<java.version>11</java.version>
-		<pi4j.version>2.0</pi4j.version>
+		<pi4j.version>2.1.1</pi4j.version>
 	</properties>
 
 	<dependencies>
@@ -101,7 +101,7 @@
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
-			<version>2.6.0</version>
+			<version>2.7.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -110,13 +110,13 @@
 		<dependency>
 			<groupId>org.springframework.retry</groupId>
 			<artifactId>spring-retry</artifactId>
-			<version>1.3.0</version>
+			<version>1.3.1</version>
 		</dependency>
 		<!-- Swagger UI -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.5.9</version>
+			<version>1.6.4</version>
 		</dependency>
 
 		<!-- compute sunset and sunrise hour for the current day -->
@@ -136,12 +136,12 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.7</version>
+			<version>2.11.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.11</version>
+			<version>3.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -150,22 +150,22 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>sockjs-client</artifactId>
-			<version>1.0.2</version>
+			<version>1.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>stomp-websocket</artifactId>
-			<version>2.3.3</version>
+			<version>2.3.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>bootstrap</artifactId>
-			<version>3.3.7</version>
+			<version>5.1.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>jquery</artifactId>
-			<version>3.1.1-1</version>
+			<version>3.6.0</version>
 		</dependency>
 	</dependencies>
 
