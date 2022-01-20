@@ -87,7 +87,7 @@ public class SensorService {
     }
 
     @GetMapping(value = "/sensor/history/{from}/{to}")
-    public List<Sensor> getHistory(@PathVariable(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd-hh-mm") Date from, @PathVariable(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd-hh-mm") Date to) {
+    public List<Sensor> getHistory(@PathVariable(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd-HH-mm") Date from, @PathVariable(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd-HH-mm") Date to) {
         logger.info("fetching history from {} to {}.", from, to);
         return sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(convertToLocalDateTimeViaInstant(from), convertToLocalDateTimeViaInstant(to));
 
