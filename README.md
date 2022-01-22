@@ -17,3 +17,8 @@ All the monitoring and remote facilities are remotely available through Rest ser
 Rest services may be called from any iOS device using Siri :
 
 TODO
+
+## Actuators
+
+https://poulailler57.ddns.net:5780/actuator/info
+https://poulailler57.ddns.net:5780/actuator/health
