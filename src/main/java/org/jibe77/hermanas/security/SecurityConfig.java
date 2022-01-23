@@ -62,7 +62,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/sensor/history/all",
                         "/sensor/history/*/*",
                         "/info",
-                        "/system/version"
+                        "/system/version",
+                        "/sockjs-node/info"
                         ).anonymous()
 
                 // web socket
