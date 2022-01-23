@@ -3,13 +3,11 @@ package org.jibe77.hermanas.service;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.scheduler.sun.model.NextEvents;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.format.DateTimeFormatter;
 
-@CrossOrigin
 @RestController
 public class SchedulerService {
 
