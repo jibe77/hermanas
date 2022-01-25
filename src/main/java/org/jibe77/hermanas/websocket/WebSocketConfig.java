@@ -21,17 +21,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/sockjs-node");
+        config.setApplicationDestinationPrefixes("/app");
+        config.enableSimpleBroker("/topic");
     }
 
     @Override public void registerStompEndpoints(StompEndpointRegistry registry) {
-        StompWebSocketEndpointRegistration registration = registry.addEndpoint("/sockjs-node");
+        StompWebSocketEndpointRegistration registration = registry.addEndpoint("/stomp");
         if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
             logger.info("setting allowed origin to {}.", allowedOrigins);
-            registration = registration.setAllowedOriginPatterns(allowedOrigins);
+            registration.setAllowedOrigins(allowedOrigins);
         } else {
             logger.info("no allowed origin to web-socket.");
         }
-        registration.withSockJS();
     }
 }

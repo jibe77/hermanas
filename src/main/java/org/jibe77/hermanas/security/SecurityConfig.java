@@ -82,6 +82,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                         "/swagger-ui/**",
                         "/v3/api-docs/swagger-config",
                         "/").permitAll()
+                .antMatchers("/stomp").permitAll()
 
                 // user is allowed to call all the services
                 .antMatchers("/**").hasRole(ROLE_USER)
