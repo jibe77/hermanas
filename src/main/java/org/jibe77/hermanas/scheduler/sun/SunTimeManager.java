@@ -9,6 +9,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
@@ -49,8 +50,10 @@ public class SunTimeManager {
 
     @Cacheable(value = "door-closing")
     public LocalDateTime getNextDoorClosingTime() {
-        // in winter, the door is closed 10 minutes earlier.
-        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset);
+        // from April to September, the door is closed 15 minutes later.
+        int currentMonth = LocalDate.now().getMonthValue();
+        LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset)
+                .plusMinutes((currentMonth >= 4 && currentMonth <= 9) ? 15:0);
         logger.info("computing next door closing time : {}", localDateTime);
         return localDateTime;
     }
