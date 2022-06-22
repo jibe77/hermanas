@@ -7,8 +7,10 @@ import org.jibe77.hermanas.controller.energy.WifiController;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -42,7 +44,7 @@ public class EnergyService {
 
     @GetMapping(value = "/energy/currentMode")
     public EnergyMode getEnergyMode() {
-        return consumptionModeController.getCurrentEnergyMode(LocalDateTime.now());
+        return consumptionModeController.getCurrentEnergyMode();
     }
 
     @GetMapping(value = "/energy/dateRange")
@@ -50,9 +52,14 @@ public class EnergyService {
         return consumptionModeController.getCurrentEnergyMode(LocalDateTime.now(), daysAroundWinterSolstice, daysAroundSummerSolstice);
     }
 
+    @GetMapping(value = "/energy/currentConfigMode")
+    public EnergyModeConfig getCurrentConfigMode() {
+        return consumptionModeController.getCurrentConfigMode();
+    }
+
     @GetMapping(value = "/energy/configMode")
-    public EnergyModeConfig getEnergyConfigMode(EnergyModeEnum energyModeEnum) {
-        return consumptionModeController.getEnergyModeConfig(energyModeEnum);
+    public EnergyModeConfig getEnergyConfigMode(String energyMode) {
+        return consumptionModeController.getEnergyModeConfig(energyMode);
     }
 
     @PutMapping(value = "/energy/updateMode")

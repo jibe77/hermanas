@@ -17,7 +17,6 @@ public class ConsumptionModeController {
         this.configController = configController;
     }
 
-    // TODO : use lambda to pass parameter to avoid computing useless values.
     public long getDuration(long ecoModeDuration, long regularModeDuration, long sunnyModeDuration, LocalDateTime time) {
         switch (getCurrentMode(time)) {
             case ECO:
@@ -79,6 +78,10 @@ public class ConsumptionModeController {
         return getCurrentEnergyMode(time, configController.getEcoModeNbrDaysAroundWinterSolstice(), configController.getSunnyModeNbrDaysAroundSummerSolstice());
     }
 
+    public EnergyMode getCurrentEnergyMode() {
+        return getCurrentEnergyMode(LocalDateTime.now(), configController.getEcoModeNbrDaysAroundWinterSolstice(), configController.getSunnyModeNbrDaysAroundSummerSolstice());
+    }
+
     public EnergyMode getCurrentEnergyMode(LocalDateTime time, int ecoModeNbrDaysAroundWinterSolstice, int sunnyModeNbrDaysAroundSummerSolstice) {
         EnergyMode energyMode = new EnergyMode();
         energyMode.setCurrentMode(getCurrentMode(time).name());
@@ -111,8 +114,9 @@ public class ConsumptionModeController {
         return nextSummerSolstice;
     }
 
-    public EnergyModeConfig getEnergyModeConfig(EnergyModeEnum energyModeEnum) {
+    public EnergyModeConfig getEnergyModeConfig(String energyMode) {
         EnergyModeConfig energyModeConfig = new EnergyModeConfig();
+        EnergyModeEnum energyModeEnum = EnergyModeEnum.valueOf(energyMode);
         energyModeConfig.setEnergyMode(energyModeEnum);
         switch (energyModeEnum) {
             case ECO:
@@ -165,5 +169,9 @@ public class ConsumptionModeController {
                 break;
         }
         return energyModeConfig;
+    }
+
+    public EnergyModeConfig getCurrentConfigMode() {
+        return getEnergyModeConfig(getCurrentEnergyMode().getCurrentMode());
     }
 }
