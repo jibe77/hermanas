@@ -37,7 +37,6 @@ public class SunTimeManager {
     @Cacheable(value = "light-on")
     public LocalDateTime getNextLightOnTime() {
         LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(-1 * lightOnTimeBeforeSunset);
-        localDateTime = add15MinutesFromAprilToSeptember(localDateTime);
         logger.info("computing next light switching on time : {}", localDateTime);
         return localDateTime;
     }
@@ -52,7 +51,6 @@ public class SunTimeManager {
     @Cacheable(value = "door-closing")
     public LocalDateTime getNextDoorClosingTime() {
         LocalDateTime localDateTime = sunTimeUtils.computeTimeForNextSunsetEvent(doorCloseTimeAfterSunset);
-        localDateTime = add15MinutesFromAprilToSeptember(localDateTime);
         logger.info("computing next door closing time : {}", localDateTime);
         return localDateTime;
     }
@@ -78,14 +76,5 @@ public class SunTimeManager {
 
     public DoorStatusEnum getExpectedDoorStatus() {
         return getNextDoorOpeningTime().isBefore(getNextDoorClosingTime()) ? DoorStatusEnum.CLOSED : DoorStatusEnum.OPENED;
-    }
-
-    /**
-     * From April to September, the door is closed 15 minutes later.
-     * @param time
-     */
-    private LocalDateTime add15MinutesFromAprilToSeptember(LocalDateTime time) {
-        int currentMonth = LocalDate.now().getMonthValue();
-        return time.plusMinutes((currentMonth >= 4 && currentMonth <= 9) ? 15:0);
     }
 }

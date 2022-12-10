@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.5</version>
+		<version>2.7.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.6.10</version>
+	<version>0.6.11</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
@@ -20,7 +20,7 @@
 		<java.version>11</java.version>
 		<pi4j.version>2.2.1</pi4j.version>
 		<mariadb-java-client.version>3.1.0</mariadb-java-client.version>
-		<springdoc-openapi-ui.version>1.6.9</springdoc-openapi-ui.version>
+		<springdoc-openapi-ui.version>1.6.13</springdoc-openapi-ui.version>
 		<lib-sunrise-sunset.version>1.1.1</lib-sunrise-sunset.version>
 		<picam.version>2.0.2</picam.version>
 		<commons-io.version>2.11.0</commons-io.version>
@@ -28,7 +28,7 @@
 		<stomp-websocket.version>2.3.4</stomp-websocket.version>
 		<jquery.version>3.6.1</jquery.version>
 
-		<bootstrap.version>5.2.2</bootstrap.version>
+		<bootstrap.version>5.2.3</bootstrap.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
 	</properties>
 
