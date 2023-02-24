@@ -90,7 +90,7 @@ public class DoorController {
      */
     @Retryable(
             value = { DoorNotClosedCorrectlyException.class },
-            maxAttempts = 5,
+            maxAttempts = 1,
             backoff = @Backoff(delay = 2000))
     public synchronized void closeDoorWithBottormButtonManagement(boolean force) {
         if (force || !doorIsClosed()) {
