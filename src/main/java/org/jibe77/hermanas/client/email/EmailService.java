@@ -33,8 +33,8 @@ public class EmailService {
     @Value("${email.notification.to}")
     private String emailNotificationTo;
 
-    @Value("${spring.mail.username}")
-    private String from;
+    @Value("${email.notification.from}")
+    private String emailNotificationFrom;
 
     @Value("${email.notification.enabled}")
     private boolean enabled;
@@ -50,7 +50,7 @@ public class EmailService {
         if (enabled) {
             MimeMessagePreparator preparator = mimeMessage -> {
                 mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(emailNotificationTo));
-                mimeMessage.setFrom(new InternetAddress(from));
+                mimeMessage.setFrom(new InternetAddress(emailNotificationFrom));
                 mimeMessage.setSubject(subject);
                 mimeMessage.setText(body);
 
