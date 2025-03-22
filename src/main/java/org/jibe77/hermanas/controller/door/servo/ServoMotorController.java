@@ -75,6 +75,7 @@ public class ServoMotorController
      */
     public void stop(){
         //zero tells the motor to turn itself off and wait for more instructions.
+        logger.info("servomotor is off");
         pwm.off();
     }
 

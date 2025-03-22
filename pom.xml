@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.14</version>
+		<version>2.7.18</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.6.14</version>
+	<version>0.6.15</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
@@ -18,18 +18,19 @@
 	<!-- verify updates before each release with display-dependency-updates -->
 	<properties>
 		<java.version>11</java.version>
-		<pi4j.version>2.3.0</pi4j.version>
-		<mariadb-java-client.version>3.1.4</mariadb-java-client.version>
-		<springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
+		<!-- pi4j : les versions au dessus de la 2.4.0 ne fonctionnent pas sur le pi 0 avec java 11 -->
+		<pi4j.version>2.4.0</pi4j.version>
+		<mariadb-java-client.version>3.5.2</mariadb-java-client.version>
+		<springdoc-openapi-ui.version>1.8.0</springdoc-openapi-ui.version>
 		<lib-sunrise-sunset.version>1.1.1</lib-sunrise-sunset.version>
 		<picam.version>2.0.2</picam.version>
-		<commons-io.version>2.13.0</commons-io.version>
+		<commons-io.version>2.18.0</commons-io.version>
 		<sockjs-client.version>1.5.1</sockjs-client.version>
 		<stomp-websocket.version>2.3.4</stomp-websocket.version>
-		<jquery.version>3.6.4</jquery.version>
+		<jquery.version>3.7.1</jquery.version>
 
-		<bootstrap.version>5.3.0</bootstrap.version>
-        <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
+		<bootstrap.version>5.3.3</bootstrap.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 	</properties>
 
 	<dependencies>
@@ -55,7 +56,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
-			<version>${spring-amqp.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -228,10 +228,23 @@
 		</plugins>
 	</build>
 
-	<repositories>
+	<!--repositories>
 		<repository>
 			<id>caarmen-repo</id>
 			<url>https://dl.bintray.com/caarmen/maven/</url>
+		</repository>
+	</repositories-->
+
+	<repositories>
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 </project>

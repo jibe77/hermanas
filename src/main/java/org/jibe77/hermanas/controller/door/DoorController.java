@@ -221,13 +221,10 @@ public class DoorController {
         } else if (openingTimeIsProbablyTheMostRecent()) {
             logger.info("the door is probably opened but not completly, " +
                     "let's turn the servo counter clockwise a little bit.");
-            turnServoCounterClockwise(doorOpeningDuration / 10);
+            turnServoCounterClockwise(doorOpeningDuration / 50);
             if (doorIsOpened() || (waitALittle() && doorIsOpened())) {
                 logger.info("the door is completly opened now !");
                 return new DoorStatus(DoorStatusEnum.OPENED, lastOpeningTime);
-            } else {
-                logger.info("put it back like it was before.");
-                turnServoClockwise(doorClosingDuration / 10);
             }
         }
         if (lastOpeningTime == null && lastClosingTime == null) {
