@@ -22,7 +22,7 @@ public class SunTimeUtils {
     @Value("${suntime.longitude}")
     public double longitude;
 
-    @Value("${suntime.sunrise.force_at_8}")
+    @Value("${suntime.sunrise.force_at_8:false}")
     public boolean forceAt8;
 
     Logger logger = LoggerFactory.getLogger(SunTimeUtils.class);
