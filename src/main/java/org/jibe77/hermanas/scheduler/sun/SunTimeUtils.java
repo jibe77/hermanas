@@ -22,6 +22,9 @@ public class SunTimeUtils {
     @Value("${suntime.longitude}")
     public double longitude;
 
+    @Value("${suntime.sunrise.force_at_8}")
+    public boolean forceAt8;
+
     Logger logger = LoggerFactory.getLogger(SunTimeUtils.class);
 
     @PostConstruct
@@ -87,7 +90,15 @@ public class SunTimeUtils {
     }
 
     private LocalDateTime computeCurrentDaySunrise(LocalDateTime date) {
-        return calendarToLocalDateTime(computeCurrentDay(date)[0]);
+        LocalDateTime sunrise = calendarToLocalDateTime(computeCurrentDay(date)[0]);
+        if (forceAt8) {
+            return sunrise
+                    .withHour(8)
+                    .withMinute(0)
+                    .withSecond(0)
+                    .withNano(0);
+        }
+        return sunrise;
     }
 
     public LocalDateTime computeCurrentDaySunset(LocalDateTime date) {
