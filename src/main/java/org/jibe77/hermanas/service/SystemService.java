@@ -22,9 +22,4 @@ public class SystemService {
     public void reboot() {
         systemController.reboot();
     }
-
-    @GetMapping(value = "/system/version")
-    public void version() {
-        systemController.reboot();
-    }
 }
