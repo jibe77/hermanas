@@ -25,7 +25,7 @@ public class UpButtonController {
 
     boolean upButtonHasBeenPressed = false;
 
-    Logger logger = LoggerFactory.getLogger(UpButtonController.class);
+    private static final Logger logger = LoggerFactory.getLogger(UpButtonController.class);
 
     public UpButtonController(ServoMotorController servoMotorController, GpioHermanasController gpioHermanasController) {
         this.servoMotorController = servoMotorController;

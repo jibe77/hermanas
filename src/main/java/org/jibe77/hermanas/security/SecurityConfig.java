@@ -26,7 +26,7 @@ import java.util.Arrays;
 public class SecurityConfig extends WebSecurityConfigurerAdapter
 {
     public static final String ROLE_USER = "USER";
-    Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
     @Value("${security.user.name}")
     private String user;
     @Value("${security.user.password}")
@@ -43,6 +43,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     {
         logger.info("Configure authorizations.");
         http.cors().and().headers().frameOptions().disable().and().csrf().disable().authorizeRequests()
+                // Allow all OPTIONS requests for CORS preflight
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // list of allowed urls for GUEST user.
                 .antMatchers(HttpMethod.GET,
                         "/light/status",
@@ -127,7 +129,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("https://www.hermanas.fr", "https://dev.d2ylqblswoz84y.amplifyapp.com", "http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -25,7 +25,7 @@ public class SunTimeUtils {
     @Value("${suntime.sunrise.force_at_8:false}")
     public boolean forceAt8;
 
-    Logger logger = LoggerFactory.getLogger(SunTimeUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(SunTimeUtils.class);
 
     @PostConstruct
     private void init() {

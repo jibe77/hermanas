@@ -13,7 +13,7 @@ public class SoundCardController {
 
     ProcessLauncher processLauncher;
 
-    Logger logger = LoggerFactory.getLogger(SoundCardController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SoundCardController.class);
 
     public SoundCardController(ProcessLauncher processLauncher) {
         this.processLauncher = processLauncher;

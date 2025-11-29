@@ -15,7 +15,7 @@ public class DoorService {
 
     DoorController doorController;
 
-    Logger logger = LoggerFactory.getLogger(DoorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DoorService.class);
 
     public DoorService(DoorController doorController) {
         this.doorController = doorController;
@@ -45,7 +45,7 @@ public class DoorService {
     @GetMapping("/door/turnClockwise")
     public String turnClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
         logger.info("turning servomotor clockwise  ...");
-        doorController.turnServoClockwise(Integer.valueOf(duration));
+        doorController.turnServoClockwise(Integer.parseInt(duration));
         logger.info("... servomotor done !");
         return "done";
     }
@@ -53,7 +53,7 @@ public class DoorService {
     @GetMapping("/door/turnCounterClockwise")
     public String turnCounterClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
         logger.info("turning servomotor counter-clockwise  ...");
-        doorController.turnServoCounterClockwise(Integer.valueOf(duration));
+        doorController.turnServoCounterClockwise(Integer.parseInt(duration));
         logger.info("... servomotor done !");
         return "done";
     }
@@ -62,9 +62,9 @@ public class DoorService {
     public String turnServo(String dutyCycle, String frequency, String duration) {
         logger.info("turning servomotor counter-clockwise  ...");
         doorController.turnServo(
-                Integer.valueOf(dutyCycle),
-                Integer.valueOf(frequency),
-                Integer.valueOf(duration));
+                Integer.parseInt(dutyCycle),
+                Integer.parseInt(frequency),
+                Integer.parseInt(duration));
         logger.info("... servomotor done !");
         return "done";
     }

@@ -13,7 +13,7 @@ import java.util.List;
 @Component
 public class ProcessLauncher {
 
-    Logger logger = LoggerFactory.getLogger(ProcessLauncher.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProcessLauncher.class);
 
     public Process launch(List<String> commandWithParamsList) throws IOException {
         return new ProcessBuilder(commandWithParamsList).start();

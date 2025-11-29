@@ -40,7 +40,7 @@ public class GpioHermanasRpiController implements GpioHermanasController {
 
     private CameraConfiguration regularQualityconfig;
 
-    Logger logger = LoggerFactory.getLogger(GpioHermanasRpiController.class);
+    private static final Logger logger = LoggerFactory.getLogger(GpioHermanasRpiController.class);
 
     @Value("${camera.regular.delay}")
     private int photoRegularDelay;

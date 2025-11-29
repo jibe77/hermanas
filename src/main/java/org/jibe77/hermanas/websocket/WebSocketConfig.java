@@ -14,7 +14,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
 
     @Value("${cors.origins.allowed}")
     public String allowedOrigins;

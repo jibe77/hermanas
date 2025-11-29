@@ -20,7 +20,7 @@ public class CameraJob {
     @Value("${camera.scheduler.by.night}")
     private boolean takingPicturesByNight;
 
-    Logger logger = LoggerFactory.getLogger(CameraJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(CameraJob.class);
 
     public CameraJob(CameraController cameraController, SunTimeUtils sunTimeUtils) {
         this.cameraController = cameraController;

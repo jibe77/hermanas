@@ -27,7 +27,7 @@ public class BirdhouseButtonController {
 
     private LightController lightController;
 
-    Logger logger = LoggerFactory.getLogger(BirdhouseButtonController.class);
+    private static final Logger logger = LoggerFactory.getLogger(BirdhouseButtonController.class);
 
     private boolean lightHasBeenSwitchedOnByBirdhouseDoor;
 

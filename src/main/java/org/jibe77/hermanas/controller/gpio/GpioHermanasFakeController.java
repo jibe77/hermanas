@@ -20,7 +20,7 @@ import java.io.IOException;
 @Profile("gpio-fake")
 public class GpioHermanasFakeController implements GpioHermanasController {
 
-    Logger logger = LoggerFactory.getLogger(GpioHermanasFakeController.class);
+    private static final Logger logger = LoggerFactory.getLogger(GpioHermanasFakeController.class);
 
     private boolean cameraIsInitialised;
 

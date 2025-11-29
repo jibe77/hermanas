@@ -39,7 +39,7 @@ public class DoorController {
 
     private final SunTimeManager sunTimeManager;
 
-    Logger logger = LoggerFactory.getLogger(DoorController.class);
+    private static final Logger logger = LoggerFactory.getLogger(DoorController.class);
 
     @Value("${door.opening.duration}")
     private int doorOpeningDuration;
@@ -72,15 +72,17 @@ public class DoorController {
     private synchronized void initDoorAccordingToSunTime() {
         try {
             DoorStatusEnum doorStatusEnum = sunTimeManager.getExpectedDoorStatus();
-            if (doorStatusEnum == DoorStatusEnum.OPENED) {
-                openDoorWithUpButtonManagment(false, false);
-            } else if (doorStatusEnum == DoorStatusEnum.CLOSED) {
-                closeDoorWithBottormButtonManagement(false);
+            if (doorStatusEnum != null) {
+                if (doorStatusEnum == DoorStatusEnum.OPENED) {
+                    openDoorWithUpButtonManagment(false, false);
+                } else if (doorStatusEnum == DoorStatusEnum.CLOSED) {
+                    closeDoorWithBottormButtonManagement(false);
+                }
+            } else {
+                logger.warn("Door status is null, cannot initialize door according to sun time.");
             }
         } catch (DoorNotClosedCorrectlyException e) {
-            logger.error("The door status couldn't get initialized.");
-        } catch (NullPointerException e) {
-            logger.error("The door couldn't be initialized.");
+            logger.error("The door status couldn't get initialized.", e);
         }
     }
 
@@ -121,7 +123,8 @@ public class DoorController {
         try {
             TimeUnit.SECONDS.sleep(3);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Thread interrupted while waiting", e);
+            Thread.currentThread().interrupt();
         }
         return true;
     }

@@ -39,7 +39,7 @@ public class ManageDoorOpeningEvent {
     @Value("${play.cocorico.at.sunrise.enabled}")
     private boolean cocoricoAtSunriseEnabled;
 
-    Logger logger = LoggerFactory.getLogger(ManageDoorOpeningEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManageDoorOpeningEvent.class);
 
     public ManageDoorOpeningEvent(SunTimeManager sunTimeManager, CameraController cameraController,
                                   DoorController doorController, MusicController musicController,

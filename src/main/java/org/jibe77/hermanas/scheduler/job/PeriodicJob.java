@@ -25,7 +25,7 @@ public class PeriodicJob {
 
     WifiController wifiController;
 
-    Logger logger = LoggerFactory.getLogger(PeriodicJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(PeriodicJob.class);
 
     public PeriodicJob(SensorController sensorController, SensorRepository sensorRepository, WeatherClient weatherClient, WifiController wifiController) {
         this.sensorController = sensorController;

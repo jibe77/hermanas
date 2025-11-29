@@ -28,7 +28,7 @@ public class WifiController {
     @Value("${wifi.switch.enabled}")
     private boolean wifiSwitchEnabled;
 
-    Logger logger = LoggerFactory.getLogger(WifiController.class);
+    private static final Logger logger = LoggerFactory.getLogger(WifiController.class);
 
     public WifiController(ProcessLauncher processLauncher, ConsumptionModeController consumptionModeController, DoorController doorController, EmailService emailService) {
         this.processLauncher = processLauncher;

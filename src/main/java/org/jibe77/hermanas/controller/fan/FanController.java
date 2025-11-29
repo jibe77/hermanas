@@ -36,7 +36,7 @@ public class FanController {
 
     DigitalOutput gpioPinDigitalOutput;
 
-    Logger logger = LoggerFactory.getLogger(FanController.class);
+    private static final Logger logger = LoggerFactory.getLogger(FanController.class);
 
     Timer fanSecurityStopTimer;
 

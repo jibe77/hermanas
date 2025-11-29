@@ -69,7 +69,7 @@ public class ConfigController {
 
     ParameterRepository parameterRepository;
 
-    Logger logger = LoggerFactory.getLogger(ConfigController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConfigController.class);
 
     public ConfigController(ParameterRepository parameterRepository) {
         this.parameterRepository = parameterRepository;
@@ -241,7 +241,7 @@ public class ConfigController {
     public int getEcoModeNbrDaysAroundWinterSolstice() {
         Parameter parameter = parameterRepository.findByEntryKey("consumption.mode.eco.days.around.winter.solstice");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
-            return Integer.valueOf(parameter.getEntryValue());
+            return Integer.parseInt(parameter.getEntryValue());
         }
         return ecoModeNbrDaysAroundWinterSolstice;
     }
@@ -250,7 +250,7 @@ public class ConfigController {
     public int getSunnyModeNbrDaysAroundSummerSolstice() {
         Parameter parameter = parameterRepository.findByEntryKey("consumption.mode.sunny.days.around.summer.solstice");
         if (parameter != null && StringUtils.isNotEmpty(parameter.getEntryValue())) {
-            return Integer.valueOf(parameter.getEntryValue());
+            return Integer.parseInt(parameter.getEntryValue());
         }
         return sunnyModeNbrDaysAroundSummerSolstice;
     }

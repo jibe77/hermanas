@@ -74,7 +74,7 @@ public class MusicController {
 
     private NotificationController notificationController;
 
-    Logger logger = LoggerFactory.getLogger(MusicController.class);
+    private static final Logger logger = LoggerFactory.getLogger(MusicController.class);
 
     public MusicController(ProcessLauncher processLauncher, ConsumptionModeController consumptionModeController,
                            SoundCardController soundCardController, NotificationController notificationController,

@@ -20,7 +20,7 @@ public class DoorPictureAnalizer {
     public static final int ABSCISSA_START = 163;
     public static final int ABSCISSA_END = 320;
 
-    Logger logger = LoggerFactory.getLogger(DoorPictureAnalizer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DoorPictureAnalizer.class);
 
     /**
      * Analyze image

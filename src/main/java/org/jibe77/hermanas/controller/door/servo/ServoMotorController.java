@@ -41,7 +41,7 @@ public class ServoMotorController
     private static final int SERVO_OPENING_MAX_POSITION = 25;
 
 
-    Logger logger = LoggerFactory.getLogger(ServoMotorController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServoMotorController.class);
 
     public ServoMotorController(GpioHermanasController gpioHermanasController) {
         this.gpioHermanasController = gpioHermanasController;

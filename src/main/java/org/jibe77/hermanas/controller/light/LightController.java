@@ -43,7 +43,7 @@ public class LightController {
 
     ConsumptionModeController consumptionModeController;
 
-    Logger logger = LoggerFactory.getLogger(LightController.class);
+    private static final Logger logger = LoggerFactory.getLogger(LightController.class);
 
     public LightController(GpioHermanasController gpioHermanasController, ConsumptionModeController consumptionModeController,
                            NotificationController notificationController, ConfigController configController) {

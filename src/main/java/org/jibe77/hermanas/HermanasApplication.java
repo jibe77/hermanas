@@ -18,7 +18,7 @@ import java.io.File;
 @EnableAsync
 public class HermanasApplication {
 
-	static Logger logger = LoggerFactory.getLogger(HermanasApplication.class);
+	private static final Logger logger = LoggerFactory.getLogger(HermanasApplication.class);
 
 	public static void main(String[] args) {
 		logger.info("Current directory : {}.", new File("").getAbsolutePath());

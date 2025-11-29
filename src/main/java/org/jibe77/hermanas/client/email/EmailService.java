@@ -39,7 +39,7 @@ public class EmailService {
     @Value("${email.notification.enabled}")
     private boolean enabled;
 
-    Logger logger = LoggerFactory.getLogger(EmailService.class);
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;

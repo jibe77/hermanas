@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 public class SensorService {
 
-    Logger logger = LoggerFactory.getLogger(SensorService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SensorService.class);
 
     SensorController sensorController;
 
@@ -77,10 +77,10 @@ public class SensorService {
         logger.info("fetching history with year parameter : {}.", year);
         LocalDateTime startDate =
                 LocalDateTime.now().withMonth(1).withDayOfMonth(1).withHour(0).withMinute(0)
-                        .withSecond(0).withYear(Integer.valueOf(year));
+                        .withSecond(0).withYear(Integer.parseInt(year));
         LocalDateTime endDate =
                 LocalDateTime.now().withMonth(12).withDayOfMonth(31).withHour(23).withMinute(59)
-                        .withSecond(59).withYear(Integer.valueOf(year));
+                        .withSecond(59).withYear(Integer.parseInt(year));
 
         logger.info("start date is {} and end date parameter is {}.", startDate, endDate);
         return sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(startDate, endDate);

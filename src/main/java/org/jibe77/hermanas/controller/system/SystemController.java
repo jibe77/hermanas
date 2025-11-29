@@ -12,7 +12,7 @@ public class SystemController {
 
     ProcessLauncher processLauncher;
 
-    Logger logger = LoggerFactory.getLogger(SystemController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemController.class);
 
     public SystemController(ProcessLauncher processLauncher) {
         this.processLauncher = processLauncher;

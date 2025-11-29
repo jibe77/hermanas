@@ -25,7 +25,7 @@ public class BottomButtonController {
 
     boolean bottomButtonHasBeenPressed = false;
 
-    Logger logger = LoggerFactory.getLogger(BottomButtonController.class);
+    private static final Logger logger = LoggerFactory.getLogger(BottomButtonController.class);
 
     public BottomButtonController(GpioHermanasController gpioHermanasController, ServoMotorController servoMotorController) {
         this.gpioHermanasController = gpioHermanasController;

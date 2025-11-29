@@ -20,7 +20,7 @@ public class DiskSpaceJob {
 
     MessageSource messageSource;
 
-    Logger logger = LoggerFactory.getLogger(DiskSpaceJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(DiskSpaceJob.class);
 
     public DiskSpaceJob(DiskSpaceHealthIndicator diskSpaceHealthIndicator, EmailService emailService, MessageSource messageSource) {
         this.diskSpaceHealthIndicator = diskSpaceHealthIndicator;

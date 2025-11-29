@@ -24,7 +24,7 @@ public class CameraService {
         this.cameraController = cameraController;
     }
 
-    Logger logger = LoggerFactory.getLogger(CameraService.class);
+    private static final Logger logger = LoggerFactory.getLogger(CameraService.class);
 
     @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
     public @ResponseBody byte[] takePicture(@RequestParam(defaultValue = "false") String highQuality) throws IOException, InterruptedException {

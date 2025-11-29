@@ -19,7 +19,7 @@ public class FanJob {
 
     private ConsumptionModeController consumptionModeController;
 
-    Logger logger = LoggerFactory.getLogger(FanJob.class);
+    private static final Logger logger = LoggerFactory.getLogger(FanJob.class);
 
     public FanJob(FanController fanController, SunTimeUtils sunTimeUtils, ConsumptionModeController consumptionModeController) {
         this.fanController = fanController;

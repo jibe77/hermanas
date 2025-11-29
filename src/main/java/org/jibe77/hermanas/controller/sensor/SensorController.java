@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @Component
 public class SensorController {
 
-    Logger logger = LoggerFactory.getLogger(SensorController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SensorController.class);
 
     @Value("${sensor.python.command}")
     private String pythonCommand;

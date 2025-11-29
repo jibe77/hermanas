@@ -28,7 +28,7 @@ public class ManageDoorClosingEvent {
 
     ConsumptionModeController consumptionModeController;
 
-    Logger logger = LoggerFactory.getLogger(ManageDoorClosingEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManageDoorClosingEvent.class);
 
     public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController,
                                   NotificationService notificationService, MessageSource messageSource,

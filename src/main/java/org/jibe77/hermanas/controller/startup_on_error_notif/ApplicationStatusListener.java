@@ -22,7 +22,7 @@ import java.util.Optional;
 @Component
 public class ApplicationStatusListener {
 
-    Logger logger = LoggerFactory.getLogger(ApplicationStatusListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationStatusListener.class);
 
     EventRepository eventRepository;
     CameraController cameraController;

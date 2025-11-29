@@ -35,7 +35,7 @@ public class CameraController {
     @Value("${camera.path.root}")
     private String rootPath;
 
-    Logger logger = LoggerFactory.getLogger(CameraController.class);
+    private static final Logger logger = LoggerFactory.getLogger(CameraController.class);
 
     @Value("${camera.streaming.command}")
     private String streamingCommand;

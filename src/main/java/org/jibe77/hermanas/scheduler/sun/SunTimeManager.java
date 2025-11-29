@@ -28,7 +28,7 @@ public class SunTimeManager {
 
     public static final String HH_MM = "HH:mm";
 
-    Logger logger = LoggerFactory.getLogger(SunTimeManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(SunTimeManager.class);
 
     public SunTimeManager(SunTimeUtils sunTimeUtils) {
         this.sunTimeUtils = sunTimeUtils;;

@@ -12,7 +12,7 @@ public class MusicService {
 
     MusicController musicController;
 
-    Logger logger = LoggerFactory.getLogger(MusicService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MusicService.class);
 
     public MusicService(MusicController musicController) {
         this.musicController = musicController;

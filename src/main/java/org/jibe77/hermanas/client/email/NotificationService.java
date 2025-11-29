@@ -28,7 +28,7 @@ public class NotificationService {
 
     MessageSource messageSource;
 
-    Logger logger = LoggerFactory.getLogger(NotificationService.class);
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     public NotificationService(EmailService emailService, CameraController cameraController,
                                MessageSource messageSource, SunTimeManager sunTimeManager) {

@@ -22,7 +22,7 @@ public class EnergyService {
 
     ConsumptionModeController consumptionModeController;
 
-    Logger logger = LoggerFactory.getLogger(EnergyService.class);
+    private static final Logger logger = LoggerFactory.getLogger(EnergyService.class);
 
     public EnergyService(WifiController wifiController, ConsumptionModeController consumptionModeController) {
         this.wifiController = wifiController;

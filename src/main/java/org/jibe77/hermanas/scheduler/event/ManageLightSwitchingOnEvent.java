@@ -31,7 +31,7 @@ public class ManageLightSwitchingOnEvent {
     @Value("${play.song.at.sunset}")
     private boolean playSongAtSunset;
 
-    Logger logger = LoggerFactory.getLogger(ManageLightSwitchingOnEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManageLightSwitchingOnEvent.class);
 
     public ManageLightSwitchingOnEvent(SunTimeManager sunTimeManager, LightController lightController,
                                        DoorController doorController, FanController fanController,

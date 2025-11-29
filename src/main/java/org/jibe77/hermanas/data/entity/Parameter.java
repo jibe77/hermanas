@@ -39,7 +39,7 @@ public class Parameter {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Parameter parameter = (Parameter) o;
-        return Objects.equals(entryKey, parameter.entryValue) &&
+        return Objects.equals(entryKey, parameter.entryKey) &&
                 Objects.equals(entryValue, parameter.entryValue);
     }
 

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class NotificationController {
 
-    Logger logger = LoggerFactory.getLogger(NotificationController.class);
+    private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
 
     MessageSendingOperations<String> wsTemplate;
 
