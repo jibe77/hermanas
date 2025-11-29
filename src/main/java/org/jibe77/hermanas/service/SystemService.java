@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.service;
 
 import org.jibe77.hermanas.controller.system.SystemController;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -13,12 +13,12 @@ public class SystemService {
         this.systemController = systemController;
     }
 
-    @GetMapping(value = "/system/shutdown")
+    @PostMapping(value = "/system/shutdown")
     public void shutdown() {
         systemController.shutdown();
     }
 
-    @GetMapping(value = "/system/reboot")
+    @PostMapping(value = "/system/reboot")
     public void reboot() {
         systemController.reboot();
     }

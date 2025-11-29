@@ -5,12 +5,18 @@ import org.jibe77.hermanas.controller.door.model.DoorStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 @RestController
 @Service
+@Validated
 public class DoorService {
 
     DoorController doorController;
@@ -26,7 +32,7 @@ public class DoorService {
      * @return true if the bottom button has been pressed,
      *          false if the door has been closed without touching the bottom button.
      */
-    @GetMapping("/door/close")
+    @PostMapping("/door/close")
     public boolean close(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("closing door now  ...");
         doorController.closeDoorWithBottormButtonManagement(Boolean.parseBoolean(force));
@@ -34,7 +40,7 @@ public class DoorService {
         return true;
     }
 
-    @GetMapping("/door/open")
+    @PostMapping("/door/open")
     public boolean open(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("opening door now  ...");
         boolean result = doorController.openDoorWithUpButtonManagment(Boolean.parseBoolean(force), false);
@@ -43,28 +49,45 @@ public class DoorService {
     }
 
     @GetMapping("/door/turnClockwise")
-    public String turnClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
+    public String turnClockwise(
+            @RequestParam(defaultValue = "50", required = false)
+            @Min(value = 1, message = "Duration must be at least 1ms")
+            @Max(value = 30000, message = "Duration cannot exceed 30000ms")
+            int duration) {
         logger.info("turning servomotor clockwise  ...");
-        doorController.turnServoClockwise(Integer.parseInt(duration));
+        doorController.turnServoClockwise(duration);
         logger.info("... servomotor done !");
         return "done";
     }
 
     @GetMapping("/door/turnCounterClockwise")
-    public String turnCounterClockwise(@RequestParam(defaultValue = "50", required = false) String duration) {
+    public String turnCounterClockwise(
+            @RequestParam(defaultValue = "50", required = false)
+            @Min(value = 1, message = "Duration must be at least 1ms")
+            @Max(value = 30000, message = "Duration cannot exceed 30000ms")
+            int duration) {
         logger.info("turning servomotor counter-clockwise  ...");
-        doorController.turnServoCounterClockwise(Integer.parseInt(duration));
+        doorController.turnServoCounterClockwise(duration);
         logger.info("... servomotor done !");
         return "done";
     }
 
     @GetMapping("/door/turnServo")
-    public String turnServo(String dutyCycle, String frequency, String duration) {
+    public String turnServo(
+            @RequestParam
+            @Min(value = 0, message = "Duty cycle must be between 0 and 100")
+            @Max(value = 100, message = "Duty cycle must be between 0 and 100")
+            int dutyCycle,
+            @RequestParam
+            @Min(value = 1, message = "Frequency must be at least 1Hz")
+            @Max(value = 1000, message = "Frequency cannot exceed 1000Hz")
+            int frequency,
+            @RequestParam
+            @Min(value = 1, message = "Duration must be at least 1ms")
+            @Max(value = 30000, message = "Duration cannot exceed 30000ms")
+            int duration) {
         logger.info("turning servomotor counter-clockwise  ...");
-        doorController.turnServo(
-                Integer.parseInt(dutyCycle),
-                Integer.parseInt(frequency),
-                Integer.parseInt(duration));
+        doorController.turnServo(dutyCycle, frequency, duration);
         logger.info("... servomotor done !");
         return "done";
     }
