@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.scheduler.sun;
 
-import org.jibe77.hermanas.controller.door.model.DoorStatusEnum;
 import org.jibe77.hermanas.scheduler.sun.model.NextEvents;
+import org.jibe77.hermanas.service.door.model.DoorStatusEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

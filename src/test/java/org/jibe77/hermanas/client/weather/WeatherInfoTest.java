@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.client.weather;
 
-import org.jibe77.hermanas.controller.energy.WifiController;
+import org.jibe77.hermanas.controller.energy.WifiService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ class WeatherInfoTest {
     RestTemplate restTemplate;
 
     @MockBean
-    WifiController wifiController;
+    WifiService wifiService;
 
     @Test
     void testWeather() {

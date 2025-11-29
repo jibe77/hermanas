@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.scheduler.sun;
 
-import org.jibe77.hermanas.controller.config.ConfigController;
+import org.jibe77.hermanas.controller.config.ConfigService;
 import org.jibe77.hermanas.controller.energy.EnergyMode;
 import org.jibe77.hermanas.data.repository.ParameterRepository;
 import org.junit.jupiter.api.Test;
@@ -14,14 +14,14 @@ import java.time.Month;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(classes = {ConsumptionModeController.class, ConfigController.class})
+@SpringBootTest(classes = {ConsumptionModeController.class, ConfigService.class})
 public class ConsumptionModeControllerTest {
 
     @MockBean
     ParameterRepository parameterRepository;
 
     @Autowired
-    ConfigController configController;
+    ConfigService configService;
 
     @Autowired
     ConsumptionModeController consumptionModeController;
@@ -63,8 +63,8 @@ public class ConsumptionModeControllerTest {
 
     @Test
     public void testDurationEcoModeForce() {
-        configController.setConsumptionModeEcoForce(true);
-        assertTrue(configController.isConsumptionModeEcoForce());
+        configService.setConsumptionModeEcoForce(true);
+        assertTrue(configService.isConsumptionModeEcoForce());
         assertEquals(1, consumptionModeController.getDuration(
                 1, 10, 100,
                 LocalDateTime.of(2020, 12, 21, 12, 00)));
@@ -74,13 +74,13 @@ public class ConsumptionModeControllerTest {
         assertEquals(1, consumptionModeController.getDuration(
                 1, 10, 100,
                 LocalDateTime.of(2020, 3, 21, 12, 00)));
-        configController.setConsumptionModeEcoForce(false);
+        configService.setConsumptionModeEcoForce(false);
     }
 
     @Test
     public void testSolsticeBeforeWinterInRegularMode() {
-        configController.setConsumptionModeEcoForce(false);
-        assertTrue(!configController.isConsumptionModeEcoForce());
+        configService.setConsumptionModeEcoForce(false);
+        assertTrue(!configService.isConsumptionModeEcoForce());
         LocalDateTime beforeWinterSolsticeInRegularMode = LocalDateTime.of(2020, 11, 10, 12, 00);
         assertEquals(LocalDateTime.of(2020, 12, 21, 12, 00), consumptionModeController.getWinterSolstice(
                 beforeWinterSolsticeInRegularMode));
@@ -90,7 +90,7 @@ public class ConsumptionModeControllerTest {
 
     @Test
     public void testSolsticeBeforeWinter() {
-        configController.setConsumptionModeEcoForce(false);
+        configService.setConsumptionModeEcoForce(false);
         LocalDateTime beforeWinterSolstice = LocalDateTime.of(2020, 12, 10, 12, 00);
         assertEquals(LocalDateTime.of(2020, 12, 21, 12, 00), consumptionModeController.getWinterSolstice(
                 beforeWinterSolstice));

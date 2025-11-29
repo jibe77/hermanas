@@ -2,10 +2,10 @@ package org.jibe77.hermanas.scheduler.job;
 
 import org.jibe77.hermanas.client.weather.WeatherClient;
 import org.jibe77.hermanas.client.weather.WeatherInfo;
-import org.jibe77.hermanas.controller.energy.WifiController;
+import org.jibe77.hermanas.controller.energy.WifiService;
 import org.jibe77.hermanas.data.entity.Sensor;
 import org.jibe77.hermanas.data.repository.SensorRepository;
-import org.jibe77.hermanas.controller.sensor.SensorController;
+import org.jibe77.hermanas.controller.sensor.SensorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -17,31 +17,31 @@ import org.springframework.web.client.ResourceAccessException;
 @Profile("gpio-rpi")
 public class PeriodicJob {
 
-    private SensorController sensorController;
+    private SensorService sensorService;
 
     private SensorRepository sensorRepository;
 
     private WeatherClient weatherClient;
 
-    WifiController wifiController;
+    WifiService wifiService;
 
     private static final Logger logger = LoggerFactory.getLogger(PeriodicJob.class);
 
-    public PeriodicJob(SensorController sensorController, SensorRepository sensorRepository, WeatherClient weatherClient, WifiController wifiController) {
-        this.sensorController = sensorController;
+    public PeriodicJob(SensorService sensorService, SensorRepository sensorRepository, WeatherClient weatherClient, WifiService wifiService) {
+        this.sensorService = sensorService;
         this.sensorRepository = sensorRepository;
         this.weatherClient = weatherClient;
-        this.wifiController = wifiController;
+        this.wifiService = wifiService;
     }
 
     @Scheduled(fixedDelayString = "${sensor.scheduler.delay.in.milliseconds}")
     public void execute() {
-        boolean initialWifiStatus = wifiController.wifiCardIsEnabled();
+        boolean initialWifiStatus = wifiService.wifiCardIsEnabled();
         // make the wifi available
-        wifiController.turnOn();
+        wifiService.turnOn();
         try {
             logger.info("Sensor scheduled job is taking temperature and humidity now.");
-            Sensor sensor = sensorController.refreshData();
+            Sensor sensor = sensorService.refreshData();
             WeatherInfo weatherInfo = getWeatherInfo();
             sensor.setExternalTemperature(weatherInfo.getTemp());
             sensor.setExternalHumidity(weatherInfo.getHumidity());
@@ -53,7 +53,7 @@ public class PeriodicJob {
         } finally {
             if (!initialWifiStatus) {
                 logger.info("weather client is disabling the wifi card after a request.");
-                wifiController.turnOff();
+                wifiService.turnOff();
             }
         }
     }

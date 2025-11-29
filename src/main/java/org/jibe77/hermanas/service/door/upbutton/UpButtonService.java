@@ -1,0 +1,70 @@
+package org.jibe77.hermanas.controller.door.upbutton;
+
+import com.pi4j.io.gpio.digital.DigitalInput;
+import com.pi4j.io.gpio.digital.DigitalStateChangeEvent;
+import org.jibe77.hermanas.controller.door.servo.ServoMotorService;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+
+@Component
+public class UpButtonService {
+
+    final ServoMotorService servoMotorService;
+
+    final GpioHermanasService gpioHermanasService;
+
+    @Value("${door.button.up.gpio.address}")
+    private int doorButtonUpGpioAddress;
+
+    private DigitalInput upButton;
+
+    boolean upButtonHasBeenPressed = false;
+
+    private static final Logger logger = LoggerFactory.getLogger(UpButtonService.class);
+
+    public UpButtonService(ServoMotorService servoMotorService, GpioHermanasService gpioHermanasService) {
+        this.servoMotorService = servoMotorService;
+        this.gpioHermanasService = gpioHermanasService;
+    }
+
+    @PostConstruct
+    public synchronized void provisionButton() {
+        logger.info("provision door button on gpio instance.");
+        if (upButton == null) {
+            upButton = gpioHermanasService.provisionInput(
+                    "door_up_button", "Door up button", doorButtonUpGpioAddress);
+            upButton.addListener(event -> manageEvent(event));
+        }
+    }
+
+    private void manageEvent(DigitalStateChangeEvent event) {
+        if (event.state().isHigh()) {
+            logger.info("Door has reached the up, stop servomotor now !");
+            this.setUpButtonHasBeenPressed(true);
+            servoMotorService.stop();
+        } else if (event.state().isLow()) {
+            logger.info("Up button is not pressed anymore.");
+        }
+    }
+
+    public synchronized boolean isUpButtonPressed() {
+        return upButton.isHigh();
+    }
+
+    public void resetUpButtonState() {
+        upButtonHasBeenPressed = false;
+    }
+
+    public boolean isUpButtonHasBeenPressed() {
+        return upButtonHasBeenPressed;
+    }
+
+    void setUpButtonHasBeenPressed(boolean bottomButtonHasBeenPressed) {
+        this.upButtonHasBeenPressed = bottomButtonHasBeenPressed;
+    }
+}

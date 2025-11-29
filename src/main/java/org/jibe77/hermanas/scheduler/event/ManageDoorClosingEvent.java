@@ -1,9 +1,9 @@
 package org.jibe77.hermanas.scheduler.event;
 
 import org.jibe77.hermanas.client.email.NotificationService;
-import org.jibe77.hermanas.controller.door.DoorController;
+import org.jibe77.hermanas.controller.door.DoorService;
 import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
-import org.jibe77.hermanas.controller.energy.WifiController;
+import org.jibe77.hermanas.controller.energy.WifiService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
@@ -18,37 +18,37 @@ public class ManageDoorClosingEvent {
 
     SunTimeManager sunTimeManager;
 
-    DoorController doorController;
+    DoorService doorService;
 
     NotificationService notificationService;
 
     MessageSource messageSource;
 
-    WifiController wifiController;
+    WifiService wifiService;
 
     ConsumptionModeController consumptionModeController;
 
     private static final Logger logger = LoggerFactory.getLogger(ManageDoorClosingEvent.class);
 
-    public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorController doorController,
+    public ManageDoorClosingEvent(SunTimeManager sunTimeManager, DoorService doorService,
                                   NotificationService notificationService, MessageSource messageSource,
-                                  WifiController wifiController,
+                                  WifiService wifiService,
                                   ConsumptionModeController consumptionModeController) {
         this.sunTimeManager = sunTimeManager;
-        this.doorController = doorController;
+        this.doorService = doorService;
         this.notificationService = notificationService;
         this.messageSource = messageSource;
-        this.wifiController = wifiController;
+        this.wifiService = wifiService;
         this.consumptionModeController = consumptionModeController;
     }
 
     public void manageDoorClosingEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorClosingTime())) {
-            if (!doorController.doorIsClosed()) {
+            if (!doorService.doorIsClosed()) {
                 try {
-                    wifiController.turnOn();
+                    wifiService.turnOn();
                     logger.info("start door closing job at sunset.");
-                    doorController.closeDoorWithBottormButtonManagement(false);
+                    doorService.closeDoorWithBottormButtonManagement(false);
                     notificationService.doorClosingEvent(true);
                     logger.info("take picture once the door is closed and send it by email.");
 
@@ -61,7 +61,7 @@ public class ManageDoorClosingEvent {
             }
             if (consumptionModeController.isEcoMode(LocalDateTime.now())) {
                 // turn off the wifi in 15 minutes
-                wifiController.turnOffAfter(900);
+                wifiService.turnOffAfter(900);
             }
             sunTimeManager.reloadDoorClosingTime();
         }

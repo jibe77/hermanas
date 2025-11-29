@@ -1,8 +1,8 @@
 package org.jibe77.hermanas.controller.startup_on_error_notif;
 
 import org.jibe77.hermanas.client.email.EmailService;
-import org.jibe77.hermanas.controller.camera.CameraController;
-import org.jibe77.hermanas.controller.energy.WifiController;
+import org.jibe77.hermanas.controller.camera.CameraService;
+import org.jibe77.hermanas.controller.energy.WifiService;
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
@@ -25,20 +25,20 @@ class ApplicationStatusListenerTest {
 
     EmailService emailService = mock(EmailService.class);
 
-    CameraController cameraController = mock(CameraController.class);
+    CameraService cameraService = mock(CameraService.class);
 
     EventRepository eventRepository = mock(EventRepository.class);
 
     MessageSource messageSource = mock(MessageSource.class);
 
-    WifiController wifiController = mock(WifiController.class);
+    WifiService wifiService = mock(WifiService.class);
 
     ConsumptionModeController consumptionModeController = mock(ConsumptionModeController.class);
 
     @BeforeEach
     public void setUp() {
-        applicationStatusListener = new ApplicationStatusListener(eventRepository, emailService, cameraController,
-                messageSource, wifiController, consumptionModeController);
+        applicationStatusListener = new ApplicationStatusListener(eventRepository, emailService, cameraService,
+                messageSource, wifiService, consumptionModeController);
         when(messageSource.getMessage(anyString(), any(), any())).thenReturn("test");
     }
 
@@ -60,7 +60,7 @@ class ApplicationStatusListenerTest {
         event.setEventType(EventType.STARTUP);
         Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any())).thenReturn(event);
         Optional<File> o = Optional.of(new File(""));
-        Mockito.when(cameraController.takePictureNoException(true)).thenReturn(o);
+        Mockito.when(cameraService.takePictureNoException(true)).thenReturn(o);
 
         applicationStatusListener.init();
 
@@ -74,7 +74,7 @@ class ApplicationStatusListenerTest {
         event.setEventType(EventType.STARTUP);
         Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any())).thenReturn(event);
         Optional<File> o = Optional.ofNullable(null);
-        Mockito.when(cameraController.takePictureNoException(false)).thenReturn(o);
+        Mockito.when(cameraService.takePictureNoException(false)).thenReturn(o);
 
         applicationStatusListener.init();
 

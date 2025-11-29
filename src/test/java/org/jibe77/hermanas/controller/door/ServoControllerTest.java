@@ -1,10 +1,10 @@
 package org.jibe77.hermanas.controller.door;
 
 import com.pi4j.io.gpio.digital.DigitalInput;
-import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonController;
-import org.jibe77.hermanas.controller.door.upbutton.UpButtonController;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
-import org.jibe77.hermanas.controller.door.servo.ServoMotorController;
+import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonService;
+import org.jibe77.hermanas.controller.door.upbutton.UpButtonService;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
+import org.jibe77.hermanas.controller.door.servo.ServoMotorService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.websocket.NotificationController;
 import org.junit.jupiter.api.Test;
@@ -15,23 +15,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@SpringBootTest(classes = {DoorController.class})
+@SpringBootTest(classes = {DoorService.class})
 class ServoControllerTest {
 
     @Autowired
-    DoorController controller;
+    DoorService doorService;
 
     @MockBean
-    ServoMotorController servoMotorController;
+    ServoMotorService servoMotorService;
 
     @MockBean
-    GpioHermanasController gpioHermanasController;
+    GpioHermanasService gpioHermanasService;
 
     @MockBean
-    BottomButtonController bottomButtonController;
+    BottomButtonService bottomButtonService;
 
     @MockBean
-    UpButtonController upButtonController;
+    UpButtonService upButtonService;
 
     @MockBean
     SunTimeManager sunTimeManager;
@@ -48,12 +48,12 @@ class ServoControllerTest {
     void testCloseDoor() {
         logger.info("<--Pi4J--> GPIO Control CloseDoor ... started.");
         Mockito.when(
-                gpioHermanasController.provisionInput(
+                gpioHermanasService.provisionInput(
                         Mockito.anyString(), Mockito.anyString(), Mockito.anyInt())
         ).thenReturn(gpioPinDigitalInput);
-        controller.closeDoor(true, false);
+        doorService.closeDoor(true, false);
         Mockito.verify(
-                servoMotorController,
+                servoMotorService,
                 Mockito.times(1)
         ).setPosition(
                 Mockito.anyInt(),
@@ -64,9 +64,9 @@ class ServoControllerTest {
     @Test
     void testOpenDoor() {
         logger.info("<--Pi4J--> GPIO Control OpenDoor ... started.");
-        controller.openDoor(false, false);
+        doorService.openDoor(false, false);
         Mockito.verify(
-                servoMotorController,
+                servoMotorService,
                 Mockito.times(1)
         ).setPosition(
                 Mockito.anyInt(),

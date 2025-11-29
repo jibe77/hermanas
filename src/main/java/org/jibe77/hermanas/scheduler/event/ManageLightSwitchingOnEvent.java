@@ -1,11 +1,11 @@
 package org.jibe77.hermanas.scheduler.event;
 
-import org.jibe77.hermanas.controller.door.DoorController;
-import org.jibe77.hermanas.controller.fan.FanController;
-import org.jibe77.hermanas.controller.light.LightController;
+import org.jibe77.hermanas.controller.door.DoorService;
+import org.jibe77.hermanas.controller.fan.FanService;
+import org.jibe77.hermanas.controller.light.LightService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
-import org.jibe77.hermanas.controller.music.MusicController;
+import org.jibe77.hermanas.controller.music.MusicService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,31 +18,31 @@ public class ManageLightSwitchingOnEvent {
 
     SunTimeManager sunTimeManager;
 
-    LightController lightController;
+    LightService lightService;
 
-    DoorController doorController;
+    DoorService doorService;
 
-    FanController fanController;
+    FanService fanService;
 
     ConsumptionModeController consumptionModeController;
 
-    MusicController musicController;
+    MusicService musicService;
 
     @Value("${play.song.at.sunset}")
     private boolean playSongAtSunset;
 
     private static final Logger logger = LoggerFactory.getLogger(ManageLightSwitchingOnEvent.class);
 
-    public ManageLightSwitchingOnEvent(SunTimeManager sunTimeManager, LightController lightController,
-                                       DoorController doorController, FanController fanController,
+    public ManageLightSwitchingOnEvent(SunTimeManager sunTimeManager, LightService lightService,
+                                       DoorService doorService, FanService fanService,
                                        ConsumptionModeController consumptionModeController,
-                                       MusicController musicController) {
+                                       MusicService musicService) {
         this.sunTimeManager = sunTimeManager;
-        this.lightController = lightController;
-        this.doorController = doorController;
-        this.fanController = fanController;
+        this.lightService = lightService;
+        this.doorService = doorService;
+        this.fanService = fanService;
         this.consumptionModeController = consumptionModeController;
-        this.musicController = musicController;
+        this.musicService = musicService;
     }
 
     public void manageLightSwitchingOnEvent(LocalDateTime currentTime) {
@@ -51,17 +51,17 @@ public class ManageLightSwitchingOnEvent {
                 logger.info("light switching on event is disabled with eco mode.");
             } else {
                 logger.info("light switching on event is starting now.");
-                lightController.switchOn();
+                lightService.switchOn();
             }
-            if (!doorController.doorIsOpened()) {
+            if (!doorService.doorIsOpened()) {
                 logger.info("the light-switching-on event has found that the door is closed, opening it now.");
-                doorController.openDoorWithUpButtonManagment(false, false);
+                doorService.openDoorWithUpButtonManagment(false, false);
             }
             if (!consumptionModeController.isEcoMode(LocalDateTime.now())) {
-                fanController.switchOn();
+                fanService.switchOn();
             }
             if (playSongAtSunset) {
-                musicController.playMusicRandomly();
+                musicService.playMusicRandomly();
             }
             sunTimeManager.reloadLightOnTime();
         }

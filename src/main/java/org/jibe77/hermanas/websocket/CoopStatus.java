@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.websocket;
 
-import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
+import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 
 public class CoopStatus {
 

@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.scheduler.job;
 
-import org.jibe77.hermanas.controller.camera.CameraController;
+import org.jibe77.hermanas.controller.camera.CameraService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import java.io.IOException;
 @Component
 public class CameraJob {
 
-    private CameraController cameraController;
+    private CameraService cameraService;
 
     private SunTimeUtils sunTimeUtils;
 
@@ -22,8 +22,8 @@ public class CameraJob {
 
     private static final Logger logger = LoggerFactory.getLogger(CameraJob.class);
 
-    public CameraJob(CameraController cameraController, SunTimeUtils sunTimeUtils) {
-        this.cameraController = cameraController;
+    public CameraJob(CameraService cameraService, SunTimeUtils sunTimeUtils) {
+        this.cameraService = cameraService;
         this.sunTimeUtils = sunTimeUtils;
     }
 
@@ -32,7 +32,7 @@ public class CameraJob {
         if (sunTimeUtils.isDay() || takingPicturesByNight) {
             try {
                 logger.info("Camera scheduled job is taking a picture now.");
-                cameraController.takePicture(true);
+                cameraService.takePicture(true);
             } catch (IOException | InterruptedException e) {
                 logger.error("Can't take picture or write picture of filesystem.", e);
             }

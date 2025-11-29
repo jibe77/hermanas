@@ -1,0 +1,5 @@
+package org.jibe77.hermanas.service.abstract_model;
+
+public enum StatusEnum {
+    OFF, ON, OPENING, CLOSING, CLOSED, OPENED, OPENED_INCORRECTLY, CLOSED_INCORRECTLY;
+}

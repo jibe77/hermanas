@@ -2,10 +2,10 @@ package org.jibe77.hermanas.scheduler.event;
 
 import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.client.email.NotificationService;
-import org.jibe77.hermanas.controller.camera.CameraController;
-import org.jibe77.hermanas.controller.door.DoorController;
-import org.jibe77.hermanas.controller.energy.WifiController;
-import org.jibe77.hermanas.controller.music.MusicController;
+import org.jibe77.hermanas.controller.camera.CameraService;
+import org.jibe77.hermanas.controller.door.DoorService;
+import org.jibe77.hermanas.controller.energy.WifiService;
+import org.jibe77.hermanas.controller.music.MusicService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,14 +21,14 @@ class ManageDoorClosingTest {
     ManageDoorClosingEvent manageDoorClosingEvent;
 
     SunTimeManager sunTimeManager;
-    CameraController cameraController;
+    CameraService cameraService;
     EmailService emailService;
-    DoorController doorController;
+    DoorService doorService;
     LocalDateTime eventAlwaysInTheFutur;
     LocalDateTime eventAlwaysInThePast;
     LocalDateTime eventToLaunch;
     MessageSource messageSource;
-    WifiController wifiController;
+    WifiService wifiService;
     NotificationService notificationService;
     ConsumptionModeController consumptionModeController;
 
@@ -38,17 +38,17 @@ class ManageDoorClosingTest {
         eventAlwaysInThePast = LocalDateTime.now().minusHours(1);
         eventToLaunch = LocalDateTime.now().minusHours(1);
         sunTimeManager = mock(SunTimeManager.class);
-        cameraController = mock(CameraController.class);
+        cameraService = mock(CameraService.class);
         emailService = mock(EmailService.class);
-        doorController = mock(DoorController.class);
+        doorService = mock(DoorService.class);
         messageSource = mock(MessageSource.class);
-        wifiController = mock(WifiController.class);
+        wifiService = mock(WifiService.class);
         notificationService = mock(NotificationService.class);
         consumptionModeController = mock(ConsumptionModeController.class);
 
         manageDoorClosingEvent = new ManageDoorClosingEvent(
-                sunTimeManager, doorController, notificationService,
-                messageSource, wifiController, consumptionModeController);
+                sunTimeManager, doorService, notificationService,
+                messageSource, wifiService, consumptionModeController);
     }
 
     @Test
@@ -57,6 +57,6 @@ class ManageDoorClosingTest {
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
         manageDoorClosingEvent.manageDoorClosingEvent(LocalDateTime.now());
-        verify(doorController, times(1)).closeDoorWithBottormButtonManagement(false);
+        verify(doorService, times(1)).closeDoorWithBottormButtonManagement(false);
     }
 }

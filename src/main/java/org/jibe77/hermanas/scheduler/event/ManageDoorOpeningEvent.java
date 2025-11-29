@@ -1,11 +1,11 @@
 package org.jibe77.hermanas.scheduler.event;
 
 import org.jibe77.hermanas.client.email.NotificationService;
-import org.jibe77.hermanas.controller.camera.CameraController;
-import org.jibe77.hermanas.controller.door.DoorController;
-import org.jibe77.hermanas.controller.energy.WifiController;
-import org.jibe77.hermanas.controller.fan.FanController;
-import org.jibe77.hermanas.controller.music.MusicController;
+import org.jibe77.hermanas.controller.camera.CameraService;
+import org.jibe77.hermanas.controller.door.DoorService;
+import org.jibe77.hermanas.controller.energy.WifiService;
+import org.jibe77.hermanas.controller.fan.FanService;
+import org.jibe77.hermanas.controller.music.MusicService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
@@ -22,15 +22,15 @@ public class ManageDoorOpeningEvent {
 
     SunTimeManager sunTimeManager;
 
-    CameraController cameraController;
+    CameraService cameraService;
 
-    DoorController doorController;
+    DoorService doorService;
 
-    MusicController musicController;
+    MusicService musicService;
 
-    FanController fanController;
+    FanService fanService;
 
-    WifiController wifiController;
+    WifiService wifiService;
 
     NotificationService notificationService;
 
@@ -41,31 +41,31 @@ public class ManageDoorOpeningEvent {
 
     private static final Logger logger = LoggerFactory.getLogger(ManageDoorOpeningEvent.class);
 
-    public ManageDoorOpeningEvent(SunTimeManager sunTimeManager, CameraController cameraController,
-                                  DoorController doorController, MusicController musicController,
-                                  FanController fanController, WifiController wifiController,
+    public ManageDoorOpeningEvent(SunTimeManager sunTimeManager, CameraService cameraService,
+                                  DoorService doorService, MusicService musicService,
+                                  FanService fanService, WifiService wifiService,
                                   NotificationService notificationService,
                                   ConsumptionModeController consumptionModeController) {
         this.sunTimeManager = sunTimeManager;
-        this.cameraController = cameraController;
-        this.doorController = doorController;
-        this.musicController = musicController;
-        this.fanController = fanController;
-        this.wifiController = wifiController;
+        this.cameraService = cameraService;
+        this.doorService = doorService;
+        this.musicService = musicService;
+        this.fanService = fanService;
+        this.wifiService = wifiService;
         this.notificationService = notificationService;
         this.consumptionModeController = consumptionModeController;
     }
 
     public void manageDoorOpeningEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
-            if (!doorController.doorIsOpened()) {
+            if (!doorService.doorIsOpened()) {
                 logger.info("door opening event is starting now.");
                 if (cocoricoAtSunriseEnabled && !consumptionModeController.isEcoMode(LocalDateTime.now())) {
-                    musicController.cocorico();
+                    musicService.cocorico();
                 }
-                wifiController.turnOn();
-                Optional<File> picBeforeOpening = cameraController.takePictureNoException(true);
-                boolean isCorrectlyOpened = doorController.openDoorWithUpButtonManagment(false, false);
+                wifiService.turnOn();
+                Optional<File> picBeforeOpening = cameraService.takePictureNoException(true);
+                boolean isCorrectlyOpened = doorService.openDoorWithUpButtonManagment(false, false);
 
                 notificationService.doorOpeningEvent(
                         isCorrectlyOpened,
@@ -73,10 +73,10 @@ public class ManageDoorOpeningEvent {
                 );
             }
             if (!consumptionModeController.isEcoMode(LocalDateTime.now())) {
-                fanController.switchOn();
+                fanService.switchOn();
             } else {
                 // turn off the wifi in 15 minutes
-                wifiController.turnOffAfter(900);
+                wifiService.turnOffAfter(900);
             }
             sunTimeManager.reloadDoorOpeningTime();
         }

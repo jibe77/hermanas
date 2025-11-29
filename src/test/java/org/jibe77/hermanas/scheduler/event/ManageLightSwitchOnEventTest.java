@@ -1,9 +1,9 @@
 package org.jibe77.hermanas.scheduler.event;
 
-import org.jibe77.hermanas.controller.door.DoorController;
-import org.jibe77.hermanas.controller.fan.FanController;
-import org.jibe77.hermanas.controller.light.LightController;
-import org.jibe77.hermanas.controller.music.MusicController;
+import org.jibe77.hermanas.controller.door.DoorService;
+import org.jibe77.hermanas.controller.fan.FanService;
+import org.jibe77.hermanas.controller.light.LightService;
+import org.jibe77.hermanas.controller.music.MusicService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,13 +18,13 @@ class ManageLightSwitchOnEventTest {
     ManageLightSwitchingOnEvent manageLightSwitchingOnEvent;
 
     SunTimeManager sunTimeManager;
-    LightController lightController;
-    DoorController doorController;
+    LightService lightService;
+    DoorService doorService;
     LocalDateTime eventAlwaysInTheFutur;
     LocalDateTime eventAlwaysInThePast;
-    FanController fanController;
+    FanService fanService;
     ConsumptionModeController consumptionMode;
-    MusicController musicController;
+    MusicService musicService;
 
 
     @BeforeEach
@@ -33,14 +33,14 @@ class ManageLightSwitchOnEventTest {
         eventAlwaysInThePast = LocalDateTime.now().minusHours(1);
 
         sunTimeManager = mock(SunTimeManager.class);
-        lightController = mock(LightController.class);
-        doorController = mock(DoorController.class);
-        fanController = mock(FanController.class);
+        lightService = mock(LightService.class);
+        doorService = mock(DoorService.class);
+        fanService = mock(FanService.class);
         consumptionMode = mock(ConsumptionModeController.class);
-        musicController = mock(MusicController.class);
+        musicService = mock(MusicService.class);
 
         manageLightSwitchingOnEvent = new ManageLightSwitchingOnEvent(
-                sunTimeManager, lightController, doorController, fanController, consumptionMode, musicController);
+                sunTimeManager, lightService, doorService, fanService, consumptionMode, musicService);
     }
 
     @Test
@@ -50,7 +50,7 @@ class ManageLightSwitchOnEventTest {
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInThePast);
         manageLightSwitchingOnEvent.setPlaySongAtSunset(true);
         manageLightSwitchingOnEvent.manageLightSwitchingOnEvent(LocalDateTime.now());
-        verify(lightController, times(1)).switchOn();
-        verify(musicController, times(1)).playMusicRandomly();
+        verify(lightService, times(1)).switchOn();
+        verify(musicService, times(1)).playMusicRandomly();
     }
 }

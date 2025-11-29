@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.client.email;
 
-import org.jibe77.hermanas.controller.camera.CameraController;
+import org.jibe77.hermanas.controller.camera.CameraService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ public class NotificationService {
     @Value("${email.notification.enabled}")
     private boolean enabled;
 
-    private CameraController cameraController;
+    private CameraService cameraService;
 
     private EmailService emailService;
 
@@ -30,9 +30,9 @@ public class NotificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
-    public NotificationService(EmailService emailService, CameraController cameraController,
+    public NotificationService(EmailService emailService, CameraService cameraService,
                                MessageSource messageSource, SunTimeManager sunTimeManager) {
-        this.cameraController = cameraController;
+        this.cameraService = cameraService;
         this.emailService = emailService;
         this.messageSource = messageSource;
         this.sunTimeManager = sunTimeManager;
@@ -60,7 +60,7 @@ public class NotificationService {
                     Locale.getDefault()));
 
             // add pictures
-            Optional<File> picWithClosedDoor = cameraController.takePictureNoException(true);
+            Optional<File> picWithClosedDoor = cameraService.takePictureNoException(true);
             String messageKey;
             if (picBeforeOpening.isPresent() && picWithClosedDoor.isPresent()) {
                 messageKey = "event.mail.with_pictures.message";
@@ -105,7 +105,7 @@ public class NotificationService {
                     Locale.getDefault()));
 
             // add pictures
-            Optional<File> picWithClosedDoor = cameraController.takePictureNoException(true);
+            Optional<File> picWithClosedDoor = cameraService.takePictureNoException(true);
             message.append(messageSource.getMessage(
                     picWithClosedDoor.isPresent() ?
                             "event.mail.with_picture.message" :

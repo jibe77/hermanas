@@ -5,8 +5,8 @@ import com.pi4j.io.gpio.digital.DigitalState;
 import com.pi4j.io.gpio.digital.DigitalStateChangeEvent;
 import org.jibe77.hermanas.controller.abstract_model.Status;
 import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasController;
-import org.jibe77.hermanas.controller.light.LightController;
+import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
+import org.jibe77.hermanas.controller.light.LightService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -14,37 +14,37 @@ import org.springframework.util.Assert;
 
 class BirdhouseButtonControllerTest {
 
-    BirdhouseButtonController birdhouseButtonController;
+    BirdhouseButtonService birdhouseButtonService;
 
-    GpioHermanasController gpioHermanasController = Mockito.mock(GpioHermanasController.class);
+    GpioHermanasService gpioHermanasService = Mockito.mock(GpioHermanasService.class);
 
-    LightController lightController = Mockito.mock(LightController.class);
+    LightService lightService = Mockito.mock(LightService.class);
 
     @BeforeEach
     public void setup() {
-        birdhouseButtonController = new BirdhouseButtonController(gpioHermanasController, lightController);
+        birdhouseButtonService = new BirdhouseButtonService(gpioHermanasService, lightService);
     }
 
     @Test
     void testInit() {
         DigitalInput gpioPinDigitalInput = Mockito.mock(DigitalInput.class);
-        Mockito.when(gpioHermanasController.provisionInput(Mockito.anyString(), Mockito.anyString(), Mockito.anyInt())).thenReturn(gpioPinDigitalInput);
-        birdhouseButtonController.setButton(null);
+        Mockito.when(gpioHermanasService.provisionInput(Mockito.anyString(), Mockito.anyString(), Mockito.anyInt())).thenReturn(gpioPinDigitalInput);
+        birdhouseButtonService.setButton(null);
 
-        birdhouseButtonController.initButton();
+        birdhouseButtonService.initButton();
 
-        Mockito.verify(gpioHermanasController, Mockito.times(1)).provisionInput(
+        Mockito.verify(gpioHermanasService, Mockito.times(1)).provisionInput(
                 Mockito.anyString(), Mockito.anyString(), Mockito.anyInt());
     }
 
     @Test
     void testInitWithButtonAlreadyDefined() {
         DigitalInput gpioPinDigitalInput = Mockito.mock(DigitalInput.class);
-        birdhouseButtonController.setButton(gpioPinDigitalInput);
+        birdhouseButtonService.setButton(gpioPinDigitalInput);
 
-        birdhouseButtonController.initButton();
+        birdhouseButtonService.initButton();
 
-        Mockito.verify(gpioHermanasController, Mockito.times(0)).provisionInput(
+        Mockito.verify(gpioHermanasService, Mockito.times(0)).provisionInput(
                 Mockito.anyString(), Mockito.anyString(), Mockito.anyInt());
     }
 
@@ -53,10 +53,10 @@ class BirdhouseButtonControllerTest {
     void testBirdhouseIsOpenedAndLightIsAlreadyOn() {
         DigitalStateChangeEvent event = Mockito.mock(DigitalStateChangeEvent.class);
         Mockito.when(event.state()).thenReturn(DigitalState.HIGH);
-        Mockito.when(lightController.getStatus()).thenReturn(new Status(StatusEnum.ON, -1));
+        Mockito.when(lightService.getStatus()).thenReturn(new Status(StatusEnum.ON, -1));
 
-        birdhouseButtonController.manageEvent(event);
-        Assert.isTrue(!birdhouseButtonController.isLightHasBeenSwitchedOnByBirdhouseDoor(),
+        birdhouseButtonService.manageEvent(event);
+        Assert.isTrue(!birdhouseButtonService.isLightHasBeenSwitchedOnByBirdhouseDoor(),
                 "The light is not switched on by birdhouse door.");
     }
 
@@ -64,38 +64,38 @@ class BirdhouseButtonControllerTest {
     void testBirdhouseIsOpened() {
         DigitalStateChangeEvent event = Mockito.mock(DigitalStateChangeEvent.class);
         Mockito.when(event.state()).thenReturn(DigitalState.HIGH);
-        Mockito.when(lightController.getStatus()).thenReturn(new Status(StatusEnum.OFF, -1));
+        Mockito.when(lightService.getStatus()).thenReturn(new Status(StatusEnum.OFF, -1));
 
-        birdhouseButtonController.manageEvent(event);
+        birdhouseButtonService.manageEvent(event);
 
-        Assert.isTrue(birdhouseButtonController.isLightHasBeenSwitchedOnByBirdhouseDoor(),
+        Assert.isTrue(birdhouseButtonService.isLightHasBeenSwitchedOnByBirdhouseDoor(),
                 "The light is switched on by birdhouse door.");
-        Mockito.verify(lightController, Mockito.times(1)).switchOn();
+        Mockito.verify(lightService, Mockito.times(1)).switchOn();
     }
 
     @Test
     void testBirdhouseIsClosed() {
         DigitalStateChangeEvent event = Mockito.mock(DigitalStateChangeEvent.class);
         Mockito.when(event.state()).thenReturn(DigitalState.LOW);
-        birdhouseButtonController.setLightHasBeenSwitchedOnByBirdhouseDoor(true);
+        birdhouseButtonService.setLightHasBeenSwitchedOnByBirdhouseDoor(true);
 
-        birdhouseButtonController.manageEvent(event);
+        birdhouseButtonService.manageEvent(event);
 
-        Assert.isTrue(!birdhouseButtonController.isLightHasBeenSwitchedOnByBirdhouseDoor(),
+        Assert.isTrue(!birdhouseButtonService.isLightHasBeenSwitchedOnByBirdhouseDoor(),
                 "The light is not switched on by birdhouse door.");
-        Mockito.verify(lightController, Mockito.times(1)).switchOff();
+        Mockito.verify(lightService, Mockito.times(1)).switchOff();
     }
 
     @Test
     void testBirdhouseIsClosedAndLightIsAlreadyOn() {
         DigitalStateChangeEvent event = Mockito.mock(DigitalStateChangeEvent.class);
         Mockito.when(event.state()).thenReturn(DigitalState.LOW);
-        birdhouseButtonController.setLightHasBeenSwitchedOnByBirdhouseDoor(false);
+        birdhouseButtonService.setLightHasBeenSwitchedOnByBirdhouseDoor(false);
 
-        birdhouseButtonController.manageEvent(event);
+        birdhouseButtonService.manageEvent(event);
 
-        Assert.isTrue(!birdhouseButtonController.isLightHasBeenSwitchedOnByBirdhouseDoor(),
+        Assert.isTrue(!birdhouseButtonService.isLightHasBeenSwitchedOnByBirdhouseDoor(),
                 "The light is not switched on by birdhouse door.");
-        Mockito.verify(lightController, Mockito.times(0)).switchOff();
+        Mockito.verify(lightService, Mockito.times(0)).switchOff();
     }
 }

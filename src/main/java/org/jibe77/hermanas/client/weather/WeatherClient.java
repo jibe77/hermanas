@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.client.weather;
 
-import org.jibe77.hermanas.controller.energy.WifiController;
+import org.jibe77.hermanas.controller.energy.WifiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
