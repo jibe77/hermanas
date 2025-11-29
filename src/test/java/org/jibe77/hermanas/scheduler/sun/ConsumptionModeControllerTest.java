@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.scheduler.sun;
 
 import org.jibe77.hermanas.controller.config.ConfigService;
-import org.jibe77.hermanas.controller.energy.EnergyMode;
+import org.jibe77.hermanas.service.energy.EnergyMode;
 import org.jibe77.hermanas.data.repository.ParameterRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

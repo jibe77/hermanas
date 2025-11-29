@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.service;
 
-import org.jibe77.hermanas.controller.abstract_model.Status;
+import org.jibe77.hermanas.service.abstract_model.Status;
 import org.jibe77.hermanas.controller.fan.FanService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

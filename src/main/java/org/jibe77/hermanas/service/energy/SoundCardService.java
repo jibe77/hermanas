@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.controller.energy;
 
-import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.service.ProcessLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

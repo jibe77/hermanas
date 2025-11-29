@@ -1,8 +1,8 @@
 package org.jibe77.hermanas.service;
 
-import org.jibe77.hermanas.controller.energy.EnergyMode;
-import org.jibe77.hermanas.controller.energy.EnergyModeConfig;
-import org.jibe77.hermanas.controller.energy.EnergyModeEnum;
+import org.jibe77.hermanas.service.energy.EnergyMode;
+import org.jibe77.hermanas.service.energy.EnergyModeConfig;
+import org.jibe77.hermanas.service.energy.EnergyModeEnum;
 import org.jibe77.hermanas.controller.energy.WifiService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.slf4j.Logger;

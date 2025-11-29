@@ -2,7 +2,7 @@ package org.jibe77.hermanas.controller.birdhouse;
 
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalStateChangeEvent;
-import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
+import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
 import org.jibe77.hermanas.controller.light.LightService;
 import org.slf4j.Logger;

@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.controller.door;
 
-import org.jibe77.hermanas.controller.gpio.DefaultGpioPwm;
+import org.jibe77.hermanas.service.gpio.DefaultGpioPwm;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasFakeService;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorService;
 import org.junit.jupiter.api.Test;

@@ -2,7 +2,7 @@ package org.jibe77.hermanas.scheduler.event;
 
 import org.jibe77.hermanas.client.email.NotificationService;
 import org.jibe77.hermanas.controller.door.DoorService;
-import org.jibe77.hermanas.controller.door.DoorNotClosedCorrectlyException;
+import org.jibe77.hermanas.service.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.controller.energy.WifiService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;

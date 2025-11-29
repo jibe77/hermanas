@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.controller.energy;
 
 import org.jibe77.hermanas.client.email.EmailService;
-import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.service.ProcessLauncher;
 import org.jibe77.hermanas.controller.door.DoorService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.slf4j.Logger;

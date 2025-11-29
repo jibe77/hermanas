@@ -1,9 +1,10 @@
 package org.jibe77.hermanas.controller.door;
 
-import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
+import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonService;
-import org.jibe77.hermanas.controller.door.model.DoorStatus;
-import org.jibe77.hermanas.controller.door.model.DoorStatusEnum;
+import org.jibe77.hermanas.service.door.model.DoorStatus;
+import org.jibe77.hermanas.service.door.model.DoorStatusEnum;
+import org.jibe77.hermanas.service.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorService;
 import org.jibe77.hermanas.controller.door.upbutton.UpButtonService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;

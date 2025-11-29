@@ -1,8 +1,8 @@
 package org.jibe77.hermanas.controller.camera;
 
 import org.apache.commons.io.FileUtils;
-import org.jibe77.hermanas.controller.ProcessLauncher;
-import org.jibe77.hermanas.controller.abstract_model.StatusEnum;
+import org.jibe77.hermanas.service.ProcessLauncher;
+import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasService;

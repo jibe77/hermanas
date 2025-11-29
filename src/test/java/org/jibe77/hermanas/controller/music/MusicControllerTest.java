@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.controller.music;
 
-import org.jibe77.hermanas.controller.ProcessLauncher;
+import org.jibe77.hermanas.service.ProcessLauncher;
 import org.jibe77.hermanas.controller.config.ConfigService;
 import org.jibe77.hermanas.controller.energy.SoundCardService;
 import org.jibe77.hermanas.controller.gpio.GpioHermanasService;

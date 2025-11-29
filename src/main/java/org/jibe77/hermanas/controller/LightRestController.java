@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.service;
 
-import org.jibe77.hermanas.controller.abstract_model.Status;
+import org.jibe77.hermanas.service.abstract_model.Status;
 import org.jibe77.hermanas.controller.light.LightService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;

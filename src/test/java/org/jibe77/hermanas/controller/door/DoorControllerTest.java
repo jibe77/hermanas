@@ -2,7 +2,7 @@ package org.jibe77.hermanas.controller.door;
 
 import org.jibe77.hermanas.controller.camera.CameraService;
 import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonService;
-import org.jibe77.hermanas.controller.door.model.DoorStatusEnum;
+import org.jibe77.hermanas.service.door.model.DoorStatusEnum;
 import org.jibe77.hermanas.controller.door.servo.ServoMotorService;
 import org.jibe77.hermanas.controller.door.upbutton.UpButtonService;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
