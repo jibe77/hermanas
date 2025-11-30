@@ -1,5 +1,11 @@
 package org.jibe77.hermanas.service;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.scheduler.sun.model.NextEvents;
@@ -11,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 
 @RestController
 @RequestMapping("/api/v1/scheduler")
+@Tag(name = "Scheduler", description = "Scheduled events endpoints based on sunrise/sunset times")
 public class SchedulerRestController {
 
     SunTimeManager sunTimeManager;
@@ -20,27 +27,65 @@ public class SchedulerRestController {
         this.sunTimeManager = sunTimeManager;
     }
 
+    @Operation(
+            summary = "Get next door closing time",
+            description = "Returns the time when the door will automatically close (based on sunset)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Door closing time retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class, example = "18:30"))
+            )
+    })
     @GetMapping(value = "/doorClosingTime")
     public String getNextDoorClosingTime() {
         return sunTimeManager.getNextDoorClosingTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
     }
 
+    @Operation(
+            summary = "Get next door opening time",
+            description = "Returns the time when the door will automatically open (based on sunrise)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Door opening time retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class, example = "08:15"))
+            )
+    })
     @GetMapping(value = "/doorOpeningTime")
     public String getNextDoorOpeningTime() {
         return sunTimeManager.getNextDoorOpeningTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
     }
 
+    @Operation(
+            summary = "Get next light on time",
+            description = "Returns the time when the light will automatically turn on (before sunset)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Light on time retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class, example = "17:28"))
+            )
+    })
     @GetMapping(value = "/lightOnTime")
     public String getNextLightOnTime() {
         return sunTimeManager.getNextLightOnTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
     }
 
-    /**
-     * result example :
-     *
-     * {"nextDoorOpeningTime":"2021-01-31T08:14:47","nextLightOnTime":"2021-01-30T17:28:49","nextDoorClosingTime":"2021-01-30T17:58:49"}
-     * @return
-     */
+    @Operation(
+            summary = "Get all next scheduled events",
+            description = "Returns all upcoming scheduled events (door opening/closing, light on). Example: {\"nextDoorOpeningTime\":\"2021-01-31T08:14:47\",\"nextLightOnTime\":\"2021-01-30T17:28:49\",\"nextDoorClosingTime\":\"2021-01-30T17:58:49\"}"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Next events retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = NextEvents.class))
+            )
+    })
     @GetMapping(value = "/nextEvents")
     public NextEvents getNextEvents() {
         return sunTimeManager.getNextEvents();
