@@ -16,6 +16,7 @@ import java.io.*;
 import java.net.URL;
 
 @RestController
+@RequestMapping("/api/v1/camera")
 public class CameraRestController {
 
     CameraService cameraService;
@@ -26,7 +27,7 @@ public class CameraRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(CameraRestController.class);
 
-    @GetMapping(value = "/camera/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
+    @GetMapping(value = "/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
     public @ResponseBody byte[] takePicture(@RequestParam(defaultValue = "false") String highQuality) throws IOException, InterruptedException {
         File picture = cameraService.takePicture(Boolean.parseBoolean(highQuality));
         logger.info("return picture from {}.", picture.getAbsolutePath());
@@ -35,7 +36,7 @@ public class CameraRestController {
         }
     }
 
-    @GetMapping(value = "/camera/stream", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/stream", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StreamingResponseBody> stream(final HttpServletResponse response) throws IOException {
         cameraService.stream();
         logger.info("stream has been called in camera controller, wait 500 milli-seconds ....");
@@ -82,12 +83,12 @@ public class CameraRestController {
         return new ResponseEntity<>(streamingResponseBody, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/camera/stopStream")
+    @GetMapping(value = "/stopStream")
     public void stopStream() throws InterruptedException, IOException {
         cameraService.stopStream();
     }
 
-    @GetMapping("/camera/closingRate")
+    @GetMapping("/closingRate")
     public int closingRate() {
         return cameraService.getClosingRate();
     }

@@ -4,11 +4,13 @@ import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.scheduler.sun.model.NextEvents;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.format.DateTimeFormatter;
 
 @RestController
+@RequestMapping("/api/v1/scheduler")
 public class SchedulerRestController {
 
     SunTimeManager sunTimeManager;
@@ -18,17 +20,17 @@ public class SchedulerRestController {
         this.sunTimeManager = sunTimeManager;
     }
 
-    @GetMapping(value = "/scheduler/doorClosingTime")
+    @GetMapping(value = "/doorClosingTime")
     public String getNextDoorClosingTime() {
         return sunTimeManager.getNextDoorClosingTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
     }
 
-    @GetMapping(value = "/scheduler/doorOpeningTime")
+    @GetMapping(value = "/doorOpeningTime")
     public String getNextDoorOpeningTime() {
         return sunTimeManager.getNextDoorOpeningTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
     }
 
-    @GetMapping(value = "/scheduler/lightOnTime")
+    @GetMapping(value = "/lightOnTime")
     public String getNextLightOnTime() {
         return sunTimeManager.getNextLightOnTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
     }
@@ -39,7 +41,7 @@ public class SchedulerRestController {
      * {"nextDoorOpeningTime":"2021-01-31T08:14:47","nextLightOnTime":"2021-01-30T17:28:49","nextDoorClosingTime":"2021-01-30T17:58:49"}
      * @return
      */
-    @GetMapping(value = "/scheduler/nextEvents")
+    @GetMapping(value = "/nextEvents")
     public NextEvents getNextEvents() {
         return sunTimeManager.getNextEvents();
     }

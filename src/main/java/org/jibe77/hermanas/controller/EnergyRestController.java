@@ -10,12 +10,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
 @RestController
+@RequestMapping("/api/v1/energy")
 public class EnergyRestController {
 
     WifiService wifiService;
@@ -29,40 +31,40 @@ public class EnergyRestController {
         this.consumptionModeController = consumptionModeController;
     }
 
-    @GetMapping(value = "/energy/wifi/stopUntilNextDoorEvent")
+    @GetMapping(value = "/wifi/stopUntilNextDoorEvent")
     public boolean stopWifiUntilNextDoorEvent() {
         logger.info("The network wifi card is going to be disabled.");
         wifiService.turnOffAfter(3);
         return true;
     }
 
-    @GetMapping(value = "/energy/wifi/wifiSwitchEnabled")
+    @GetMapping(value = "/wifi/wifiSwitchEnabled")
     public boolean wifiSwitchEnabled(boolean wifiSwitchEnabled) {
         wifiService.setWifiSwitchEnabled(wifiSwitchEnabled);
         return true;
     }
 
-    @GetMapping(value = "/energy/currentMode")
+    @GetMapping(value = "/currentMode")
     public EnergyMode getEnergyMode() {
         return consumptionModeController.getCurrentEnergyMode();
     }
 
-    @GetMapping(value = "/energy/dateRange")
+    @GetMapping(value = "/dateRange")
     public EnergyMode getEnergyDateRange(int daysAroundWinterSolstice, int daysAroundSummerSolstice) {
         return consumptionModeController.getCurrentEnergyMode(LocalDateTime.now(), daysAroundWinterSolstice, daysAroundSummerSolstice);
     }
 
-    @GetMapping(value = "/energy/currentConfigMode")
+    @GetMapping(value = "/currentConfigMode")
     public EnergyModeConfig getCurrentConfigMode() {
         return consumptionModeController.getCurrentConfigMode();
     }
 
-    @GetMapping(value = "/energy/configMode")
+    @GetMapping(value = "/configMode")
     public EnergyModeConfig getEnergyConfigMode(String energyMode) {
         return consumptionModeController.getEnergyModeConfig(energyMode);
     }
 
-    @PutMapping(value = "/energy/updateMode")
+    @PutMapping(value = "/updateMode")
     public void updateEnergyConfigMode(EnergyModeConfig energyModeConfig) {
         consumptionModeController.updateEnergyModeConfig(energyModeConfig);
     }

@@ -1,5 +1,7 @@
 package org.jibe77.hermanas.exception;
 
+import org.jibe77.hermanas.image.PredictionException;
+import org.jibe77.hermanas.service.door.DoorNotClosedCorrectlyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -109,6 +111,41 @@ public class GlobalExceptionHandler {
 
         logger.warn("Number format error: {}", ex.getMessage());
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    /**
+     * Handle DoorNotClosedCorrectlyException - indicates door automation failure.
+     */
+    @ExceptionHandler(DoorNotClosedCorrectlyException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<Map<String, Object>> handleDoorNotClosedCorrectlyException(DoorNotClosedCorrectlyException ex) {
+        Map<String, Object> errors = new HashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+        errors.put("error", "Door Operation Failed");
+        errors.put("message", "Door did not close correctly. Please check door mechanism and sensors.");
+
+        logger.error("Door failed to close correctly", ex);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errors);
+    }
+
+    /**
+     * Handle PredictionException - indicates image analysis failure.
+     */
+    @ExceptionHandler(PredictionException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<Map<String, Object>> handlePredictionException(PredictionException ex) {
+        Map<String, Object> errors = new HashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        errors.put("error", "Image Prediction Failed");
+        errors.put("message", "Failed to analyze door image");
+        if (ex.getDoorStatus() != null) {
+            errors.put("doorStatus", ex.getDoorStatus());
+        }
+
+        logger.error("Image prediction failed with door status: {}", ex.getDoorStatus(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
     }
 
     /**

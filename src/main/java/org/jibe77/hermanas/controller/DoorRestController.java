@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,6 +16,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 @RestController
+@RequestMapping("/api/v1/door")
 @Service
 @Validated
 public class DoorRestController {
@@ -32,7 +34,7 @@ public class DoorRestController {
      * @return true if the bottom button has been pressed,
      *          false if the door has been closed without touching the bottom button.
      */
-    @PostMapping("/door/close")
+    @PostMapping("/close")
     public boolean close(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("closing door now  ...");
         doorService.closeDoorWithBottormButtonManagement(Boolean.parseBoolean(force));
@@ -40,7 +42,7 @@ public class DoorRestController {
         return true;
     }
 
-    @PostMapping("/door/open")
+    @PostMapping("/open")
     public boolean open(@RequestParam(defaultValue = "false", required = false) String force) {
         logger.info("opening door now  ...");
         boolean result = doorService.openDoorWithUpButtonManagment(Boolean.parseBoolean(force), false);
@@ -48,7 +50,7 @@ public class DoorRestController {
         return result;
     }
 
-    @GetMapping("/door/turnClockwise")
+    @GetMapping("/turnClockwise")
     public String turnClockwise(
             @RequestParam(defaultValue = "50", required = false)
             @Min(value = 1, message = "Duration must be at least 1ms")
@@ -60,7 +62,7 @@ public class DoorRestController {
         return "done";
     }
 
-    @GetMapping("/door/turnCounterClockwise")
+    @GetMapping("/turnCounterClockwise")
     public String turnCounterClockwise(
             @RequestParam(defaultValue = "50", required = false)
             @Min(value = 1, message = "Duration must be at least 1ms")
@@ -72,7 +74,7 @@ public class DoorRestController {
         return "done";
     }
 
-    @GetMapping("/door/turnServo")
+    @GetMapping("/turnServo")
     public String turnServo(
             @RequestParam
             @Min(value = 0, message = "Duty cycle must be between 0 and 100")
@@ -92,7 +94,7 @@ public class DoorRestController {
         return "done";
     }
 
-    @GetMapping("/door/status")
+    @GetMapping("/status")
     public DoorStatus statusInfo() {
         return doorService.statusInfo();
     }

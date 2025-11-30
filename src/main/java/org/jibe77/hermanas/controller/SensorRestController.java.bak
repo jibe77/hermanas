@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/sensor")
 public class SensorRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SensorRestController.class);
@@ -45,7 +43,7 @@ public class SensorRestController {
      * @return
      * @throws IOException
      */
-    @GetMapping(value = "/info")
+    @GetMapping(value = "/sensor/info")
     public Sensor getInfo() throws IOException {
         Sensor sensor = sensorService.refreshData();
         WeatherInfo weatherInfo = weatherClient.getInfo();
@@ -54,27 +52,27 @@ public class SensorRestController {
         return sensor;
     }
 
-    @GetMapping(value = "/history/today")
+    @GetMapping(value = "/sensor/history/today")
     public List<Sensor> getHistoryLastDay() {
         return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusDays(1));
     }
 
-    @GetMapping(value = "/history/week")
+    @GetMapping(value = "/sensor/history/week")
     public List<Sensor> getHistoryLastWeek() {
         return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusWeeks(1));
     }
 
-    @GetMapping(value = "/history/month")
+    @GetMapping(value = "/sensor/history/month")
     public List<Sensor> getTodayLastMonth() {
         return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusMonths(1));
     }
 
-    @GetMapping(value = "/history/year")
+    @GetMapping(value = "/sensor/history/year")
     public List<Sensor> getHistoryYear() {
         return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusYears(1));
     }
 
-    @GetMapping(value = "/history/year/{year}")
+    @GetMapping(value = "/sensor/history/year/{year}")
     public List<Sensor> getHistoryYear(@PathVariable(name="year") String year) {
         logger.info("fetching history with year parameter : {}.", year);
         LocalDateTime startDate =
@@ -88,19 +86,19 @@ public class SensorRestController {
         return sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(startDate, endDate);
     }
 
-    @GetMapping(value = "/history/{from}/{to}")
+    @GetMapping(value = "/sensor/history/{from}/{to}")
     public List<Sensor> getHistory(@PathVariable(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd-HH-mm") Date from, @PathVariable(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd-HH-mm") Date to) {
         logger.info("fetching history from {} to {}.", from, to);
         return sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(convertToLocalDateTimeViaInstant(from), convertToLocalDateTimeViaInstant(to));
 
     }
 
-    @GetMapping(value = "/history/years")
+    @GetMapping(value = "/sensor/history/years")
     public List<String> getHistoryYearList() {
         return sensorRepository.getHistoryYearList();
     }
 
-    @GetMapping(value = "/history/all")
+    @GetMapping(value = "/sensor/history/all")
     public Iterable<Sensor> getHistoryAll() {
         return sensorRepository.findAll();
     }

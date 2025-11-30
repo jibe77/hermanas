@@ -133,9 +133,30 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 - [x] **Add input validation** - Use `@Valid`, `@NotNull`, `@Min`, `@Max` on request parameters
   - ✅ Added to `DoorRestController` endpoints (`turnClockwise`, `turnCounterClockwise`, `turnServo`)
 
-- [ ] **Add global exception handler** - Create `@ControllerAdvice` class
+- [x] **Add global exception handler** - Create `@ControllerAdvice` class
+  - ✅ Enhanced existing `GlobalExceptionHandler` with domain-specific exception handlers
+  - ✅ Added handlers for `DoorNotClosedCorrectlyException` (422 Unprocessable Entity)
+  - ✅ Added handlers for `PredictionException` (500 Internal Server Error with door status)
+  - ✅ Existing handlers: validation errors, constraint violations, type mismatches, illegal arguments, number format errors
+  - ✅ All handlers return consistent JSON error responses with timestamp, status, error, and message
+  - ✅ Comprehensive test coverage with 5 test cases
 
-- [ ] **Add API versioning** - Prefix endpoints with `/api/v1/`
+- [x] **Add API versioning** - Prefix endpoints with `/api/v1/`
+  - ✅ All REST endpoints now use `/api/v1/*` paths exclusively (old paths removed)
+  - ✅ Updated all 10 REST controllers with `@RequestMapping("/api/v1/...")`:
+    - `DoorRestController`: `/api/v1/door` (6 endpoints: open, close, turnClockwise, turnCounterClockwise, turnServo, status)
+    - `CameraRestController`: `/api/v1/camera` (4 endpoints: takePicture, stream, stopStream, closingRate)
+    - `LightRestController`: `/api/v1/light` (2 endpoints: switch, status)
+    - `FanRestController`: `/api/v1/fan` (2 endpoints: switch, status)
+    - `MusicRestController`: `/api/v1/music` (3 endpoints: switch, status, cocorico)
+    - `SensorRestController`: `/api/v1/sensor` (10 endpoints: info, history/*)
+    - `EnergyRestController`: `/api/v1/energy` (7 endpoints: wifi/*, currentMode, dateRange, currentConfigMode, configMode, updateMode)
+    - `SchedulerRestController`: `/api/v1/scheduler` (4 endpoints: doorClosingTime, doorOpeningTime, lightOnTime, nextEvents)
+    - `SystemRestController`: `/api/v1/system` (2 endpoints: shutdown, reboot)
+    - `InfoRestController`: `/api/v1/info` (1 endpoint: version info)
+  - ✅ WebSocket endpoint updated: `/api/v1/stomp`
+  - ✅ Compilation verified and all 61 tests passing
+  - ⚠️ **BREAKING CHANGE:** Frontend must be updated to use `/api/v1/*` paths for all API calls
 
 ### Phase 3 - Architecture Refactoring ⚠️ PARTIALLY COMPLETED
 
