@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.health;
 
-import org.jibe77.hermanas.data.entity.Sensor;
+import org.jibe77.hermanas.dto.SensorDTO;
 import org.jibe77.hermanas.service.SensorRestController;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -20,7 +20,7 @@ public class SensorIndicator implements HealthIndicator {
     @Override
     public Health health() {
         try {
-            Sensor sensor = sensorRestController.getInfo();
+            SensorDTO sensor = sensorRestController.getInfo();
             if (sensor.getHumidity() < 100d
                     && sensor.getHumidity() > 0d
                     && sensor.getTemperature() < 60d

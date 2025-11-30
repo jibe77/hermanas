@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.client.weather.WeatherClient;
 import org.jibe77.hermanas.client.weather.WeatherInfo;
 import org.jibe77.hermanas.data.entity.Sensor;
+import org.jibe77.hermanas.dto.SensorDTO;
+import org.jibe77.hermanas.dto.mapper.SensorMapper;
 import org.jibe77.hermanas.controller.sensor.SensorService;
 import org.jibe77.hermanas.data.repository.SensorRepository;
 import org.slf4j.Logger;
@@ -40,10 +42,13 @@ public class SensorRestController {
 
     SensorRepository sensorRepository;
 
-    public SensorRestController(SensorService sensorService, WeatherClient weatherClient, SensorRepository sensorRepository) {
+    SensorMapper sensorMapper;
+
+    public SensorRestController(SensorService sensorService, WeatherClient weatherClient, SensorRepository sensorRepository, SensorMapper sensorMapper) {
         this.sensorService = sensorService;
         this.weatherClient = weatherClient;
         this.sensorRepository = sensorRepository;
+        this.sensorMapper = sensorMapper;
     }
 
     @Operation(
@@ -54,7 +59,7 @@ public class SensorRestController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Sensor data retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Sensor.class))
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = SensorDTO.class))
             ),
             @ApiResponse(
                     responseCode = "500",
@@ -63,12 +68,12 @@ public class SensorRestController {
             )
     })
     @GetMapping(value = "/info")
-    public Sensor getInfo() throws IOException {
+    public SensorDTO getInfo() throws IOException {
         Sensor sensor = sensorService.refreshData();
         WeatherInfo weatherInfo = weatherClient.getInfo();
         sensor.setExternalHumidity(weatherInfo.getHumidity());
         sensor.setExternalTemperature(weatherInfo.getTemp());
-        return sensor;
+        return sensorMapper.toDTO(sensor);
     }
 
     @Operation(
@@ -79,12 +84,12 @@ public class SensorRestController {
             @ApiResponse(
                     responseCode = "200",
                     description = "History retrieved successfully",
-                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Sensor.class)))
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SensorDTO.class)))
             )
     })
     @GetMapping(value = "/history/today")
-    public List<Sensor> getHistoryLastDay() {
-        return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusDays(1));
+    public List<SensorDTO> getHistoryLastDay() {
+        return sensorMapper.toDTOList(sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusDays(1)));
     }
 
     @Operation(
@@ -95,12 +100,12 @@ public class SensorRestController {
             @ApiResponse(
                     responseCode = "200",
                     description = "History retrieved successfully",
-                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Sensor.class)))
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SensorDTO.class)))
             )
     })
     @GetMapping(value = "/history/week")
-    public List<Sensor> getHistoryLastWeek() {
-        return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusWeeks(1));
+    public List<SensorDTO> getHistoryLastWeek() {
+        return sensorMapper.toDTOList(sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusWeeks(1)));
     }
 
     @Operation(
@@ -111,12 +116,12 @@ public class SensorRestController {
             @ApiResponse(
                     responseCode = "200",
                     description = "History retrieved successfully",
-                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Sensor.class)))
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SensorDTO.class)))
             )
     })
     @GetMapping(value = "/history/month")
-    public List<Sensor> getTodayLastMonth() {
-        return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusMonths(1));
+    public List<SensorDTO> getTodayLastMonth() {
+        return sensorMapper.toDTOList(sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusMonths(1)));
     }
 
     @Operation(
@@ -127,12 +132,12 @@ public class SensorRestController {
             @ApiResponse(
                     responseCode = "200",
                     description = "History retrieved successfully",
-                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Sensor.class)))
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SensorDTO.class)))
             )
     })
     @GetMapping(value = "/history/year")
-    public List<Sensor> getHistoryYear() {
-        return sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusYears(1));
+    public List<SensorDTO> getHistoryYear() {
+        return sensorMapper.toDTOList(sensorRepository.findByDateTimeGreaterThan(LocalDateTime.now().minusYears(1)));
     }
 
     @Operation(
@@ -143,7 +148,7 @@ public class SensorRestController {
             @ApiResponse(
                     responseCode = "200",
                     description = "History retrieved successfully",
-                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Sensor.class)))
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SensorDTO.class)))
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -152,7 +157,7 @@ public class SensorRestController {
             )
     })
     @GetMapping(value = "/history/year/{year}")
-    public List<Sensor> getHistoryYear(
+    public List<SensorDTO> getHistoryYear(
             @Parameter(description = "Year (e.g., 2024)", example = "2024", required = true)
             @PathVariable(name="year") String year) {
         logger.info("fetching history with year parameter : {}.", year);
@@ -164,7 +169,7 @@ public class SensorRestController {
                         .withSecond(59).withYear(Integer.parseInt(year));
 
         logger.info("start date is {} and end date parameter is {}.", startDate, endDate);
-        return sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(startDate, endDate);
+        return sensorMapper.toDTOList(sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(startDate, endDate));
     }
 
     @Operation(
@@ -175,7 +180,7 @@ public class SensorRestController {
             @ApiResponse(
                     responseCode = "200",
                     description = "History retrieved successfully",
-                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Sensor.class)))
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SensorDTO.class)))
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -184,13 +189,13 @@ public class SensorRestController {
             )
     })
     @GetMapping(value = "/history/{from}/{to}")
-    public List<Sensor> getHistory(
+    public List<SensorDTO> getHistory(
             @Parameter(description = "Start date in format yyyy-MM-dd-HH-mm", example = "2024-01-01-00-00", required = true)
             @PathVariable(name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd-HH-mm") Date from,
             @Parameter(description = "End date in format yyyy-MM-dd-HH-mm", example = "2024-12-31-23-59", required = true)
             @PathVariable(name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd-HH-mm") Date to) {
         logger.info("fetching history from {} to {}.", from, to);
-        return sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(convertToLocalDateTimeViaInstant(from), convertToLocalDateTimeViaInstant(to));
+        return sensorMapper.toDTOList(sensorRepository.findByDateTimeBetweenOrderByDateTimeDesc(convertToLocalDateTimeViaInstant(from), convertToLocalDateTimeViaInstant(to)));
 
     }
 
@@ -218,12 +223,12 @@ public class SensorRestController {
             @ApiResponse(
                     responseCode = "200",
                     description = "All history retrieved successfully",
-                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Sensor.class)))
+                    content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SensorDTO.class)))
             )
     })
     @GetMapping(value = "/history/all")
-    public Iterable<Sensor> getHistoryAll() {
-        return sensorRepository.findAll();
+    public List<SensorDTO> getHistoryAll() {
+        return sensorMapper.toDTOList(sensorRepository.findAll());
     }
 
     public LocalDateTime convertToLocalDateTimeViaInstant(Date dateToConvert) {
