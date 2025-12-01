@@ -15,7 +15,9 @@
       "Bash(for file in src/main/java/org/jibe77/hermanas/controller/*RestController.java)",
       "Bash(done)",
       "Bash(for file in /Users/jean-baptisterenaux/GitHub/hermanas/src/main/java/org/jibe77/hermanas/web/*.java)",
-      "Bash(do sed -i '' 's/package org.jibe77.hermanas.service;/package org.jibe77.hermanas.web;/' \"$file\")"
+      "Bash(do sed -i '' 's/package org.jibe77.hermanas.service;/package org.jibe77.hermanas.web;/' \"$file\")",
+      "Bash(for service in Camera Door Energy Fan Info Light Music Scheduler Sensor System)",
+      "Bash(do echo -n '$service: ')"
     ],
     "deny": [],
     "ask": []
