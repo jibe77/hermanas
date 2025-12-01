@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.controller.door.DoorService;
+import org.jibe77.hermanas.security.audit.AuditLog;
 import org.jibe77.hermanas.service.door.model.DoorStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ public class DoorRestController {
                     content = @Content
             )
     })
+    @AuditLog(category = "DOOR", operation = "Door close command")
     @PostMapping("/close")
     public boolean close(
             @Parameter(description = "Force closing even if door appears already closed", example = "false")
@@ -74,6 +76,7 @@ public class DoorRestController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Boolean.class))
             )
     })
+    @AuditLog(category = "DOOR", operation = "Door open command")
     @PostMapping("/open")
     public boolean open(
             @Parameter(description = "Force opening even if door appears already open", example = "false")

@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.exception;
 
 import org.jibe77.hermanas.image.PredictionException;
+import org.jibe77.hermanas.security.ratelimit.RateLimitExceededException;
 import org.jibe77.hermanas.service.door.DoorNotClosedCorrectlyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,6 +147,22 @@ public class GlobalExceptionHandler {
 
         logger.error("Image prediction failed with door status: {}", ex.getDoorStatus(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errors);
+    }
+
+    /**
+     * Handle RateLimitExceededException - indicates too many requests from a client.
+     */
+    @ExceptionHandler(RateLimitExceededException.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public ResponseEntity<Map<String, Object>> handleRateLimitExceededException(RateLimitExceededException ex) {
+        Map<String, Object> errors = new HashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", HttpStatus.TOO_MANY_REQUESTS.value());
+        errors.put("error", "Rate Limit Exceeded");
+        errors.put("message", ex.getMessage());
+
+        logger.warn("Rate limit exceeded: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errors);
     }
 
     /**

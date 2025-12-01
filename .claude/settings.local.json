@@ -9,7 +9,9 @@
       "Bash({} +)",
       "Bash(chmod:*)",
       "Bash(./rename_controllers.sh)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(mvn clean test:*)",
+      "Bash(mvn compile:*)"
     ],
     "deny": [],
     "ask": []

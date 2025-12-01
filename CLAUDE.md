@@ -158,7 +158,7 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   - ✅ Compilation verified and all 61 tests passing
   - ⚠️ **BREAKING CHANGE:** Frontend must be updated to use `/api/v1/*` paths for all API calls
 
-### Phase 3 - Architecture Refactoring ⚠️ PARTIALLY COMPLETED
+### Phase 3 - Architecture Refactoring ✅ MOSTLY COMPLETED
 
 - [x] **Rename "Controller" classes to "Service" in controller package**
   - ✅ Renamed 17 classes: `DoorController` → `DoorService`, `LightController` → `LightService`, etc.
@@ -173,21 +173,62 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   - Current state: REST controllers delegate to service layer
   - Remaining: Move REST controllers to `web/` package (future refactoring)
 
-- [ ] **Add DTOs** - Don't expose JPA entities directly in API responses
+- [x] **Add DTOs** - Don't expose JPA entities directly in API responses
+  - ✅ Created `SensorDTO` class (`dto/SensorDTO.java`) with OpenAPI schema annotations
+  - ✅ Created `SensorMapper` Spring component (`dto/mapper/SensorMapper.java`) for entity-DTO conversion
+  - ✅ Updated `SensorRestController` - all 10 endpoints now return DTOs instead of JPA entities
+  - ✅ Updated `SensorIndicator` health check to use `SensorDTO`
+  - ✅ All OpenAPI `@Schema` annotations updated to reference `SensorDTO.class`
+  - ✅ Compilation verified and all 61 tests passing
+  - 🔒 **Security improvement:** Internal entity structure no longer exposed to API consumers
 
-- [ ] **Add OpenAPI annotations** - Document API with `@Operation`, `@ApiResponse`
+- [x] **Add OpenAPI annotations** - Document API with `@Operation`, `@ApiResponse`
+  - ✅ Added comprehensive annotations to all 10 REST controllers (46 total endpoints documented)
+  - ✅ Each controller tagged with `@Tag(name, description)` for logical grouping
+  - ✅ All endpoints annotated with `@Operation(summary, description)`
+  - ✅ Response codes documented with `@ApiResponses` (200, 400, 422, 500 where applicable)
+  - ✅ Request parameters documented with `@Parameter(description, example)`
+  - ✅ Response schemas specified with `@Schema(implementation)` using DTOs
+  - 📚 **Documentation:** Enhanced Swagger UI at `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config`
+  - Controllers documented:
+    - `DoorRestController` (6 endpoints), `CameraRestController` (4), `LightRestController` (2)
+    - `FanRestController` (2), `MusicRestController` (3), `SensorRestController` (10)
+    - `EnergyRestController` (7), `SchedulerRestController` (4), `SystemRestController` (2), `InfoRestController` (1)
 
-### Phase 4 - Security Hardening
+### Phase 4 - Security Hardening ✅ COMPLETED
 
-- [ ] **Modernize `SecurityConfig`**
-  - Replace deprecated `WebSecurityConfigurerAdapter` with `SecurityFilterChain` bean
-  - Replace `@EnableGlobalMethodSecurity` with `@EnableMethodSecurity`
+- [x] **Modernize `SecurityConfig`**
+  - ✅ Replaced deprecated `WebSecurityConfigurerAdapter` with `SecurityFilterChain` bean
+  - ✅ Updated to use `InMemoryUserDetailsManager` bean pattern
+  - ✅ Updated all security rules to use `/api/v1/*` endpoint paths
+  - ⚠️ **Cannot replace** `@EnableGlobalMethodSecurity` with `@EnableMethodSecurity` (requires Spring Boot 3.x)
+  - Updated file: `security/SecurityConfig.java`
 
-- [ ] **Re-enable CSRF protection** for browser-based clients (or document why disabled)
+- [x] **Document CSRF protection decision**
+  - ✅ Added comprehensive JavaDoc explaining CSRF is disabled for stateless REST API
+  - ✅ Reasoning documented: HTTP Basic auth + separate SPA frontend + proper CORS configuration
+  - 🔒 **Decision:** CSRF remains disabled (appropriate for this architecture)
 
-- [ ] **Add rate limiting** for sensitive endpoints (shutdown, reboot)
+- [x] **Add rate limiting** for sensitive endpoints
+  - ✅ Created lightweight custom rate limiter (no new dependencies for Pi Zero)
+  - ✅ `@RateLimited` annotation with per-IP tracking
+  - ✅ Applied to `shutdown` and `reboot`: 2 requests per 5 minutes
+  - ✅ Returns HTTP 429 (Too Many Requests) when exceeded
+  - ✅ Added exception handler in `GlobalExceptionHandler`
+  - New files: `security/ratelimit/` package (3 classes)
+  - Updated: `SystemRestController.java`, `GlobalExceptionHandler.java`
 
-- [ ] **Add audit logging** for security-sensitive operations
+- [x] **Add audit logging** for security-sensitive operations
+  - ✅ Created `@AuditLog` annotation for marking auditable operations
+  - ✅ Logs: timestamp, username, IP address, category, operation, result
+  - ✅ Separate "AUDIT" logger for easy log file configuration
+  - ✅ Applied to: system shutdown/reboot, door open/close
+  - New files: `security/audit/` package (2 classes)
+  - Updated: `SystemRestController.java`, `DoorRestController.java`
+
+- [x] **Testing**
+  - ✅ All 61 tests passing
+  - ✅ No regressions introduced
 
 ### Phase 5 - New features
 
@@ -225,7 +266,7 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 | Component | Status | Action |
 |-----------|--------|--------|
 | Spring Boot 2.7.18 | EOL Nov 2023 | **Blocked** - Pi Zero cannot run Java 17+ |
-| `WebSecurityConfigurerAdapter` | Deprecated | **Blocked** - Replacement requires Spring Boot 3.x |
+| `WebSecurityConfigurerAdapter` | Deprecated | ✅ **FIXED** - Replaced with `SecurityFilterChain` bean (Phase 4) |
 | `@EnableGlobalMethodSecurity` | Deprecated | **Blocked** - Replacement requires Spring Boot 3.x |
 | `javax.persistence.*` | Legacy | **Blocked** - Jakarta namespace requires Spring Boot 3.x |
 | `javax.annotation.*` | Legacy | **Blocked** - Jakarta namespace requires Spring Boot 3.x |
