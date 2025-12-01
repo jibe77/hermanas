@@ -158,7 +158,7 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   - ✅ Compilation verified and all 61 tests passing
   - ⚠️ **BREAKING CHANGE:** Frontend must be updated to use `/api/v1/*` paths for all API calls
 
-### Phase 3 - Architecture Refactoring ✅ MOSTLY COMPLETED
+### Phase 3 - Architecture Refactoring ✅ COMPLETED
 
 - [x] **Rename "Controller" classes to "Service" in controller package**
   - ✅ Renamed 17 classes: `DoorController` → `DoorService`, `LightController` → `LightService`, etc.
@@ -169,9 +169,12 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   - ✅ Renamed 10 classes: `DoorService` → `DoorRestController`, etc.
   - ✅ REST controllers now have consistent naming with `*RestController` suffix
 
-- [ ] **Separate REST controllers from services** (still needs work)
-  - Current state: REST controllers delegate to service layer
-  - Remaining: Move REST controllers to `web/` package (future refactoring)
+- [x] **Separate REST controllers from services**
+  - ✅ Moved all 10 REST controllers to `web/` package
+  - ✅ Updated package declarations: `org.jibe77.hermanas.service` → `org.jibe77.hermanas.web`
+  - ✅ Updated imports in health indicators
+  - ✅ All 61 tests passing
+  - 📦 **Architecture:** Clear separation between web layer (`web/`) and service layer (`controller/`)
 
 - [x] **Add DTOs** - Don't expose JPA entities directly in API responses
   - ✅ Created `SensorDTO` class (`dto/SensorDTO.java`) with OpenAPI schema annotations

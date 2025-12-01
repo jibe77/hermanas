@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.service;
+package org.jibe77.hermanas.web;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

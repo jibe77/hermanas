@@ -11,7 +11,11 @@
       "Bash(./rename_controllers.sh)",
       "Bash(cat:*)",
       "Bash(mvn clean test:*)",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "Bash(for file in src/main/java/org/jibe77/hermanas/controller/*RestController.java)",
+      "Bash(done)",
+      "Bash(for file in /Users/jean-baptisterenaux/GitHub/hermanas/src/main/java/org/jibe77/hermanas/web/*.java)",
+      "Bash(do sed -i '' 's/package org.jibe77.hermanas.service;/package org.jibe77.hermanas.web;/' \"$file\")"
     ],
     "deny": [],
     "ask": []
