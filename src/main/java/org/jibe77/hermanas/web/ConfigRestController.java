@@ -1,0 +1,273 @@
+package org.jibe77.hermanas.web;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.jibe77.hermanas.controller.config.ConfigService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * REST controller for configuration management.
+ * All endpoints require USER role authentication (admin-only access).
+ *
+ * <p>Allows viewing and modifying runtime configuration values stored in the database.
+ * Values fall back to application.properties defaults if not overridden in database.</p>
+ *
+ * @see org.jibe77.hermanas.controller.config.ConfigService
+ */
+@RestController
+@RequestMapping("/api/v1/config")
+@Tag(name = "Configuration", description = "Admin endpoints for viewing and modifying system configuration")
+@PreAuthorize("hasRole('USER')")  // All endpoints in this controller require authentication
+public class ConfigRestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConfigRestController.class);
+    private final ConfigService configService;
+
+    public ConfigRestController(ConfigService configService) {
+        this.configService = configService;
+    }
+
+    // ============================================================================
+    // GET Endpoints - View Configuration
+    // ============================================================================
+
+    /**
+     * Gets all current configuration values (database-overridden or defaults).
+     * Useful for displaying in a configuration UI panel.
+     *
+     * @return map of all configuration values organized by category
+     */
+    @Operation(
+            summary = "Get all configuration values",
+            description = "Returns all configuration values including timers, consumption modes, and system behavior settings. " +
+                         "Values shown are either database-overridden or defaults from application.properties."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Configuration values retrieved successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized - authentication required"
+            )
+    })
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getAllConfig() {
+        logger.info("Admin viewing all configuration values");
+
+        Map<String, Object> config = new LinkedHashMap<>();
+
+        // Light timers
+        Map<String, Long> light = new LinkedHashMap<>();
+        light.put("eco_delay_ms", configService.getLightSecurityTimerDelayEco());
+        light.put("regular_delay_ms", configService.getLightSecurityTimerDelayRegular());
+        light.put("sunny_delay_ms", configService.getLightSecurityTimerDelaySunny());
+        config.put("light_timers", light);
+
+        // Fan timers
+        Map<String, Long> fan = new LinkedHashMap<>();
+        fan.put("eco_delay_ms", configService.getFanSecurityTimerDelayEco());
+        fan.put("regular_delay_ms", configService.getFanSecurityTimerDelayRegular());
+        fan.put("sunny_delay_ms", configService.getFanSecurityTimerDelaySunny());
+        config.put("fan_timers", fan);
+
+        // Music timers
+        Map<String, Long> music = new LinkedHashMap<>();
+        music.put("eco_delay_ms", configService.getMusicSecurityTimerDelayEco());
+        music.put("regular_delay_ms", configService.getMusicSecurityTimerDelayRegular());
+        music.put("sunny_delay_ms", configService.getMusicSecurityTimerDelaySunny());
+        config.put("music_timers", music);
+
+        // Consumption mode settings
+        Map<String, Object> consumption = new LinkedHashMap<>();
+        consumption.put("eco_days_around_winter_solstice", configService.getEcoModeNbrDaysAroundWinterSolstice());
+        consumption.put("sunny_days_around_summer_solstice", configService.getSunnyModeNbrDaysAroundSummerSolstice());
+        consumption.put("eco_mode_forced", configService.isConsumptionModeEcoForce());
+        config.put("consumption_mode", consumption);
+
+        // System behavior per mode
+        Map<String, Map<String, Boolean>> systemBehavior = new LinkedHashMap<>();
+        Map<String, Boolean> eco = new LinkedHashMap<>();
+        eco.put("machine_shutdown", configService.isMachineShutdownInEcoMode());
+        eco.put("wifi_disabled", configService.isWifiDisabledInEcoMode());
+        systemBehavior.put("eco", eco);
+
+        Map<String, Boolean> regular = new LinkedHashMap<>();
+        regular.put("machine_shutdown", configService.isMachineShutdownInRegularMode());
+        regular.put("wifi_disabled", configService.isWifiDisabledInRegularMode());
+        systemBehavior.put("regular", regular);
+
+        Map<String, Boolean> sunny = new LinkedHashMap<>();
+        sunny.put("machine_shutdown", configService.isMachineShutdownInSunnyMode());
+        sunny.put("wifi_disabled", configService.isWifiDisabledInSunnyMode());
+        systemBehavior.put("sunny", sunny);
+
+        config.put("system_behavior", systemBehavior);
+
+        return ResponseEntity.ok(config);
+    }
+
+    // ============================================================================
+    // PUT Endpoints - Update Configuration
+    // ============================================================================
+
+    /**
+     * Updates light security timer delay for eco mode.
+     *
+     * @param delayMs timer delay in milliseconds (must be >= 0)
+     * @return success response
+     */
+    @Operation(summary = "Update light timer for eco mode")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Configuration updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid value (e.g., negative)")
+    })
+    @PutMapping("/light/eco")
+    public ResponseEntity<String> setLightEco(
+            @Parameter(description = "Timer delay in milliseconds", example = "300000")
+            @RequestParam long delayMs) {
+        configService.setLightSecurityTimerDelayEco(delayMs);
+        return ResponseEntity.ok("Light eco timer updated to " + delayMs + " ms");
+    }
+
+    @Operation(summary = "Update light timer for regular mode")
+    @PutMapping("/light/regular")
+    public ResponseEntity<String> setLightRegular(@RequestParam long delayMs) {
+        configService.setLightSecurityTimerDelayRegular(delayMs);
+        return ResponseEntity.ok("Light regular timer updated to " + delayMs + " ms");
+    }
+
+    @Operation(summary = "Update light timer for sunny mode")
+    @PutMapping("/light/sunny")
+    public ResponseEntity<String> setLightSunny(@RequestParam long delayMs) {
+        configService.setLightSecurityTimerDelaySunny(delayMs);
+        return ResponseEntity.ok("Light sunny timer updated to " + delayMs + " ms");
+    }
+
+    @Operation(summary = "Update fan timer for eco mode")
+    @PutMapping("/fan/eco")
+    public ResponseEntity<String> setFanEco(@RequestParam long delayMs) {
+        configService.setFanSecurityTimerDelayEco(delayMs);
+        return ResponseEntity.ok("Fan eco timer updated to " + delayMs + " ms");
+    }
+
+    @Operation(summary = "Update fan timer for regular mode")
+    @PutMapping("/fan/regular")
+    public ResponseEntity<String> setFanRegular(@RequestParam long delayMs) {
+        configService.setFanSecurityTimerDelayRegular(delayMs);
+        return ResponseEntity.ok("Fan regular timer updated to " + delayMs + " ms");
+    }
+
+    @Operation(summary = "Update fan timer for sunny mode")
+    @PutMapping("/fan/sunny")
+    public ResponseEntity<String> setFanSunny(@RequestParam long delayMs) {
+        configService.setFanSecurityTimerDelaySunny(delayMs);
+        return ResponseEntity.ok("Fan sunny timer updated to " + delayMs + " ms");
+    }
+
+    @Operation(summary = "Update music timer for eco mode")
+    @PutMapping("/music/eco")
+    public ResponseEntity<String> setMusicEco(@RequestParam long delayMs) {
+        configService.setMusicSecurityTimerDelayEco(delayMs);
+        return ResponseEntity.ok("Music eco timer updated to " + delayMs + " ms");
+    }
+
+    @Operation(summary = "Update music timer for regular mode")
+    @PutMapping("/music/regular")
+    public ResponseEntity<String> setMusicRegular(@RequestParam long delayMs) {
+        configService.setMusicSecurityTimerDelayRegular(delayMs);
+        return ResponseEntity.ok("Music regular timer updated to " + delayMs + " ms");
+    }
+
+    @Operation(summary = "Update music timer for sunny mode")
+    @PutMapping("/music/sunny")
+    public ResponseEntity<String> setMusicSunny(@RequestParam long delayMs) {
+        configService.setMusicSecurityTimerDelaySunny(delayMs);
+        return ResponseEntity.ok("Music sunny timer updated to " + delayMs + " ms");
+    }
+
+    @Operation(
+            summary = "Update days around winter solstice for eco mode",
+            description = "Sets how many days before and after winter solstice to use eco mode. Must be > 0."
+    )
+    @PutMapping("/consumption/eco-days")
+    public ResponseEntity<String> setEcoDays(@RequestParam int days) {
+        configService.setEcoModeNbrDaysAroundWinterSolstice(days);
+        return ResponseEntity.ok("Eco mode days around winter solstice updated to " + days);
+    }
+
+    @Operation(
+            summary = "Update days around summer solstice for sunny mode",
+            description = "Sets how many days before and after summer solstice to use sunny mode. Must be > 0."
+    )
+    @PutMapping("/consumption/sunny-days")
+    public ResponseEntity<String> setSunnyDays(@RequestParam int days) {
+        configService.setSunnyModeNbrDaysAroundSummerSolstice(days);
+        return ResponseEntity.ok("Sunny mode days around summer solstice updated to " + days);
+    }
+
+    @Operation(
+            summary = "Force eco mode on/off",
+            description = "When true, eco mode is forced regardless of season"
+    )
+    @PutMapping("/consumption/force-eco")
+    public ResponseEntity<String> setForceEco(@RequestParam boolean force) {
+        configService.setConsumptionModeEcoForce(force);
+        return ResponseEntity.ok("Eco mode force set to " + force);
+    }
+
+    @Operation(summary = "Set machine shutdown behavior for eco mode")
+    @PutMapping("/system/eco/shutdown")
+    public ResponseEntity<String> setEcoShutdown(@RequestParam boolean enabled) {
+        configService.setMachineShutdownInEcoMode(enabled);
+        return ResponseEntity.ok("Machine shutdown in eco mode set to " + enabled);
+    }
+
+    @Operation(summary = "Set WiFi disable behavior for eco mode")
+    @PutMapping("/system/eco/wifi")
+    public ResponseEntity<String> setEcoWifi(@RequestParam boolean disabled) {
+        configService.setWifiDisabledInEcoMode(disabled);
+        return ResponseEntity.ok("WiFi disabled in eco mode set to " + disabled);
+    }
+
+    @Operation(summary = "Set machine shutdown behavior for regular mode")
+    @PutMapping("/system/regular/shutdown")
+    public ResponseEntity<String> setRegularShutdown(@RequestParam boolean enabled) {
+        configService.setMachineShutdownInRegularMode(enabled);
+        return ResponseEntity.ok("Machine shutdown in regular mode set to " + enabled);
+    }
+
+    @Operation(summary = "Set WiFi disable behavior for regular mode")
+    @PutMapping("/system/regular/wifi")
+    public ResponseEntity<String> setRegularWifi(@RequestParam boolean disabled) {
+        configService.setWifiDisabledInRegularMode(disabled);
+        return ResponseEntity.ok("WiFi disabled in regular mode set to " + disabled);
+    }
+
+    @Operation(summary = "Set machine shutdown behavior for sunny mode")
+    @PutMapping("/system/sunny/shutdown")
+    public ResponseEntity<String> setSunnyShutdown(@RequestParam boolean enabled) {
+        configService.setMachineShutdownInSunnyMode(enabled);
+        return ResponseEntity.ok("Machine shutdown in sunny mode set to " + enabled);
+    }
+
+    @Operation(summary = "Set WiFi disable behavior for sunny mode")
+    @PutMapping("/system/sunny/wifi")
+    public ResponseEntity<String> setSunnyWifi(@RequestParam boolean disabled) {
+        configService.setWifiDisabledInSunnyMode(disabled);
+        return ResponseEntity.ok("WiFi disabled in sunny mode set to " + disabled);
+    }
+}

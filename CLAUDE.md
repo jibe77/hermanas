@@ -235,7 +235,9 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 
 ### Phase 5 - New features
 
-- [ ] **Add configuration panel**
+- [x] **Refactore config service and expose the features to a rest endpoint**
+
+- [ ] **Add debug panel to verify in real time the status of all the buttons (pressed / not pressed)**
 
 - [ ] **Implement missing screens**
 
