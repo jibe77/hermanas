@@ -233,17 +233,60 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   - ✅ All 61 tests passing
   - ✅ No regressions introduced
 
-### Phase 5 - New features
+### Phase 5 - New features for the configuration
 
 - [x] **Refactore config service and expose the features to a rest endpoint**
 
-- [ ] **Add debug panel to verify in real time the status of all the buttons (pressed / not pressed)**
+### Phase 6 - Observability & Event Sourcing ✅ COMPLETED
 
-- [ ] **Implement missing screens**
+- [x] **Improved health check for door physical position**
+  - Enhanced `DoorIndicator` to check position without moving door
+  - Returns `Health.UP` for definite positions (OPENED/CLOSED)
+  - Returns `Health.DOWN` for uncertain positions (UNDEFINED/SEEMS_OPENED/SEEMS_CLOSED)
+  - Provides status details and last action timestamp
 
-### Phase 6 - Major Upgrade (BLOCKED - Hardware Constraint)
+- [x] **Added Micrometer metrics for observability**
+  - Created `HermanasMetrics` service with comprehensive metrics tracking
+  - Door metrics: open/close counters, failure counter, operation duration timer, position gauge
+  - Sensor metrics: current temperature and humidity gauges
+  - Appliance metrics: light/fan/music switch counters
+  - Camera metrics: picture capture and streaming session counters
+  - Configuration metrics: config change counters
+  - All metrics exposed at `/actuator/metrics/hermanas.*`
+  - Metrics optional (graceful degradation in tests)
 
-> **NOT POSSIBLE:** The Raspberry Pi Zero hardware does not support Java 17+, which is required for Spring Boot 3.x. These upgrades are blocked until the hardware is upgraded to a more capable Raspberry Pi model.
+- [x] **Added configuration hot-reload without restart**
+  - All config setters use `@CacheEvict` for automatic cache invalidation
+  - Created `POST /api/v1/config/refresh` endpoint to manually clear all caches
+  - Enables runtime configuration changes without application restart
+  - Useful for seasonal adjustments and remote tuning on Pi Zero
+
+- [x] **Added event sourcing for door state history**
+  - Extended `EventType` enum with door events: `DOOR_OPENED`, `DOOR_CLOSED`, `DOOR_OPEN_FAILED`, `DOOR_CLOSE_FAILED`, `DOOR_POSITION_UNKNOWN`
+  - Enhanced `EventRepository` with time-range query methods
+  - Created `DoorEventService` for recording and querying door events
+  - Automatic event recording in `DoorRestController` on all operations
+  - Created `GET /api/v1/door/events` endpoint for event history queries
+  - Provides complete audit trail for door operations
+
+### Phase 7 : Feature Backlog
+
+- [ ] Improve test coverage (currently ~21%: 18 test files / 84 source files)
+  - Add `@SpringBootTest` integration tests
+  - Add `@WebMvcTest` for REST layer
+  - Add `@DataJpaTest` for repositories
+
+### Phase 8 : add new features (blocked for the moment, need analysis)
+
+- [ ] **Add debug panel to verify in real time the status of all the buttons (pressed / not pressed) or use actuator to get the status ... not sure yet !**
+
+- [ ] **Implement missing screens ... see on the front-end what is necessary first**
+
+- [ ] **Improve image processing to count chicken, eggs, and amount of durt in the coop** 
+
+### Phase 9 - Major Upgrade (BLOCKED - Hardware Constraint)
+
+> **NOT POSSIBLE:** The Raspberry Pi Zero hardware does not support Java 17+, which is required for Spring Boot 3.x. These upgrades are blocked until the hardware is upgraded to a more capable Raspberry Pi model. Move to a recent Raspberry Pi hardware !
 
 - [ ] ~~**Upgrade to Spring Boot 3.2+**~~
   - Requires Java 17+ (not supported on Pi Zero)
@@ -252,17 +295,6 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 
 - [ ] ~~**Upgrade Java 11 → Java 17 or 21 LTS**~~
   - Not supported on Raspberry Pi Zero hardware
-
-### Feature Backlog
-
-- [ ] Add health check for door physical position
-- [ ] Add Micrometer metrics for observability
-- [ ] Add configuration hot-reload without restart
-- [ ] Add event sourcing for door state history
-- [ ] Improve test coverage (currently ~21%: 18 test files / 84 source files)
-  - Add `@SpringBootTest` integration tests
-  - Add `@WebMvcTest` for REST layer
-  - Add `@DataJpaTest` for repositories
 
 ### Deprecated Components (EOL) - Cannot Be Updated
 

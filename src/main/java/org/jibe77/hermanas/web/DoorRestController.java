@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.web;
 
+import io.micrometer.core.instrument.Timer;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -8,10 +9,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.controller.door.DoorService;
+import org.jibe77.hermanas.controller.event.DoorEventService;
+import org.jibe77.hermanas.metrics.HermanasMetrics;
 import org.jibe77.hermanas.security.audit.AuditLog;
 import org.jibe77.hermanas.service.door.model.DoorStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,10 +36,17 @@ public class DoorRestController {
 
     DoorService doorService;
 
+    DoorEventService doorEventService;
+
+    @Autowired(required = false)
+    HermanasMetrics metrics;
+
     private static final Logger logger = LoggerFactory.getLogger(DoorRestController.class);
 
-    public DoorRestController(DoorService doorService) {
+    public DoorRestController(DoorService doorService, DoorEventService doorEventService, @Autowired(required = false) HermanasMetrics metrics) {
         this.doorService = doorService;
+        this.doorEventService = doorEventService;
+        this.metrics = metrics;
     }
 
     @Operation(
@@ -59,10 +70,27 @@ public class DoorRestController {
     public boolean close(
             @Parameter(description = "Force closing even if door appears already closed", example = "false")
             @RequestParam(defaultValue = "false", required = false) String force) {
-        logger.info("closing door now  ...");
-        doorService.closeDoorWithBottormButtonManagement(Boolean.parseBoolean(force));
-        logger.info("... the door has been closed !");
-        return true;
+        Timer.Sample sample = metrics != null ? metrics.startDoorOperationTimer() : null;
+        try {
+            logger.info("closing door now  ...");
+            doorService.closeDoorWithBottormButtonManagement(Boolean.parseBoolean(force));
+            logger.info("... the door has been closed !");
+            if (metrics != null) {
+                metrics.recordDoorClose();
+            }
+            doorEventService.recordDoorClosed();
+            return true;
+        } catch (Exception e) {
+            if (metrics != null) {
+                metrics.recordDoorFailure("close");
+            }
+            doorEventService.recordDoorCloseFailed();
+            throw e;
+        } finally {
+            if (metrics != null && sample != null) {
+                metrics.stopDoorOperationTimer(sample);
+            }
+        }
     }
 
     @Operation(
@@ -81,10 +109,34 @@ public class DoorRestController {
     public boolean open(
             @Parameter(description = "Force opening even if door appears already open", example = "false")
             @RequestParam(defaultValue = "false", required = false) String force) {
-        logger.info("opening door now  ...");
-        boolean result = doorService.openDoorWithUpButtonManagment(Boolean.parseBoolean(force), false);
-        logger.info("... done with result {} !", result);
-        return result;
+        Timer.Sample sample = metrics != null ? metrics.startDoorOperationTimer() : null;
+        try {
+            logger.info("opening door now  ...");
+            boolean result = doorService.openDoorWithUpButtonManagment(Boolean.parseBoolean(force), false);
+            logger.info("... done with result {} !", result);
+            if (result) {
+                if (metrics != null) {
+                    metrics.recordDoorOpen();
+                }
+                doorEventService.recordDoorOpened();
+            } else {
+                if (metrics != null) {
+                    metrics.recordDoorFailure("open");
+                }
+                doorEventService.recordDoorOpenFailed();
+            }
+            return result;
+        } catch (Exception e) {
+            if (metrics != null) {
+                metrics.recordDoorFailure("open");
+            }
+            doorEventService.recordDoorOpenFailed();
+            throw e;
+        } finally {
+            if (metrics != null && sample != null) {
+                metrics.stopDoorOperationTimer(sample);
+            }
+        }
     }
 
     @Operation(
@@ -197,6 +249,27 @@ public class DoorRestController {
     })
     @GetMapping("/status")
     public DoorStatus statusInfo() {
-        return doorService.statusInfo();
+        DoorStatus status = doorService.statusInfo();
+        if (metrics != null) {
+            metrics.updateDoorPosition(status.getStatus());
+        }
+        return status;
+    }
+
+    @Operation(
+            summary = "Get door event history",
+            description = "Returns the complete event history for all door operations (open, close, failures)"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Event history retrieved successfully",
+                    content = @Content(mediaType = "application/json")
+            )
+    })
+    @GetMapping("/events")
+    public java.util.List<org.jibe77.hermanas.data.entity.Event> getEventHistory() {
+        logger.info("Retrieving door event history");
+        return doorEventService.getAllDoorEvents();
     }
 }

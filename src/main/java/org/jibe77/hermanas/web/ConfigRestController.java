@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.controller.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,9 +35,11 @@ public class ConfigRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigRestController.class);
     private final ConfigService configService;
+    private final CacheManager cacheManager;
 
-    public ConfigRestController(ConfigService configService) {
+    public ConfigRestController(ConfigService configService, CacheManager cacheManager) {
         this.configService = configService;
+        this.cacheManager = cacheManager;
     }
 
     // ============================================================================
@@ -118,6 +121,60 @@ public class ConfigRestController {
         config.put("system_behavior", systemBehavior);
 
         return ResponseEntity.ok(config);
+    }
+
+    /**
+     * Refreshes all configuration caches.
+     *
+     * <p>This endpoint evicts all configuration caches, forcing fresh reads
+     * from the database on the next configuration access. Useful for hot-reloading
+     * configuration changes made directly to the database without restarting the application.</p>
+     *
+     * <p><strong>Use cases:</strong></p>
+     * <ul>
+     *   <li>Manual database updates outside of the REST API</li>
+     *   <li>Forcing a refresh after external configuration changes</li>
+     *   <li>Troubleshooting cached configuration values</li>
+     * </ul>
+     *
+     * @return success message with number of caches cleared
+     */
+    @Operation(
+            summary = "Refresh all configuration caches",
+            description = "Evicts all configuration caches to force fresh reads from database. " +
+                         "Enables hot-reload of configuration changes without application restart."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Caches refreshed successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized - authentication required"
+            )
+    })
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, Object>> refreshCaches() {
+        logger.info("Admin requested configuration cache refresh");
+
+        int cachesCleared = 0;
+        for (String cacheName : cacheManager.getCacheNames()) {
+            if (cacheManager.getCache(cacheName) != null) {
+                cacheManager.getCache(cacheName).clear();
+                cachesCleared++;
+                logger.debug("Cleared cache: {}", cacheName);
+            }
+        }
+
+        logger.info("Configuration cache refresh completed. {} caches cleared", cachesCleared);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message", "Configuration caches refreshed successfully");
+        response.put("caches_cleared", cachesCleared);
+        response.put("hot_reload_enabled", true);
+
+        return ResponseEntity.ok(response);
     }
 
     // ============================================================================

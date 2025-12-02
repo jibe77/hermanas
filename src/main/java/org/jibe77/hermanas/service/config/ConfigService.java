@@ -3,8 +3,10 @@ package org.jibe77.hermanas.controller.config;
 import org.apache.commons.lang3.StringUtils;
 import org.jibe77.hermanas.data.entity.Parameter;
 import org.jibe77.hermanas.data.repository.ParameterRepository;
+import org.jibe77.hermanas.metrics.HermanasMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -92,10 +94,14 @@ public class ConfigService {
 
     ParameterRepository parameterRepository;
 
+    @Autowired(required = false)
+    HermanasMetrics metrics;
+
     private static final Logger logger = LoggerFactory.getLogger(ConfigService.class);
 
-    public ConfigService(ParameterRepository parameterRepository) {
+    public ConfigService(ParameterRepository parameterRepository, @Autowired(required = false) HermanasMetrics metrics) {
         this.parameterRepository = parameterRepository;
+        this.metrics = metrics;
     }
 
     // ============================================================================
@@ -176,6 +182,11 @@ public class ConfigService {
 
         logger.info("Saving config to database: {} = {}", key, value);
         parameterRepository.save(parameter);
+
+        // Record configuration change metric (if metrics available)
+        if (metrics != null) {
+            metrics.recordConfigChange(key);
+        }
     }
 
     // ============================================================================

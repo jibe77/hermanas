@@ -15,8 +15,10 @@ import org.jibe77.hermanas.dto.SensorDTO;
 import org.jibe77.hermanas.dto.mapper.SensorMapper;
 import org.jibe77.hermanas.controller.sensor.SensorService;
 import org.jibe77.hermanas.data.repository.SensorRepository;
+import org.jibe77.hermanas.metrics.HermanasMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,11 +46,15 @@ public class SensorRestController {
 
     SensorMapper sensorMapper;
 
-    public SensorRestController(SensorService sensorService, WeatherClient weatherClient, SensorRepository sensorRepository, SensorMapper sensorMapper) {
+    @Autowired(required = false)
+    HermanasMetrics metrics;
+
+    public SensorRestController(SensorService sensorService, WeatherClient weatherClient, SensorRepository sensorRepository, SensorMapper sensorMapper, @Autowired(required = false) HermanasMetrics metrics) {
         this.sensorService = sensorService;
         this.weatherClient = weatherClient;
         this.sensorRepository = sensorRepository;
         this.sensorMapper = sensorMapper;
+        this.metrics = metrics;
     }
 
     @Operation(
@@ -73,6 +79,12 @@ public class SensorRestController {
         WeatherInfo weatherInfo = weatherClient.getInfo();
         sensor.setExternalHumidity(weatherInfo.getHumidity());
         sensor.setExternalTemperature(weatherInfo.getTemp());
+
+        // Record current sensor readings as metrics (if metrics available)
+        if (metrics != null) {
+            metrics.recordSensorReading(sensor.getTemperature(), sensor.getHumidity());
+        }
+
         return sensorMapper.toDTO(sensor);
     }
 
