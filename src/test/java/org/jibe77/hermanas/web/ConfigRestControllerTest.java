@@ -10,6 +10,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -86,7 +87,8 @@ class ConfigRestControllerTest {
         when(cacheManager.getCache("cache2")).thenReturn(mockCache);
 
         // When/Then
-        mockMvc.perform(post("/api/v1/config/refresh"))
+        mockMvc.perform(post("/api/v1/config/refresh")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Configuration caches refreshed successfully"))
                 .andExpect(jsonPath("$.caches_cleared").value(2))
@@ -97,7 +99,8 @@ class ConfigRestControllerTest {
 
     @Test
     void refreshCaches_shouldReturn401WhenNotAuthenticated() throws Exception {
-        mockMvc.perform(post("/api/v1/config/refresh"))
+        mockMvc.perform(post("/api/v1/config/refresh")
+                        .with(csrf()))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -110,7 +113,7 @@ class ConfigRestControllerTest {
     void setLightEco_shouldUpdateTimer() throws Exception {
         mockMvc.perform(put("/api/v1/config/light/eco")
                         .param("delayMs", "300000")
-                        )
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Light eco timer updated to 300000 ms"));
 
@@ -125,7 +128,7 @@ class ConfigRestControllerTest {
 
         mockMvc.perform(put("/api/v1/config/light/eco")
                         .param("delayMs", "-1")
-                        )
+                        .with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -138,7 +141,7 @@ class ConfigRestControllerTest {
     void setEcoDays_shouldUpdateDays() throws Exception {
         mockMvc.perform(put("/api/v1/config/consumption/eco-days")
                         .param("days", "45")
-                        )
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Eco mode days around winter solstice updated to 45"));
 
@@ -150,7 +153,7 @@ class ConfigRestControllerTest {
     void setForceEco_shouldUpdateForceFlag() throws Exception {
         mockMvc.perform(put("/api/v1/config/consumption/force-eco")
                         .param("force", "true")
-                        )
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Eco mode force set to true"));
 
@@ -166,7 +169,7 @@ class ConfigRestControllerTest {
     void setEcoShutdown_shouldUpdateShutdownBehavior() throws Exception {
         mockMvc.perform(put("/api/v1/config/system/eco/shutdown")
                         .param("enabled", "false")
-                        )
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Machine shutdown in eco mode set to false"));
 
@@ -178,7 +181,7 @@ class ConfigRestControllerTest {
     void setEcoWifi_shouldUpdateWifiBehavior() throws Exception {
         mockMvc.perform(put("/api/v1/config/system/eco/wifi")
                         .param("disabled", "true")
-                        )
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("WiFi disabled in eco mode set to true"));
 

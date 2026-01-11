@@ -19,7 +19,9 @@
       "Bash(for service in Camera Door Energy Fan Info Light Music Scheduler Sensor System)",
       "Bash(do echo -n '$service: ')",
       "Bash(xargs cat:*)",
-      "Bash(mvn test-compile:*)"
+      "Bash(mvn test-compile:*)",
+      "Bash(mvn dependency:tree:*)",
+      "Bash(mvn versions:display-dependency-updates:*)"
     ],
     "deny": [],
     "ask": []

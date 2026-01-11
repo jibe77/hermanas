@@ -34,6 +34,9 @@ mvn versions:display-dependency-updates
 
 # Check maven plugins updates
 mvn versions:display-plugin-updates
+
+# automate deployment on the chicken-coop
+./deploy.sh
 ```
 
 ## Architecture
