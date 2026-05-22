@@ -86,9 +86,9 @@ public class GpioHermanasRpiService implements GpioHermanasService {
     }
 
     @Async
-    public CompletableFuture<Void> takePictureAsync(FilePictureCaptureHandler filePictureCaptureHandler) throws IOException {
-        try (Camera camera = new Camera()) {
-            camera.takePicture(filePictureCaptureHandler);
+    public CompletableFuture<Void> takePictureAsync(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
+        try (Camera camera = new Camera(highQuality ? highQualityConfig : regularQualityconfig)) {
+            camera.takePicture(filePictureCaptureHandler, highQuality ? photoHighDelay : photoRegularDelay);
         } catch (CaptureFailedException e) {
             throw new IOException("Can't capture a picture.", e);
         } catch (Exception e) {
