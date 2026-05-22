@@ -57,28 +57,113 @@ public class ManageDoorOpeningEvent {
     }
 
     public void manageDoorOpeningEvent(LocalDateTime currentTime) {
-        if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
-            if (!doorService.doorIsOpened()) {
-                logger.info("door opening event is starting now.");
-                if (cocoricoAtSunriseEnabled && !consumptionModeController.isEcoMode(LocalDateTime.now())) {
-                    musicService.cocorico();
-                }
-                wifiService.turnOn();
-                Optional<File> picBeforeOpening = cameraService.takePictureNoException(true);
-                boolean isCorrectlyOpened = doorService.openDoorWithUpButtonManagment(false, false);
+        OpeningPlan openingPlan = OpeningPlan.from(
+                currentTime,
+                sunTimeManager.getNextDoorOpeningTime(),
+                doorService.doorIsOpened(),
+                consumptionModeController.isEcoMode(currentTime),
+                cocoricoAtSunriseEnabled
+        );
 
-                notificationService.doorOpeningEvent(
-                        isCorrectlyOpened,
-                        picBeforeOpening
-                );
-            }
-            if (!consumptionModeController.isEcoMode(LocalDateTime.now())) {
-                fanService.switchOn();
-            } else {
-                // turn off the wifi in 15 minutes
-                wifiService.turnOffAfter(900);
-            }
-            sunTimeManager.reloadDoorOpeningTime();
+        if (!openingPlan.shouldRun()) {
+            return;
+        }
+
+        if (openingPlan.shouldOpenDoor()) {
+            playPreOpeningActions(openingPlan);
+            runDoorOpening();
+        }
+
+        applyPostOpeningActions(openingPlan);
+        sunTimeManager.reloadDoorOpeningTime();
+    }
+
+    private void playPreOpeningActions(OpeningPlan openingPlan) {
+        if (openingPlan.shouldPlayCocorico()) {
+            musicService.cocorico();
+        }
+    }
+
+    private void runDoorOpening() {
+        logger.info("door opening event is starting now.");
+        wifiService.turnOn();
+
+        Optional<File> picBeforeOpening = cameraService.takePictureNoException(true);
+        boolean isCorrectlyOpened = doorService.openDoorWithUpButtonManagment(false, false);
+
+        notificationService.doorOpeningEvent(isCorrectlyOpened, picBeforeOpening);
+    }
+
+    private void applyPostOpeningActions(OpeningPlan openingPlan) {
+        if (openingPlan.shouldSwitchFanOn()) {
+            fanService.switchOn();
+            return;
+        }
+
+        if (openingPlan.shouldTurnWifiOffLater()) {
+            // turn off the wifi in 15 minutes
+            wifiService.turnOffAfter(900);
+        }
+    }
+
+    static final class OpeningPlan {
+
+        private final boolean shouldRun;
+        private final boolean shouldOpenDoor;
+        private final boolean shouldPlayCocorico;
+        private final boolean shouldSwitchFanOn;
+        private final boolean shouldTurnWifiOffLater;
+
+        private OpeningPlan(boolean shouldRun,
+                            boolean shouldOpenDoor,
+                            boolean shouldPlayCocorico,
+                            boolean shouldSwitchFanOn,
+                            boolean shouldTurnWifiOffLater) {
+            this.shouldRun = shouldRun;
+            this.shouldOpenDoor = shouldOpenDoor;
+            this.shouldPlayCocorico = shouldPlayCocorico;
+            this.shouldSwitchFanOn = shouldSwitchFanOn;
+            this.shouldTurnWifiOffLater = shouldTurnWifiOffLater;
+        }
+
+        static OpeningPlan from(LocalDateTime currentTime,
+                                LocalDateTime nextOpeningTime,
+                                boolean doorAlreadyOpened,
+                                boolean ecoMode,
+                                boolean cocoricoEnabled) {
+            boolean shouldRun = currentTime.isAfter(nextOpeningTime);
+            boolean shouldOpenDoor = shouldRun && !doorAlreadyOpened;
+            boolean shouldPlayCocorico = shouldOpenDoor && cocoricoEnabled && !ecoMode;
+            boolean shouldSwitchFanOn = shouldRun && !ecoMode;
+            boolean shouldTurnWifiOffLater = shouldRun && ecoMode;
+
+            return new OpeningPlan(
+                    shouldRun,
+                    shouldOpenDoor,
+                    shouldPlayCocorico,
+                    shouldSwitchFanOn,
+                    shouldTurnWifiOffLater
+            );
+        }
+
+        boolean shouldRun() {
+            return shouldRun;
+        }
+
+        boolean shouldOpenDoor() {
+            return shouldOpenDoor;
+        }
+
+        boolean shouldPlayCocorico() {
+            return shouldPlayCocorico;
+        }
+
+        boolean shouldSwitchFanOn() {
+            return shouldSwitchFanOn;
+        }
+
+        boolean shouldTurnWifiOffLater() {
+            return shouldTurnWifiOffLater;
         }
     }
 }

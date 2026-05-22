@@ -5,6 +5,7 @@ import org.jibe77.hermanas.dto.SensorDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -58,6 +59,7 @@ public class SensorMapper {
         if (sensors == null) {
             return null;
         }
+
         return StreamSupport.stream(sensors.spliterator(), false)
                 .map(this::toDTO)
                 .collect(Collectors.toList());
