@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.service.energy.EnergyMode;
 import org.jibe77.hermanas.service.energy.EnergyModeConfig;
 import org.jibe77.hermanas.service.energy.EnergyModeEnum;
-import org.jibe77.hermanas.controller.energy.WifiService;
+import org.jibe77.hermanas.service.energy.WifiService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

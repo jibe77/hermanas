@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.scheduler.sun;
 
-import org.jibe77.hermanas.controller.config.ConfigService;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.service.energy.EnergyMode;
 import org.jibe77.hermanas.service.energy.EnergyModeConfig;
 import org.jibe77.hermanas.service.energy.EnergyModeEnum;

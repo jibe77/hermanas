@@ -1,8 +1,8 @@
-package org.jibe77.hermanas.controller.startup_on_error_notif;
+package org.jibe77.hermanas.service.startup_on_error_notif;
 
 import org.jibe77.hermanas.client.email.EmailService;
-import org.jibe77.hermanas.controller.camera.CameraService;
-import org.jibe77.hermanas.controller.energy.WifiService;
+import org.jibe77.hermanas.service.camera.CameraService;
+import org.jibe77.hermanas.service.energy.WifiService;
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;

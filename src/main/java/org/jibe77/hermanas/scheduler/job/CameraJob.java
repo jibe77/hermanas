@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.scheduler.job;
 
-import org.jibe77.hermanas.controller.camera.CameraService;
+import org.jibe77.hermanas.service.camera.CameraService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

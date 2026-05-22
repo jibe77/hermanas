@@ -2,10 +2,10 @@ package org.jibe77.hermanas.scheduler.event;
 
 import org.jibe77.hermanas.client.email.EmailService;
 import org.jibe77.hermanas.client.email.NotificationService;
-import org.jibe77.hermanas.controller.camera.CameraService;
-import org.jibe77.hermanas.controller.door.DoorService;
-import org.jibe77.hermanas.controller.energy.WifiService;
-import org.jibe77.hermanas.controller.music.MusicService;
+import org.jibe77.hermanas.service.camera.CameraService;
+import org.jibe77.hermanas.service.door.DoorService;
+import org.jibe77.hermanas.service.energy.WifiService;
+import org.jibe77.hermanas.service.music.MusicService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;

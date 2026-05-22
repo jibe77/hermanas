@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.scheduler.job;
 
-import org.jibe77.hermanas.controller.fan.FanService;
+import org.jibe77.hermanas.service.fan.FanService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeUtils;
 import org.slf4j.Logger;

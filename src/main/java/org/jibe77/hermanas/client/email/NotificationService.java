@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.client.email;
 
-import org.jibe77.hermanas.controller.camera.CameraService;
+import org.jibe77.hermanas.service.camera.CameraService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.controller.camera;
+package org.jibe77.hermanas.service.camera;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.util.Assert;

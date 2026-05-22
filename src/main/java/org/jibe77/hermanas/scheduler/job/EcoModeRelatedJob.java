@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.scheduler.job;
 
-import org.jibe77.hermanas.controller.energy.WifiService;
+import org.jibe77.hermanas.service.energy.WifiService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

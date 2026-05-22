@@ -1,12 +1,12 @@
-package org.jibe77.hermanas.controller.birdhouse;
+package org.jibe77.hermanas.service.birdhouse;
 
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalState;
 import com.pi4j.io.gpio.digital.DigitalStateChangeEvent;
 import org.jibe77.hermanas.service.abstract_model.Status;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
-import org.jibe77.hermanas.controller.light.LightService;
+import org.jibe77.hermanas.service.gpio.GpioHermanasService;
+import org.jibe77.hermanas.service.light.LightService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.controller.config;
+package org.jibe77.hermanas.service.config;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jibe77.hermanas.data.entity.Parameter;

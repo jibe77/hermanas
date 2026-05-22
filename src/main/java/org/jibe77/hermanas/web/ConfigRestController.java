@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.jibe77.hermanas.controller.config.ConfigService;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
@@ -25,7 +25,7 @@ import java.util.Map;
  * <p>Allows viewing and modifying runtime configuration values stored in the database.
  * Values fall back to application.properties defaults if not overridden in database.</p>
  *
- * @see org.jibe77.hermanas.controller.config.ConfigService
+ * @see org.jibe77.hermanas.service.config.ConfigService
  */
 @RestController
 @RequestMapping("/api/v1/config")

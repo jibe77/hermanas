@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.io.IOUtils;
-import org.jibe77.hermanas.controller.camera.CameraService;
+import org.jibe77.hermanas.service.camera.CameraService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

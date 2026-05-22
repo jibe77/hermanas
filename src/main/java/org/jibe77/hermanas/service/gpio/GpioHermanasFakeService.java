@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.controller.gpio;
+package org.jibe77.hermanas.service.gpio;
 
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalOutput;

@@ -13,7 +13,7 @@ import org.jibe77.hermanas.client.weather.WeatherInfo;
 import org.jibe77.hermanas.data.entity.Sensor;
 import org.jibe77.hermanas.dto.SensorDTO;
 import org.jibe77.hermanas.dto.mapper.SensorMapper;
-import org.jibe77.hermanas.controller.sensor.SensorService;
+import org.jibe77.hermanas.service.sensor.SensorService;
 import org.jibe77.hermanas.data.repository.SensorRepository;
 import org.jibe77.hermanas.metrics.HermanasMetrics;
 import org.slf4j.Logger;

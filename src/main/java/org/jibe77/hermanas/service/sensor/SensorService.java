@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.controller.sensor;
+package org.jibe77.hermanas.service.sensor;
 
 import org.jibe77.hermanas.data.entity.Sensor;
 import org.slf4j.Logger;

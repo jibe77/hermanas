@@ -2,10 +2,10 @@ package org.jibe77.hermanas.scheduler.job;
 
 import org.jibe77.hermanas.client.weather.WeatherClient;
 import org.jibe77.hermanas.client.weather.WeatherInfo;
-import org.jibe77.hermanas.controller.energy.WifiService;
+import org.jibe77.hermanas.service.energy.WifiService;
 import org.jibe77.hermanas.data.entity.Sensor;
 import org.jibe77.hermanas.data.repository.SensorRepository;
-import org.jibe77.hermanas.controller.sensor.SensorService;
+import org.jibe77.hermanas.service.sensor.SensorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;

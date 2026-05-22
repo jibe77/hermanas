@@ -1,10 +1,10 @@
-package org.jibe77.hermanas.controller.birdhouse;
+package org.jibe77.hermanas.service.birdhouse;
 
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalStateChangeEvent;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
-import org.jibe77.hermanas.controller.light.LightService;
+import org.jibe77.hermanas.service.gpio.GpioHermanasService;
+import org.jibe77.hermanas.service.light.LightService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,12 +1,12 @@
-package org.jibe77.hermanas.controller.camera;
+package org.jibe77.hermanas.service.camera;
 
 import org.apache.commons.io.FileUtils;
 import org.jibe77.hermanas.service.ProcessLauncher;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.data.entity.Picture;
 import org.jibe77.hermanas.data.repository.PictureRepository;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
-import org.jibe77.hermanas.controller.light.LightService;
+import org.jibe77.hermanas.service.gpio.GpioHermanasService;
+import org.jibe77.hermanas.service.light.LightService;
 import org.jibe77.hermanas.image.DoorPictureAnalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

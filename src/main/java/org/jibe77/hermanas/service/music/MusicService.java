@@ -1,10 +1,10 @@
-package org.jibe77.hermanas.controller.music;
+package org.jibe77.hermanas.service.music;
 
 import org.jibe77.hermanas.service.ProcessLauncher;
 import org.jibe77.hermanas.service.abstract_model.Status;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
-import org.jibe77.hermanas.controller.config.ConfigService;
-import org.jibe77.hermanas.controller.energy.SoundCardService;
+import org.jibe77.hermanas.service.config.ConfigService;
+import org.jibe77.hermanas.service.energy.SoundCardService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.Appliance;
 import org.jibe77.hermanas.websocket.CoopStatus;

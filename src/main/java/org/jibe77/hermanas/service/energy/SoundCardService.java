@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.controller.energy;
+package org.jibe77.hermanas.service.energy;
 
 import org.jibe77.hermanas.service.ProcessLauncher;
 import org.slf4j.Logger;

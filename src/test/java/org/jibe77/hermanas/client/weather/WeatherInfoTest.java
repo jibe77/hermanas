@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.client.weather;
 
-import org.jibe77.hermanas.controller.energy.WifiService;
+import org.jibe77.hermanas.service.energy.WifiService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

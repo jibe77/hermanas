@@ -1,8 +1,8 @@
-package org.jibe77.hermanas.controller.door;
+package org.jibe77.hermanas.service.door;
 
 import org.jibe77.hermanas.service.gpio.DefaultGpioPwm;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasFakeService;
-import org.jibe77.hermanas.controller.door.servo.ServoMotorService;
+import org.jibe77.hermanas.service.gpio.GpioHermanasFakeService;
+import org.jibe77.hermanas.service.door.servo.ServoMotorService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package org.jibe77.hermanas.health;
 
 import org.jibe77.hermanas.client.email.EmailService;
-import org.jibe77.hermanas.controller.camera.CameraService;
+import org.jibe77.hermanas.service.camera.CameraService;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;

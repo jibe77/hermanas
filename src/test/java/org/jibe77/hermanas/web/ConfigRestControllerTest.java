@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.web;
 
-import org.jibe77.hermanas.controller.config.ConfigService;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

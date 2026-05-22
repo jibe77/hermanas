@@ -1,10 +1,10 @@
-package org.jibe77.hermanas.controller.fan;
+package org.jibe77.hermanas.service.fan;
 
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import org.jibe77.hermanas.service.abstract_model.Status;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
-import org.jibe77.hermanas.controller.config.ConfigService;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
+import org.jibe77.hermanas.service.config.ConfigService;
+import org.jibe77.hermanas.service.gpio.GpioHermanasService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.Appliance;
 import org.jibe77.hermanas.websocket.CoopStatus;

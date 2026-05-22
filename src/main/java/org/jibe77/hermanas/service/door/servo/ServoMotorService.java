@@ -1,7 +1,7 @@
-package org.jibe77.hermanas.controller.door.servo;
+package org.jibe77.hermanas.service.door.servo;
 
 import com.pi4j.io.pwm.Pwm;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
+import org.jibe77.hermanas.service.gpio.GpioHermanasService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

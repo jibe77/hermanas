@@ -1,9 +1,9 @@
 package org.jibe77.hermanas.scheduler.event;
 
-import org.jibe77.hermanas.controller.door.DoorService;
-import org.jibe77.hermanas.controller.fan.FanService;
-import org.jibe77.hermanas.controller.light.LightService;
-import org.jibe77.hermanas.controller.music.MusicService;
+import org.jibe77.hermanas.service.door.DoorService;
+import org.jibe77.hermanas.service.fan.FanService;
+import org.jibe77.hermanas.service.light.LightService;
+import org.jibe77.hermanas.service.music.MusicService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.junit.jupiter.api.BeforeEach;

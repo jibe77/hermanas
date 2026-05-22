@@ -1,4 +1,4 @@
-package org.jibe77.hermanas.controller.event;
+package org.jibe77.hermanas.service.event;
 
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;

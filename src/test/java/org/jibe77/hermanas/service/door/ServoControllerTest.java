@@ -1,10 +1,10 @@
-package org.jibe77.hermanas.controller.door;
+package org.jibe77.hermanas.service.door;
 
 import com.pi4j.io.gpio.digital.DigitalInput;
-import org.jibe77.hermanas.controller.door.bottombutton.BottomButtonService;
-import org.jibe77.hermanas.controller.door.upbutton.UpButtonService;
-import org.jibe77.hermanas.controller.gpio.GpioHermanasService;
-import org.jibe77.hermanas.controller.door.servo.ServoMotorService;
+import org.jibe77.hermanas.service.door.bottombutton.BottomButtonService;
+import org.jibe77.hermanas.service.door.upbutton.UpButtonService;
+import org.jibe77.hermanas.service.gpio.GpioHermanasService;
+import org.jibe77.hermanas.service.door.servo.ServoMotorService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.websocket.NotificationController;
 import org.junit.jupiter.api.Test;
