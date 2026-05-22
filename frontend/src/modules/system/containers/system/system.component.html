@@ -1,0 +1,24 @@
+<sb-layout-dashboard
+    ><sb-dashboard-head title="System" i18n-title="@@system" [hideBreadcrumbs]="true"></sb-dashboard-head><sb-common-cards [notificationEvents]="notificationSubject.asObservable()" (serviceRetry)="onServiceRetry($event)"></sb-common-cards
+    ><sb-card
+        ><div class="card-body"><span i18n="@@systemInfo">This board allows you to configure the system parameters.</span></div></sb-card
+    ><sb-card
+        ><div class="card-header"><fa-icon class="mr-1" [icon]='["fas", "laptop"]'></fa-icon>Versions</div>
+        <div class="card-body">
+            Front-End version : {{frontEndVersion}} <br />
+            <div class="spinner-border" *ngIf="backEndVersion === undefined  &amp;&amp; backEndVersionOnError === false" role="status"><span class="sr-only" i18n="@@loading">Loading...</span></div>
+            <div *ngIf="backEndVersion !== undefined || backEndVersionOnError === true">Back-End version {{' '}}:{{' '}}<span *ngIf="backEndVersion !== undefined">{{backEndVersion}}</span><span *ngIf="backEndVersionOnError === true" i18n="@@informationNotAvailable">Information not available</span></div>
+        </div></sb-card
+    ><sb-card
+        ><div class="card-header"><fa-icon class="mr-1" [icon]='["fas", "laptop"]'></fa-icon>Diagnostic</div>
+        <div class="card-body">
+            Status of upper button : Not pushed
+            <br />
+            Status of bottom button : Not pushed
+            <br />
+            Reset buttons
+            <br />
+            Launch full check-up process
+        </div></sb-card
+    ></sb-layout-dashboard
+>

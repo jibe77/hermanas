@@ -1,0 +1,25 @@
+sb-layout-dashboard
+    sb-dashboard-head(title='Music', i18n-title="@@music", [hideBreadcrumbs]='true')
+
+    sb-card
+        .card-body
+            span(i18n="@@musicInfo") This board allows you to configure the music parameters.
+    .row
+        .col-lg-6
+            sb-card
+                .card-header
+                    fa-icon.mr-1([icon]='["fas", "music"]')
+                    | Playlist selection
+                .card-body
+                    | Selected playlist :
+                    |  Classic
+                    | <br/> Validate
+        .col-lg-6
+            sb-card
+                .card-header
+                    fa-icon.mr-1([icon]='["fas", "music"]')
+                    | Playlist content
+                .card-body
+                    | Tchakovski <br/>
+                    | Chopin <br/>
+

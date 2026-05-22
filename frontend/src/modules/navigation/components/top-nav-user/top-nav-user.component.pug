@@ -1,0 +1,32 @@
+li.nav-item.dropdown.dropdown-user.no-caret(
+    *ngIf='userService.user$ | async as user',
+    ngbDropdown,
+    placement='bottom-right',
+    display='dynamic'
+)
+    a#userDropdown.nav-link.dropdown-toggle(
+        ngbDropdownToggle,
+        data-cy='userMenu',
+        role='button',
+        aria-haspopup='true',
+        aria-expanded='false'
+    )
+        fa-icon([icon]='["fas", "user"]')
+    .dropdown-menu.dropdown-menu-right(
+        ngbDropdownMenu,
+        aria-labelledby='dropdownUser'
+    )
+        h6.dropdown-header
+            .dropdown-user-details
+                .dropdown-user-details-name(*ngIf='user.authState === "signedIn"') {{ user.login }}
+                .dropdown-user-details-name(*ngIf='user.authState !== "signedIn"', i18n="@@guest") Guest
+        .dropdown-divider
+        a.dropdown-item(routerLink='/auth/login', *ngIf='user.authState !== "signedIn"')
+            <span i18n="@@signin">Connexion</span>
+        button.dropdown-item(
+            type='button',
+            *ngIf='user.authState === "signedIn"',
+            (click)='logout()',
+            data-cy='logoutButton'
+        )
+            <span i18n="@@signout">Déconnexion</span>

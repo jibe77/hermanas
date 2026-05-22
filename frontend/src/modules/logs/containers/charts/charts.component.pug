@@ -1,0 +1,20 @@
+sb-layout-dashboard
+    sb-dashboard-head(title='Logs', i18n-title="@@logs" , [hideBreadcrumbs]='true')
+
+    sb-card
+        .card-body
+            span(i18n="@@logsInfo") This board allows you to browse through the history of the log file.
+
+    sb-card
+        .card-header
+            fa-icon.mr-1([icon]='["fas", "file-contract"]')
+            | Log browser
+        .card-body
+            | List of file : spring.log
+
+    sb-card
+        .card-header
+            fa-icon.mr-1([icon]='["fas", "file-contract"]')
+            | Log content
+        .card-body
+            | ...

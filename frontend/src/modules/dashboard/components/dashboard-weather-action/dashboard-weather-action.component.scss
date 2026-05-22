@@ -1,0 +1,24 @@
+@import 'styles/variables.scss';
+
+#userDropdown {
+    cursor: pointer;
+}
+
+li {
+    list-style-type: none;
+}
+
+.dropdown-toggle::after {
+    content: none;
+}
+
+.nav-link {
+    padding: 0rem 0rem;
+}
+
+a {
+    color: black;
+}
+span.disabled {
+    cursor: not-allowed;
+}

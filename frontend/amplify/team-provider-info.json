@@ -1,0 +1,26 @@
+{
+    "dev": {
+        "awscloudformation": {
+            "AuthRoleName": "amplify-hermanasclient-dev-225611-authRole",
+            "UnauthRoleArn": "arn:aws:iam::728724001227:role/amplify-hermanasclient-dev-225611-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::728724001227:role/amplify-hermanasclient-dev-225611-authRole",
+            "Region": "eu-west-2",
+            "DeploymentBucketName": "amplify-hermanasclient-dev-225611-deployment",
+            "UnauthRoleName": "amplify-hermanasclient-dev-225611-unauthRole",
+            "StackName": "amplify-hermanasclient-dev-225611",
+            "StackId": "arn:aws:cloudformation:eu-west-2:728724001227:stack/amplify-hermanasclient-dev-225611/d59acee0-4ae9-11eb-8a0a-0a2332494d28",
+            "AmplifyAppId": "d2ylqblswoz84y"
+        },
+        "categories": {
+            "auth": {
+                "hermanasclient6cdb33ea": {}
+            },
+            "hosting": {
+                "amplifyhosting": {
+                    "appId": "d2ylqblswoz84y",
+                    "type": "cicd"
+                }
+            }
+        }
+    }
+}

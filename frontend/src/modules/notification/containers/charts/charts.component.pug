@@ -1,0 +1,15 @@
+sb-layout-dashboard
+    sb-dashboard-head(title='Notification', [hideBreadcrumbs]='true')
+
+    sb-card
+        .card-body
+            span(i18n="@@notificationInfo") This board allows you to configure the notification parameters.
+
+    sb-card
+        .card-header
+            fa-icon.mr-1([icon]='["fas", "envelope-open-text"]')
+            | Notification parameters
+        .card-body
+            | List of emails notified by door closing and opening :
+            | <br/>
+            | jb.renaux&#64;me.com

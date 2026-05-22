@@ -1,0 +1,819 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="ngb.alert.close" datatype="html">
+        <source>Close</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/alert/alert.ts</context>
+          <context context-type="linenumber">58,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.carousel.slide-number" datatype="html">
+        <source> Slide <x id="INTERPOLATION" equiv-text="cused$ = new Be"/> of <x id="INTERPOLATION_1" equiv-text="private _pau"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/carousel/carousel.ts</context>
+          <context context-type="linenumber">113,117</context>
+        </context-group>
+        <note priority="1" from="description">Currently selected slide number read by screen reader</note>
+      </trans-unit>
+      <trans-unit id="ngb.carousel.previous" datatype="html">
+        <source>Previous</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/carousel/carousel.ts</context>
+          <context context-type="linenumber">130,132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.carousel.next" datatype="html">
+        <source>Next</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/carousel/carousel.ts</context>
+          <context context-type="linenumber">146,147</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.datepicker.select-month" datatype="html">
+        <source>Select month</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/datepicker/datepicker-navigation-select.ts</context>
+          <context context-type="linenumber">43,47</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/datepicker/datepicker-navigation-select.ts</context>
+          <context context-type="linenumber">47,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.datepicker.select-year" datatype="html">
+        <source>Select year</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/datepicker/datepicker-navigation-select.ts</context>
+          <context context-type="linenumber">59,62</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/datepicker/datepicker-navigation-select.ts</context>
+          <context context-type="linenumber">69,74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.datepicker.previous-month" datatype="html">
+        <source>Previous month</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/datepicker/datepicker-navigation.ts</context>
+          <context context-type="linenumber">24,27</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/datepicker/datepicker-navigation.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.datepicker.next-month" datatype="html">
+        <source>Next month</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/datepicker/datepicker-navigation.ts</context>
+          <context context-type="linenumber">44,48</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/datepicker/datepicker-navigation.ts</context>
+          <context context-type="linenumber">57,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.pagination.first" datatype="html">
+        <source>««</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/pagination/pagination.ts</context>
+          <context context-type="linenumber">181,182</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.pagination.previous" datatype="html">
+        <source>«</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/pagination/pagination.ts</context>
+          <context context-type="linenumber">186,188</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.pagination.next" datatype="html">
+        <source>»</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/pagination/pagination.ts</context>
+          <context context-type="linenumber">193,195</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.pagination.last" datatype="html">
+        <source>»»</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/pagination/pagination.ts</context>
+          <context context-type="linenumber">201,203</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.pagination.first-aria" datatype="html">
+        <source>First</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/pagination/pagination.ts</context>
+          <context context-type="linenumber">207,208</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.pagination.previous-aria" datatype="html">
+        <source>Previous</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/pagination/pagination.ts</context>
+          <context context-type="linenumber">214,215</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.pagination.next-aria" datatype="html">
+        <source>Next</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/pagination/pagination.ts</context>
+          <context context-type="linenumber">224,228</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.pagination.last-aria" datatype="html">
+        <source>Last</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/pagination/pagination.ts</context>
+          <context context-type="linenumber">231,232</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.progressbar.value" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="(): number { re"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/progressbar/progressbar.ts</context>
+          <context context-type="linenumber">31,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.HH" datatype="html">
+        <source>HH</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">40,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.hours" datatype="html">
+        <source>Hours</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.MM" datatype="html">
+        <source>MM</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">50,53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.minutes" datatype="html">
+        <source>Minutes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">58,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.increment-hours" datatype="html">
+        <source>Increment hours</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">63,64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.decrement-hours" datatype="html">
+        <source>Decrement hours</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">68,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.increment-minutes" datatype="html">
+        <source>Increment minutes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">76,77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.decrement-minutes" datatype="html">
+        <source>Decrement minutes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">82,84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.SS" datatype="html">
+        <source>SS</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">86,87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.seconds" datatype="html">
+        <source>Seconds</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">92,93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.increment-seconds" datatype="html">
+        <source>Increment seconds</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">98,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.decrement-seconds" datatype="html">
+        <source>Decrement seconds</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">105,106</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.PM" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="number;
+  priv"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">118,123</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.timepicker.AM" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="ssor,
+    OnCh"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/timepicker/timepicker.ts</context>
+          <context context-type="linenumber">141,116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ngb.toast.close-aria" datatype="html">
+        <source>Close</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">node_modules/@ng-bootstrap/ng-bootstrap/src/toast/toast.ts</context>
+          <context context-type="linenumber">76,82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="retry" datatype="html">
+        <source>Retry</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/app-common/components/card-view-details/card-view-details.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="connectionFailed" datatype="html">
+        <source>Connection with chicken coop failed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/app-common/components/common-cards/common-cards.component.html</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="camera" datatype="html">
+        <source>Camera</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraInfo" datatype="html">
+        <source>This board allows you to browse through the history of the pictures.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="switchLightOn" datatype="html">
+        <source>Switch light on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="switchLightOff" datatype="html">
+        <source>Switch light off</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+          <context context-type="linenumber">7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="switchMusicOn" datatype="html">
+        <source>Switch music on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="switchMusicOff" datatype="html">
+        <source>Switch music off</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="switchFanOn" datatype="html">
+        <source>Switch fan on</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="switchFanOff" datatype="html">
+        <source>Switch fan off</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="openDoor" datatype="html">
+        <source>Open door</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-door-action/dashboard-door-action.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="closeDoor" datatype="html">
+        <source>Close door</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-door-action/dashboard-door-action.component.html</context>
+          <context context-type="linenumber">7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="refreshMeteoInfo" datatype="html">
+        <source>refresh meteo info</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-weather-action/dashboard-weather-action.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="refreshPicture" datatype="html">
+        <source>refresh picture</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-webcam-action/dashboard-webcam-action.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="door" datatype="html">
+        <source>Door</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="loading" datatype="html">
+        <source>Loading...</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="state" datatype="html">
+        <source>State</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="stateOpened" datatype="html">
+        <source>Opened</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="stateOpening" datatype="html">
+        <source>Opening ...</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="stateClosing" datatype="html">
+        <source>Closing ...</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="stateClosed" datatype="html">
+        <source>Closed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="stateSeemsOpened" datatype="html">
+        <source>Seems opened</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="stateSeemsClosed" datatype="html">
+        <source>Seems closed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="stateOpenedIncorrectly" datatype="html">
+        <source>Opened incorrectly</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="stateClosedIncorrectly" datatype="html">
+        <source>Closed incorrectly</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="informationNotAvailable" datatype="html">
+        <source>Information not available</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nextOpeningTime" datatype="html">
+        <source>Next opening time</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="nextClosingTime" datatype="html">
+        <source>Next opening time</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="weather" datatype="html">
+        <source>Weather</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/weather/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="temperature" datatype="html">
+        <source>Temperature</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="weatherTemp" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{temperature}}"/>° (<x id="INTERPOLATION_1" equiv-text="{{temperatureExternal}}"/>° exterior)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+        <note priority="1" from="description">temperature in the chichen cooop</note>
+      </trans-unit>
+      <trans-unit id="humidity" datatype="html">
+        <source>Humidity</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="weatherHumidity" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{humidity}}"/>% (<x id="INTERPOLATION_1" equiv-text="{{humidityExternal}}"/>% exterior)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+        <note priority="1" from="description">humidity: humidity in the chicken coop</note>
+      </trans-unit>
+      <trans-unit id="accessories" datatype="html">
+        <source>Accessories</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="light" datatype="html">
+        <source>Light</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="on" datatype="html">
+        <source> On</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="off" datatype="html">
+        <source> Off</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="music" datatype="html">
+        <source>Music</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/music/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="fan" datatype="html">
+        <source>Fan</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="webcam" datatype="html">
+        <source>Webcam</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="chicken coop picture" datatype="html">
+        <source>chicken coop picture</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="dashboard" datatype="html">
+        <source>Dashboard</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/containers/dashboard/dashboard.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="dashboardInfo" datatype="html">
+        <source>This board displays info about the chicken coop.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/dashboard/containers/dashboard/dashboard.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="energy" datatype="html">
+        <source>Energy</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/energy/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="energyInfo" datatype="html">
+        <source>This board allows you to configure the energy saving parameters.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/energy/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="calendarParameters" datatype="html">
+        <source>Calendar parameters</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/energy/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="logs" datatype="html">
+        <source>Logs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/logs/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="logsInfo" datatype="html">
+        <source>This board allows you to browse through the history of the log file.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/logs/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="musicInfo" datatype="html">
+        <source>This board allows you to configure the music parameters.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/music/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="english" datatype="html">
+        <source>English</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/components/top-nav-lang/top-nav-lang.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="french" datatype="html">
+        <source>French</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/components/top-nav-lang/top-nav-lang.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="guest" datatype="html">
+        <source>Guest</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/components/top-nav-user/top-nav-user.component.html</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="signin" datatype="html">
+        <source>Connexion / Inscription</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/components/top-nav-user/top-nav-user.component.html</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="producedBy" datatype="html">
+        <source>Brought to you by</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="sourceCode" datatype="html">
+        <source>Source code</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="frontEnd" datatype="html">
+        <source>Front-End</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="backEnd" datatype="html">
+        <source>Back-End</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="weatherMenu" datatype="html">
+        <source>Weather</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="webcamMenu" datatype="html">
+        <source>Webcam</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="logsMenu" datatype="html">
+        <source>Logs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="energySavingMenu" datatype="html">
+        <source>Energy saving</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="notificationMenu" datatype="html">
+        <source>Notification</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="playlistMenu" datatype="html">
+        <source>Music playlist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="systemMenu" datatype="html">
+        <source>System</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="logged_in_as" datatype="html">
+        <source>Logged in as:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="notificationInfo" datatype="html">
+        <source>This board allows you to configure the notification parameters.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="system" datatype="html">
+        <source>System</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="systemInfo" datatype="html">
+        <source>This board allows you to configure the system parameters.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="weatherInfo" datatype="html">
+        <source>This board is displaying the weather fetched from a temperature and humidity probe inside the chicken coop.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/weather/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">4</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

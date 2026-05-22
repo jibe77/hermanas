@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "hermanasclient",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authhermanasclient6cdb33ea",
+      "Outputs.UserPoolId"
+    ]
+  }
+}

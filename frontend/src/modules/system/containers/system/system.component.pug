@@ -1,0 +1,34 @@
+sb-layout-dashboard
+    sb-dashboard-head(title='System', i18n-title="@@system", [hideBreadcrumbs]='true')
+    sb-common-cards([notificationEvents]="notificationSubject.asObservable()", (serviceRetry)="onServiceRetry($event)")
+    sb-card
+        .card-body
+            span(i18n="@@systemInfo") This board allows you to configure the system parameters.
+
+    sb-card
+        .card-header
+            fa-icon.mr-1([icon]='["fas", "laptop"]')
+            | Versions
+        .card-body
+            | Front-End version : {{frontEndVersion}}
+            | <br/>
+            div.spinner-border(*ngIf='backEndVersion === undefined  && backEndVersionOnError === false', role='status')
+                span(i18n='@@loading').sr-only Loading...
+            div(*ngIf='backEndVersion !== undefined || backEndVersionOnError === true')
+                | Back-End version
+                | {{' '}}:{{' '}}
+                span(*ngIf='backEndVersion !== undefined') {{backEndVersion}}
+                span(*ngIf='backEndVersionOnError === true',i18n='@@informationNotAvailable') Information not available
+
+    sb-card
+        .card-header
+            fa-icon.mr-1([icon]='["fas", "laptop"]')
+            | Diagnostic
+        .card-body
+            | Status of upper button : Not pushed
+            | <br/>
+            | Status of bottom button : Not pushed
+            | <br/>
+            | Reset buttons
+            | <br/>
+            | Launch full check-up process

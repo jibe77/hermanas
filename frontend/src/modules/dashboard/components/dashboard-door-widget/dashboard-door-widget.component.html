@@ -1,0 +1,85 @@
+<div class="row">
+    <div class="col-xl-6">
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'door-open']"></fa-icon>
+                <span i18n="@@door">Door</span>
+                <div class="float-end">
+                    <sb-dashboard-door-action [doorStatus]="doorStatus"></sb-dashboard-door-action>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="spinner-border" *ngIf="isLoading" role="status">
+                    <span class="visually-hidden" i18n="@@loading">Loading...</span>
+                </div>
+                <div *ngIf="doorStatus !== undefined || hasError">
+                    <span i18n="@@state">State</span>{{ ' ' }}:{{ ' ' }}
+                    <span *ngIf="isDoorStatus('OPENED')" i18n="@@stateOpened">Opened</span>
+                    <span *ngIf="isDoorStatus('OPENING')" i18n="@@stateOpening">Opening ...</span>
+                    <span *ngIf="isDoorStatus('CLOSING')" i18n="@@stateClosing">Closing ...</span>
+                    <span *ngIf="isDoorStatus('CLOSED')" i18n="@@stateClosed">Closed</span>
+                    <span *ngIf="isDoorStatus('SEEMS_OPENED')" i18n="@@stateSeemsOpened"
+                        >Seems opened</span
+                    >
+                    <span *ngIf="isDoorStatus('SEEMS_CLOSED')" i18n="@@stateSeemsClosed"
+                        >Seems closed</span
+                    >
+                    <span *ngIf="isDoorStatus('OPENED_INCORRECTLY')" i18n="@@stateOpenedIncorrectly"
+                        >Opened incorrectly</span
+                    >
+                    <span *ngIf="isDoorStatus('CLOSED_INCORRECTLY')" i18n="@@stateClosedIncorrectly"
+                        >Closed incorrectly</span
+                    >
+                    <span *ngIf="hasError" i18n="@@informationNotAvailable"
+                        >Information not available</span
+                    >
+                </div>
+                <div *ngIf="nextOpeningTime !== undefined || nextEventsOnError === true">
+                    <span i18n="@@nextOpeningTime">Next opening time</span>{{ ' ' }}:{{ ' ' }}
+                    <span *ngIf="nextOpeningTime !== undefined">{{ nextOpeningTime }}</span>
+                    <span *ngIf="nextEventsOnError === true" i18n="@@informationNotAvailable"
+                        >Information not available</span
+                    >
+                </div>
+                <div *ngIf="nextClosingTime !== undefined || nextEventsOnError === true">
+                    <span i18n="@@nextClosingTime">Next closing time</span>{{ ' ' }}:{{ ' ' }}
+                    <span *ngIf="nextClosingTime !== undefined">{{ nextClosingTime }}</span>
+                    <span *ngIf="nextEventsOnError === true" i18n="@@informationNotAvailable"
+                        >Information not available</span
+                    >
+                </div>
+            </div>
+        </sb-card>
+    </div>
+    <div class="col-xl-6">
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'camera']"></fa-icon>
+                <span i18n="@@webcam">Webcam</span>
+                <div class="float-end">
+                    <sb-dashboard-webcam-action
+                        (refreshWebcamEvent)="refreshPicture()"
+                    ></sb-dashboard-webcam-action>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="spinner-border" *ngIf="isPictureLoading" role="status">
+                    <span class="visually-hidden">
+                        <span i18n="@@loading">Loading...</span>
+                    </span>
+                </div>
+                <img
+                    class="{{ pictureInitialised === false ? 'hidden' : 'not_hidden' }}"
+                    [src]="picturePath"
+                    (load)="pictureIsInitialised()"
+                    (error)="pictureIsNotInitialised()"
+                    alt="chicken coop picture"
+                    i18n-alt="@@chicken coop picture"
+                />
+                <span *ngIf="pictureNotInitialised === true" i18n="@@informationNotAvailable">
+                    Information not available</span
+                >
+            </div>
+        </sb-card>
+    </div>
+</div>

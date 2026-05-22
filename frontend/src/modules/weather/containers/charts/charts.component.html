@@ -1,0 +1,25 @@
+<sb-layout-dashboard
+    ><sb-dashboard-head title="Weather" i18n-title="@@weather" [hideBreadcrumbs]="true"></sb-dashboard-head><sb-common-cards [notificationEvents]="notificationSubject.asObservable()" (serviceRetry)="onServiceRetry($event)"></sb-common-cards
+    ><sb-card
+        ><div class="card-body"><span i18n="@@weatherInfo">This board is displaying the weather fetched from a temperature and humidity probe inside the chicken coop.</span></div></sb-card
+    ><sb-card
+        ><div class="card-header"><fa-icon class="mr-1" [icon]='["fas", "table"]'></fa-icon>Last week</div>
+        <div class="card-body">
+            <!-- put a table here--><hermanas-weather-table-area [retryLauncherEvents]="retrySubject.asObservable()" (serviceCommunicationError)="onServiceCommunicationError($event)"></hermanas-weather-table-area
+            ><!-- sb-ng-bootstrap-table([pageSize]='6')-->
+        </div>
+        <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div></sb-card
+    ><sb-card
+        ><div class="card-header"><fa-icon class="mr-1" [icon]='["fas", "table"]'></fa-icon>Last month</div>
+        <div class="card-body"><!-- put a diagram here--><!-- sb-charts-area--><!-- sb-ng-bootstrap-table([pageSize]='6')--></div>
+        <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div></sb-card
+    ><sb-card
+        ><div class="card-header"><fa-icon class="mr-1" [icon]='["fas", "chart-bar"]'></fa-icon>Temperature history</div>
+        <div class="card-body"><!-- put a chart here--><!-- sb-charts-bar--></div>
+        <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div></sb-card
+    ><sb-card
+        ><div class="card-header"><fa-icon class="mr-1" [icon]='["fas", "chart-bar"]'></fa-icon>Humidity history</div>
+        <div class="card-body"><!-- put a chart here--><!-- sb-charts-bar--></div>
+        <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div></sb-card
+    ></sb-layout-dashboard
+>

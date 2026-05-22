@@ -1,0 +1,37 @@
+li.nav-item.dropdown.dropdown-user.no-caret(
+    *ngIf='_userService.user$ | async as user',
+    ngbDropdown,
+    placement='bottom-right',
+    display='dynamic'
+)
+    a#userDropdown.nav-link(
+        *ngIf="user.authState === 'signedin'",
+        ngbDropdownToggle,
+        data-cy='userMenu',
+        role='button',
+        aria-haspopup='true',
+        aria-expanded='false'
+    )
+        fa-icon([icon]='["fas", "ellipsis-v"]')
+    .dropdown-menu.dropdown-menu-right(
+        ngbDropdownMenu,
+        aria-labelledby='dropdownUser'
+    )
+        span
+            a.dropdown-item(*ngIf='lightStatus !== undefined && lightStatus !== true',(click)="switchLight(true)", routerLink="/dashboard")
+                span(i18n="@@switchLightOn") Switch light on
+        span
+            a.dropdown-item(*ngIf='lightStatus !== undefined && lightStatus === true',(click)="switchLight(false)", routerLink="/dashboard")
+                span(i18n="@@switchLightOff") Switch light off
+        span
+            a.dropdown-item(*ngIf='musicStatus !== undefined && musicStatus !== true',(click)="switchMusic(true)", routerLink="/dashboard")
+                span(i18n="@@switchMusicOn") Switch music on
+        span
+            a.dropdown-item(*ngIf='musicStatus !== undefined && musicStatus === true',(click)="switchMusic(false)", routerLink="/dashboard")
+                span(i18n="@@switchMusicOff") Switch music off
+        span
+            a.dropdown-item(*ngIf='fanStatus !== undefined && fanStatus !== true',(click)="switchFan(true)", routerLink="/dashboard")
+                span(i18n="@@switchFanOn") Switch fan on
+        span
+            a.dropdown-item(*ngIf='fanStatus !== undefined && fanStatus === true',(click)="switchFan(false)", routerLink="/dashboard")
+                span(i18n="@@switchFanOff") Switch fan off

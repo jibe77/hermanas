@@ -1,0 +1,31 @@
+.row
+    //.col-xl-3.col-md-6
+        sb-card-view-details(
+            link='/dashboard',
+            background='bg-primary'
+        )
+            .card-body The door is closed
+
+    //.col-xl-3.col-md-6
+        sb-card-view-details(
+            link='sign-in',
+            background='bg-warning'
+        )
+            .card-body
+                span(i18n="@@notAuthenticated") Your are not authenticated so you can't control door and accessories.
+
+    //.col-xl-3.col-md-6
+        sb-card-view-details(
+            link='/dashboard',
+            background='bg-success'
+        )
+            .card-body Door is now opened
+    .col-xl-3.col-md-6
+        sb-card-view-details(
+            *ngIf="retryMessageIsDisplayed"
+            link='retry_dashboard',
+            background='bg-danger',
+            (events)="onEvent($event)"
+        )
+            .card-body
+                span(i18n="@@connectionFailed") Connection with chicken coop failed

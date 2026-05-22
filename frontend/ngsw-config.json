@@ -1,0 +1,61 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.csr.html",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-fresh",
+      "urls": [
+        "https://poulailler57.ddns.net:5780/api/v1/door/**",
+        "https://poulailler57.ddns.net:5780/api/v1/light/**",
+        "https://poulailler57.ddns.net:5780/api/v1/music/**",
+        "https://poulailler57.ddns.net:5780/api/v1/fan/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 20,
+        "maxAge": "5m",
+        "timeout": "10s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "api-performance",
+      "urls": [
+        "https://poulailler57.ddns.net:5780/api/v1/weather/**",
+        "https://poulailler57.ddns.net:5780/api/v1/energy/**",
+        "https://poulailler57.ddns.net:5780/api/v1/camera/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 50,
+        "maxAge": "1h",
+        "timeout": "5s",
+        "strategy": "performance"
+      }
+    }
+  ]
+}

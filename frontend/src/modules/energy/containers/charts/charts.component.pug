@@ -1,0 +1,45 @@
+sb-layout-dashboard
+    sb-dashboard-head(title='Energy', i18n-title="@@energy", [hideBreadcrumbs]='true')
+
+    sb-card
+        .card-body
+            span(i18n="@@energyInfo") This board allows you to configure the energy saving parameters.
+
+    sb-card
+        .card-header
+            fa-icon.mr-1([icon]='["fas", "car-battery"]')
+            span(i18n="@@calendarParameters") Calendar parameters
+        .card-body
+            | Number of days before and after winter solstice for eco-mode : 25 days (from 25th of November to 16st of January)
+            | <br/>
+            | Number of days before and after summer solstice for summer-mode : 110 days (from 1st of March to 10th of October)
+            | <br/>
+            | Validate
+    .row
+        .col-lg-6
+            sb-card
+                .card-header
+                    fa-icon.mr-1([icon]='["fas", "car-battery"]')
+                    | Eco mode
+                .card-body
+                    | The computer is not accessible (no wifi).
+        .col-lg-6
+            sb-card
+                .card-header
+                    fa-icon.mr-1([icon]='["fas", "car-battery"]')
+                    | Normal mode
+                .card-body
+                    | The computer is available from the web front-end.
+        .col-lg-6
+            sb-card
+                .card-header
+                    fa-icon.mr-1([icon]='["fas", "car-battery"]')
+                    | Summer mode
+                .card-body
+                    | Duration of fan at sunset : 20 minutes
+                    | <br/>
+                    | Duration of music at sunset : 80 minutes
+                    | <br/>
+                    | Duration of light at sunset : 60 minutes
+                    | <br/>
+                    | Validate

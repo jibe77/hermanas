@@ -1,0 +1,5 @@
+type UserParam @model @auth(rules: [{ allow: groups, groups: ["HERMANAS_USER"], operations: [create, update, delete, read] }]) {
+  id: ID!
+  key: String!
+  value: String!
+}

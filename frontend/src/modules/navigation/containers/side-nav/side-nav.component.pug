@@ -1,0 +1,62 @@
+nav#sidenavAccordion.sb-sidenav.accordion(class="sb-sidenav-dark")
+    .sb-sidenav-menu
+        .nav
+            ng-container
+                .sb-sidenav-menu-heading Menu
+                ng-container
+                    a.nav-link(
+                        routerLink="/dashboard",
+                    )
+                        .sb-nav-link-icon
+                            fa-icon([icon]='["fas", "tachometer-alt"]')
+                        span(i18n="@@dashboard") Dashboard
+                    a.nav-link(
+                        routerLink="/weather",
+                    )
+                        .sb-nav-link-icon
+                            fa-icon([icon]='["fas", "sun"]')
+                        span(i18n="@@weatherMenu") Weather
+                    a.nav-link(
+                        routerLink="/camera",
+                    )
+                        .sb-nav-link-icon
+                            fa-icon([icon]='["fas", "camera"]')
+                        span(i18n="@@webcamMenu") Webcam
+                    a.nav-link(
+                        routerLink="/logs",
+                    )
+                        .sb-nav-link-icon
+                            fa-icon([icon]='["fas", "file-contract"]')
+                        span(i18n="@@logsMenu") Logs
+                .sb-sidenav-menu-heading Config
+                ng-container
+                    a.nav-link(
+                        routerLink="/energy",
+                    )
+                        .sb-nav-link-icon
+                            fa-icon([icon]='["fas", "car-battery"]')
+                        span(i18n="@@energySavingMenu") Energy saving
+                    a.nav-link(
+                        routerLink="/notification",
+                    )
+                        .sb-nav-link-icon
+                            fa-icon([icon]='["fas", "envelope-open-text"]')
+                        span(i18n="@@notificationMenu") Notification
+                    a.nav-link(
+                        routerLink="/music",
+                    )
+                        .sb-nav-link-icon
+                            fa-icon([icon]='["fas", "music"]')
+                        span(i18n="@@playlistMenu") Music playlist
+                    a.nav-link(
+                        routerLink="/system",
+                    )
+                        .sb-nav-link-icon
+                            fa-icon([icon]='["fas", "laptop"]')
+                        span(i18n="@@systemMenu") System
+
+    .sb-sidenav-footer
+        .small(i18n="@@logged_in_as") Logged in as:
+        span(*ngIf='userService.user$ | async as user')
+            span(*ngIf="user.login === 'guest'", i18n="@@guest") Guest
+            span(*ngIf="user.login !== 'guest'") {{user.login}}
