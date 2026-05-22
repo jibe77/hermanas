@@ -279,6 +279,49 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   - Add `@WebMvcTest` for REST layer
   - Add `@DataJpaTest` for repositories
 
+- [ ] **Bundle Angular frontend into the same JAR** (currently deployed separately on another server)
+  - Frontend source: https://github.com/jibe77/hermanasclient
+  - Goal: single JAR deployment containing both backend REST API and Angular SPA
+  - **Approach:**
+    - Move/copy Angular code into a `frontend/` subdirectory of this project
+    - Add `frontend-maven-plugin` (eirslett) to `pom.xml` to download Node/npm locally and run `npm install` + `npm run build`
+    - ⚠️ **IMPORTANT — bind the npm build to the Maven `package` phase** (not `compile` or `test`), so:
+      - `mvn test` / `mvn compile` stay fast and don't trigger the npm build
+      - `mvn package` produces a self-contained JAR with the SPA bundled inside
+      - Concretely: set the `frontend-maven-plugin` executions (`install-node-and-npm`, `npm install`, `npm run build`) to `<phase>generate-resources</phase>` or `<phase>prepare-package</phase>` — both run as part of `mvn package` but not during `mvn test`
+    - Configure `maven-resources-plugin` to copy `frontend/dist/...` into `target/classes/static/` so Spring Boot serves it automatically (also bound to `prepare-package`)
+    - Add a `WebMvcConfigurer` to forward unknown routes to `index.html` (SPA routing — avoids 404 on F5)
+    - Update `SecurityConfig` to permit unauthenticated access to `/`, `/index.html`, static assets (`*.js`, `*.css`, `/assets/**`)
+  - **Pi Zero constraint:** npm build is too heavy for the Pi — must run on dev machine, not on the device. Optionally wrap in a Maven profile (e.g. `-Pwith-frontend`) for extra control, but the `package`-phase binding already keeps `mvn test` fast.
+  - **Tradeoff:** front/back release cycles become coupled (acceptable for single-maintainer personal project), but deployment simplifies to one artifact.
+  - Update `deploy.sh` accordingly once integrated.
+
+- [x] **Decouple authentication/user management from AWS Amplify** — replaced with a self-hosted login form backed by a local user file
+  - ✅ **Backend:**
+    - Created `FileBasedUserDetailsService` loading users from `users.properties` (multi-user, bcrypt). Path configurable via `hermanas.security.users-file` (default `./users.properties`).
+    - `SecurityConfig` refactored: form login on `POST /api/v1/auth/login` returning 200/401 (no HTML redirects), `BCryptPasswordEncoder` bean, `httpBasic()` removed, old `security.user.*` / `security.guest.*` properties removed.
+    - New `AuthRestController`: `GET /api/v1/auth/me` (session check).
+    - **Session model:** form login + session cookie (`JSESSIONID`).
+    - **CSRF re-enabled** via `CookieCsrfTokenRepository.withHttpOnlyFalse()` — token in `XSRF-TOKEN` cookie, echoed by Angular in `X-XSRF-TOKEN` header.
+    - **CORS removed entirely** (bean, `.cors()` call, all `spring-web` CORS imports) — SPA is now same-origin.
+    - CLI added to `HermanasApplication`: `java -jar hermanas.jar --hash [password]` outputs a `{bcrypt}...` line ready for `users.properties`.
+    - `users.properties` added to `.gitignore`.
+    - README updated with full "User management" section (file format, hash generation, full add-user workflow, auth flow).
+  - ✅ **Frontend:**
+    - Removed npm deps: `aws-amplify`, `@aws-amplify/core`, `@aws-amplify/ui-angular`, `zen-observable-ts` → **310 packages uninstalled**.
+    - Deleted `src/aws-exports.js`, `src/app/API.service.ts`, `src/graphql/`.
+    - New `LoginService` (POST `/api/v1/auth/login` & `/logout`); `UserService` rewritten to call `/api/v1/auth/me`.
+    - Custom Angular login form replacing `<amplify-authenticator>` (`login.component.pug` + `.ts`).
+    - `top-nav-user` rewritten: logout button replacing `<amplify-sign-out>`, `Hub.listen` removed.
+    - `auth.interceptor.ts` simplified to `withCredentials: true` (session cookie sent automatically).
+    - `AmplifyAuthenticatorModule` removed from `auth/`, `navigation/`, `dashboard/` modules.
+    - `app-common.module.ts`: `Amplify.configure()` removed.
+    - `dashboard.guard.ts` cleaned of `backEndUser`/`backEndPassword` checks.
+    - Test stubs updated.
+  - ✅ **Validation:** backend tests 71/71 ✅, frontend `ng build` ✅, full `mvn package` produces a 64 MB self-contained JAR.
+  - 🗂 **Leftover cleanup (not in this round):** `frontend/amplify/`, `frontend/amplify.yml`, `frontend/.graphqlconfig.yml` are no longer referenced by the code but kept for now — to be removed in a separate PR.
+  - 🧪 **To validate in runtime:** create `users.properties` next to the JAR (use `--hash`), launch, navigate to `/`, test login → dashboard → logout.
+
 ### Phase 8 : add new features (blocked for the moment, need analysis)
 
 - [ ] **Add debug panel to verify in real time the status of all the buttons (pressed / not pressed) or use actuator to get the status ... not sure yet !**

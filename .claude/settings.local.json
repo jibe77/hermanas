@@ -21,7 +21,22 @@
       "Bash(xargs cat:*)",
       "Bash(mvn test-compile:*)",
       "Bash(mvn dependency:tree:*)",
-      "Bash(mvn versions:display-dependency-updates:*)"
+      "Bash(mvn versions:display-dependency-updates:*)",
+      "Bash(rsync -av --exclude=.git/ --exclude=.idea/ --exclude=.vscode/ --exclude=.angular/ --exclude=.DS_Store --exclude=node_modules/ --exclude=dist/ --exclude=playwright-report/ --exclude=test-results/ --exclude=.claude/ --exclude=CLAUDE.md --exclude=Dockerfile --exclude=nginx.conf --exclude=.dockerignore --exclude=.gitignore /Users/jean-baptisterenaux/GitHub/hermanasclient/ /Users/jean-baptisterenaux/GitHub/hermanas/frontend/)",
+      "Bash(git -C /Users/jean-baptisterenaux/GitHub/hermanas status)",
+      "Bash(git restore *)",
+      "Bash(git check-ignore *)",
+      "Bash(mvn package *)",
+      "Bash(awk *)",
+      "Bash(unzip -l /Users/jean-baptisterenaux/GitHub/hermanas/target/hermanas-0.7.jar)",
+      "Bash(grep -E \"static/\\(fr-FR|en-US\\)/index.html|static/[^/]+\\\\.js$\")",
+      "Bash(java -jar /Users/jean-baptisterenaux/GitHub/hermanas/target/hermanas-0.7.jar --hash \"test-password\")",
+      "Bash(/Users/jean-baptisterenaux/GitHub/hermanas/target/node/node /Users/jean-baptisterenaux/GitHub/hermanas/target/node/npm/bin/npm-cli.js install --no-audit --no-fund)",
+      "Bash(/Users/jean-baptisterenaux/GitHub/hermanas/target/node/node /Users/jean-baptisterenaux/GitHub/hermanas/target/node/node_modules/npm/bin/npm-cli.js install --no-audit --no-fund)",
+      "Bash(/Users/jean-baptisterenaux/GitHub/hermanas/target/node/node /Users/jean-baptisterenaux/GitHub/hermanas/target/node/node_modules/npm/bin/npm-cli.js run build)",
+      "Bash(unzip *)",
+      "Bash(grep -v '^/$')",
+      "Bash(git add *)"
     ],
     "deny": [],
     "ask": []

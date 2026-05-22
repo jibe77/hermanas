@@ -87,7 +87,7 @@ mysql --version
 4. **Run the application**
    ```bash
    # On Raspberry Pi with real GPIO hardware
-   java -jar target/hermanas-0.7.jar
+   java -jar target/hermanas-0.8.jar
 
    # On development machine with fake GPIO
    mvn spring-boot:run -Dspring.profiles.active=gpio-fake
@@ -181,10 +181,74 @@ Configuration values are cached for performance. To reload without restarting:
 curl -X POST http://localhost:8080/api/v1/config/refresh
 ```
 
-## API Documentation
+## User management
 
-### Authentication
-All endpoints require authentication. Default role: `ROLE_USER`
+Authentication is **self-hosted, file-based**. There is no external identity provider.
+
+### Where users are stored
+
+Users live in a `users.properties` file **outside the JAR** (so rebuilds don't overwrite it).
+The path is configurable via `hermanas.security.users-file` in `application.properties`
+(default: `./users.properties`, i.e. next to the JAR).
+
+> **🔒 Never commit this file.** It is already listed in `.gitignore`.
+
+### File format
+
+```properties
+# users.properties
+# Each user has a .password (bcrypt hash, with the {bcrypt} prefix) and an optional .roles entry.
+# Default role if .roles is omitted: USER
+
+alice.password = {bcrypt}$2a$10$abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUVWXYZ012345
+alice.roles    = USER
+
+bob.password = {bcrypt}$2a$10$zyxwvutsrqponmlkjihgfeZYXWVUTSRQPONMLKJIHGFEDCBA9876
+bob.roles    = USER
+```
+
+### Generating a bcrypt hash
+
+The JAR ships with a CLI to generate hashes — no external tools needed:
+
+```bash
+# Interactive (password not shown in shell history)
+java -jar target/hermanas-0.8.jar --hash
+# Password: ********
+# {bcrypt}$2a$10$....
+
+# Inline (avoid in shared terminals — leaves the password in history)
+java -jar target/hermanas-0.8.jar --hash "your-password"
+```
+
+Copy the `{bcrypt}...` line as-is into `users.properties` as the user's `.password` value.
+
+### Adding a user — full workflow
+
+```bash
+# 1. Generate the hash
+java -jar target/hermanas-0.8.jar --hash
+
+# 2. Append to users.properties (next to the JAR, or wherever hermanas.security.users-file points)
+echo "alice.password = {bcrypt}\$2a\$10\$..." >> users.properties
+echo "alice.roles    = USER"                  >> users.properties
+
+# 3. Restart the application (the file is read at startup)
+sudo systemctl restart hermanas
+```
+
+### Authentication flow
+
+- Login: `POST /api/v1/auth/login` with form fields `username` + `password`
+  → returns **200** on success (sets a `JSESSIONID` cookie), **401** on failure
+- Current session: `GET /api/v1/auth/me`
+  → `{ authenticated: false }` when anonymous, `{ authenticated: true, username, roles }` otherwise
+- Logout: `POST /api/v1/auth/logout` → **204**
+
+CSRF is enabled: mutating requests must echo the `XSRF-TOKEN` cookie in the `X-XSRF-TOKEN`
+header. Angular's `HttpClient` does this automatically.
+
+## API Documentation
 
 ### Door Control
 ```bash
@@ -500,7 +564,7 @@ mvn test -Dgroups=image_processing
 
 5. **Deploy application**
    ```bash
-   scp target/hermanas-0.7.jar pi@raspberrypi:/home/pi/
+   scp target/hermanas-0.8.jar pi@raspberrypi:/home/pi/
    ```
 
 6. **Create systemd service**
@@ -516,7 +580,7 @@ mvn test -Dgroups=image_processing
    [Service]
    Type=simple
    User=pi
-   ExecStart=/usr/bin/java -jar /home/pi/hermanas-0.7.jar
+   ExecStart=/usr/bin/java -jar /home/pi/hermanas-0.8.jar
    SuccessExitStatus=143
    Restart=on-failure
    RestartSec=10
@@ -545,7 +609,7 @@ For production, externalize sensitive configuration:
 sudo nano /etc/hermanas/application.properties
 
 # Run with external config
-java -jar hermanas-0.7.jar --spring.config.location=/etc/hermanas/application.properties
+java -jar hermanas-0.8.jar --spring.config.location=/etc/hermanas/application.properties
 ```
 
 ## Monitoring

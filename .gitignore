@@ -30,3 +30,59 @@ build/
 ### VS Code ###
 .vscode/
 /.mvn/
+
+### Secrets — must NEVER be committed ###
+# Local users file (bcrypt-hashed passwords). See README "User management".
+users.properties
+/users.properties
+
+### Angular frontend (frontend/) ###
+# compiled output
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+frontend/bazel-out/
+
+# dependencies
+frontend/node_modules/
+
+# Angular cache
+frontend/.angular/
+
+# profiling files
+frontend/chrome-profiler-events*.json
+frontend/speed-measure-plugin*.json
+
+# misc
+frontend/.sass-cache/
+frontend/connect.lock
+frontend/coverage/
+frontend/libpeerconnection.log
+frontend/npm-debug.log
+frontend/yarn-error.log
+frontend/testem.log
+frontend/typings/
+
+# test outputs
+frontend/playwright-report/
+frontend/test-results/
+
+# system files inside frontend
+frontend/**/.DS_Store
+frontend/**/Thumbs.db
+
+# Amplify (kept for now, to be removed later — see Phase 7)
+frontend/amplify/#current-cloud-backend
+frontend/amplify/.config/local-*
+frontend/amplify/logs
+frontend/amplify/mock-data
+frontend/amplify/backend/amplify-meta.json
+frontend/amplify/backend/awscloudformation
+frontend/amplify/backend/.temp
+frontend/aws-exports.js
+frontend/awsconfiguration.json
+frontend/amplifyconfiguration.json
+frontend/amplify-build-config.json
+frontend/amplify-gradle-config.json
+frontend/amplifytools.xcconfig
+frontend/.secret-*

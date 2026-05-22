@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.7</version>
+	<version>0.8</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
@@ -31,6 +31,13 @@
 
 		<bootstrap.version>5.3.3</bootstrap.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+
+		<!-- Frontend build (Angular) -->
+		<frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
+		<node.version>v20.19.0</node.version>
+		<npm.version>10.8.2</npm.version>
+		<frontend.src.dir>${project.basedir}/frontend</frontend.src.dir>
+		<frontend.build.dir>${frontend.src.dir}/dist/hermanas-client</frontend.build.dir>
 	</properties>
 
 	<dependencies>
@@ -238,6 +245,88 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<!--
+			Builds the Angular frontend and bundles it into the JAR under static/.
+			Active by default. Skip with: mvn package -P!with-frontend
+			The npm build is bound to the `package` phase only — `mvn test` / `mvn compile`
+			do not trigger it.
+		-->
+		<profile>
+			<id>with-frontend</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.eirslett</groupId>
+						<artifactId>frontend-maven-plugin</artifactId>
+						<version>${frontend-maven-plugin.version}</version>
+						<configuration>
+							<workingDirectory>${frontend.src.dir}</workingDirectory>
+							<installDirectory>${project.build.directory}</installDirectory>
+						</configuration>
+						<executions>
+							<execution>
+								<id>install-node-and-npm</id>
+								<goals>
+									<goal>install-node-and-npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<nodeVersion>${node.version}</nodeVersion>
+									<npmVersion>${npm.version}</npmVersion>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm-install</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>ci</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm-build</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<arguments>run build</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-resources-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-frontend-to-static</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+									<resources>
+										<resource>
+											<directory>${frontend.build.dir}</directory>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<!--repositories>
 		<repository>

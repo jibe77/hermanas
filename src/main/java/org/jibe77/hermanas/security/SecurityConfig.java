@@ -2,7 +2,6 @@ package org.jibe77.hermanas.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,15 +9,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableAutoConfiguration
@@ -28,38 +22,35 @@ public class SecurityConfig
 {
     public static final String ROLE_USER = "USER";
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
-    @Value("${security.user.name}")
-    private String user;
-    @Value("${security.user.password}")
-    private String password;
 
     /**
      * Configures HTTP security using the modern SecurityFilterChain approach.
-     * See doc about configuration: https://www.baeldung.com/spring-security-expressions
      *
-     * <h3>CSRF Protection Decision</h3>
-     * <p>CSRF protection is disabled for the following reasons:</p>
-     * <ul>
-     *   <li>This is a stateless REST API consumed by a separate SPA (https://www.hermanas.fr)</li>
-     *   <li>Primary authentication uses HTTP Basic (credentials explicitly sent in headers, not cookies)</li>
-     *   <li>The frontend makes explicit API calls with credentials, not browser-automated requests</li>
-     *   <li>CORS is properly configured with allowed origins only</li>
-     * </ul>
-     * <p><strong>Note:</strong> Form login is enabled for manual browser access. If browser-based
-     * session management becomes the primary auth method, CSRF should be re-enabled.</p>
+     * <h3>Authentication model</h3>
+     * <p>Form-based login backed by a file-based {@link FileBasedUserDetailsService}.
+     * Successful login establishes a session cookie; the Angular SPA, served from the
+     * same JAR, sends that cookie automatically on subsequent requests.</p>
      *
-     * @param http the HttpSecurity to configure
-     * @return the configured SecurityFilterChain
-     * @throws Exception if configuration fails
+     * <h3>CSRF Protection</h3>
+     * <p>CSRF is <strong>enabled</strong> because authentication relies on a session cookie
+     * (cookies are automatically attached by the browser, hence vulnerable to CSRF).
+     * The token is exposed via a cookie ({@code XSRF-TOKEN}) readable by JavaScript so the
+     * SPA can echo it in the {@code X-XSRF-TOKEN} header on mutating requests.</p>
+     *
+     * <h3>CORS</h3>
+     * <p>CORS configuration has been removed: the SPA is bundled into the same JAR and
+     * served from the same origin, so cross-origin handling is no longer needed.</p>
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
     {
         logger.info("Configure authorizations.");
-        // CSRF disabled - see method JavaDoc for reasoning
-        http.cors().and().headers().frameOptions().disable().and().csrf().disable().authorizeRequests()
-                // Allow all OPTIONS requests for CORS preflight
-                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+        http
+                .headers().frameOptions().disable()
+                .and()
+                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .and()
+                .authorizeRequests()
                 // list of allowed urls for GUEST user - updated to /api/v1/* paths
                 .antMatchers(HttpMethod.GET,
                         "/api/v1/light/status",
@@ -104,50 +95,63 @@ public class SecurityConfig
                         "/swagger-ui/**",
                         "/v3/api-docs/swagger-config",
                         "/").permitAll()
+
+                // Angular SPA static assets (bundled into the JAR under static/)
+                // Login UI itself must be reachable without auth, plus JS/CSS/assets
+                // that the browser pulls before the user is authenticated.
+                .antMatchers(HttpMethod.GET,
+                        "/index.html",
+                        "/fr-FR/",
+                        "/fr-FR/index.html",
+                        "/en-US/",
+                        "/en-US/index.html",
+                        "/*.js",
+                        "/*.css",
+                        "/*.map",
+                        "/*.ico",
+                        "/*.png",
+                        "/*.svg",
+                        "/*.woff",
+                        "/*.woff2",
+                        "/*.ttf",
+                        "/fr-FR/**/*.js",
+                        "/fr-FR/**/*.css",
+                        "/fr-FR/**/*.map",
+                        "/fr-FR/assets/**",
+                        "/en-US/**/*.js",
+                        "/en-US/**/*.css",
+                        "/en-US/**/*.map",
+                        "/en-US/assets/**",
+                        "/assets/**",
+                        "/ngsw-worker.js",
+                        "/ngsw.json",
+                        "/manifest.webmanifest").permitAll()
                 .antMatchers("/api/v1/stomp").permitAll()
+
+                // login/logout/me endpoints must be reachable without auth
+                .antMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/v1/auth/me").permitAll()
 
                 // user is allowed to call all the services
                 .antMatchers("/**").hasRole(ROLE_USER)
                 .and()
                 .formLogin()
-                .permitAll()
+                    .loginProcessingUrl("/api/v1/auth/login")
+                    .usernameParameter("username")
+                    .passwordParameter("password")
+                    .successHandler((req, res, auth) -> res.setStatus(200))
+                    .failureHandler((req, res, ex) -> res.setStatus(401))
                 .and()
                 .logout()
-                .permitAll()
-                .and()
-                .httpBasic();
+                    .logoutUrl("/api/v1/auth/logout")
+                    .logoutSuccessHandler((req, res, auth) -> res.setStatus(204));
 
         return http.build();
     }
 
-    /**
-     * Configures the in-memory user details service.
-     * For the moment, the password are stored in plain text.
-     * If we need to encrypt them, see
-     * https://info.michael-simons.eu/2018/01/13/spring-security-5-new-password-storage-format/
-     *
-     * @return the configured InMemoryUserDetailsManager
-     */
     @Bean
-    public InMemoryUserDetailsManager userDetailsService() {
-        logger.info("Init security.");
-        logger.info("Configure user and password for main user");
-        UserDetails userDetails = User.withUsername(user)
-                .password("{noop}" + password)
-                .roles(ROLE_USER)
-                .build();
-        return new InMemoryUserDetailsManager(userDetails);
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://www.hermanas.fr", "https://dev.d2ylqblswoz84y.amplifyapp.com", "http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
