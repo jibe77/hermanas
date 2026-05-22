@@ -33,7 +33,7 @@
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 
 		<!-- Frontend build (Angular) -->
-		<frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
+		<frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
 		<node.version>v20.19.0</node.version>
 		<npm.version>10.8.2</npm.version>
 		<frontend.src.dir>${project.basedir}/frontend</frontend.src.dir>
