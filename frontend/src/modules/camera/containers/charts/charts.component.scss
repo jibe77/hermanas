@@ -1,1 +1,48 @@
 @import 'styles/variables.scss';
+
+.photo-dir {
+    cursor: pointer;
+}
+
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.5rem;
+}
+
+.photo-thumb {
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f8f9fa;
+    transition: border-color 0.15s;
+}
+
+.photo-thumb:hover {
+    border-color: rgba(13, 110, 253, 0.2);
+}
+
+.photo-thumb.selected {
+    border-color: #0d6efd;
+}
+
+.photo-thumb img {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    display: block;
+}
+
+.photo-name {
+    font-size: 0.75rem;
+    padding: 0.25rem;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.photo-large {
+    max-height: 70vh;
+}

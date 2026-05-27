@@ -1,15 +1,6 @@
 {
     "arrowParens": "avoid",
     "endOfLine": "lf",
-    "overrides": [
-        {
-            "files": "*.pug",
-            "options": {
-                "attributeSeparator": "always",
-                "parser": "pug"
-            }
-        }
-    ],
     "printWidth": 100,
     "proseWrap": "preserve",
     "semi": true,

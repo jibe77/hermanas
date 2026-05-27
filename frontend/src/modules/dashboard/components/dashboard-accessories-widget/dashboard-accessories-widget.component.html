@@ -1,7 +1,7 @@
 <sb-card
     ><div class="card-header">
         <fa-icon class="mr-1" [icon]='["fas", "fan"]'></fa-icon><span i18n="@@accessories">Accessories</span>
-        <div class="float-right"><sb-dashboard-accessories-action [lightStatus]="musicStatus"></sb-dashboard-accessories-action></div>
+        <div class="float-end"><sb-dashboard-accessories-action [lightStatus]="lightStatus" [fanStatus]="fanStatus" [musicStatus]="musicStatus"></sb-dashboard-accessories-action></div>
     </div>
     <div class="card-body">
         <div class="spinner-border" *ngIf="(musicStatus === undefined &amp;&amp; musicStatusOnError === false) || (lightStatus === undefined &amp;&amp; lightStatusOnError === false) || (fanStatus === undefined &amp;&amp; fanStatusOnError === false)" role="status"><span class="sr-only" i18n="@@loading">Loading...</span></div>

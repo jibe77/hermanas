@@ -1,0 +1,40 @@
+@import 'styles/variables.scss';
+
+.log-viewer {
+    max-height: 70vh;
+    overflow: auto;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 0.75rem;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    white-space: pre;
+    margin: 0;
+
+    .log-error {
+        color: #ff6b6b;
+        display: block;
+    }
+    .log-warn {
+        color: #ffd166;
+        display: block;
+    }
+    .log-info {
+        color: #8ecae6;
+        display: block;
+    }
+    .log-debug {
+        color: #adb5bd;
+        display: block;
+    }
+    .log-trace {
+        color: #6c757d;
+        display: block;
+    }
+    .log-other {
+        color: #d4d4d4;
+        display: block;
+    }
+}

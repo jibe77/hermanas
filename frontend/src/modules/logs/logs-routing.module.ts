@@ -7,26 +7,26 @@ import { SBRouteData } from '@modules/navigation/models';
 import { LogsModule } from './logs.module';
 
 /* Containers */
-import * as chartsContainers from './containers';
+import * as logsContainers from './containers';
 
 /* Guards */
-import * as chartsGuards from './guards';
+import { AuthGuard } from '@modules/auth/guards';
 
 /* Routes */
 export const ROUTES: Routes = [
     {
         path: '',
-        canActivate: [],
-        component: chartsContainers.ChartsComponent,
+        canActivate: [AuthGuard],
+        component: logsContainers.LogsComponent,
         data: {
-            title: 'Charts - Hermanas',
+            title: 'Logs - Hermanas',
             breadcrumbs: [
                 {
                     text: 'Dashboard',
                     link: '/dashboard',
                 },
                 {
-                    text: 'Charts',
+                    text: 'Logs',
                     active: true,
                 },
             ],

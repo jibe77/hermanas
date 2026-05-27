@@ -7,6 +7,7 @@ import org.jibe77.hermanas.service.abstract_model.Status;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.service.gpio.GpioHermanasService;
 import org.jibe77.hermanas.service.light.LightService;
+import org.jibe77.hermanas.websocket.ButtonNotificationController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -20,9 +21,11 @@ class BirdhouseButtonControllerTest {
 
     LightService lightService = Mockito.mock(LightService.class);
 
+    ButtonNotificationController buttonNotificationController = Mockito.mock(ButtonNotificationController.class);
+
     @BeforeEach
     public void setup() {
-        birdhouseButtonService = new BirdhouseButtonService(gpioHermanasService, lightService);
+        birdhouseButtonService = new BirdhouseButtonService(gpioHermanasService, lightService, buttonNotificationController);
     }
 
     @Test

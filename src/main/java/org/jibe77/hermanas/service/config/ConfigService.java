@@ -92,6 +92,9 @@ public class ConfigService {
     @Value("${wifi.disabled.regular}")
     boolean wifiDisabledInRegularMode;
 
+    @Value("${music.playlist.selected:}")
+    String selectedPlaylist;
+
     ParameterRepository parameterRepository;
 
     @Autowired(required = false)
@@ -625,5 +628,32 @@ public class ConfigService {
     @CacheEvict(value = "wifiDisabledInRegularMode")
     public void setWifiDisabledInRegularMode(boolean wifiDisabledInRegularMode) {
         setConfigValue("wifi.disabled.regular", wifiDisabledInRegularMode, null);
+    }
+
+    // ============================================================================
+    // Music Playlist Configuration
+    // ============================================================================
+
+    /**
+     * Gets the currently selected music playlist (sub-directory name of music.path.mix).
+     * Empty string means "no specific playlist" — caller can fall back to all songs.
+     *
+     * @return playlist name or empty string
+     */
+    @Cacheable(value = {"selectedPlaylist"})
+    public String getSelectedPlaylist() {
+        return getConfigValue("music.playlist.selected", selectedPlaylist == null ? "" : selectedPlaylist, s -> s);
+    }
+
+    /**
+     * Sets the currently selected playlist. The value is the sub-directory name
+     * inside music.path.mix (e.g. "classic"). Empty string means "no selection".
+     * The MusicService is responsible for validating that the directory exists.
+     *
+     * @param playlist sub-directory name, or empty/null for "no selection"
+     */
+    @CacheEvict(value = "selectedPlaylist")
+    public void setSelectedPlaylist(String playlist) {
+        setConfigValue("music.playlist.selected", playlist == null ? "" : playlist, null);
     }
 }

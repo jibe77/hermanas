@@ -1,22 +1,10 @@
-const concurrently = require('concurrently');
+const { spawn } = require('child_process');
 const port = process.env.PORT || 4200;
 
-concurrently([
-    { command: 'node scripts/pug-watch.js', name: 'PUG_WATCH', prefixColor: 'bgGreen.bold' },
-    {
-        command: `npm run ng -- serve --configuration=fr --port ${port} --open`,
-        name: 'NG_SERVE',
-        prefixColor: 'bgBlue.bold',
-    }
-], {
-    prefix: 'name',
-    killOthers: ['failure', 'success'],
-}).then(success, failure);
+const child = spawn(
+    'npm',
+    ['run', 'ng', '--', 'serve', '--configuration=fr', `--port=${port}`, '--open'],
+    { stdio: 'inherit' }
+);
 
-function success() {
-    console.log('Success');
-}
-
-function failure() {
-    console.log('Failure');
-}
+child.on('exit', code => process.exit(code));

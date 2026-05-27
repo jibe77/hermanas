@@ -18,7 +18,15 @@ export class NavigationService {
     readonly routeData: Signal<SBRouteData> = this._routeData.asReadonly();
     readonly currentURL: Signal<string> = this._currentURL.asReadonly();
 
+    private readonly _sideNavVisible$: Observable<boolean>;
+    private readonly _routeData$: Observable<SBRouteData>;
+    private readonly _currentURL$: Observable<string>;
+
     constructor(public route: ActivatedRoute, public router: Router) {
+        this._sideNavVisible$ = toObservable(this._sideNavVisible);
+        this._routeData$ = toObservable(this._routeData);
+        this._currentURL$ = toObservable(this._currentURL);
+
         this.router.events
             .pipe(filter(event => event instanceof ChildActivationEnd))
             .subscribe(event => {
@@ -33,15 +41,15 @@ export class NavigationService {
 
     // Observable getters for backward compatibility
     sideNavVisible$(): Observable<boolean> {
-        return toObservable(this._sideNavVisible);
+        return this._sideNavVisible$;
     }
 
     routeData$(): Observable<SBRouteData> {
-        return toObservable(this._routeData);
+        return this._routeData$;
     }
 
     currentURL$(): Observable<string> {
-        return toObservable(this._currentURL);
+        return this._currentURL$;
     }
 
     toggleSideNav(visibility?: boolean) {

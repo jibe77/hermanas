@@ -10,17 +10,23 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.io.IOUtils;
 import org.jibe77.hermanas.service.camera.CameraService;
+import org.jibe77.hermanas.service.camera.PhotosService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Path;
 
 @RestController
 @RequestMapping("/api/v1/camera")
@@ -28,9 +34,11 @@ import java.net.URL;
 public class CameraRestController {
 
     CameraService cameraService;
+    private final PhotosService photosService;
 
-    public CameraRestController(CameraService cameraService) {
+    public CameraRestController(CameraService cameraService, PhotosService photosService) {
         this.cameraService = cameraService;
+        this.photosService = photosService;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CameraRestController.class);
@@ -43,7 +51,7 @@ public class CameraRestController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Picture captured successfully",
-                    content = @Content(mediaType = "image/png")
+                    content = @Content(mediaType = "image/jpeg")
             ),
             @ApiResponse(
                     responseCode = "500",
@@ -51,7 +59,7 @@ public class CameraRestController {
                     content = @Content
             )
     })
-    @GetMapping(value = "/takePicture", produces = MediaType.IMAGE_PNG_VALUE)
+    @GetMapping(value = "/takePicture", produces = MediaType.IMAGE_JPEG_VALUE)
     public @ResponseBody byte[] takePicture(
             @Parameter(description = "Use high quality settings for picture capture", example = "false")
             @RequestParam(defaultValue = "false") String highQuality) throws IOException, InterruptedException {
@@ -159,5 +167,64 @@ public class CameraRestController {
     @GetMapping("/closingRate")
     public int closingRate() {
         return cameraService.getClosingRate();
+    }
+
+    @Operation(
+            summary = "List entries inside the photos directory",
+            description = "Returns the directories and image files at the given relative path " +
+                    "(omit `path` for the root). Only .jpg / .jpeg / .png files are returned; " +
+                    "directory traversal is rejected."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listing returned"),
+            @ApiResponse(responseCode = "400", description = "Invalid path (traversal or non-directory)")
+    })
+    @GetMapping("/photos")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> listPhotos(
+            @Parameter(description = "Relative path inside the photos directory, e.g. '2026/05'")
+            @RequestParam(value = "path", required = false) String path) {
+        try {
+            return ResponseEntity.ok(photosService.list(path));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(java.util.Collections.singletonMap("error", e.getMessage()));
+        } catch (IOException e) {
+            logger.warn("Failed to list photos at '{}'", path, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @Operation(
+            summary = "Download a picture from the photos archive",
+            description = "Streams the requested image file (.jpg / .jpeg / .png) inside the " +
+                    "photos directory. Authentication is required to keep the archive private."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Image streamed",
+                    content = @Content(mediaType = "image/*")),
+            @ApiResponse(responseCode = "400", description = "Invalid path"),
+            @ApiResponse(responseCode = "404", description = "File not found")
+    })
+    @GetMapping("/photos/file")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> downloadPhoto(
+            @Parameter(description = "Relative path of the picture inside the photos directory")
+            @RequestParam("path") String path) {
+        try {
+            Path file = photosService.resolveImageFile(path);
+            String name = file.getFileName().toString().toLowerCase();
+            MediaType mediaType = name.endsWith(".png") ? MediaType.IMAGE_PNG : MediaType.IMAGE_JPEG;
+            Resource resource = new FileSystemResource(file);
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .header(HttpHeaders.CACHE_CONTROL, "private, max-age=3600")
+                    .body(resource);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(java.util.Collections.singletonMap("error", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Collections.singletonMap("error", e.getMessage()));
+        }
     }
 }

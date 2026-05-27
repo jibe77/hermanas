@@ -1,6 +1,6 @@
 <li class="nav-item dropdown dropdown-user no-caret" ngbDropdown placement="bottom-right" display="dynamic">
     <a class="nav-link dropdown-toggle" id="userDropdown" ngbDropdownToggle data-cy="userMenu" role="button" aria-haspopup="true" aria-expanded="false"><span class="flag-icon flag-icon-gb flag-icon-squared" *ngIf="siteLanguage === 'English'"></span><span class="flag-icon flag-icon-fr flag-icon-squared" *ngIf="siteLanguage === 'Français'"></span></a>
-    <div class="dropdown-menu dropdown-menu-right" ngbDropdownMenu aria-labelledby="dropdownUser">
+    <div class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="dropdownUser">
         <a class="dropdown-item" href="/index.html?lang_redirect=en"><span class="flag-icon flag-icon-gb flag-icon-squared"></span><span>{{' '}}</span><span i18n="@@english">English</span></a
         ><a class="dropdown-item" href="/index.html?lang_redirect=fr"><span class="flag-icon flag-icon-fr flag-icon-squared"></span><span>{{' '}}</span><span i18n="@@french">French</span></a>
     </div>

@@ -30,17 +30,16 @@ export class LoginComponent implements OnInit {
         this.loginForm = this.fb.group({
             username: ['', Validators.required],
             password: ['', Validators.required],
+            rememberMe: [true],
         });
     }
 
     ngOnInit(): void {
-        // If the session is already valid, skip the form.
-        this.userService.checkAuthState().then(() => {
-            const current = this.userService.getCurrentUser();
-            if (current.authState === AuthState.SignedIn) {
-                this.router.navigate(['dashboard']);
-            }
-        });
+        // APP_INITIALIZER already resolved /auth/me before bootstrap, so this is a synchronous
+        // read — no race with the HTTP probe and no extra round-trip.
+        if (this.userService.getCurrentUser().authState === AuthState.SignedIn) {
+            this.goToDashboard();
+        }
     }
 
     async onSubmit(): Promise<void> {
@@ -49,14 +48,29 @@ export class LoginComponent implements OnInit {
         }
         this.submitting = true;
         this.errorMessage = '';
-        const { username, password } = this.loginForm.value;
-        const ok = await this.loginService.login(username, password);
+        const { username, password, rememberMe } = this.loginForm.value;
+        const outcome = await this.loginService.login(username, password, !!rememberMe);
         this.submitting = false;
-        if (ok) {
-            this.router.navigate(['dashboard']);
+        if (outcome === 'ok') {
+            this.goToDashboard();
+        } else if (outcome === 'pending-validation') {
+            this.errorMessage = $localize`:@@signinPendingValidation:Votre compte est en attente de validation par un administrateur.`;
         } else {
             this.errorMessage = $localize`:@@signinFailed:Identifiant ou mot de passe invalide.`;
         }
         this.cdr.markForCheck();
+    }
+
+    private goToDashboard(): void {
+        this.router
+            .navigateByUrl('/dashboard')
+            .then(success => {
+                if (!success) {
+                    window.location.href = 'dashboard';
+                }
+            })
+            .catch(() => {
+                window.location.href = 'dashboard';
+            });
     }
 }

@@ -10,14 +10,15 @@ import { WebSocketService } from './websocket.service';
 
 // Create factory function to use LoggerService instance
 export function createProgressStompConfig(logger: LoggerService): RxStompConfig {
+    const brokerURL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${environment.wsUrl}`;
     return {
         webSocketFactory: () => {
             logger.info(
                 'Connecting to progress STOMP broker',
-                { wsUrl: environment.wsUrl },
+                { wsUrl: brokerURL },
                 'ProgressWebsocketService'
             );
-            return new WebSocket(environment.wsUrl);
+            return new WebSocket(brokerURL);
         },
     };
 }

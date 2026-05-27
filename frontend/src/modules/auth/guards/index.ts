@@ -1,5 +1,3 @@
-import { AuthGuard } from './auth.guard';
-
-export const guards = [AuthGuard];
+export const guards = [];
 
 export * from './auth.guard';

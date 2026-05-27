@@ -41,7 +41,7 @@ export class TopNavUserComponent implements OnInit, OnDestroy {
 
     async logout(): Promise<void> {
         await this.loginService.logout();
-        this.router.navigate(['/auth/login']);
+        this.router.navigate(['/dashboard']);
         this.changeDetectorRef.markForCheck();
     }
 

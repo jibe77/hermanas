@@ -9,16 +9,13 @@ import { AppCommonModule } from '@common/app-common.module';
 import { NavigationModule } from '@modules/navigation/navigation.module';
 
 /* Components */
-import * as chartsComponents from './components';
+import * as logsComponents from './components';
 
 /* Containers */
-import * as chartsContainers from './containers';
-
-/* Guards */
-import * as chartsGuards from './guards';
+import * as logsContainers from './containers';
 
 /* Services */
-import * as chartsServices from './services';
+import * as logsServices from './services';
 
 @NgModule({
     imports: [
@@ -29,8 +26,8 @@ import * as chartsServices from './services';
         AppCommonModule,
         NavigationModule,
     ],
-    providers: [...chartsServices.services, ...chartsGuards.guards],
-    declarations: [...chartsContainers.containers, ...chartsComponents.components],
-    exports: [...chartsContainers.containers, ...chartsComponents.components],
+    providers: [...logsServices.services],
+    declarations: [...logsContainers.containers, ...logsComponents.components],
+    exports: [...logsContainers.containers, ...logsComponents.components],
 })
 export class LogsModule {}

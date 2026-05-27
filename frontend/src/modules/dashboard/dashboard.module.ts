@@ -15,9 +15,6 @@ import * as dashboardComponents from './components';
 /* Containers */
 import * as dashboardContainers from './containers';
 
-/* Guards */
-import * as dashboardGuards from './guards';
-
 /* Services */
 import * as dashboardServices from './services';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -35,7 +32,6 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@a
     ],
     providers: [
         ...dashboardServices.services,
-        ...dashboardGuards.guards,
         { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
         provideHttpClient(withInterceptorsFromDi()),
     ],

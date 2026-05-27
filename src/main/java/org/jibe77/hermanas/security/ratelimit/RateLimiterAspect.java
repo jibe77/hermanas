@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Designed to be lightweight for Raspberry Pi Zero deployment.
  */
 @Aspect
-@Component
+@Component("hermanasRateLimiterAspect")
 public class RateLimiterAspect {
     private static final Logger logger = LoggerFactory.getLogger(RateLimiterAspect.class);
 

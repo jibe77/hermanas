@@ -1,1 +1,1 @@
-export * from './charts.model';
+export {};

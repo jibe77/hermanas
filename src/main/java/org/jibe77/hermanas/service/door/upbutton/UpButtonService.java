@@ -4,6 +4,9 @@ import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalStateChangeEvent;
 import org.jibe77.hermanas.service.door.servo.ServoMotorService;
 import org.jibe77.hermanas.service.gpio.GpioHermanasService;
+import org.jibe77.hermanas.websocket.Button;
+import org.jibe77.hermanas.websocket.ButtonNotificationController;
+import org.jibe77.hermanas.websocket.ButtonStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +21,8 @@ public class UpButtonService {
 
     final GpioHermanasService gpioHermanasService;
 
+    final ButtonNotificationController buttonNotificationController;
+
     @Value("${door.button.up.gpio.address}")
     private int doorButtonUpGpioAddress;
 
@@ -27,9 +32,12 @@ public class UpButtonService {
 
     private static final Logger logger = LoggerFactory.getLogger(UpButtonService.class);
 
-    public UpButtonService(ServoMotorService servoMotorService, GpioHermanasService gpioHermanasService) {
+    public UpButtonService(ServoMotorService servoMotorService,
+                           GpioHermanasService gpioHermanasService,
+                           ButtonNotificationController buttonNotificationController) {
         this.servoMotorService = servoMotorService;
         this.gpioHermanasService = gpioHermanasService;
+        this.buttonNotificationController = buttonNotificationController;
     }
 
     @PostConstruct
@@ -43,13 +51,16 @@ public class UpButtonService {
     }
 
     private void manageEvent(DigitalStateChangeEvent event) {
-        if (event.state().isHigh()) {
+        boolean pressed = event.state().isHigh();
+        if (pressed) {
             logger.info("Door has reached the up, stop servomotor now !");
             this.setUpButtonHasBeenPressed(true);
             servoMotorService.stop();
         } else if (event.state().isLow()) {
             logger.info("Up button is not pressed anymore.");
         }
+        buttonNotificationController.notify(
+                new ButtonStatus(Button.UP, pressed, System.currentTimeMillis()));
     }
 
     public synchronized boolean isUpButtonPressed() {

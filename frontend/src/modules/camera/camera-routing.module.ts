@@ -10,23 +10,23 @@ import { CameraModule } from './camera.module';
 import * as chartsContainers from './containers';
 
 /* Guards */
-import * as chartsGuards from './guards';
+import { AuthGuard } from '@modules/auth/guards';
 
 /* Routes */
 export const ROUTES: Routes = [
     {
         path: '',
-        canActivate: [],
+        canActivate: [AuthGuard],
         component: chartsContainers.ChartsComponent,
         data: {
-            title: 'Charts - Hermanas',
+            title: 'Camera - Hermanas',
             breadcrumbs: [
                 {
                     text: 'Dashboard',
                     link: '/dashboard',
                 },
                 {
-                    text: 'Charts',
+                    text: 'Camera',
                     active: true,
                 },
             ],

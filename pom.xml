@@ -20,7 +20,7 @@
 		<java.version>11</java.version>
 		<!-- pi4j : les versions au dessus de la 2.4.0 ne fonctionnent pas sur le pi 0 avec java 11 -->
 		<pi4j.version>2.4.0</pi4j.version>
-		<mariadb-java-client.version>3.5.2</mariadb-java-client.version>
+		<mariadb-java-client.version>3.5.8</mariadb-java-client.version>
 		<springdoc-openapi-ui.version>1.8.0</springdoc-openapi-ui.version>
 		<lib-sunrise-sunset.version>1.1.2</lib-sunrise-sunset.version>
 		<picam.version>2.0.2</picam.version>
@@ -197,6 +197,17 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- Resilience4j (stay on 1.7.x: 2.x requires Java 17 / Spring Boot 3) -->
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot2</artifactId>
+			<version>1.7.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
 		</dependency>
 	</dependencies>
 

@@ -1,12 +1,53 @@
-<sb-layout-dashboard
-    ><sb-dashboard-head title="Camera" i18n-title="@@camera" [hideBreadcrumbs]="true"></sb-dashboard-head
-    ><sb-card
-        ><div class="card-body"><span i18n="@@cameraInfo">This board allows you to browse through the history of the pictures.</span></div></sb-card
-    ><sb-card
-        ><div class="card-header"><fa-icon class="mr-1" [icon]='["fas", "camera"]'></fa-icon>Pictures browser</div>
-        <div class="card-body">Subfolders of pictures folder</div></sb-card
-    ><sb-card
-        ><div class="card-header"><fa-icon class="mr-1" [icon]='["fas", "camera"]'></fa-icon>Pictures viewer</div>
-        <div class="card-body">Selected picture</div></sb-card
-    ></sb-layout-dashboard
->
+<sb-layout-dashboard>
+    <sb-dashboard-head title="Camera" i18n-title="@@camera" [hideBreadcrumbs]="true"></sb-dashboard-head>
+    <sb-card>
+        <div class="card-body"><span i18n="@@cameraInfo">This board allows you to browse through the history of the pictures.</span></div>
+    </sb-card>
+
+    <sb-card>
+        <div class="card-header">
+            <fa-icon class="me-1" [icon]='["fas", "camera"]'></fa-icon>
+            <nav aria-label="breadcrumb" class="d-inline-block">
+                <ol class="breadcrumb mb-0">
+                    <li *ngFor="let c of crumbs; let last = last" class="breadcrumb-item" [class.active]="last">
+                        <a *ngIf="!last" href="javascript:void(0)" (click)="goTo(c.path)">{{c.label}}</a>
+                        <span *ngIf="last">{{c.label}}</span>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+        <div class="card-body">
+            <div *ngIf="loading" class="text-muted">
+                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                <span i18n="@@cameraLoading">Loading…</span>
+            </div>
+
+            <div *ngIf="!loading && directories.length === 0 && files.length === 0" class="text-muted" i18n="@@cameraEmpty">This folder is empty.</div>
+
+            <ul *ngIf="!loading && directories.length > 0" class="list-group list-group-flush mb-3">
+                <li *ngFor="let d of directories" class="list-group-item list-group-item-action photo-dir" (click)="enterDir(d)">
+                    <fa-icon class="me-2 text-warning" [icon]='["fas", "folder"]'></fa-icon>{{d.name}}
+                </li>
+            </ul>
+
+            <div *ngIf="!loading && files.length > 0" class="photo-grid">
+                <div *ngFor="let f of files" class="photo-thumb" [class.selected]="selected?.name === f.name" (click)="selectFile(f)" [title]="f.name">
+                    <img [src]="f.url" loading="lazy" alt="" />
+                    <div class="photo-name">{{f.name}}</div>
+                </div>
+            </div>
+        </div>
+    </sb-card>
+
+    <sb-card *ngIf="selected">
+        <div class="card-header">
+            <fa-icon class="me-1" [icon]='["fas", "image"]'></fa-icon>{{selected.name}}
+            <button type="button" class="btn btn-sm btn-outline-secondary float-end" (click)="clearSelection()" i18n-title="@@cameraClose" title="Close">
+                <fa-icon [icon]='["fas", "times"]'></fa-icon>
+            </button>
+        </div>
+        <div class="card-body text-center">
+            <img [src]="selected.url" alt="" class="img-fluid photo-large" />
+        </div>
+    </sb-card>
+</sb-layout-dashboard>

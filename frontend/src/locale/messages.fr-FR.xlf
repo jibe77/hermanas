@@ -559,11 +559,163 @@
             </trans-unit>
             <trans-unit id="signin" datatype="html">
                 <source>Login / Sign up</source>
-                <target>Connexion / Inscription</target>
+                <target>Connexion</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/modules/navigation/components/top-nav-user/top-nav-user.component.html</context>
                     <context context-type="linenumber">12</context>
                 </context-group>
+            </trans-unit>
+            <trans-unit id="rememberMe" datatype="html">
+                <source>Remember me</source>
+                <target>Se souvenir de moi</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/auth/containers/login/login.component.html</context>
+                    <context context-type="linenumber">9</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="loginCreateAccount" datatype="html">
+                <source>Pas de compte ? S'inscrire</source>
+                <target>Pas de compte ? S'inscrire</target>
+            </trans-unit>
+            <trans-unit id="signinPendingValidation" datatype="html">
+                <source>Votre compte est en attente de validation par un administrateur.</source>
+                <target>Votre compte est en attente de validation par un administrateur.</target>
+            </trans-unit>
+            <trans-unit id="register" datatype="html">
+                <source>Inscription</source>
+                <target>Inscription</target>
+            </trans-unit>
+            <trans-unit id="registerSubmit" datatype="html">
+                <source>Créer mon compte</source>
+                <target>Créer mon compte</target>
+            </trans-unit>
+            <trans-unit id="registerInProgress" datatype="html">
+                <source>Création…</source>
+                <target>Création…</target>
+            </trans-unit>
+            <trans-unit id="registerSuccessMessage" datatype="html">
+                <source>Votre compte a été créé. Un administrateur doit valider votre inscription avant que vous puissiez vous connecter. Vous recevrez un email de confirmation.</source>
+                <target>Votre compte a été créé. Un administrateur doit valider votre inscription avant que vous puissiez vous connecter. Vous recevrez un email de confirmation.</target>
+            </trans-unit>
+            <trans-unit id="registerBackToLogin" datatype="html">
+                <source>Retour à la connexion</source>
+                <target>Retour à la connexion</target>
+            </trans-unit>
+            <trans-unit id="registerAlreadyHaveAccount" datatype="html">
+                <source>J'ai déjà un compte</source>
+                <target>J'ai déjà un compte</target>
+            </trans-unit>
+            <trans-unit id="registerErrorLoginTaken" datatype="html">
+                <source>Cet identifiant est déjà utilisé.</source>
+                <target>Cet identifiant est déjà utilisé.</target>
+            </trans-unit>
+            <trans-unit id="registerErrorInvalidLogin" datatype="html">
+                <source>Identifiant invalide (2-64 caractères, lettres/chiffres/._-).</source>
+                <target>Identifiant invalide (2-64 caractères, lettres/chiffres/._-).</target>
+            </trans-unit>
+            <trans-unit id="registerErrorInvalidPassword" datatype="html">
+                <source>Mot de passe trop court (6 caractères minimum).</source>
+                <target>Mot de passe trop court (6 caractères minimum).</target>
+            </trans-unit>
+            <trans-unit id="registerErrorInvalidEmail" datatype="html">
+                <source>Adresse email invalide.</source>
+                <target>Adresse email invalide.</target>
+            </trans-unit>
+            <trans-unit id="registerErrorGeneric" datatype="html">
+                <source>Inscription impossible. Veuillez réessayer.</source>
+                <target>Inscription impossible. Veuillez réessayer.</target>
+            </trans-unit>
+            <trans-unit id="usersRolePending" datatype="html">
+                <source>Pending</source>
+                <target>En attente</target>
+            </trans-unit>
+            <trans-unit id="usersApproveTitle" datatype="html">
+                <source>Approve this account (promote to USER)</source>
+                <target>Valider ce compte (passe à USER)</target>
+            </trans-unit>
+            <trans-unit id="users" datatype="html">
+                <source>Users</source>
+                <target>Utilisateurs</target>
+            </trans-unit>
+            <trans-unit id="usersInfo" datatype="html">
+                <source>Manage your profile and configure email notifications. Administrators can also manage other users from this page.</source>
+                <target>Gérez votre profil et configurez les notifications par email. Les administrateurs peuvent aussi gérer les autres utilisateurs depuis cette page.</target>
+            </trans-unit>
+            <trans-unit id="usersMyProfile" datatype="html">
+                <source>My profile</source>
+                <target>Mon profil</target>
+            </trans-unit>
+            <trans-unit id="usersLogin" datatype="html">
+                <source>Login</source>
+                <target>Identifiant</target>
+            </trans-unit>
+            <trans-unit id="usersEmail" datatype="html">
+                <source>Email</source>
+                <target>Email</target>
+            </trans-unit>
+            <trans-unit id="usersNewPassword" datatype="html">
+                <source>New password (optional)</source>
+                <target>Nouveau mot de passe (optionnel)</target>
+            </trans-unit>
+            <trans-unit id="usersPassword" datatype="html">
+                <source>Password</source>
+                <target>Mot de passe</target>
+            </trans-unit>
+            <trans-unit id="usersReceiveNotifs" datatype="html">
+                <source>Receive notifications</source>
+                <target>Recevoir les notifications</target>
+            </trans-unit>
+            <trans-unit id="usersAdminPanel" datatype="html">
+                <source>User administration</source>
+                <target>Administration des utilisateurs</target>
+            </trans-unit>
+            <trans-unit id="usersAddUser" datatype="html">
+                <source>Add user</source>
+                <target>Ajouter un utilisateur</target>
+            </trans-unit>
+            <trans-unit id="usersRole" datatype="html">
+                <source>Role</source>
+                <target>Rôle</target>
+            </trans-unit>
+            <trans-unit id="usersNotifyShort" datatype="html">
+                <source>Notify</source>
+                <target>Notif.</target>
+            </trans-unit>
+            <trans-unit id="usersCreate" datatype="html">
+                <source>Create</source>
+                <target>Créer</target>
+            </trans-unit>
+            <trans-unit id="usersNotifications" datatype="html">
+                <source>Notifications</source>
+                <target>Notifications</target>
+            </trans-unit>
+            <trans-unit id="usersEdit" datatype="html">
+                <source>Edit</source>
+                <target>Modifier</target>
+            </trans-unit>
+            <trans-unit id="usersDelete" datatype="html">
+                <source>Delete</source>
+                <target>Supprimer</target>
+            </trans-unit>
+            <trans-unit id="usersEditTitle" datatype="html">
+                <source>Edit this user</source>
+                <target>Modifier cet utilisateur</target>
+            </trans-unit>
+            <trans-unit id="usersDeleteTitle" datatype="html">
+                <source>Delete this user</source>
+                <target>Supprimer cet utilisateur</target>
+            </trans-unit>
+            <trans-unit id="usersEditPasswordPlaceholder" datatype="html">
+                <source>New password (optional)</source>
+                <target>Nouveau mot de passe (optionnel)</target>
+            </trans-unit>
+            <trans-unit id="save" datatype="html">
+                <source>Save</source>
+                <target>Enregistrer</target>
+            </trans-unit>
+            <trans-unit id="cancel" datatype="html">
+                <source>Cancel</source>
+                <target>Annuler</target>
             </trans-unit>
             <trans-unit id="producedBy" datatype="html">
                 <source>Brought to you by</source>
@@ -584,22 +736,6 @@
             <trans-unit id="sourceCode" datatype="html">
                 <source>Source code</source>
                 <target>Code source</target>
-                <context-group purpose="location">
-                    <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
-                    <context context-type="linenumber">5</context>
-                </context-group>
-            </trans-unit>
-            <trans-unit id="frontEnd" datatype="html">
-                <source>Front-End</source>
-                <target>Front-End</target>
-                <context-group purpose="location">
-                    <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
-                    <context context-type="linenumber">5</context>
-                </context-group>
-            </trans-unit>
-            <trans-unit id="backEnd" datatype="html">
-                <source>Back-End</source>
-                <target>Back-End</target>
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
                     <context context-type="linenumber">5</context>
@@ -643,6 +779,14 @@
                 <context-group purpose="location">
                     <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
                     <context context-type="linenumber">24</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="usersMenu" datatype="html">
+                <source>Users</source>
+                <target>Utilisateurs</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">28</context>
                 </context-group>
             </trans-unit>
             <trans-unit id="playlistMenu" datatype="html">
@@ -804,6 +948,58 @@
                     <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
                     <context context-type="linenumber">2</context>
                 </context-group>
+            </trans-unit>
+            <trans-unit id="cameraLoading" datatype="html">
+                <source>Loading…</source>
+                <target>Chargement…</target>
+            </trans-unit>
+            <trans-unit id="cameraEmpty" datatype="html">
+                <source>This folder is empty.</source>
+                <target>Ce dossier est vide.</target>
+            </trans-unit>
+            <trans-unit id="cameraClose" datatype="html">
+                <source>Close</source>
+                <target>Fermer</target>
+            </trans-unit>
+            <trans-unit id="diagnostic" datatype="html">
+                <source>Diagnostic</source>
+                <target>Diagnostic</target>
+            </trans-unit>
+            <trans-unit id="upperButtonStatus" datatype="html">
+                <source>Upper end-stop button</source>
+                <target>Bouton de fin de course haut</target>
+            </trans-unit>
+            <trans-unit id="bottomButtonStatus" datatype="html">
+                <source>Bottom end-stop button</source>
+                <target>Bouton de fin de course bas</target>
+            </trans-unit>
+            <trans-unit id="birdhouseButtonStatus" datatype="html">
+                <source>Birdhouse button</source>
+                <target>Bouton du nichoir</target>
+            </trans-unit>
+            <trans-unit id="buttonPressed" datatype="html">
+                <source>Pressed</source>
+                <target>Pressé</target>
+            </trans-unit>
+            <trans-unit id="buttonReleased" datatype="html">
+                <source>Released</source>
+                <target>Relâché</target>
+            </trans-unit>
+            <trans-unit id="sendTestEmail" datatype="html">
+                <source>Send test email</source>
+                <target>Envoyer un email de test</target>
+            </trans-unit>
+            <trans-unit id="sendingTestEmail" datatype="html">
+                <source>Sending…</source>
+                <target>Envoi en cours…</target>
+            </trans-unit>
+            <trans-unit id="diskUsage" datatype="html">
+                <source>Disk usage</source>
+                <target>Occupation disque</target>
+            </trans-unit>
+            <trans-unit id="diskUsageError" datatype="html">
+                <source>Disk usage unavailable</source>
+                <target>Occupation disque indisponible</target>
             </trans-unit>
             <trans-unit id="energyInfo" datatype="html">
                 <source>This board allows you to configure the energy saving parameters.</source>

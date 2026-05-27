@@ -9,9 +9,6 @@ import { DashboardModule } from './dashboard.module';
 /* Containers */
 import * as dashboardContainers from './containers';
 
-/* Guards */
-import * as dashboardGuards from './guards';
-
 /* Routes */
 export const ROUTES: Routes = [
     {
@@ -25,7 +22,6 @@ export const ROUTES: Routes = [
                 },
             ],
         } as SBRouteData,
-        canActivate: [dashboardGuards.DashboardGuard],
         component: dashboardContainers.DashboardComponent,
     },
 ];

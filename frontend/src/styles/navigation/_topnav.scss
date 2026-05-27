@@ -6,7 +6,10 @@
   z-index: $zindex-topnav;
   .navbar-brand {
       width: $sidenav-base-width;
-      padding-left: $navbar-padding-x;
+      // Indent the brand to roughly line up with the sidebar menu labels
+      // (each .nav-link has 1rem of left padding + the icon column, so a
+      // ~2rem indent puts "Hermanas" near the text of the menu entries).
+      padding-left: 2rem;
       padding-right: $navbar-padding-x;
       margin: 0;
   }

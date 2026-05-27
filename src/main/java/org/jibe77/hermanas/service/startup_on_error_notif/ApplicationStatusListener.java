@@ -9,20 +9,35 @@ import org.jibe77.hermanas.data.repository.EventRepository;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Optional;
 
 @Component
-public class ApplicationStatusListener {
+public class ApplicationStatusListener implements ApplicationListener<ContextClosedEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationStatusListener.class);
+
+    /**
+     * Classes that Spring/Tomcat/MariaDB/Logback lazy-load only during shutdown. On Spring Boot 2.7
+     * with the LaunchedURLClassLoader, the JAR's URL connections can be closed before these are
+     * resolved, triggering NoClassDefFoundError and breaking graceful shutdown (which then leads
+     * systemd to SIGKILL the process). Touching them at startup forces the classloader to resolve
+     * and cache them while everything is still healthy.
+     */
+    private static final String[] SHUTDOWN_CRITICAL_CLASSES = new String[] {
+            "org.springframework.boot.web.server.GracefulShutdownResult",
+            "org.apache.catalina.Lifecycle$SingleUse",
+            "org.mariadb.jdbc.message.client.QuitPacket",
+            "ch.qos.logback.core.util.ContextUtil"
+    };
 
     EventRepository eventRepository;
     CameraService cameraService;
@@ -44,6 +59,7 @@ public class ApplicationStatusListener {
 
     @PostConstruct
     public void init() {
+        preloadShutdownCriticalClasses();
         if (applicationHasShutdownIncorrecly()) {
             sendShutdownErrorNotification();
         }
@@ -52,6 +68,17 @@ public class ApplicationStatusListener {
         event.setEventType(EventType.STARTUP);
         event.setDateTime(LocalDateTime.now());
         eventRepository.save(event);
+    }
+
+    private void preloadShutdownCriticalClasses() {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        for (String className : SHUTDOWN_CRITICAL_CLASSES) {
+            try {
+                Class.forName(className, true, cl);
+            } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                logger.warn("Could not preload shutdown-critical class {} : {}", className, e.getMessage());
+            }
+        }
     }
 
     private boolean applicationHasShutdownIncorrecly() {
@@ -88,12 +115,23 @@ public class ApplicationStatusListener {
         }
     }
 
-    @PreDestroy
-    public void destroy() {
-        logger.info("Save shutdown time in Event Table.");
-        Event event = new Event();
-        event.setEventType(EventType.SHUTDOWN);
-        event.setDateTime(LocalDateTime.now());
-        eventRepository.save(event);
+    /**
+     * Persist the SHUTDOWN event as early as possible in the shutdown sequence — before Spring
+     * starts destroying lifecycle beans (Tomcat, Hikari, EntityManagerFactory). A @PreDestroy on
+     * this bean would fire too late: by then, the embedded server and connection pool are already
+     * being torn down, and lazy-loaded driver classes may fail to resolve, leaving the save
+     * uncommitted before the JVM is killed.
+     */
+    @Override
+    public void onApplicationEvent(ContextClosedEvent event) {
+        try {
+            logger.info("Save shutdown time in Event Table (ContextClosedEvent).");
+            Event shutdownEvent = new Event();
+            shutdownEvent.setEventType(EventType.SHUTDOWN);
+            shutdownEvent.setDateTime(LocalDateTime.now());
+            eventRepository.save(shutdownEvent);
+        } catch (Exception e) {
+            logger.error("Failed to persist SHUTDOWN event during context close.", e);
+        }
     }
 }

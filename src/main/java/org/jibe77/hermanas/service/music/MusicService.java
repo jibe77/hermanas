@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -87,18 +89,33 @@ public class MusicService {
     }
 
     public boolean playMusicRandomly() {
-        if (musicEnabled) {
-            try {
-                stop();
-                setMusicLevel(volumeLevelRegular);
-                List<String> listOfFile = getListOfFiles(pathToFolder);
-                playMusic(listOfFile);
-            } catch (IOException e) {
-                logger.error("Can't play music.", e);
+        return playMusicRandomly(configService.getSelectedPlaylist());
+    }
+
+    /**
+     * Plays the given playlist (sub-directory of {@code music.path.mix}) randomly.
+     * If {@code playlist} is null or empty, falls back to the songs sitting at the root
+     * of {@code music.path.mix} (legacy layout).
+     *
+     * @param playlist playlist name (sub-directory), or null/empty for the root of mix
+     * @return true if the player was started successfully
+     */
+    public boolean playMusicRandomly(String playlist) {
+        if (!musicEnabled) {
+            return false;
+        }
+        try {
+            stop();
+            setMusicLevel(volumeLevelRegular);
+            List<String> listOfFile = getSongFiles(playlist);
+            if (listOfFile.isEmpty()) {
+                logger.warn("No song found for playlist '{}', music will not start.", playlist);
                 return false;
             }
+            playMusic(listOfFile);
             return true;
-        } else {
+        } catch (IOException e) {
+            logger.error("Can't play music.", e);
             return false;
         }
     }
@@ -139,12 +156,97 @@ public class MusicService {
         notificationController.notify(new CoopStatus(Appliance.MUSIC, StatusEnum.ON));
     }
 
-    private List<String> getListOfFiles(String pathToFolder) {
+    /**
+     * Lists the available playlists, i.e. the immediate sub-directories of
+     * {@code music.path.mix}. The returned names are sorted alphabetically.
+     *
+     * @return playlist names (never null)
+     */
+    public List<String> listPlaylists() {
         File folder = new File(pathToFolder);
-        File[] files = folder.listFiles();
-        List<File> filesList = files != null ? Arrays.asList(files) : Collections.emptyList();
-        return filesList.stream()
-                .map(File::getAbsolutePath).collect(Collectors.toList());
+        File[] children = folder.listFiles(File::isDirectory);
+        if (children == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(children)
+                .map(File::getName)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lists the song filenames of the given playlist. Only the file names are
+     * returned (not absolute paths) so the API never leaks the host layout.
+     *
+     * @param playlist playlist name (must be a direct sub-directory of music.path.mix)
+     * @return song filenames sorted alphabetically (never null)
+     * @throws IllegalArgumentException if the playlist name is invalid or escapes the base directory
+     */
+    public List<String> listSongs(String playlist) {
+        Path playlistDir = resolvePlaylistSafe(playlist);
+        File[] children = playlistDir.toFile().listFiles(f -> f.isFile() && isAudio(f.getName()));
+        if (children == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(children)
+                .map(File::getName)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Resolves the absolute paths of every song to feed VLC for the given playlist.
+     * If {@code playlist} is null or empty, returns the files at the root of mix/
+     * (legacy layout).
+     */
+    private List<String> getSongFiles(String playlist) {
+        File folder;
+        if (playlist == null || playlist.trim().isEmpty()) {
+            folder = new File(pathToFolder);
+        } else {
+            folder = resolvePlaylistSafe(playlist).toFile();
+        }
+        File[] files = folder.listFiles(f -> f.isFile() && isAudio(f.getName()));
+        if (files == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(files)
+                .map(File::getAbsolutePath)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Resolves a playlist name to its absolute Path while preventing path traversal.
+     *
+     * @throws IllegalArgumentException if the name contains separators or escapes mix/
+     */
+    private Path resolvePlaylistSafe(String playlist) {
+        if (playlist == null || playlist.trim().isEmpty()) {
+            throw new IllegalArgumentException("Playlist name cannot be empty");
+        }
+        if (playlist.contains("/") || playlist.contains("\\") || playlist.contains("..")) {
+            throw new IllegalArgumentException("Invalid playlist name: " + playlist);
+        }
+        Path base = Paths.get(pathToFolder).toAbsolutePath().normalize();
+        Path target = base.resolve(playlist).normalize();
+        if (!target.startsWith(base)) {
+            throw new IllegalArgumentException("Playlist resolves outside of base folder: " + playlist);
+        }
+        if (!target.toFile().isDirectory()) {
+            throw new IllegalArgumentException("Playlist does not exist: " + playlist);
+        }
+        return target;
+    }
+
+    private static final Set<String> AUDIO_EXTENSIONS = new HashSet<>(Arrays.asList(
+            "mp3", "ogg", "wav", "flac", "m4a", "aac", "wma", "opus"));
+
+    private boolean isAudio(String filename) {
+        int dot = filename.lastIndexOf('.');
+        if (dot < 0 || dot == filename.length() - 1) {
+            return false;
+        }
+        return AUDIO_EXTENSIONS.contains(filename.substring(dot + 1).toLowerCase(Locale.ROOT));
     }
 
     private void startSecurityTimer(long durationParam) {
@@ -247,8 +349,24 @@ public class MusicService {
     }
 
     public Status switcher(boolean param) {
+        return switcher(param, null);
+    }
+
+    /**
+     * Switches the music player on/off. When turning on, plays the given playlist;
+     * if {@code playlist} is null, uses the currently selected playlist from configuration.
+     *
+     * @param param true to play, false to stop
+     * @param playlist optional playlist name to play (overrides current selection for this call only)
+     * @return resulting player status
+     */
+    public Status switcher(boolean param, String playlist) {
         if (param) {
-            playMusicRandomly();
+            if (playlist != null && !playlist.trim().isEmpty()) {
+                playMusicRandomly(playlist);
+            } else {
+                playMusicRandomly();
+            }
         } else {
             stop();
         }

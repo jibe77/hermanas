@@ -14,7 +14,7 @@ import { RxStompService } from './rx-stomp.service';
 @Injectable()
 export class WebSocketService {
     private obsStompConnection: Observable<SocketResponse>;
-    private brokerURL = environment.wsUrl;
+    private brokerURL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${environment.wsUrl}`;
 
     private stompConfig: RxStompConfig = {
         heartbeatIncoming: 0,

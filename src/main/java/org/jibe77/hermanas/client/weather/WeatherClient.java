@@ -1,15 +1,16 @@
 package org.jibe77.hermanas.client.weather;
 
-import org.jibe77.hermanas.service.energy.WifiService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.ResourceAccessException;
 
 @Component
 public class WeatherClient {
+
+    public static final String CIRCUIT_BREAKER_NAME = "weatherApi";
 
     @Value("${suntime.latitude}")
     public double latitude;
@@ -36,28 +37,29 @@ public class WeatherClient {
         this.builder = builder;
     }
 
+    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getInfoFallback")
     public WeatherInfo getInfo() {
-        if (weatherInfoEnabled) {
-            try {
-                WeatherInfo weatherInfo = builder.build().getForObject(
-                        weatherInfoUrl,
-                        WeatherInfo.class,
-                        latitude,
-                        longitude,
-                        weatherInfoKey);
-                log.info("Weather info content : {}", weatherInfo);
-                return weatherInfo;
-            } catch (ResourceAccessException e) {
-                log.error("Can't process weather info request.", e);
-                return getDefaultWeatherInfo();
-            }
-        } else {
+        if (!weatherInfoEnabled) {
             return getDefaultWeatherInfo();
         }
+        WeatherInfo weatherInfo = builder.build().getForObject(
+                weatherInfoUrl,
+                WeatherInfo.class,
+                latitude,
+                longitude,
+                weatherInfoKey);
+        log.info("Weather info content : {}", weatherInfo);
+        return weatherInfo;
+    }
+
+    @SuppressWarnings("unused") // referenced by @CircuitBreaker fallbackMethod
+    private WeatherInfo getInfoFallback(Throwable ex) {
+        log.warn("Weather API unavailable ({}); returning default info.", ex.getMessage());
+        return getDefaultWeatherInfo();
     }
 
     private WeatherInfo getDefaultWeatherInfo() {
-        // default value if disabled.
+        // default value if disabled or fallback triggered.
         WeatherInfo weatherInfo = new WeatherInfo();
         weatherInfo.setValues(DEFAULT_VALUE_IF_DISABLED, DEFAULT_VALUE_IF_DISABLED);
         return weatherInfo;

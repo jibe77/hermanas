@@ -1,5 +1,5 @@
-import { ChartsComponent } from './charts/charts.component';
+import { LogsComponent } from './logs/logs.component';
 
-export const containers = [ChartsComponent];
+export const containers = [LogsComponent];
 
-export * from './charts/charts.component';
+export * from './logs/logs.component';

@@ -716,20 +716,6 @@
           <context context-type="linenumber">5</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="frontEnd" datatype="html">
-        <source>Front-End</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
-          <context context-type="linenumber">5</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="backEnd" datatype="html">
-        <source>Back-End</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
-          <context context-type="linenumber">5</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="weatherMenu" datatype="html">
         <source>Weather</source>
         <context-group purpose="location">
@@ -763,6 +749,20 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
           <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="usersMenu" datatype="html">
+        <source>Users</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="rememberMe" datatype="html">
+        <source>Remember me</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/auth/containers/login/login.component.html</context>
+          <context context-type="linenumber">9</context>
         </context-group>
       </trans-unit>
       <trans-unit id="playlistMenu" datatype="html">

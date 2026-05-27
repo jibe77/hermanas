@@ -27,6 +27,14 @@ export const ROUTES: Routes = [
             title: 'Pages Login - Hermanas',
         } as SBRouteData,
     },
+    {
+        path: 'register',
+        canActivate: [],
+        component: authContainers.RegisterComponent,
+        data: {
+            title: 'Inscription - Hermanas',
+        } as SBRouteData,
+    },
 ];
 
 @NgModule({

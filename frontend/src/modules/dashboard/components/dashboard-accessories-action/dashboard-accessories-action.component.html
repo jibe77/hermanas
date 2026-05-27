@@ -1,5 +1,5 @@
 <li class="nav-item dropdown dropdown-user no-caret" *ngIf="_userService.user$ | async as user" ngbDropdown placement="bottom-right" display="dynamic">
-    <a class="nav-link" id="userDropdown" *ngIf="user.authState === 'signedin'" ngbDropdownToggle data-cy="userMenu" role="button" aria-haspopup="true" aria-expanded="false"><fa-icon [icon]='["fas", "ellipsis-v"]'></fa-icon></a>
+    <a class="nav-link" id="userDropdown" *ngIf="user.authState === 'signedIn'" ngbDropdownToggle data-cy="userMenu" role="button" aria-haspopup="true" aria-expanded="false"><fa-icon [icon]='["fas", "ellipsis-v"]'></fa-icon></a>
     <div class="dropdown-menu dropdown-menu-right" ngbDropdownMenu aria-labelledby="dropdownUser">
         <span
             ><a class="dropdown-item" *ngIf="lightStatus !== undefined &amp;&amp; lightStatus !== true" (click)="switchLight(true)" routerLink="/dashboard"><span i18n="@@switchLightOn">Switch light on</span></a></span

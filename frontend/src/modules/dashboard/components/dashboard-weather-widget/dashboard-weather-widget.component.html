@@ -1,7 +1,7 @@
 <sb-card
     ><div class="card-header">
         <fa-icon class="mr-1" [icon]='["fas", "sun"]'></fa-icon><span i18n="@@weather">Weather</span>
-        <div class="float-right"><sb-dashboard-weather-action></sb-dashboard-weather-action></div>
+        <div class="float-end"><sb-dashboard-weather-action></sb-dashboard-weather-action></div>
     </div>
     <div class="card-body">
         <div class="spinner-border" *ngIf="temperature === undefined &amp;&amp; meteoOnError === false" role="status"><span class="sr-only" i18n="@@loading">Loading...</span></div>

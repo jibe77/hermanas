@@ -5,6 +5,9 @@ import com.pi4j.io.gpio.digital.DigitalStateChangeEvent;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.service.gpio.GpioHermanasService;
 import org.jibe77.hermanas.service.light.LightService;
+import org.jibe77.hermanas.websocket.Button;
+import org.jibe77.hermanas.websocket.ButtonNotificationController;
+import org.jibe77.hermanas.websocket.ButtonStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,13 +30,18 @@ public class BirdhouseButtonService {
 
     private LightService lightService;
 
+    private ButtonNotificationController buttonNotificationController;
+
     private static final Logger logger = LoggerFactory.getLogger(BirdhouseButtonService.class);
 
     private boolean lightHasBeenSwitchedOnByBirdhouseDoor;
 
-    public BirdhouseButtonService(GpioHermanasService gpioHermanasService, LightService lightService) {
+    public BirdhouseButtonService(GpioHermanasService gpioHermanasService,
+                                  LightService lightService,
+                                  ButtonNotificationController buttonNotificationController) {
         this.gpioHermanasService = gpioHermanasService;
         this.lightService = lightService;
+        this.buttonNotificationController = buttonNotificationController;
     }
 
     @PostConstruct
@@ -46,7 +54,8 @@ public class BirdhouseButtonService {
     }
 
     void manageEvent(DigitalStateChangeEvent event) {
-        if (event.state().isHigh()) {
+        boolean pressed = event.state().isHigh();
+        if (pressed) {
             logger.info("Birdhouse button is pressed.");
             if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
                 setLightHasBeenSwitchedOnByBirdhouseDoor(false);
@@ -61,6 +70,12 @@ public class BirdhouseButtonService {
             }
             setLightHasBeenSwitchedOnByBirdhouseDoor(false);
         }
+        buttonNotificationController.notify(
+                new ButtonStatus(Button.BIRDHOUSE, pressed, System.currentTimeMillis()));
+    }
+
+    public synchronized boolean isButtonPressed() {
+        return button.isHigh();
     }
 
     void setLightHasBeenSwitchedOnByBirdhouseDoor(boolean lightHasBeenSwitchedOnByBirdhouseDoor) {

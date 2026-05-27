@@ -1,8 +1,12 @@
 import { Component, DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { of } from 'rxjs';
 
 import { ChartsComponent } from './charts.component';
+import { ChartsService } from '@modules/music/services/charts.service';
+import { ToastService } from '@common/services';
 
 @Component({
     template: `
@@ -24,11 +28,25 @@ describe('ChartsComponent', () => {
     let componentDE: DebugElement;
     let _componentNE: Element;
 
+    const chartsServiceStub: Partial<ChartsService> = {
+        listPlaylists: () => of([]),
+        listSongs: () => of([]),
+        getSelectedPlaylist: () => of({ playlist: '' }),
+        setSelectedPlaylist: () => of({ playlist: '' }),
+    };
+    const toastServiceStub: Partial<ToastService> = {
+        success: () => {},
+        error: () => {},
+    };
+
     beforeEach(() => {
         TestBed.configureTestingModule({
             declarations: [TestHostComponent, ChartsComponent],
-            imports: [NoopAnimationsModule],
-            providers: [],
+            imports: [NoopAnimationsModule, HttpClientTestingModule],
+            providers: [
+                { provide: ChartsService, useValue: chartsServiceStub },
+                { provide: ToastService, useValue: toastServiceStub },
+            ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
 

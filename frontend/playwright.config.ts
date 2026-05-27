@@ -63,7 +63,7 @@ export default defineConfig({
 
     /* Run your local dev server before starting the tests */
     webServer: {
-        command: 'npm run build:pug && npm run ng -- serve --configuration=fr --port 4200',
+        command: 'npm run ng -- serve --configuration=fr --port 4200',
         url: 'http://localhost:4200',
         reuseExistingServer: !process.env.CI,
         timeout: 120000,

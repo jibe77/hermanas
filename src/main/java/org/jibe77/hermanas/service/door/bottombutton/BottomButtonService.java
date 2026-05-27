@@ -3,6 +3,9 @@ package org.jibe77.hermanas.service.door.bottombutton;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import org.jibe77.hermanas.service.door.servo.ServoMotorService;
 import org.jibe77.hermanas.service.gpio.GpioHermanasService;
+import org.jibe77.hermanas.websocket.Button;
+import org.jibe77.hermanas.websocket.ButtonNotificationController;
+import org.jibe77.hermanas.websocket.ButtonStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +20,8 @@ public class BottomButtonService {
 
     final ServoMotorService servoMotorService;
 
+    final ButtonNotificationController buttonNotificationController;
+
     @Value("${door.button.bottom.gpio.address}")
     private int doorButtonBottomGpioAddress;
 
@@ -27,9 +32,12 @@ public class BottomButtonService {
 
     private static final Logger logger = LoggerFactory.getLogger(BottomButtonService.class);
 
-    public BottomButtonService(GpioHermanasService gpioHermanasService, ServoMotorService servoMotorService) {
+    public BottomButtonService(GpioHermanasService gpioHermanasService,
+                               ServoMotorService servoMotorService,
+                               ButtonNotificationController buttonNotificationController) {
         this.gpioHermanasService = gpioHermanasService;
         this.servoMotorService = servoMotorService;
+        this.buttonNotificationController = buttonNotificationController;
     }
 
     @PostConstruct
@@ -41,13 +49,16 @@ public class BottomButtonService {
                     "Door bottom button",
                     doorButtonBottomGpioAddress);
             bottomButton.addListener(event -> {
-                if (event.state().isHigh()) {
+                boolean pressed = event.state().isHigh();
+                if (pressed) {
                     logger.info("Door has reached the bottom, stop servomotor now !");
                     this.bottomButtonHasBeenPressed = true;
                     servoMotorService.stop();
                 } else if (event.state().isLow()) {
                     logger.info("Bottom button is not pressed anymore.");
                 }
+                buttonNotificationController.notify(
+                        new ButtonStatus(Button.BOTTOM, pressed, System.currentTimeMillis()));
             });
         }
     }

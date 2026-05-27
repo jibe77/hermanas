@@ -13,15 +13,28 @@ interface AuthMeResponse {
     roles?: string[];
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class UserService {
     private readonly _user: WritableSignal<User>;
     private readonly _user$: Observable<User>;
+    private _initialCheck?: Promise<void>;
 
     constructor(private http: HttpClient, private logger: LoggerService) {
         this._user = signal(this.createDefaultNewUser());
         this._user$ = toObservable(this._user);
-        this.checkAuthState();
+    }
+
+    /**
+     * Runs the first /auth/me call and caches the resulting promise. Called from
+     * APP_INITIALIZER so Angular bootstrap waits for the answer — guards and components
+     * are guaranteed to see the resolved session state on their first read.
+     * Subsequent calls return the same promise (idempotent).
+     */
+    initialAuthCheck(): Promise<void> {
+        if (!this._initialCheck) {
+            this._initialCheck = this.checkAuthState();
+        }
+        return this._initialCheck;
     }
 
     get user(): WritableSignal<User> {
@@ -40,10 +53,24 @@ export class UserService {
         return this._user();
     }
 
+    /**
+     * Returns true if the currently authenticated account holds the ADMIN role.
+     * Accepts both the canonical `ADMIN` value and Spring's legacy `ROLE_ADMIN`
+     * spelling, in case the backend ever surfaces one or the other.
+     */
+    isAdmin(): boolean {
+        const u = this._user();
+        if (!u || u.authState !== AuthState.SignedIn) {
+            return false;
+        }
+        const roles = u.roles ?? [];
+        return roles.some(r => r === 'ADMIN' || r === 'ROLE_ADMIN');
+    }
+
     async checkAuthState(): Promise<void> {
         try {
             const me = await firstValueFrom(
-                this.http.get<AuthMeResponse>(`${environment.apiUrl}/api/v1/auth/me`, {
+                this.http.get<AuthMeResponse>(`${environment.apiUrl}/auth/me`, {
                     withCredentials: true,
                 })
             );

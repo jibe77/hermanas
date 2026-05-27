@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.context.MessageSource;
+import org.springframework.context.event.ContextClosedEvent;
 
 import java.io.File;
 import java.util.Optional;
@@ -83,8 +84,8 @@ class ApplicationStatusListenerTest {
     }
 
     @Test
-    void testDestroy(){
-        applicationStatusListener.destroy();
+    void testOnContextClosed(){
+        applicationStatusListener.onApplicationEvent(mock(ContextClosedEvent.class));
 
         verify(eventRepository, Mockito.times(1)).save(any(Event.class));
         verify(eventRepository).save(Mockito.argThat((Event event) -> event.getEventType() == EventType.SHUTDOWN));

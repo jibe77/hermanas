@@ -6,7 +6,7 @@
 set -e  # Arrête le script en cas d'erreur
 
 # Configuration
-REMOTE_HOST="10.0.0.20"
+REMOTE_HOST="poupou"
 REMOTE_PORT="5722"
 REMOTE_USER="pi"
 REMOTE_PATH="/home/pi"

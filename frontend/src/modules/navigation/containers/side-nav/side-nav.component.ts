@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, Input, OnDestroy, Signal } from '@angular/core';
 import { UserService } from '@modules/auth/services';
+import { AuthState } from '@modules/auth/models';
 import { SideNavItems, SideNavSection } from '@modules/navigation/models';
 import { NavigationService } from '@modules/navigation/services';
 import { Subscription } from 'rxjs';
@@ -15,7 +16,16 @@ export class SideNavComponent implements OnDestroy {
     @Input() sideNavSections!: SideNavSection[];
     subscription: Subscription = new Subscription();
 
-    constructor(public navigationService: NavigationService, public userService: UserService) {}
+    // Derived signals: Angular re-evaluates only the *ngIfs that read them when the user
+    // signal changes — no need to wrap the whole template in a *ngIf, which would otherwise
+    // destroy and recreate every menu link on every state change.
+    readonly isSignedIn: Signal<boolean>;
+    readonly currentLogin: Signal<string>;
+
+    constructor(public navigationService: NavigationService, public userService: UserService) {
+        this.isSignedIn = computed(() => this.userService.user().authState === AuthState.SignedIn);
+        this.currentLogin = computed(() => this.userService.user().login);
+    }
 
     ngOnDestroy() {}
 }

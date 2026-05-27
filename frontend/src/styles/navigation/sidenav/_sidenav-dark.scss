@@ -21,6 +21,8 @@
       }
       &.active {
         color: $sidenav-dark-link-active-color;
+        background-color: rgba(255, 255, 255, 0.08);
+        box-shadow: inset 3px 0 0 $sidenav-dark-link-active-color;
         .sb-nav-link-icon {
           color: $sidenav-dark-link-active-color;
         }

@@ -32,7 +32,17 @@
                         "main": "src/main.ts",
                         "polyfills": "src/polyfills.ts",
                         "tsConfig": "tsconfig.app.json",
-                        "assets": ["src/favicon.ico","src/favicon144.png","src/favicon512.png", "src/assets"],
+                        "assets": [
+                            "src/favicon.ico",
+                            "src/favicon144.png",
+                            "src/favicon512.png",
+                            "src/assets",
+                            {
+                                "glob": "**/*",
+                                "input": "node_modules/flag-icon-css/flags",
+                                "output": "flags"
+                            }
+                        ],
                         "styles": ["./node_modules/@angular/material/prebuilt-themes/indigo-pink.css", "src/styles/styles.scss", "./node_modules/flag-icon-css/css/flag-icon.min.css"],
                         "stylePreprocessorOptions": {
                             "includePaths": ["src", "./node_modules"]
@@ -105,7 +115,15 @@
                         "polyfills": "src/polyfills.ts",
                         "tsConfig": "tsconfig.spec.json",
                         "karmaConfig": "karma.conf.js",
-                        "assets": ["src/favicon.ico", "src/assets"],
+                        "assets": [
+                            "src/favicon.ico",
+                            "src/assets",
+                            {
+                                "glob": "**/*",
+                                "input": "node_modules/flag-icon-css/flags",
+                                "output": "flags"
+                            }
+                        ],
                         "styles": ["./node_modules/@angular/material/prebuilt-themes/indigo-pink.css", "src/styles/styles.scss", "./node_modules/flag-icon-css/css/flag-icon.min.css"],
                         "stylePreprocessorOptions": {
                             "includePaths": ["src", "./node_modules"]

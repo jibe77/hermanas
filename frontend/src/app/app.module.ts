@@ -1,5 +1,5 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ErrorHandler, NgModule, isDevMode } from '@angular/core';
+import { APP_INITIALIZER, ErrorHandler, NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
@@ -10,6 +10,7 @@ import {
 } from '@common/interceptors';
 import { GlobalErrorHandler } from '@common/services';
 import { ProgressWebsocketService } from '@modules/dashboard/services/progresswebsocket.service';
+import { UserService } from '@modules/auth/services/user.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -42,6 +43,16 @@ import { ServiceWorkerModule } from '@angular/service-worker';
                 retryInterceptor,
             ])
         ),
+        // Block Angular bootstrap until /auth/me has answered, so AuthGuard never has to
+        // decide on an "unknown" session state. Without this, navigating directly to a
+        // protected route on a cold load would flash the login page before checkAuthState
+        // resolves and the user is recognised as signed-in.
+        {
+            provide: APP_INITIALIZER,
+            multi: true,
+            deps: [UserService],
+            useFactory: (userService: UserService) => () => userService.initialAuthCheck(),
+        },
     ],
 })
 export class AppModule {}

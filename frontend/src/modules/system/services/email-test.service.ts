@@ -1,0 +1,23 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { AbstractService } from '@common/services';
+import { Observable } from 'rxjs';
+
+export interface EmailTestResponse {
+    message: string;
+}
+
+@Injectable()
+export class EmailTestService extends AbstractService {
+    constructor(private http: HttpClient) {
+        super();
+    }
+
+    public sendTestEmail(): Observable<EmailTestResponse> {
+        return this.http.post<EmailTestResponse>(
+            this.domainBase + '/email/test',
+            {},
+            { headers: this.getHeaders() }
+        );
+    }
+}
