@@ -87,7 +87,7 @@ mysql --version
 4. **Run the application**
    ```bash
    # On Raspberry Pi with real GPIO hardware
-   java -jar target/hermanas-0.8.jar
+   java -jar target/hermanas-0.8.1.jar
 
    # On development machine with fake GPIO
    mvn spring-boot:run -Dspring.profiles.active=gpio-fake
@@ -213,12 +213,12 @@ The JAR ships with a CLI to generate hashes — no external tools needed:
 
 ```bash
 # Interactive (password not shown in shell history)
-java -jar target/hermanas-0.8.jar --hash
+java -jar target/hermanas-0.8.1.jar --hash
 # Password: ********
 # {bcrypt}$2a$10$....
 
 # Inline (avoid in shared terminals — leaves the password in history)
-java -jar target/hermanas-0.8.jar --hash "your-password"
+java -jar target/hermanas-0.8.1.jar --hash "your-password"
 ```
 
 Copy the `{bcrypt}...` line as-is into `users.properties` as the user's `.password` value.
@@ -227,7 +227,7 @@ Copy the `{bcrypt}...` line as-is into `users.properties` as the user's `.passwo
 
 ```bash
 # 1. Generate the hash
-java -jar target/hermanas-0.8.jar --hash
+java -jar target/hermanas-0.8.1.jar --hash
 
 # 2. Append to users.properties (next to the JAR, or wherever hermanas.security.users-file points)
 echo "alice.password = {bcrypt}\$2a\$10\$..." >> users.properties
@@ -564,7 +564,7 @@ mvn test -Dgroups=image_processing
 
 5. **Deploy application**
    ```bash
-   scp target/hermanas-0.8.jar pi@raspberrypi:/home/pi/
+   scp target/hermanas-0.8.1.jar pi@raspberrypi:/home/pi/
    ```
 
 6. **Create systemd service**
@@ -580,7 +580,7 @@ mvn test -Dgroups=image_processing
    [Service]
    Type=simple
    User=pi
-   ExecStart=/usr/bin/java -jar /home/pi/hermanas-0.8.jar
+   ExecStart=/usr/bin/java -jar /home/pi/hermanas-0.8.1.jar
    SuccessExitStatus=143
    Restart=on-failure
    RestartSec=10
@@ -609,7 +609,7 @@ For production, externalize sensitive configuration:
 sudo nano /etc/hermanas/application.properties
 
 # Run with external config
-java -jar hermanas-0.8.jar --spring.config.location=/etc/hermanas/application.properties
+java -jar hermanas-0.8.1.jar --spring.config.location=/etc/hermanas/application.properties
 ```
 
 ## Monitoring
