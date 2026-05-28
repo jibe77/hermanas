@@ -28,7 +28,8 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@a
         FormsModule,
         AppCommonModule,
         NavigationModule,
-        ...dashboardContainers.containers, ...dashboardComponents.components,
+        ...dashboardContainers.containers,
+        ...dashboardComponents.components,
     ],
     providers: [
         ...dashboardServices.services,

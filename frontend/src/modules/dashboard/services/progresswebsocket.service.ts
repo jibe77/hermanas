@@ -23,7 +23,7 @@ export function createProgressStompConfig(logger: LoggerService): RxStompConfig 
     };
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ProgressWebsocketService extends WebSocketService {
     constructor(stompService: RxStompService, logger: LoggerService) {
         super(

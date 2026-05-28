@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
  * Triggers the system-level shutdown / reboot endpoints. Both are rate-limited
  * server-side (2 hits / 5 min) and audit-logged. The endpoints accept no body.
  */
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class SystemPowerService extends AbstractService {
     private http = inject(HttpClient);
 

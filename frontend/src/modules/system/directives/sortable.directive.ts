@@ -8,7 +8,7 @@ export interface SortEvent {
     direction: SortDirection;
 }
 
-@Directive({ selector: 'th[sbSortable]', })
+@Directive({ selector: 'th[sbSortable]' })
 export class SBSortableHeaderDirective {
     @Input() sbSortable!: string;
     @Input() direction: SortDirection = '';

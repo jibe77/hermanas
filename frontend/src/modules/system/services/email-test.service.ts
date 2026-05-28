@@ -7,7 +7,7 @@ export interface EmailTestResponse {
     message: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class EmailTestService extends AbstractService {
     private http = inject(HttpClient);
 

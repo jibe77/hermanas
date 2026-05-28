@@ -13,7 +13,7 @@ export interface NextEvents {
     nextDoorClosingTimeAsDate: Date;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class SchedulerService extends AbstractService {
     private _httpClient = inject(HttpClient);
 

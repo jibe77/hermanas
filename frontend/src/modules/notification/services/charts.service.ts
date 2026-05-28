@@ -25,7 +25,7 @@ export interface UserCreate {
     notificationsEnabled?: boolean;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ChartsService extends AbstractService {
     private http = inject(HttpClient);
 

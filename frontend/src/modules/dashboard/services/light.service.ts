@@ -10,7 +10,7 @@ export interface LightStatus {
     timeOut: number;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class LightService extends AbstractService {
     private _httpClient = inject(HttpClient);
 

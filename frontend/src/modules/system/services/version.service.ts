@@ -12,7 +12,7 @@ export interface VersionInfo {
     name: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class VersionService extends AbstractService {
     private _httpClient = inject(HttpClient);
 

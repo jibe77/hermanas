@@ -22,9 +22,14 @@ import * as navigationGuards from './guards';
 import * as navigationServices from './services';
 
 @NgModule({
-    imports: [CommonModule, RouterModule, AppCommonModule, ...navigationContainers.containers,
+    imports: [
+        CommonModule,
+        RouterModule,
+        AppCommonModule,
+        ...navigationContainers.containers,
         ...navigationComponents.components,
-        ...appCommonLayouts.layouts],
+        ...appCommonLayouts.layouts,
+    ],
     providers: [...navigationServices.services, ...navigationGuards.guards],
     exports: [
         ...navigationContainers.containers,

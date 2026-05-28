@@ -4,7 +4,7 @@ import { AbstractService } from '@common/services';
 import { MeteoInfo } from '@modules/dashboard/services';
 import { Observable } from 'rxjs';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class WeatherService extends AbstractService {
     private _httpClient = inject(HttpClient);
 

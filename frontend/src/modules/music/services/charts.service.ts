@@ -7,7 +7,7 @@ export interface SelectedPlaylist {
     playlist: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ChartsService extends AbstractService {
     private http = inject(HttpClient);
 

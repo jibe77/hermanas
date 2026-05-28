@@ -28,12 +28,7 @@ interface PhotoFile extends PhotoEntry {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './charts.component.html',
     styleUrls: ['charts.component.scss'],
-    imports: [
-        LayoutDashboardComponent,
-        DashboardHeadComponent,
-        CardComponent,
-        FaIconComponent,
-    ],
+    imports: [LayoutDashboardComponent, DashboardHeadComponent, CardComponent, FaIconComponent],
 })
 export class ChartsComponent implements OnInit {
     private photos = inject(PhotosService);

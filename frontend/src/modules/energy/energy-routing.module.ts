@@ -1,16 +1,14 @@
-/* tslint:disable: ordered-imports*/
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+/**
+ * Standalone-era routing config for /energy. The historic *-routing.module.ts
+ * wrapper is gone — app-routing.module.ts now imports `ROUTES` directly.
+ * Kept under the old filename so existing import sites resolve unchanged.
+ */
+import { Routes } from '@angular/router';
 import { SBRouteData } from '@modules/navigation/models';
 import { AdminGuard } from '@modules/auth/guards';
 
-/* Module */
-import { EnergyModule } from './energy.module';
-
-/* Containers */
 import * as chartsContainers from './containers';
 
-/* Routes */
 export const ROUTES: Routes = [
     {
         path: '',
@@ -31,9 +29,3 @@ export const ROUTES: Routes = [
         } as SBRouteData,
     },
 ];
-
-@NgModule({
-    imports: [EnergyModule, RouterModule.forChild(ROUTES)],
-    exports: [RouterModule],
-})
-export class EnergyRoutingModule {}

@@ -10,12 +10,7 @@ import { TopNavUserComponent } from '../../components/top-nav-user/top-nav-user.
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './top-nav.component.html',
     styleUrls: ['top-nav.component.scss'],
-    imports: [
-        RouterLink,
-        FaIconComponent,
-        TopNavLangComponent,
-        TopNavUserComponent,
-    ],
+    imports: [RouterLink, FaIconComponent, TopNavLangComponent, TopNavUserComponent],
 })
 export class TopNavComponent {
     private navigationService = inject(NavigationService);

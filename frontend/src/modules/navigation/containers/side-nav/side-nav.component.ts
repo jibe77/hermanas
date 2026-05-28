@@ -11,11 +11,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './side-nav.component.html',
     styleUrls: ['side-nav.component.scss'],
-    imports: [
-        RouterLink,
-        RouterLinkActive,
-        FaIconComponent,
-    ],
+    imports: [RouterLink, RouterLinkActive, FaIconComponent],
 })
 export class SideNavComponent {
     navigationService = inject(NavigationService);

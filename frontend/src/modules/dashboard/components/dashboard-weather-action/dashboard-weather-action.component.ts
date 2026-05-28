@@ -8,11 +8,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     selector: 'sb-dashboard-weather-action',
     templateUrl: './dashboard-weather-action.component.html',
     styleUrls: ['dashboard-weather-action.component.scss'],
-    imports: [
-        NgbDropdown,
-        RouterLink,
-        FaIconComponent,
-    ],
+    imports: [NgbDropdown, RouterLink, FaIconComponent],
 })
 export class DashboardWeatherActionComponent {
     private _dashboardWidgetsComponent = inject(DashboardWidgetsComponent);

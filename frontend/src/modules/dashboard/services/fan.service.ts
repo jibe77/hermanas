@@ -10,7 +10,7 @@ export interface FanStatus {
     timeOut: number;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class FanService extends AbstractService {
     private _httpClient = inject(HttpClient);
 

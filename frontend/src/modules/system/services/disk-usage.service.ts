@@ -11,7 +11,7 @@ export interface DiskUsage {
     usedPercent: number;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class DiskUsageService extends AbstractService {
     private http = inject(HttpClient);
 

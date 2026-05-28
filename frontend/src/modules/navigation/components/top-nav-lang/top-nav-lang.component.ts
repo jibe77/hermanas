@@ -7,11 +7,7 @@ import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu } from '@ng-bootstrap/n
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './top-nav-lang.component.html',
     styleUrls: ['top-nav-lang.component.scss'],
-    imports: [
-        NgbDropdown,
-        NgbDropdownToggle,
-        NgbDropdownMenu,
-    ],
+    imports: [NgbDropdown, NgbDropdownToggle, NgbDropdownMenu],
 })
 export class TopNavLangComponent implements OnInit {
     navigationService = inject(NavigationService);

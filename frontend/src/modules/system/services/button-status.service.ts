@@ -14,7 +14,7 @@ export interface ButtonStatus {
     timestamp: number;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ButtonStatusService extends AbstractService implements OnDestroy {
     private httpClient = inject(HttpClient);
     private stompService = inject(RxStompService);

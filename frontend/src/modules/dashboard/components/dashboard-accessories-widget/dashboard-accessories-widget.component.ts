@@ -28,11 +28,7 @@ import { DashboardAccessoriesActionComponent } from '../dashboard-accessories-ac
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-accessories-widget.component.html',
     styleUrls: ['./dashboard-accessories-widget.component.scss'],
-    imports: [
-        CardComponent,
-        FaIconComponent,
-        DashboardAccessoriesActionComponent,
-    ],
+    imports: [CardComponent, FaIconComponent, DashboardAccessoriesActionComponent],
 })
 export class DashboardAccessoriesWidgetComponent implements OnInit, OnDestroy {
     private lightService = inject(LightService);

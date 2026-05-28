@@ -19,11 +19,7 @@ import { FooterComponent } from '../../containers/footer/footer.component';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './layout-dashboard.component.html',
     styleUrls: ['layout-dashboard.component.scss'],
-    imports: [
-        TopNavComponent,
-        SideNavComponent,
-        FooterComponent,
-    ],
+    imports: [TopNavComponent, SideNavComponent, FooterComponent],
 })
 export class LayoutDashboardComponent implements OnInit, OnDestroy {
     navigationService = inject(NavigationService);

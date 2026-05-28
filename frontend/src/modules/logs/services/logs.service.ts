@@ -17,7 +17,7 @@ export interface LogTailOptions {
     search?: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class LogsService extends AbstractService {
     private http = inject(HttpClient);
 

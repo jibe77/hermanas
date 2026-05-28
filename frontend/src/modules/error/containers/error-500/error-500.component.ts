@@ -8,11 +8,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './error-500.component.html',
     styleUrls: ['error-500.component.scss'],
-    imports: [
-        LayoutErrorComponent,
-        RouterLink,
-        FaIconComponent,
-    ],
+    imports: [LayoutErrorComponent, RouterLink, FaIconComponent],
 })
 export class Error500Component {
     constructor() {}

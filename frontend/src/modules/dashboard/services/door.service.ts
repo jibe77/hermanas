@@ -11,7 +11,7 @@ export interface DoorStatus {
     timeStatusHasChangedAsDate: Date;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class DoorService extends AbstractService {
     private _httpClient = inject(HttpClient);
     private logger = inject(LoggerService);

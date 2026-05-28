@@ -10,7 +10,7 @@ export interface MusicStatus {
     timeOut: number;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class MusicService extends AbstractService {
     private _httpClient = inject(HttpClient);
 

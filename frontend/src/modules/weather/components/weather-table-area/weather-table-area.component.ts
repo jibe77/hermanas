@@ -12,7 +12,19 @@ import {
 } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable, MatSortHeader } from '@angular/material/sort';
-import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
+import {
+    MatTableDataSource,
+    MatTable,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+} from '@angular/material/table';
 import { MeteoInfo } from '@modules/dashboard/services';
 import { WeatherService } from '@modules/weather/services';
 import { Observable, Subscription } from 'rxjs';

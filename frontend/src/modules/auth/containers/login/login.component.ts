@@ -16,11 +16,7 @@ import { LayoutAuthComponent } from '../../../navigation/layouts/layout-auth/lay
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './login.component.html',
     styleUrls: ['login.component.scss'],
-    imports: [
-        LayoutAuthComponent,
-        ReactiveFormsModule,
-        RouterLink,
-    ],
+    imports: [LayoutAuthComponent, ReactiveFormsModule, RouterLink],
 })
 export class LoginComponent implements OnInit {
     private fb = inject(FormBuilder);

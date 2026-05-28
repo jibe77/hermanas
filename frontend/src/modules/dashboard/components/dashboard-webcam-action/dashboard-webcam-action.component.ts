@@ -7,11 +7,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     selector: 'sb-dashboard-webcam-action',
     templateUrl: './dashboard-webcam-action.component.html',
     styleUrls: ['dashboard-webcam-action.component.scss'],
-    imports: [
-        NgbDropdown,
-        RouterLink,
-        FaIconComponent,
-    ],
+    imports: [NgbDropdown, RouterLink, FaIconComponent],
 })
 export class DashboardWebcamActionComponent {
     @Output() refreshWebcamEvent = new EventEmitter();

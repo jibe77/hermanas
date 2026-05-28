@@ -21,11 +21,7 @@ import { DashboardWeatherActionComponent } from '../dashboard-weather-action/das
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-weather-widget.component.html',
     styleUrls: ['./dashboard-weather-widget.component.scss'],
-    imports: [
-        CardComponent,
-        FaIconComponent,
-        DashboardWeatherActionComponent,
-    ],
+    imports: [CardComponent, FaIconComponent, DashboardWeatherActionComponent],
 })
 export class DashboardWeatherWidgetComponent implements OnInit, OnDestroy {
     private meteoService = inject(MeteoService);

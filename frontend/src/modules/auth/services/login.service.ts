@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 
 export type LoginOutcome = 'ok' | 'invalid' | 'pending-validation';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class LoginService {
     private http = inject(HttpClient);
     private userService = inject(UserService);

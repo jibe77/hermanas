@@ -12,7 +12,7 @@ export class MeteoInfo {
     dateTime: string;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class MeteoService extends AbstractService {
     private _httpClient = inject(HttpClient);
 

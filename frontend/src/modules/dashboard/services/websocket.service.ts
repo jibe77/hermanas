@@ -11,7 +11,7 @@ import { RxStompService } from './rx-stomp.service';
 /**
  * A WebSocket service allowing subscription to a broker.
  */
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class WebSocketService {
     private obsStompConnection: Observable<SocketResponse>;
     private brokerURL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${environment.wsUrl}`;
