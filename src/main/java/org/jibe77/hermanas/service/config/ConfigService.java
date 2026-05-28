@@ -65,12 +65,6 @@ public class ConfigService {
     @Value("${music.security.timer.delay.sunny}")
     private long musicSecurityTimerDelaySunny;
 
-    @Value("${consumption.mode.eco.days.around.winter.solstice}")
-    private int ecoModeNbrDaysAroundWinterSolstice;
-
-    @Value("${consumption.mode.sunny.days.around.summer.solstice}")
-    private int sunnyModeNbrDaysAroundSummerSolstice;
-
     @Value("${consumption.mode.eco.force}")
     private boolean consumptionModeEcoForce;
 
@@ -438,50 +432,61 @@ public class ConfigService {
     // ============================================================================
 
     /**
-     * Gets the number of days around winter solstice to use eco mode.
-     * E.g., value of 30 means 30 days before and 30 days after solstice.
+     * Returns the energy mode assigned to a given month for the automatic schedule.
+     * The mapping is editable at runtime via {@link #setMonthMode}; the seeds come
+     * from {@code consumption.mode.month.<n>} in application.properties.
      *
-     * @return number of days (each side of solstice)
+     * @param month month number 1-12 (1 = January)
+     * @return the {@link org.jibe77.hermanas.service.energy.EnergyModeEnum} for that month
      */
-    @Cacheable(value = {"ecoModeNbrDaysAroundWinterSolstice"})
-    public int getEcoModeNbrDaysAroundWinterSolstice() {
-        return getConfigValue("consumption.mode.eco.days.around.winter.solstice",
-                             ecoModeNbrDaysAroundWinterSolstice, Integer::parseInt);
+    public org.jibe77.hermanas.service.energy.EnergyModeEnum getMonthMode(int month) {
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("month must be between 1 and 12, got " + month);
+        }
+        String key = "consumption.mode.month." + month;
+        String fallback = monthDefault(month);
+        String raw = getConfigValue(key, fallback, Function.identity());
+        try {
+            return org.jibe77.hermanas.service.energy.EnergyModeEnum.valueOf(raw);
+        } catch (IllegalArgumentException ex) {
+            logger.warn("Invalid monthly mode '{}' for month {}, falling back to {}.", raw, month, fallback);
+            return org.jibe77.hermanas.service.energy.EnergyModeEnum.valueOf(fallback);
+        }
     }
 
     /**
-     * Sets the number of days around winter solstice to use eco mode.
-     *
-     * @param ecoModeNbrDaysAroundWinterSolstice number of days (must be positive)
-     * @throws IllegalArgumentException if value is <= 0
+     * Updates the energy mode for a given month.
      */
-    @CacheEvict(value = "ecoModeNbrDaysAroundWinterSolstice")
-    public void setEcoModeNbrDaysAroundWinterSolstice(int ecoModeNbrDaysAroundWinterSolstice) {
-        setConfigValue("consumption.mode.eco.days.around.winter.solstice",
-                      ecoModeNbrDaysAroundWinterSolstice, positiveIntValidator());
+    public void setMonthMode(int month, org.jibe77.hermanas.service.energy.EnergyModeEnum mode) {
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("month must be between 1 and 12, got " + month);
+        }
+        if (mode == null) {
+            throw new IllegalArgumentException("mode must not be null");
+        }
+        setConfigValue("consumption.mode.month." + month, mode.name(), null);
     }
 
     /**
-     * Gets the number of days around summer solstice to use sunny mode.
-     *
-     * @return number of days (each side of solstice)
+     * Seed values for the monthly schedule, used when no override is stored in DB
+     * and no @Value-injected property is available (i.e. in the tests that build a
+     * ConfigService by hand).
      */
-    @Cacheable(value = {"sunnyModeNbrDaysAroundSummerSolstice"})
-    public int getSunnyModeNbrDaysAroundSummerSolstice() {
-        return getConfigValue("consumption.mode.sunny.days.around.summer.solstice",
-                             sunnyModeNbrDaysAroundSummerSolstice, Integer::parseInt);
-    }
-
-    /**
-     * Sets the number of days around summer solstice to use sunny mode.
-     *
-     * @param sunnyModeNbrDaysAroundSummerSolstice number of days (must be positive)
-     * @throws IllegalArgumentException if value is <= 0
-     */
-    @CacheEvict(value = "sunnyModeNbrDaysAroundSummerSolstice")
-    public void setSunnyModeNbrDaysAroundSummerSolstice(int sunnyModeNbrDaysAroundSummerSolstice) {
-        setConfigValue("consumption.mode.sunny.days.around.summer.solstice",
-                      sunnyModeNbrDaysAroundSummerSolstice, positiveIntValidator());
+    private String monthDefault(int month) {
+        switch (month) {
+            case 3:
+            case 10:
+                return "REGULAR";
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+                return "SUNNY";
+            default:
+                return "ECO";
+        }
     }
 
     /**

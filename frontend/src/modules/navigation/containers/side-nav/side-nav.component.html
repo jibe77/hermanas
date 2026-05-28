@@ -33,13 +33,15 @@
                     }
                 </ng-container>
                 <div class="sb-sidenav-menu-heading">Config</div>
-                <ng-container
-                    ><a class="nav-link" routerLink="/energy" routerLinkActive="active"
-                        ><div class="sb-nav-link-icon">
-                            <fa-icon [icon]="['fas', 'car-battery']"></fa-icon>
-                        </div>
-                        <span i18n="@@energySavingMenu">Energy saving</span></a
-                    >
+                <ng-container>
+                    @if (isAdmin()) {
+                        <a class="nav-link" routerLink="/energy" routerLinkActive="active"
+                            ><div class="sb-nav-link-icon">
+                                <fa-icon [icon]="['fas', 'car-battery']"></fa-icon>
+                            </div>
+                            <span i18n="@@energySavingMenu">Energy saving</span></a
+                        >
+                    }
                     @if (isSignedIn()) {
                         <a class="nav-link" routerLink="/notification" routerLinkActive="active"
                             ><div class="sb-nav-link-icon">

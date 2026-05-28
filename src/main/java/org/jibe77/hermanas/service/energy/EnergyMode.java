@@ -1,22 +1,18 @@
 package org.jibe77.hermanas.service.energy;
 
-import java.time.LocalDate;
+import java.util.Map;
 
-// * current mode
-// * info about eco mode
-//    * starting date
-//    * ending date
-//    * days before & after winter solstice
-// * same for sunny mode
-// * same for regular mode
+/**
+ * Snapshot of the energy mode state exposed by the REST API.
+ *
+ * <p>The previous solstice-based fields (start/end dates, days around solstice)
+ * are gone — the mode now follows a 12-entry month → mode mapping that the admin
+ * can edit at runtime.</p>
+ */
 public class EnergyMode {
     private String currentMode;
-    private LocalDate ecoModeStartDate;
-    private LocalDate ecoModeEndDate;
-    private int ecoModeDaysAroundWinterSolstice;
-    private LocalDate sunnyModeStartDate;
-    private LocalDate sunnyModeEndDate;
-    private int sunnyModeDaysAroundSummerSolstice;
+    private boolean forced;
+    private Map<Integer, EnergyModeEnum> monthlyMapping;
 
     public String getCurrentMode() {
         return currentMode;
@@ -26,51 +22,19 @@ public class EnergyMode {
         this.currentMode = currentMode;
     }
 
-    public LocalDate getEcoModeStartDate() {
-        return ecoModeStartDate;
+    public boolean isForced() {
+        return forced;
     }
 
-    public void setEcoModeStartDate(LocalDate ecoModeStartDate) {
-        this.ecoModeStartDate = ecoModeStartDate;
+    public void setForced(boolean forced) {
+        this.forced = forced;
     }
 
-    public LocalDate getEcoModeEndDate() {
-        return ecoModeEndDate;
+    public Map<Integer, EnergyModeEnum> getMonthlyMapping() {
+        return monthlyMapping;
     }
 
-    public void setEcoModeEndDate(LocalDate ecoModeEndDate) {
-        this.ecoModeEndDate = ecoModeEndDate;
-    }
-
-    public int getEcoModeDaysAroundWinterSolstice() {
-        return ecoModeDaysAroundWinterSolstice;
-    }
-
-    public void setEcoModeDaysAroundWinterSolstice(int ecoModeDaysAroundWinterSolstice) {
-        this.ecoModeDaysAroundWinterSolstice = ecoModeDaysAroundWinterSolstice;
-    }
-
-    public LocalDate getSunnyModeStartDate() {
-        return sunnyModeStartDate;
-    }
-
-    public void setSunnyModeStartDate(LocalDate sunnyModeStartDate) {
-        this.sunnyModeStartDate = sunnyModeStartDate;
-    }
-
-    public LocalDate getSunnyModeEndDate() {
-        return sunnyModeEndDate;
-    }
-
-    public void setSunnyModeEndDate(LocalDate sunnyModeEndDate) {
-        this.sunnyModeEndDate = sunnyModeEndDate;
-    }
-
-    public int getSunnyModeDaysAroundSummerSolstice() {
-        return sunnyModeDaysAroundSummerSolstice;
-    }
-
-    public void setSunnyModeDaysAroundSummerSolstice(int sunnyModeDaysAroundSummerSolstice) {
-        this.sunnyModeDaysAroundSummerSolstice = sunnyModeDaysAroundSummerSolstice;
+    public void setMonthlyMapping(Map<Integer, EnergyModeEnum> monthlyMapping) {
+        this.monthlyMapping = monthlyMapping;
     }
 }

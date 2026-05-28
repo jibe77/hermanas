@@ -2,6 +2,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { SBRouteData } from '@modules/navigation/models';
+import { AdminGuard } from '@modules/auth/guards';
 
 /* Module */
 import { EnergyModule } from './energy.module';
@@ -13,17 +14,17 @@ import * as chartsContainers from './containers';
 export const ROUTES: Routes = [
     {
         path: '',
-        canActivate: [],
+        canActivate: [AdminGuard],
         component: chartsContainers.ChartsComponent,
         data: {
-            title: 'Charts - Hermanas',
+            title: 'Energy - Hermanas',
             breadcrumbs: [
                 {
                     text: 'Dashboard',
                     link: '/dashboard',
                 },
                 {
-                    text: 'Charts',
+                    text: 'Energy',
                     active: true,
                 },
             ],

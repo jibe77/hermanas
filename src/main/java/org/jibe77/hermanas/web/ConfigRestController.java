@@ -96,8 +96,11 @@ public class ConfigRestController {
 
         // Consumption mode settings
         Map<String, Object> consumption = new LinkedHashMap<>();
-        consumption.put("eco_days_around_winter_solstice", configService.getEcoModeNbrDaysAroundWinterSolstice());
-        consumption.put("sunny_days_around_summer_solstice", configService.getSunnyModeNbrDaysAroundSummerSolstice());
+        Map<Integer, String> monthly = new LinkedHashMap<>();
+        for (int m = 1; m <= 12; m++) {
+            monthly.put(m, configService.getMonthMode(m).name());
+        }
+        consumption.put("monthly_mapping", monthly);
         consumption.put("eco_mode_forced", configService.isConsumptionModeEcoForce());
         config.put("consumption_mode", consumption);
 
@@ -256,25 +259,9 @@ public class ConfigRestController {
         return ResponseEntity.ok("Music sunny timer updated to " + delayMs + " ms");
     }
 
-    @Operation(
-            summary = "Update days around winter solstice for eco mode",
-            description = "Sets how many days before and after winter solstice to use eco mode. Must be > 0."
-    )
-    @PutMapping("/consumption/eco-days")
-    public ResponseEntity<String> setEcoDays(@RequestParam int days) {
-        configService.setEcoModeNbrDaysAroundWinterSolstice(days);
-        return ResponseEntity.ok("Eco mode days around winter solstice updated to " + days);
-    }
-
-    @Operation(
-            summary = "Update days around summer solstice for sunny mode",
-            description = "Sets how many days before and after summer solstice to use sunny mode. Must be > 0."
-    )
-    @PutMapping("/consumption/sunny-days")
-    public ResponseEntity<String> setSunnyDays(@RequestParam int days) {
-        configService.setSunnyModeNbrDaysAroundSummerSolstice(days);
-        return ResponseEntity.ok("Sunny mode days around summer solstice updated to " + days);
-    }
+    // Solstice-based endpoints were removed when the consumption mode was migrated
+    // to a configurable month → mode mapping. Use PUT /api/v1/energy/monthlyMapping
+    // to edit the schedule.
 
     @Operation(
             summary = "Force eco mode on/off",

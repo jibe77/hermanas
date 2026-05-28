@@ -1057,6 +1057,50 @@
                     <context context-type="linenumber">2</context>
                 </context-group>
             </trans-unit>
+            <trans-unit id="energyConfigTitle" datatype="html">
+                <source>Energy configuration</source>
+                <target>Configuration énergétique</target>
+            </trans-unit>
+            <trans-unit id="energyCurrentMode" datatype="html">
+                <source>Active mode today</source>
+                <target>Mode actif aujourd'hui</target>
+            </trans-unit>
+            <trans-unit id="energyAuto" datatype="html">
+                <source>Automatic mode (follow the calendar)</source>
+                <target>Mode automatique (selon le calendrier)</target>
+            </trans-unit>
+            <trans-unit id="energyForceEco" datatype="html">
+                <source>Force ECO mode</source>
+                <target>Forcer le mode ECO</target>
+            </trans-unit>
+            <trans-unit id="energyMonthlySchedule" datatype="html">
+                <source>Annual schedule</source>
+                <target>Calendrier annuel</target>
+            </trans-unit>
+            <trans-unit id="energyPerModeConfig" datatype="html">
+                <source>Configuration per mode</source>
+                <target>Configuration par mode</target>
+            </trans-unit>
+            <trans-unit id="energyFanDuration" datatype="html">
+                <source>Fan duration</source>
+                <target>Durée du ventilateur</target>
+            </trans-unit>
+            <trans-unit id="energyLightDuration" datatype="html">
+                <source>Light duration</source>
+                <target>Durée de l'éclairage</target>
+            </trans-unit>
+            <trans-unit id="energyMusicDuration" datatype="html">
+                <source>Music duration</source>
+                <target>Durée de la musique</target>
+            </trans-unit>
+            <trans-unit id="energyMachineShutdown" datatype="html">
+                <source>Shut down the machine</source>
+                <target>Éteindre la machine</target>
+            </trans-unit>
+            <trans-unit id="minutesShort" datatype="html">
+                <source>min</source>
+                <target>min</target>
+            </trans-unit>
             <trans-unit id="logsInfo" datatype="html">
                 <source>This board allows you to browse through the history of the log file.</source>
                 <target>Cet écran permet de naviguer à travers l'historique des fichiers de log.</target>

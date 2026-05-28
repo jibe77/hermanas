@@ -1,1 +1,14 @@
 @import 'styles/variables.scss';
+
+.energy-month-label {
+    min-width: 6.5rem;
+    justify-content: flex-start;
+}
+
+.energy-mode-config {
+    max-width: 540px;
+}
+
+.nav-tabs .nav-link {
+    cursor: pointer;
+}

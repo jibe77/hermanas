@@ -47,8 +47,8 @@ class ConfigRestControllerTest {
         when(configService.getMusicSecurityTimerDelayEco()).thenReturn(300000L);
         when(configService.getMusicSecurityTimerDelayRegular()).thenReturn(600000L);
         when(configService.getMusicSecurityTimerDelaySunny()).thenReturn(900000L);
-        when(configService.getEcoModeNbrDaysAroundWinterSolstice()).thenReturn(30);
-        when(configService.getSunnyModeNbrDaysAroundSummerSolstice()).thenReturn(30);
+        when(configService.getMonthMode(anyInt())).thenReturn(
+                org.jibe77.hermanas.service.energy.EnergyModeEnum.REGULAR);
         when(configService.isConsumptionModeEcoForce()).thenReturn(false);
         when(configService.isMachineShutdownInEcoMode()).thenReturn(true);
         when(configService.isWifiDisabledInEcoMode()).thenReturn(true);
@@ -63,7 +63,7 @@ class ConfigRestControllerTest {
                 .andExpect(jsonPath("$.light_timers.eco_delay_ms").value(300000))
                 .andExpect(jsonPath("$.fan_timers.eco_delay_ms").value(300000))
                 .andExpect(jsonPath("$.music_timers.eco_delay_ms").value(300000))
-                .andExpect(jsonPath("$.consumption_mode.eco_days_around_winter_solstice").value(30))
+                .andExpect(jsonPath("$.consumption_mode.monthly_mapping").exists())
                 .andExpect(jsonPath("$.system_behavior.eco.machine_shutdown").value(true));
     }
 
@@ -135,18 +135,6 @@ class ConfigRestControllerTest {
     // ============================================================================
     // PUT /api/v1/config/consumption/* - Update Consumption Mode
     // ============================================================================
-
-    @Test
-    @WithMockUser(roles = "USER")
-    void setEcoDays_shouldUpdateDays() throws Exception {
-        mockMvc.perform(put("/api/v1/config/consumption/eco-days")
-                        .param("days", "45")
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Eco mode days around winter solstice updated to 45"));
-
-        verify(configService).setEcoModeNbrDaysAroundWinterSolstice(45);
-    }
 
     @Test
     @WithMockUser(roles = "USER")

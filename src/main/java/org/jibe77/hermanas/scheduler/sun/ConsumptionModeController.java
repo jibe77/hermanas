@@ -7,7 +7,17 @@ import org.jibe77.hermanas.service.energy.EnergyModeEnum;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+/**
+ * Picks the active energy mode based on a configurable month → mode mapping.
+ *
+ * <p>The previous solstice-based logic was replaced with a 12-entry monthly schedule
+ * that an administrator can edit at runtime. {@link ConfigService#isConsumptionModeEcoForce()}
+ * still overrides everything to ECO when set.</p>
+ */
 @Component
 public class ConsumptionModeController {
 
@@ -29,89 +39,54 @@ public class ConsumptionModeController {
     }
 
     private EnergyModeEnum getCurrentMode(LocalDateTime time) {
-        if (isEcoMode(time)) {
+        if (configService.isConsumptionModeEcoForce()) {
             return EnergyModeEnum.ECO;
-        } else if (isSunnyMode(time)) {
-            return EnergyModeEnum.SUNNY;
-        } else {
-            return EnergyModeEnum.REGULAR;
         }
+        return configService.getMonthMode(time.getMonthValue());
     }
 
     /**
-     * Eco mode is between 1st of december to 15th of january.
-     * @param time
-     * @return true if currently in eco mode.
+     * Convenience: true if the active mode at the given time is ECO. Kept because
+     * several schedulers (door, fan, light) branch on the ECO mode.
      */
     public boolean isEcoMode(LocalDateTime time) {
-        int ecoModeNbrDaysAroundWinterSolstice = configService.getEcoModeNbrDaysAroundWinterSolstice();
-        if (configService.isConsumptionModeEcoForce() || time.getDayOfYear() < (ecoModeNbrDaysAroundWinterSolstice-10)) {
-            return true;
-        } else {
-            int winterDay = getWinterSolsticeDay(time.getYear()).getDayOfYear();
-            return time.getDayOfYear() >= (winterDay - ecoModeNbrDaysAroundWinterSolstice) &&
-                    time.getDayOfYear() <= (winterDay + ecoModeNbrDaysAroundWinterSolstice);
-        }
-    }
-
-    protected int getNumberOfDaysInYear(int year) {
-        return LocalDateTime.of(
-                year, 12, 31, 23, 59).getDayOfYear();
-    }
-
-    public boolean isSunnyMode(LocalDateTime time) {
-        int summerDay = getSummerSolsticeDay(time.getYear()).getDayOfYear();
-        int sunnyModeNbrDaysAroundSummerSolstice = configService.getSunnyModeNbrDaysAroundSummerSolstice();
-        return time.getDayOfYear() >= (summerDay - sunnyModeNbrDaysAroundSummerSolstice) &&
-                time.getDayOfYear() <= (summerDay + sunnyModeNbrDaysAroundSummerSolstice);
-    }
-
-    protected LocalDateTime getWinterSolsticeDay(int year) {
-        return LocalDateTime.of(year, 12, 21, 12, 00);
-    }
-
-    protected LocalDateTime getSummerSolsticeDay(int year) {
-        return LocalDateTime.of(year, 6, 21, 12, 00);
+        return getCurrentMode(time) == EnergyModeEnum.ECO;
     }
 
     public EnergyMode getCurrentEnergyMode(LocalDateTime time) {
-        return getCurrentEnergyMode(time, configService.getEcoModeNbrDaysAroundWinterSolstice(), configService.getSunnyModeNbrDaysAroundSummerSolstice());
-    }
-
-    public EnergyMode getCurrentEnergyMode() {
-        return getCurrentEnergyMode(LocalDateTime.now(), configService.getEcoModeNbrDaysAroundWinterSolstice(), configService.getSunnyModeNbrDaysAroundSummerSolstice());
-    }
-
-    public EnergyMode getCurrentEnergyMode(LocalDateTime time, int ecoModeNbrDaysAroundWinterSolstice, int sunnyModeNbrDaysAroundSummerSolstice) {
         EnergyMode energyMode = new EnergyMode();
         energyMode.setCurrentMode(getCurrentMode(time).name());
-        energyMode.setEcoModeDaysAroundWinterSolstice(ecoModeNbrDaysAroundWinterSolstice);
-        energyMode.setEcoModeEndDate(getWinterSolstice(time).plusDays(ecoModeNbrDaysAroundWinterSolstice).toLocalDate());
-        energyMode.setEcoModeStartDate(getWinterSolstice(time).minusDays(ecoModeNbrDaysAroundWinterSolstice).toLocalDate());
-        energyMode.setSunnyModeDaysAroundSummerSolstice(sunnyModeNbrDaysAroundSummerSolstice);
-        energyMode.setSunnyModeEndDate(getSummerSolstice(time).plusDays(sunnyModeNbrDaysAroundSummerSolstice).toLocalDate());
-        energyMode.setSunnyModeStartDate(getSummerSolstice(time).minusDays(sunnyModeNbrDaysAroundSummerSolstice).toLocalDate());
+        energyMode.setForced(configService.isConsumptionModeEcoForce());
+        energyMode.setMonthlyMapping(readMonthlyMapping());
         return energyMode;
     }
 
-    protected LocalDateTime getWinterSolstice(LocalDateTime now) {
-        LocalDateTime lastYearWinterSolstice = getWinterSolsticeDay(now.getYear()-1);
-        if (now.isBefore(lastYearWinterSolstice.plusDays(configService.getEcoModeNbrDaysAroundWinterSolstice()))) {
-            return getWinterSolsticeDay(now.getYear() -1);
-        }
-        LocalDateTime nextWinterSolstice = getWinterSolsticeDay(now.getYear());
-        if (now.isAfter(nextWinterSolstice.plusDays(configService.getEcoModeNbrDaysAroundWinterSolstice()))) {
-            return getWinterSolsticeDay(now.getYear()-1);
-        }
-        return nextWinterSolstice;
+    public EnergyMode getCurrentEnergyMode() {
+        return getCurrentEnergyMode(LocalDateTime.now());
     }
 
-    protected LocalDateTime getSummerSolstice(LocalDateTime now) {
-        LocalDateTime nextSummerSolstice = getSummerSolsticeDay(now.getYear());
-        if (now.isAfter(nextSummerSolstice.plusDays(configService.getSunnyModeNbrDaysAroundSummerSolstice()))) {
-            return getSummerSolsticeDay(now.getYear()+1);
+    /**
+     * Replaces the previous 12 individual setters with a single bulk update so the
+     * admin UI can save the whole calendar atomically.
+     */
+    public void updateMonthlyMapping(Map<Integer, EnergyModeEnum> mapping) {
+        if (mapping == null) {
+            throw new IllegalArgumentException("mapping must not be null");
         }
-        return nextSummerSolstice;
+        for (int month = 1; month <= 12; month++) {
+            EnergyModeEnum mode = mapping.get(month);
+            if (mode != null) {
+                configService.setMonthMode(month, mode);
+            }
+        }
+    }
+
+    private Map<Integer, EnergyModeEnum> readMonthlyMapping() {
+        Map<Integer, EnergyModeEnum> mapping = new LinkedHashMap<>();
+        for (int month = 1; month <= 12; month++) {
+            mapping.put(month, configService.getMonthMode(month));
+        }
+        return mapping;
     }
 
     public EnergyModeConfig getEnergyModeConfig(String energyMode) {
@@ -151,21 +126,20 @@ public class ConsumptionModeController {
                 configService.setLightSecurityTimerDelayEco(energyModeConfig.getDurationOfLightInMilliseconds());
                 configService.setMusicSecurityTimerDelayEco(energyModeConfig.getDurationOfMusicInMilliseconds());
                 configService.setMachineShutdownInEcoMode(energyModeConfig.isMachineShutdown());
-                configService.setWifiDisabledInEcoMode(energyModeConfig.isWifiDisabled());
+                // wifi.disabled.* is intentionally not exposed to the admin UI — see
+                // application.properties. We do not propagate the incoming flag.
                 break;
             case SUNNY:
                 configService.setFanSecurityTimerDelaySunny(energyModeConfig.getDurationOfFanInMilliseconds());
                 configService.setLightSecurityTimerDelaySunny(energyModeConfig.getDurationOfLightInMilliseconds());
                 configService.setMusicSecurityTimerDelaySunny(energyModeConfig.getDurationOfMusicInMilliseconds());
                 configService.setMachineShutdownInSunnyMode(energyModeConfig.isMachineShutdown());
-                configService.setWifiDisabledInSunnyMode(energyModeConfig.isWifiDisabled());
                 break;
             case REGULAR:
                 configService.setFanSecurityTimerDelayRegular(energyModeConfig.getDurationOfFanInMilliseconds());
                 configService.setLightSecurityTimerDelayRegular(energyModeConfig.getDurationOfLightInMilliseconds());
                 configService.setMusicSecurityTimerDelayRegular(energyModeConfig.getDurationOfMusicInMilliseconds());
                 configService.setMachineShutdownInRegularMode(energyModeConfig.isMachineShutdown());
-                configService.setWifiDisabledInRegularMode(energyModeConfig.isWifiDisabled());
                 break;
         }
         return energyModeConfig;
@@ -173,5 +147,24 @@ public class ConsumptionModeController {
 
     public EnergyModeConfig getCurrentConfigMode() {
         return getEnergyModeConfig(getCurrentEnergyMode().getCurrentMode());
+    }
+
+    /**
+     * Switches the global "force ECO" flag.
+     */
+    public void setEcoForced(boolean forced) {
+        configService.setConsumptionModeEcoForce(forced);
+    }
+
+    /**
+     * Used by the legacy {@code /api/v1/energy/dateRange} endpoint. Kept temporarily
+     * so the existing REST surface compiles, but the calculation is now a no-op:
+     * the monthly mapping has no concept of "days around solstice". Returns the
+     * current mode unchanged.
+     */
+    public EnergyMode getCurrentEnergyMode(LocalDateTime time,
+                                           @SuppressWarnings("unused") int unusedDaysWinter,
+                                           @SuppressWarnings("unused") int unusedDaysSummer) {
+        return getCurrentEnergyMode(time);
     }
 }

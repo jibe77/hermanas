@@ -22,10 +22,19 @@ export class SideNavComponent {
     // signal changes — no need to wrap the whole template in a *ngIf, which would otherwise
     // destroy and recreate every menu link on every state change.
     readonly isSignedIn: Signal<boolean>;
+    readonly isAdmin: Signal<boolean>;
     readonly currentLogin: Signal<string>;
 
     constructor() {
         this.isSignedIn = computed(() => this.userService.user().authState === AuthState.SignedIn);
+        this.isAdmin = computed(() => {
+            const u = this.userService.user();
+            if (u.authState !== AuthState.SignedIn) {
+                return false;
+            }
+            const roles = u.roles ?? [];
+            return roles.some(r => r === 'ADMIN' || r === 'ROLE_ADMIN');
+        });
         this.currentLogin = computed(() => this.userService.user().login);
     }
 }
