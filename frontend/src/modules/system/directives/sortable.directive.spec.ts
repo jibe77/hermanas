@@ -29,7 +29,7 @@ class TestComponent {
 }
 
 describe('SBSortableHeaderDirective (System)', () => {
-    let _component: TestComponent;
+    let component: TestComponent;
     let fixture: ComponentFixture<TestComponent>;
     let directiveElement: DebugElement;
     let directive: SBSortableHeaderDirective;

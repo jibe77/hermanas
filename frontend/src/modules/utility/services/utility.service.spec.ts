@@ -1,4 +1,4 @@
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { take } from 'rxjs/operators';
@@ -7,8 +7,6 @@ import { UtilityService } from './utility.service';
 
 describe('UtilityService', () => {
     let utilityService: UtilityService;
-
-    let _httpClient: HttpClient;
     let httpTestingController: HttpTestingController;
 
     beforeEach(() => {
@@ -21,8 +19,6 @@ describe('UtilityService', () => {
             ],
         });
         utilityService = TestBed.inject(UtilityService);
-
-        httpClient = TestBed.inject(HttpClient);
         httpTestingController = TestBed.inject(HttpTestingController);
     });
 

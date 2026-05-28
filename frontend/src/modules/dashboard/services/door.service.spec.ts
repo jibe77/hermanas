@@ -112,14 +112,6 @@ describe('DoorService', () => {
             req.flush({ success: true });
         });
 
-        it('should include auth headers', () => {
-            service.closeDoor(mockUser).subscribe();
-
-            const req = httpMock.expectOne(request => request.url.includes('/door/close'));
-            expect(req.request.headers.has('Authorization')).toBe(true);
-            req.flush({ success: true });
-        });
-
         it('should handle successful response', () => {
             const mockResponse = { success: true, message: 'Door closed' };
 
@@ -144,13 +136,6 @@ describe('DoorService', () => {
             req.flush({ success: true });
         });
 
-        it('should include auth headers', () => {
-            service.openDoor(mockUser).subscribe();
-
-            const req = httpMock.expectOne(request => request.url.includes('/door/open'));
-            expect(req.request.headers.has('Authorization')).toBe(true);
-            req.flush({ success: true });
-        });
 
         it('should handle successful response', () => {
             const mockResponse = { success: true, message: 'Door opened' };

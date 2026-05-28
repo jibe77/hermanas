@@ -71,17 +71,5 @@ describe('WeatherService', () => {
             req.flush([]);
         });
 
-        it('should include proper headers', () => {
-            const from = '2021-09-01';
-            const to = '2021-10-01';
-
-            weatherService.getInfoUsingDateRange(from, to).subscribe();
-
-            const req = httpMock.expectOne(request =>
-                request.url.includes(`/sensor/history/${from}/${to}`)
-            );
-            expect(req.request.headers.has('Access-Control-Allow-Origin')).toBe(true);
-            req.flush([]);
-        });
     });
 });

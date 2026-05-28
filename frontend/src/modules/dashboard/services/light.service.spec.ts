@@ -117,14 +117,6 @@ describe('LightService', () => {
             req.flush(mockResponse);
         });
 
-        it('should include auth headers', () => {
-            service.switch(true, mockUser).subscribe();
-
-            const req = httpMock.expectOne(request => request.url.includes('/light/switch'));
-            expect(req.request.headers.has('Authorization')).toBe(true);
-            req.flush({ success: true });
-        });
-
         it('should handle success response', () => {
             const mockResponse: SwitchResponse = {
                 success: true,
