@@ -19,7 +19,9 @@
     "ng": "cross-env NODE_OPTIONS=\"--max_old_space_size=2048\" ./node_modules/.bin/ng",
     "serve": "./node_modules/.bin/static-server dist/hermanas-client",
     "start": "node scripts/start.js",
-    "test": "npm run ng -- test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "i18n": "ng extract-i18n --output-path src/locale --out-file messages.xlf"
   },
   "private": true,
@@ -54,6 +56,8 @@
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
+    "@analogjs/vite-plugin-angular": "^2.5.2",
+    "@analogjs/vitest-angular": "^2.5.2",
     "@angular-devkit/build-angular": "~20.3.26",
     "@angular-eslint/builder": "^20.7.0",
     "@angular-eslint/eslint-plugin": "^20.7.0",
@@ -66,28 +70,23 @@
     "@angular/localize": "~20.3.22",
     "@inip/static-server": "1.0.1",
     "@playwright/test": "^1.57.0",
-    "@types/jasmine": "3.6.9",
-    "@types/jasminewd2": "2.0.8",
     "@types/node": "14.14.37",
     "@types/object-hash": "2.1.0",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
+    "@vitest/coverage-v8": "^4.1.7",
     "bootstrap": "5.3.3",
     "cross-env": "7.0.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
-    "jasmine-core": "3.7.1",
-    "karma": "6.3.2",
-    "karma-chrome-launcher": "3.1.0",
-    "karma-coverage-istanbul-reporter": "3.0.3",
-    "karma-jasmine": "4.0.1",
-    "karma-jasmine-html-reporter": "1.5.4",
+    "jsdom": "^29.1.1",
     "prettier": "^3.6.2",
     "shelljs": "0.8.4",
     "ts-node": "9.1.1",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "vitest": "^3.2.4"
   },
   "browser": {
     "crpyto": false
