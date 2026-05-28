@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, Input, Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, Input, Signal, inject } from '@angular/core';
 import { UserService } from '@modules/auth/services';
 import { AuthState } from '@modules/auth/models';
 import { SideNavItems, SideNavSection } from '@modules/navigation/models';
@@ -12,6 +12,9 @@ import { NavigationService } from '@modules/navigation/services';
     standalone: false,
 })
 export class SideNavComponent {
+    navigationService = inject(NavigationService);
+    userService = inject(UserService);
+
     @Input() sideNavItems!: SideNavItems;
     @Input() sideNavSections!: SideNavSection[];
 
@@ -21,10 +24,7 @@ export class SideNavComponent {
     readonly isSignedIn: Signal<boolean>;
     readonly currentLogin: Signal<string>;
 
-    constructor(
-        public navigationService: NavigationService,
-        public userService: UserService
-    ) {
+    constructor() {
         this.isSignedIn = computed(() => this.userService.user().authState === AuthState.SignedIn);
         this.currentLogin = computed(() => this.userService.user().login);
     }

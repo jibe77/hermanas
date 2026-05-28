@@ -8,6 +8,7 @@ import {
     OnInit,
     Output,
     ViewChild,
+    inject,
 } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
@@ -24,6 +25,9 @@ import { Observable, Subscription } from 'rxjs';
     standalone: false,
 })
 export class WeatherTableAreaComponent implements OnInit, OnDestroy {
+    weatherService = inject(WeatherService);
+    private changeDetectorRef = inject(ChangeDetectorRef);
+
     @Output() serviceCommunicationError = new EventEmitter();
     @Input() retryLauncherEvents: Observable<void>;
 
@@ -42,11 +46,6 @@ export class WeatherTableAreaComponent implements OnInit, OnDestroy {
     infoSubscription: Subscription;
     eventsSubscription: Subscription;
     private infoSubscriptionOnError: boolean;
-
-    constructor(
-        public weatherService: WeatherService,
-        private changeDetectorRef: ChangeDetectorRef
-    ) {}
 
     ngOnInit() {
         this.tableIsLoading = true;

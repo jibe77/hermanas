@@ -1,4 +1,4 @@
-import { Injectable, signal, WritableSignal } from '@angular/core';
+import { Injectable, signal, WritableSignal, inject } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Observable } from 'rxjs';
@@ -15,14 +15,14 @@ interface AuthMeResponse {
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
+    private http = inject(HttpClient);
+    private logger = inject(LoggerService);
+
     private readonly _user: WritableSignal<User>;
     private readonly _user$: Observable<User>;
     private _initialCheck?: Promise<void>;
 
-    constructor(
-        private http: HttpClient,
-        private logger: LoggerService
-    ) {
+    constructor() {
         this._user = signal(this.createDefaultNewUser());
         this._user$ = toObservable(this._user);
     }

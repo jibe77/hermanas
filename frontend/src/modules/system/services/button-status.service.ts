@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { AbstractService, LoggerService } from '@common/services';
 import { RxStompService } from '@modules/dashboard/services/rx-stomp.service';
 import { Observable, Subject } from 'rxjs';
@@ -16,13 +16,13 @@ export interface ButtonStatus {
 
 @Injectable()
 export class ButtonStatusService extends AbstractService implements OnDestroy {
+    private httpClient = inject(HttpClient);
+    private stompService = inject(RxStompService);
+    private logger = inject(LoggerService);
+
     private readonly destroy$ = new Subject<void>();
 
-    constructor(
-        private httpClient: HttpClient,
-        private stompService: RxStompService,
-        private logger: LoggerService
-    ) {
+    constructor() {
         super();
         this.ensureStompActivated();
     }

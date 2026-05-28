@@ -1,4 +1,4 @@
-import { OnInit, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { OnInit, ChangeDetectorRef, Component, OnDestroy, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ChildActivationEnd, Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -11,14 +11,12 @@ import { filter, takeUntil } from 'rxjs/operators';
     standalone: false,
 })
 export class AppComponent implements OnInit, OnDestroy {
+    router = inject(Router);
+    private titleService = inject(Title);
+    private ref = inject(ChangeDetectorRef);
+
     title = 'hermanas-client';
     private destroy$ = new Subject<void>();
-
-    constructor(
-        public router: Router,
-        private titleService: Title,
-        private ref: ChangeDetectorRef
-    ) {}
 
     ngOnInit() {
         this.router.events

@@ -7,6 +7,7 @@ import {
     OnDestroy,
     OnInit,
     Output,
+    inject,
 } from '@angular/core';
 import { MeteoInfo, MeteoService } from '@modules/dashboard/services';
 import { Observable, Subject } from 'rxjs';
@@ -20,6 +21,9 @@ import { takeUntil } from 'rxjs/operators';
     standalone: false,
 })
 export class DashboardWeatherWidgetComponent implements OnInit, OnDestroy {
+    private meteoService = inject(MeteoService);
+    private changeDetectorRef = inject(ChangeDetectorRef);
+
     @Input() retryEvents: Observable<void>;
     @Output() componentError = new EventEmitter<any>();
 
@@ -30,11 +34,6 @@ export class DashboardWeatherWidgetComponent implements OnInit, OnDestroy {
     public meteoOnError = false;
 
     private destroy$ = new Subject<void>();
-
-    constructor(
-        private meteoService: MeteoService,
-        private changeDetectorRef: ChangeDetectorRef
-    ) {}
 
     ngOnInit() {
         this.loadMeteoInfo();

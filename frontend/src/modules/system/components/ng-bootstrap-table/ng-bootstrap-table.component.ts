@@ -6,6 +6,7 @@ import {
     OnInit,
     QueryList,
     ViewChildren,
+    inject,
 } from '@angular/core';
 import { SBSortableHeaderDirective, SortEvent } from '@modules/system/directives';
 import { Country } from '@modules/system/models';
@@ -20,6 +21,9 @@ import { Observable } from 'rxjs';
     standalone: false,
 })
 export class NgBootstrapTableComponent implements OnInit {
+    countryService = inject(CountryService);
+    private changeDetectorRef = inject(ChangeDetectorRef);
+
     @Input() pageSize = 4;
 
     countries$!: Observable<Country[]>;
@@ -28,11 +32,6 @@ export class NgBootstrapTableComponent implements OnInit {
     sortedDirection!: string;
 
     @ViewChildren(SBSortableHeaderDirective) headers!: QueryList<SBSortableHeaderDirective>;
-
-    constructor(
-        public countryService: CountryService,
-        private changeDetectorRef: ChangeDetectorRef
-    ) {}
 
     ngOnInit() {
         this.countryService.pageSize = this.pageSize;

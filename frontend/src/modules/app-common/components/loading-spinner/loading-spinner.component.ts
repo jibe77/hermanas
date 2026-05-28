@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { LoadingService } from '../../services/loading/loading.service';
 
@@ -19,5 +19,5 @@ import { LoadingService } from '../../services/loading/loading.service';
     standalone: false,
 })
 export class LoadingSpinnerComponent {
-    constructor(public loadingService: LoadingService) {}
+    loadingService = inject(LoadingService);
 }

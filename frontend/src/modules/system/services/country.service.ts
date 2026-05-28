@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Injectable, PipeTransform, signal, WritableSignal, Signal } from '@angular/core';
+import { Injectable, PipeTransform, signal, WritableSignal, Signal, inject } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { COUNTRIES } from '@modules/system/data/countries';
 import { SortDirection } from '@modules/system/directives';
@@ -45,6 +45,8 @@ function matches(country: Country, term: string, pipe: PipeTransform) {
 
 @Injectable({ providedIn: 'root' })
 export class CountryService {
+    private pipe = inject(DecimalPipe);
+
     // Signals for reactive state management
     private _loading: WritableSignal<boolean> = signal(true);
     private _search$ = new Subject<void>();
@@ -64,7 +66,7 @@ export class CountryService {
         sortDirection: '',
     };
 
-    constructor(private pipe: DecimalPipe) {
+    constructor() {
         this._search$
             .pipe(
                 tap(() => this._loading.set(true)),

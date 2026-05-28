@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AbstractService } from '@common/services';
 import { Observable } from 'rxjs';
 
@@ -13,9 +13,7 @@ export interface DiskUsage {
 
 @Injectable()
 export class DiskUsageService extends AbstractService {
-    constructor(private http: HttpClient) {
-        super();
-    }
+    private http = inject(HttpClient);
 
     public getDiskUsage(): Observable<DiskUsage> {
         return this.http.get<DiskUsage>(this.domainBase + '/system/disk-usage', {

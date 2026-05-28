@@ -9,45 +9,65 @@
                 </div>
             </div>
             <div class="card-body">
-                <div class="spinner-border" *ngIf="isLoading" role="status">
-                    <span class="visually-hidden" i18n="@@loading">Loading...</span>
-                </div>
-                <div *ngIf="doorStatus !== undefined || hasError">
-                    <span i18n="@@state">State</span>{{ ' ' }}:{{ ' ' }}
-                    <span *ngIf="isDoorStatus('OPENED')" i18n="@@stateOpened">Opened</span>
-                    <span *ngIf="isDoorStatus('OPENING')" i18n="@@stateOpening">Opening ...</span>
-                    <span *ngIf="isDoorStatus('CLOSING')" i18n="@@stateClosing">Closing ...</span>
-                    <span *ngIf="isDoorStatus('CLOSED')" i18n="@@stateClosed">Closed</span>
-                    <span *ngIf="isDoorStatus('SEEMS_OPENED')" i18n="@@stateSeemsOpened"
-                        >Seems opened</span
-                    >
-                    <span *ngIf="isDoorStatus('SEEMS_CLOSED')" i18n="@@stateSeemsClosed"
-                        >Seems closed</span
-                    >
-                    <span *ngIf="isDoorStatus('OPENED_INCORRECTLY')" i18n="@@stateOpenedIncorrectly"
-                        >Opened incorrectly</span
-                    >
-                    <span *ngIf="isDoorStatus('CLOSED_INCORRECTLY')" i18n="@@stateClosedIncorrectly"
-                        >Closed incorrectly</span
-                    >
-                    <span *ngIf="hasError" i18n="@@informationNotAvailable"
-                        >Information not available</span
-                    >
-                </div>
-                <div *ngIf="nextOpeningTime !== undefined || nextEventsOnError === true">
-                    <span i18n="@@nextOpeningTime">Next opening time</span>{{ ' ' }}:{{ ' ' }}
-                    <span *ngIf="nextOpeningTime !== undefined">{{ nextOpeningTime }}</span>
-                    <span *ngIf="nextEventsOnError === true" i18n="@@informationNotAvailable"
-                        >Information not available</span
-                    >
-                </div>
-                <div *ngIf="nextClosingTime !== undefined || nextEventsOnError === true">
-                    <span i18n="@@nextClosingTime">Next closing time</span>{{ ' ' }}:{{ ' ' }}
-                    <span *ngIf="nextClosingTime !== undefined">{{ nextClosingTime }}</span>
-                    <span *ngIf="nextEventsOnError === true" i18n="@@informationNotAvailable"
-                        >Information not available</span
-                    >
-                </div>
+                @if (isLoading) {
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden" i18n="@@loading">Loading...</span>
+                    </div>
+                }
+                @if (doorStatus !== undefined || hasError) {
+                    <div>
+                        <span i18n="@@state">State</span>{{ ' ' }}:{{ ' ' }}
+                        @if (isDoorStatus('OPENED')) {
+                            <span i18n="@@stateOpened">Opened</span>
+                        }
+                        @if (isDoorStatus('OPENING')) {
+                            <span i18n="@@stateOpening">Opening ...</span>
+                        }
+                        @if (isDoorStatus('CLOSING')) {
+                            <span i18n="@@stateClosing">Closing ...</span>
+                        }
+                        @if (isDoorStatus('CLOSED')) {
+                            <span i18n="@@stateClosed">Closed</span>
+                        }
+                        @if (isDoorStatus('SEEMS_OPENED')) {
+                            <span i18n="@@stateSeemsOpened">Seems opened</span>
+                        }
+                        @if (isDoorStatus('SEEMS_CLOSED')) {
+                            <span i18n="@@stateSeemsClosed">Seems closed</span>
+                        }
+                        @if (isDoorStatus('OPENED_INCORRECTLY')) {
+                            <span i18n="@@stateOpenedIncorrectly">Opened incorrectly</span>
+                        }
+                        @if (isDoorStatus('CLOSED_INCORRECTLY')) {
+                            <span i18n="@@stateClosedIncorrectly">Closed incorrectly</span>
+                        }
+                        @if (hasError) {
+                            <span i18n="@@informationNotAvailable">Information not available</span>
+                        }
+                    </div>
+                }
+                @if (nextOpeningTime !== undefined || nextEventsOnError === true) {
+                    <div>
+                        <span i18n="@@nextOpeningTime">Next opening time</span>{{ ' ' }}:{{ ' ' }}
+                        @if (nextOpeningTime !== undefined) {
+                            <span>{{ nextOpeningTime }}</span>
+                        }
+                        @if (nextEventsOnError === true) {
+                            <span i18n="@@informationNotAvailable">Information not available</span>
+                        }
+                    </div>
+                }
+                @if (nextClosingTime !== undefined || nextEventsOnError === true) {
+                    <div>
+                        <span i18n="@@nextClosingTime">Next closing time</span>{{ ' ' }}:{{ ' ' }}
+                        @if (nextClosingTime !== undefined) {
+                            <span>{{ nextClosingTime }}</span>
+                        }
+                        @if (nextEventsOnError === true) {
+                            <span i18n="@@informationNotAvailable">Information not available</span>
+                        }
+                    </div>
+                }
             </div>
         </sb-card>
     </div>
@@ -63,11 +83,13 @@
                 </div>
             </div>
             <div class="card-body">
-                <div class="spinner-border" *ngIf="isPictureLoading" role="status">
-                    <span class="visually-hidden">
-                        <span i18n="@@loading">Loading...</span>
-                    </span>
-                </div>
+                @if (isPictureLoading) {
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">
+                            <span i18n="@@loading">Loading...</span>
+                        </span>
+                    </div>
+                }
                 <img
                     class="{{ pictureInitialised === false ? 'hidden' : 'not_hidden' }}"
                     [src]="picturePath"
@@ -76,9 +98,9 @@
                     alt="chicken coop picture"
                     i18n-alt="@@chicken coop picture"
                 />
-                <span *ngIf="pictureNotInitialised === true" i18n="@@informationNotAvailable">
-                    Information not available</span
-                >
+                @if (pictureNotInitialised === true) {
+                    <span i18n="@@informationNotAvailable"> Information not available</span>
+                }
             </div>
         </sb-card>
     </div>

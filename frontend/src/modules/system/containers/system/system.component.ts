@@ -4,6 +4,7 @@ import {
     Component,
     OnDestroy,
     OnInit,
+    inject,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '@common/services';
@@ -34,6 +35,14 @@ interface ButtonState {
     standalone: false,
 })
 export class SystemComponent implements OnInit, OnDestroy {
+    private _versionService = inject(VersionService);
+    private _buttonStatusService = inject(ButtonStatusService);
+    private _emailTestService = inject(EmailTestService);
+    private _diskUsageService = inject(DiskUsageService);
+    private _userService = inject(UserService);
+    private _toastService = inject(ToastService);
+    private changeDetectorRef = inject(ChangeDetectorRef);
+
     public backEndVersion: string;
     public backEndBuildTime: string;
     public backEndVersionOnError: boolean;
@@ -52,16 +61,6 @@ export class SystemComponent implements OnInit, OnDestroy {
 
     notificationSubject: Subject<void> = new Subject<void>();
     private destroy$ = new Subject<void>();
-
-    constructor(
-        private _versionService: VersionService,
-        private _buttonStatusService: ButtonStatusService,
-        private _emailTestService: EmailTestService,
-        private _diskUsageService: DiskUsageService,
-        private _userService: UserService,
-        private _toastService: ToastService,
-        private changeDetectorRef: ChangeDetectorRef
-    ) {}
 
     ngOnInit() {
         this.createSubscriptionToBackendVersion();

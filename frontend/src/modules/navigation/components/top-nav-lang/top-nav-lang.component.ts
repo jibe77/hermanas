@@ -1,4 +1,4 @@
-import { OnInit, ChangeDetectionStrategy, Component } from '@angular/core';
+import { OnInit, ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NavigationService } from '@modules/navigation/services';
 
 @Component({
@@ -9,14 +9,14 @@ import { NavigationService } from '@modules/navigation/services';
     standalone: false,
 })
 export class TopNavLangComponent implements OnInit {
+    navigationService = inject(NavigationService);
+
     siteLanguage = 'English';
     siteLocale: string;
     languageList = [
         { code: 'en-US', label: 'English' },
         { code: 'fr-FR', label: 'Français' },
     ];
-
-    constructor(public navigationService: NavigationService) {}
 
     ngOnInit(): void {
         this.siteLocale = window.location.pathname.split('/')[1];

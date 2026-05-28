@@ -4,6 +4,7 @@ import {
     Component,
     OnDestroy,
     OnInit,
+    inject,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '@common/services';
@@ -19,6 +20,10 @@ import { takeUntil } from 'rxjs/operators';
     standalone: false,
 })
 export class ChartsComponent implements OnInit, OnDestroy {
+    private _chartsService = inject(ChartsService);
+    private _toastService = inject(ToastService);
+    private cdr = inject(ChangeDetectorRef);
+
     playlists: string[] = [];
     selectedPlaylist = '';
     persistedPlaylist = '';
@@ -29,12 +34,6 @@ export class ChartsComponent implements OnInit, OnDestroy {
     saving = false;
 
     private destroy$ = new Subject<void>();
-
-    constructor(
-        private _chartsService: ChartsService,
-        private _toastService: ToastService,
-        private cdr: ChangeDetectorRef
-    ) {}
 
     ngOnInit(): void {
         this.loadPlaylists();

@@ -14,26 +14,24 @@
                             <fa-icon [icon]="['fas', 'sun']"></fa-icon>
                         </div>
                         <span i18n="@@weatherMenu">Weather</span></a
-                    ><a
-                        class="nav-link"
-                        routerLink="/camera"
-                        routerLinkActive="active"
-                        *ngIf="isSignedIn()"
-                        ><div class="sb-nav-link-icon">
-                            <fa-icon [icon]="['fas', 'camera']"></fa-icon>
-                        </div>
-                        <span i18n="@@webcamMenu">Webcam</span></a
-                    ><a
-                        class="nav-link"
-                        routerLink="/logs"
-                        routerLinkActive="active"
-                        *ngIf="isSignedIn()"
-                        ><div class="sb-nav-link-icon">
-                            <fa-icon [icon]="['fas', 'file-contract']"></fa-icon>
-                        </div>
-                        <span i18n="@@logsMenu">Logs</span></a
-                    ></ng-container
-                >
+                    >
+                    @if (isSignedIn()) {
+                        <a class="nav-link" routerLink="/camera" routerLinkActive="active"
+                            ><div class="sb-nav-link-icon">
+                                <fa-icon [icon]="['fas', 'camera']"></fa-icon>
+                            </div>
+                            <span i18n="@@webcamMenu">Webcam</span></a
+                        >
+                    }
+                    @if (isSignedIn()) {
+                        <a class="nav-link" routerLink="/logs" routerLinkActive="active"
+                            ><div class="sb-nav-link-icon">
+                                <fa-icon [icon]="['fas', 'file-contract']"></fa-icon>
+                            </div>
+                            <span i18n="@@logsMenu">Logs</span></a
+                        >
+                    }
+                </ng-container>
                 <div class="sb-sidenav-menu-heading">Config</div>
                 <ng-container
                     ><a class="nav-link" routerLink="/energy" routerLinkActive="active"
@@ -41,16 +39,16 @@
                             <fa-icon [icon]="['fas', 'car-battery']"></fa-icon>
                         </div>
                         <span i18n="@@energySavingMenu">Energy saving</span></a
-                    ><a
-                        class="nav-link"
-                        routerLink="/notification"
-                        routerLinkActive="active"
-                        *ngIf="isSignedIn()"
-                        ><div class="sb-nav-link-icon">
-                            <fa-icon [icon]="['fas', 'users']"></fa-icon>
-                        </div>
-                        <span i18n="@@usersMenu">Users</span></a
-                    ><a class="nav-link" routerLink="/music" routerLinkActive="active"
+                    >
+                    @if (isSignedIn()) {
+                        <a class="nav-link" routerLink="/notification" routerLinkActive="active"
+                            ><div class="sb-nav-link-icon">
+                                <fa-icon [icon]="['fas', 'users']"></fa-icon>
+                            </div>
+                            <span i18n="@@usersMenu">Users</span></a
+                        >
+                    }
+                    <a class="nav-link" routerLink="/music" routerLinkActive="active"
                         ><div class="sb-nav-link-icon">
                             <fa-icon [icon]="['fas', 'music']"></fa-icon>
                         </div>
@@ -67,9 +65,13 @@
     </div>
     <div class="sb-sidenav-footer">
         <div class="small" i18n="@@logged_in_as">Logged in as:</div>
-        <span
-            ><span *ngIf="currentLogin() === 'guest'" i18n="@@guest">Guest</span
-            ><span *ngIf="currentLogin() !== 'guest'">{{ currentLogin() }}</span></span
-        >
+        <span>
+            @if (currentLogin() === 'guest') {
+                <span i18n="@@guest">Guest</span>
+            }
+            @if (currentLogin() !== 'guest') {
+                <span>{{ currentLogin() }}</span>
+            }
+        </span>
     </div>
 </nav>

@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -19,9 +19,9 @@ export interface PhotoListing {
 
 @Injectable({ providedIn: 'root' })
 export class PhotosService {
-    private readonly base = `${environment.apiUrl}/camera/photos`;
+    private http = inject(HttpClient);
 
-    constructor(private http: HttpClient) {}
+    private readonly base = `${environment.apiUrl}/camera/photos`;
 
     list(path: string = ''): Observable<PhotoListing> {
         let params = new HttpParams();

@@ -5,6 +5,7 @@ import {
     HostBinding,
     OnDestroy,
     OnInit,
+    inject,
 } from '@angular/core';
 import { NavigationService } from '@modules/navigation/services';
 import { Subject } from 'rxjs';
@@ -18,13 +19,11 @@ import { takeUntil } from 'rxjs/operators';
     standalone: false,
 })
 export class LayoutDashboardComponent implements OnInit, OnDestroy {
+    navigationService = inject(NavigationService);
+    private changeDetectorRef = inject(ChangeDetectorRef);
+
     @HostBinding('class.sb-sidenav-toggled') sideNavHidden = false;
     private destroy$ = new Subject<void>();
-
-    constructor(
-        public navigationService: NavigationService,
-        private changeDetectorRef: ChangeDetectorRef
-    ) {}
 
     ngOnInit() {
         this.navigationService

@@ -1,10 +1,10 @@
-import { ErrorHandler, Injectable, Injector } from '@angular/core';
+import { ErrorHandler, Injectable, Injector, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '../toast/toast.service';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
-    constructor(private injector: Injector) {}
+    private injector = inject(Injector);
 
     handleError(error: Error | HttpErrorResponse): void {
         // Use injector to avoid circular dependency issues

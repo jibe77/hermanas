@@ -7,6 +7,7 @@ import {
     OnInit,
     Output,
     ViewChild,
+    inject,
 } from '@angular/core';
 import { ApplianceMessage } from '@modules/dashboard/models';
 import { ProgressWebsocketService } from '@modules/dashboard/services/progresswebsocket.service';
@@ -24,6 +25,8 @@ import { DashboardWeatherWidgetComponent } from '../dashboard-weather-widget/das
     standalone: false,
 })
 export class DashboardWidgetsComponent implements OnInit, OnDestroy {
+    private websocketService = inject(ProgressWebsocketService);
+
     @Output() serviceCommunicationError = new EventEmitter<any>();
     @Input() retryLauncherEvents: Observable<void>;
     @Input() domainBase: string;
@@ -34,8 +37,6 @@ export class DashboardWidgetsComponent implements OnInit, OnDestroy {
     @ViewChild(DashboardWeatherWidgetComponent) weatherWidget?: DashboardWeatherWidgetComponent;
 
     private destroy$ = new Subject<void>();
-
-    constructor(private websocketService: ProgressWebsocketService) {}
 
     ngOnInit() {
         this.initWebSocket();

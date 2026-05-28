@@ -5,38 +5,45 @@
         <div class="float-end"><sb-dashboard-weather-action></sb-dashboard-weather-action></div>
     </div>
     <div class="card-body">
-        <div
-            class="spinner-border"
-            *ngIf="temperature === undefined &amp;&amp; meteoOnError === false"
-            role="status"
-        >
-            <span class="sr-only" i18n="@@loading">Loading...</span>
-        </div>
-        <div *ngIf="temperature !== undefined || meteoOnError === true">
-            <span i18n="@@temperature">Temperature</span>{{ ' ' }}:{{ ' '
-            }}<span
-                *ngIf="temperature !== undefined"
-                i18n="temperature in the chichen cooop@@weatherTemp"
-                >{{ temperature }}° ({{ temperatureExternal }}° exterior)</span
-            ><span
-                *ngIf="meteoOnError === true"
-                i18n="temperature in the chichen cooop unavailable@@informationNotAvailable"
-                >Information not available</span
-            >
-        </div>
-        <div *ngIf="humidity !== undefined || meteoOnError === true">
-            <span i18n="@@humidity">Humidity</span>{{ ' ' }}:{{ ' '
-            }}<span
-                *ngIf="humidity !== undefined"
-                i18n="humidity: humidity in the chicken coop@@weatherHumidity"
-            >
-                {{ humidity }}% ({{ humidityExternal }}% exterior)</span
-            ><span
-                *ngIf="meteoOnError === true"
-                i18n="humidity: humidity in the chicken coop unavailable@@informationNotAvailable"
-            >
-                Information not available</span
-            >
-        </div>
+        @if (temperature === undefined && meteoOnError === false) {
+            <div class="spinner-border" role="status">
+                <span class="sr-only" i18n="@@loading">Loading...</span>
+            </div>
+        }
+        @if (temperature !== undefined || meteoOnError === true) {
+            <div>
+                <span i18n="@@temperature">Temperature</span>{{ ' ' }}:{{ ' ' }}
+                @if (temperature !== undefined) {
+                    <span i18n="temperature in the chichen cooop@@weatherTemp"
+                        >{{ temperature }}° ({{ temperatureExternal }}° exterior)</span
+                    >
+                }
+                @if (meteoOnError === true) {
+                    <span
+                        i18n="temperature in the chichen cooop unavailable@@informationNotAvailable"
+                        >Information not available</span
+                    >
+                }
+            </div>
+        }
+        @if (humidity !== undefined || meteoOnError === true) {
+            <div>
+                <span i18n="@@humidity">Humidity</span>{{ ' ' }}:{{ ' ' }}
+                @if (humidity !== undefined) {
+                    <span i18n="humidity: humidity in the chicken coop@@weatherHumidity">
+                        {{ humidity }}% ({{ humidityExternal }}% exterior)</span
+                    >
+                }
+                @if (meteoOnError === true) {
+                    <span
+                        i18n="
+                            humidity: humidity in the chicken coop
+                            unavailable@@informationNotAvailable"
+                    >
+                        Information not available</span
+                    >
+                }
+            </div>
+        }
     </div></sb-card
 >

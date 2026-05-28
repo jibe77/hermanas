@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NavigationService } from '@modules/navigation/services';
 
 @Component({
@@ -9,7 +9,8 @@ import { NavigationService } from '@modules/navigation/services';
     standalone: false,
 })
 export class TopNavComponent {
-    constructor(private navigationService: NavigationService) {}
+    private navigationService = inject(NavigationService);
+
     toggleSideNav() {
         this.navigationService.toggleSideNav();
     }

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AbstractService } from '@common/services';
 import { User } from '@modules/auth/models';
 import { Observable } from 'rxjs';
@@ -12,9 +12,7 @@ export interface LightStatus {
 
 @Injectable()
 export class LightService extends AbstractService {
-    constructor(private _httpClient: HttpClient) {
-        super();
-    }
+    private _httpClient = inject(HttpClient);
 
     public getStatus(): Observable<LightStatus> {
         const lightStatusUrl = this.domainBase + '/light/status';

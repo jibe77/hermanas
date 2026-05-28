@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    OnInit,
+    inject,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '@common/services';
 import { PhotoEntry, PhotoListing, PhotosService } from '@modules/camera/services/photos.service';
@@ -21,18 +27,16 @@ interface PhotoFile extends PhotoEntry {
     standalone: false,
 })
 export class ChartsComponent implements OnInit {
+    private photos = inject(PhotosService);
+    private toast = inject(ToastService);
+    private cdr = inject(ChangeDetectorRef);
+
     currentPath = '';
     crumbs: Crumb[] = [{ label: 'photos', path: '' }];
     directories: PhotoEntry[] = [];
     files: PhotoFile[] = [];
     loading = false;
     selected?: PhotoFile;
-
-    constructor(
-        private photos: PhotosService,
-        private toast: ToastService,
-        private cdr: ChangeDetectorRef
-    ) {}
 
     ngOnInit(): void {
         this.load('');

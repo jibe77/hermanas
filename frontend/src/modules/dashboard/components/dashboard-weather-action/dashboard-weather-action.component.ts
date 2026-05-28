@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { DashboardWidgetsComponent } from '@modules/dashboard/components/dashboard-widgets/dashboard-widgets.component';
 
 @Component({
@@ -8,7 +8,7 @@ import { DashboardWidgetsComponent } from '@modules/dashboard/components/dashboa
     standalone: false,
 })
 export class DashboardWeatherActionComponent {
-    constructor(private _dashboardWidgetsComponent: DashboardWidgetsComponent) {}
+    private _dashboardWidgetsComponent = inject(DashboardWidgetsComponent);
 
     public refreshWeather() {
         this._dashboardWidgetsComponent.createSubscriptionToMeteoInfo();

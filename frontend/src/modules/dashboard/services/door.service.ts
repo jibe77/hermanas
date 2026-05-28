@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AbstractService, LoggerService } from '@common/services';
 import { User } from '@modules/auth/models';
 import { Observable } from 'rxjs';
@@ -13,12 +13,8 @@ export interface DoorStatus {
 
 @Injectable()
 export class DoorService extends AbstractService {
-    constructor(
-        private _httpClient: HttpClient,
-        private logger: LoggerService
-    ) {
-        super();
-    }
+    private _httpClient = inject(HttpClient);
+    private logger = inject(LoggerService);
 
     public getDoorStatus(): Observable<DoorStatus> {
         const nextEventsUrl = this.domainBase + '/door/status';

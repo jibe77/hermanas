@@ -12,15 +12,14 @@
         role="button"
         aria-haspopup="true"
         aria-expanded="false"
-        ><span
-            class="flag-icon flag-icon-gb flag-icon-squared"
-            *ngIf="siteLanguage === 'English'"
-        ></span
-        ><span
-            class="flag-icon flag-icon-fr flag-icon-squared"
-            *ngIf="siteLanguage === 'Français'"
-        ></span
-    ></a>
+    >
+        @if (siteLanguage === 'English') {
+            <span class="flag-icon flag-icon-gb flag-icon-squared"></span>
+        }
+        @if (siteLanguage === 'Français') {
+            <span class="flag-icon flag-icon-fr flag-icon-squared"></span>
+        }
+    </a>
     <div class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="dropdownUser">
         <a class="dropdown-item" href="/index.html?lang_redirect=en"
             ><span class="flag-icon flag-icon-gb flag-icon-squared"></span><span>{{ ' ' }}</span

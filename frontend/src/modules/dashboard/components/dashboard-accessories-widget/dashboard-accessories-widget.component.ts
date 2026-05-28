@@ -7,6 +7,7 @@ import {
     OnDestroy,
     OnInit,
     Output,
+    inject,
 } from '@angular/core';
 import {
     FanService,
@@ -27,6 +28,11 @@ import { takeUntil } from 'rxjs/operators';
     standalone: false,
 })
 export class DashboardAccessoriesWidgetComponent implements OnInit, OnDestroy {
+    private lightService = inject(LightService);
+    private fanService = inject(FanService);
+    private musicService = inject(MusicService);
+    private changeDetectorRef = inject(ChangeDetectorRef);
+
     @Input() retryEvents: Observable<void>;
     @Output() componentError = new EventEmitter<any>();
 
@@ -38,13 +44,6 @@ export class DashboardAccessoriesWidgetComponent implements OnInit, OnDestroy {
     public fanStatusOnError = false;
 
     private destroy$ = new Subject<void>();
-
-    constructor(
-        private lightService: LightService,
-        private fanService: FanService,
-        private musicService: MusicService,
-        private changeDetectorRef: ChangeDetectorRef
-    ) {}
 
     ngOnInit() {
         this.loadLightStatus();

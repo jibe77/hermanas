@@ -39,17 +39,23 @@
                             >Se souvenir de moi</label
                         >
                     </div>
-                    <div class="alert alert-danger" *ngIf="errorMessage" data-cy="loginError">
-                        {{ errorMessage }}
-                    </div>
+                    @if (errorMessage) {
+                        <div class="alert alert-danger" data-cy="loginError">
+                            {{ errorMessage }}
+                        </div>
+                    }
                     <button
                         class="btn btn-primary w-100"
                         type="submit"
                         data-cy="loginSubmit"
                         [disabled]="loginForm.invalid || submitting"
                     >
-                        <span *ngIf="!submitting" i18n="@@signin">Se connecter</span
-                        ><span *ngIf="submitting" i18n="@@signinInProgress">Connexion…</span>
+                        @if (!submitting) {
+                            <span i18n="@@signin">Se connecter</span>
+                        }
+                        @if (submitting) {
+                            <span i18n="@@signinInProgress">Connexion…</span>
+                        }
                     </button>
                     <div class="mt-3 text-center">
                         <a routerLink="/auth/register" i18n="@@loginCreateAccount"

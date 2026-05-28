@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,17 +13,17 @@ import { environment } from '../../../../environments/environment';
     standalone: false,
 })
 export class RegisterComponent {
+    private fb = inject(FormBuilder);
+    private http = inject(HttpClient);
+    private router = inject(Router);
+    private cdr = inject(ChangeDetectorRef);
+
     registerForm: FormGroup;
     errorMessage = '';
     submitting = false;
     success = false;
 
-    constructor(
-        private fb: FormBuilder,
-        private http: HttpClient,
-        private router: Router,
-        private cdr: ChangeDetectorRef
-    ) {
+    constructor() {
         this.registerForm = this.fb.group({
             login: ['', [Validators.required, Validators.minLength(2)]],
             password: ['', [Validators.required, Validators.minLength(6)]],

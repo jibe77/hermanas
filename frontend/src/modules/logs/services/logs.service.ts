@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AbstractService } from '@common/services';
 import { Observable } from 'rxjs';
 
@@ -19,9 +19,7 @@ export interface LogTailOptions {
 
 @Injectable()
 export class LogsService extends AbstractService {
-    constructor(private http: HttpClient) {
-        super();
-    }
+    private http = inject(HttpClient);
 
     listFiles(): Observable<LogFileInfo[]> {
         return this.http.get<LogFileInfo[]>(`${this.domainBase}/logs`, {

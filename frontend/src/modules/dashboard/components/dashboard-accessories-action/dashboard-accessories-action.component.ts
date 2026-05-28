@@ -1,4 +1,4 @@
-import { OnInit, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
+import { OnInit, ChangeDetectorRef, Component, Input, OnDestroy, inject } from '@angular/core';
 import { User } from '@modules/auth/models';
 import { UserService } from '@modules/auth/services';
 import { DashboardWidgetsComponent } from '@modules/dashboard/components/dashboard-widgets/dashboard-widgets.component';
@@ -13,21 +13,19 @@ import { take } from 'rxjs/operators';
     standalone: false,
 })
 export class DashboardAccessoriesActionComponent implements OnInit, OnDestroy {
+    _lightService = inject(LightService);
+    _fanService = inject(FanService);
+    _musicService = inject(MusicService);
+    _userService = inject(UserService);
+    private changeDetectorRef = inject(ChangeDetectorRef);
+    private dashboardWidgetsComponent = inject(DashboardWidgetsComponent);
+
     @Input() public musicStatus;
     @Input() public fanStatus;
     @Input() public lightStatus;
 
     user: User;
     subscription: Subscription = new Subscription();
-
-    constructor(
-        public _lightService: LightService,
-        public _fanService: FanService,
-        public _musicService: MusicService,
-        public _userService: UserService,
-        private changeDetectorRef: ChangeDetectorRef,
-        private dashboardWidgetsComponent: DashboardWidgetsComponent
-    ) {}
 
     ngOnInit(): void {
         this.subscription = this._userService.user$.subscribe((user: User) => {

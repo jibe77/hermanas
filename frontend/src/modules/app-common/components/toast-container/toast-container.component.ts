@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { trigger, style, transition, animate } from '@angular/animations';
 import { Toast, ToastService } from '../../services/toast/toast.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -21,10 +21,10 @@ import { Subject, takeUntil } from 'rxjs';
     standalone: false,
 })
 export class ToastContainerComponent implements OnInit, OnDestroy {
+    private toastService = inject(ToastService);
+
     public toasts: Toast[] = [];
     private destroy$ = new Subject<void>();
-
-    constructor(private toastService: ToastService) {}
 
     ngOnInit(): void {
         // Subscribe to new toasts

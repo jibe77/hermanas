@@ -7,6 +7,7 @@ import {
     OnDestroy,
     OnInit,
     Output,
+    inject,
 } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -19,14 +20,14 @@ import { takeUntil } from 'rxjs/operators';
     standalone: false,
 })
 export class CommonCardsComponent implements OnInit, OnDestroy {
+    _changeDetectorRef = inject(ChangeDetectorRef);
+
     retryMessageIsDisplayed = false;
 
     @Input() notificationEvents: Observable<void>;
     @Output() serviceRetry = new EventEmitter();
     eventSubject: Subject<void> = new Subject<void>();
     private destroy$ = new Subject<void>();
-
-    constructor(public _changeDetectorRef: ChangeDetectorRef) {}
 
     ngOnInit(): void {
         this.notificationEvents.pipe(takeUntil(this.destroy$)).subscribe(() => {

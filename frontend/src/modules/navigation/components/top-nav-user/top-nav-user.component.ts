@@ -4,6 +4,7 @@ import {
     Component,
     OnDestroy,
     OnInit,
+    inject,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoginService, UserService } from '@modules/auth/services';
@@ -19,16 +20,14 @@ import { Subscription } from 'rxjs';
     standalone: false,
 })
 export class TopNavUserComponent implements OnInit, OnDestroy {
+    navigationService = inject(NavigationService);
+    userService = inject(UserService);
+    private loginService = inject(LoginService);
+    private changeDetectorRef = inject(ChangeDetectorRef);
+    private router = inject(Router);
+
     authState: AuthState = AuthState.SignedOut;
     subscription: Subscription = new Subscription();
-
-    constructor(
-        public navigationService: NavigationService,
-        public userService: UserService,
-        private loginService: LoginService,
-        private changeDetectorRef: ChangeDetectorRef,
-        private router: Router
-    ) {}
 
     ngOnInit() {
         this.userService.checkAuthState();

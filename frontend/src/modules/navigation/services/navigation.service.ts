@@ -1,4 +1,4 @@
-import { Injectable, signal, WritableSignal, Signal } from '@angular/core';
+import { Injectable, signal, WritableSignal, Signal, inject } from '@angular/core';
 import { ActivatedRoute, ChildActivationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -8,6 +8,9 @@ import { SBRouteData } from '../models';
 
 @Injectable()
 export class NavigationService {
+    route = inject(ActivatedRoute);
+    router = inject(Router);
+
     // Signals for reactive state management
     private _sideNavVisible: WritableSignal<boolean> = signal(true);
     private _routeData: WritableSignal<SBRouteData> = signal({} as SBRouteData);
@@ -22,10 +25,9 @@ export class NavigationService {
     private readonly _routeData$: Observable<SBRouteData>;
     private readonly _currentURL$: Observable<string>;
 
-    constructor(
-        public route: ActivatedRoute,
-        public router: Router
-    ) {
+    constructor() {
+        const router = this.router;
+
         this._sideNavVisible$ = toObservable(this._sideNavVisible);
         this._routeData$ = toObservable(this._routeData);
         this._currentURL$ = toObservable(this._currentURL);

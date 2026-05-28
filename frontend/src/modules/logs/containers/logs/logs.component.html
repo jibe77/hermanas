@@ -16,90 +16,109 @@
             ><span i18n="@@logsBrowser">Log browser</span>
         </div>
         <div class="card-body">
-            <div *ngIf="listError" class="text-danger" i18n="@@informationNotAvailable">
-                Information not available
-            </div>
-            <div *ngIf="!listError" class="row g-2 align-items-end">
-                <div class="col-md-4">
-                    <label for="logsFile" class="form-label small" i18n="@@logsFile">File</label>
-                    <select
-                        id="logsFile"
-                        class="form-select form-select-sm"
-                        [ngModel]="selectedFile"
-                        (ngModelChange)="onFileChange($event)"
-                    >
-                        <option *ngFor="let f of files" [value]="f.name">
-                            {{ f.name }} ({{ formatSize(f.size) }})
-                        </option>
-                    </select>
+            @if (listError) {
+                <div class="text-danger" i18n="@@informationNotAvailable">
+                    Information not available
                 </div>
-                <div class="col-md-2">
-                    <label for="logsLevel" class="form-label small" i18n="@@logsLevel">Level</label>
-                    <select
-                        id="logsLevel"
-                        class="form-select form-select-sm"
-                        [(ngModel)]="selectedLevel"
-                    >
-                        <option *ngFor="let lvl of levelOptions" [value]="lvl">{{ lvl }}</option>
-                    </select>
+            }
+            @if (!listError) {
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label for="logsFile" class="form-label small" i18n="@@logsFile"
+                            >File</label
+                        >
+                        <select
+                            id="logsFile"
+                            class="form-select form-select-sm"
+                            [ngModel]="selectedFile"
+                            (ngModelChange)="onFileChange($event)"
+                        >
+                            @for (f of files; track f) {
+                                <option [value]="f.name">
+                                    {{ f.name }} ({{ formatSize(f.size) }})
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="logsLevel" class="form-label small" i18n="@@logsLevel"
+                            >Level</label
+                        >
+                        <select
+                            id="logsLevel"
+                            class="form-select form-select-sm"
+                            [(ngModel)]="selectedLevel"
+                        >
+                            @for (lvl of levelOptions; track lvl) {
+                                <option [value]="lvl">{{ lvl }}</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="logsLines" class="form-label small" i18n="@@logsLines"
+                            >Lines</label
+                        >
+                        <select
+                            id="logsLines"
+                            class="form-select form-select-sm"
+                            [(ngModel)]="selectedLines"
+                        >
+                            @for (n of lineOptions; track n) {
+                                <option [value]="n">{{ n }}</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="logsSearch" class="form-label small" i18n="@@logsSearch"
+                            >Search</label
+                        >
+                        <input
+                            id="logsSearch"
+                            type="text"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="searchText"
+                            (keyup.enter)="refreshContent()"
+                            placeholder="DoorService, Exception…"
+                        />
+                    </div>
+                    <div class="col-md-1">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm w-100"
+                            (click)="refreshContent()"
+                            [disabled]="loading || !selectedFile"
+                        >
+                            <fa-icon [icon]="['fas', 'sync']"></fa-icon>
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <label for="logsLines" class="form-label small" i18n="@@logsLines">Lines</label>
-                    <select
-                        id="logsLines"
-                        class="form-select form-select-sm"
-                        [(ngModel)]="selectedLines"
-                    >
-                        <option *ngFor="let n of lineOptions" [value]="n">{{ n }}</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="logsSearch" class="form-label small" i18n="@@logsSearch"
-                        >Search</label
-                    >
-                    <input
-                        id="logsSearch"
-                        type="text"
-                        class="form-control form-control-sm"
-                        [(ngModel)]="searchText"
-                        (keyup.enter)="refreshContent()"
-                        placeholder="DoorService, Exception…"
-                    />
-                </div>
-                <div class="col-md-1">
-                    <button
-                        type="button"
-                        class="btn btn-primary btn-sm w-100"
-                        (click)="refreshContent()"
-                        [disabled]="loading || !selectedFile"
-                    >
-                        <fa-icon [icon]="['fas', 'sync']"></fa-icon>
-                    </button>
-                </div>
-            </div></div></sb-card
+            }</div></sb-card
     ><sb-card
         ><div class="card-header">
             <fa-icon class="me-1" [icon]="['fas', 'file-contract']"></fa-icon
-            ><span i18n="@@logsContent">Log content</span
-            ><span *ngIf="selectedFile" class="text-muted ms-2 small">({{ selectedFile }})</span>
+            ><span i18n="@@logsContent">Log content</span>
+            @if (selectedFile) {
+                <span class="text-muted ms-2 small">({{ selectedFile }})</span>
+            }
         </div>
         <div class="card-body">
-            <div *ngIf="loading" class="spinner-border" role="status">
-                <span class="sr-only" i18n="@@loading">Loading...</span>
-            </div>
-            <div *ngIf="contentError && !loading" class="text-danger">{{ contentError }}</div>
-            <div
-                *ngIf="!loading && !contentError && lines.length === 0 && selectedFile"
-                class="text-muted"
-                i18n="@@logsNoLines"
-            >
-                No lines match your filters.
-            </div>
-            <pre
-                *ngIf="!loading && lines.length > 0"
-                class="log-viewer"
-            ><span *ngFor="let line of lines" [ngClass]="cssClassForLine(line)">{{line}}
-</span></pre>
+            @if (loading) {
+                <div class="spinner-border" role="status">
+                    <span class="sr-only" i18n="@@loading">Loading...</span>
+                </div>
+            }
+            @if (contentError && !loading) {
+                <div class="text-danger">{{ contentError }}</div>
+            }
+            @if (!loading && !contentError && lines.length === 0 && selectedFile) {
+                <div class="text-muted" i18n="@@logsNoLines">No lines match your filters.</div>
+            }
+            @if (!loading && lines.length > 0) {
+                <pre class="log-viewer">@for (line of lines; track line) {
+          <span [ngClass]="cssClassForLine(line)">{{line}}
+          </span>
+        }</pre>
+            }
         </div></sb-card
     ></sb-layout-dashboard
 >

@@ -4,6 +4,7 @@ import {
     Component,
     OnDestroy,
     OnInit,
+    inject,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '@common/services';
@@ -19,6 +20,10 @@ import { takeUntil } from 'rxjs/operators';
     standalone: false,
 })
 export class LogsComponent implements OnInit, OnDestroy {
+    private _logsService = inject(LogsService);
+    private _toastService = inject(ToastService);
+    private cdr = inject(ChangeDetectorRef);
+
     files: LogFileInfo[] = [];
     selectedFile?: string;
 
@@ -35,12 +40,6 @@ export class LogsComponent implements OnInit, OnDestroy {
     contentError?: string;
 
     private destroy$ = new Subject<void>();
-
-    constructor(
-        private _logsService: LogsService,
-        private _toastService: ToastService,
-        private cdr: ChangeDetectorRef
-    ) {}
 
     ngOnInit(): void {
         this.refreshFiles();

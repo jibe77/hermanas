@@ -1,10 +1,12 @@
 <ol class="breadcrumb mb-4">
-    <li
-        class="breadcrumb-item"
-        *ngFor="let breadcrumb of breadcrumbs"
-        [ngClass]="{ active: breadcrumb.active }"
-    >
-        <a *ngIf="breadcrumb.link" [routerLink]="breadcrumb.link">{{ breadcrumb.text }}</a
-        ><span *ngIf="!breadcrumb.link">{{ breadcrumb.text }}</span>
-    </li>
+    @for (breadcrumb of breadcrumbs; track breadcrumb) {
+        <li class="breadcrumb-item" [ngClass]="{ active: breadcrumb.active }">
+            @if (breadcrumb.link) {
+                <a [routerLink]="breadcrumb.link">{{ breadcrumb.text }}</a>
+            }
+            @if (!breadcrumb.link) {
+                <span>{{ breadcrumb.text }}</span>
+            }
+        </li>
+    }
 </ol>

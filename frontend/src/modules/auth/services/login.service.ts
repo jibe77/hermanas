@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -8,10 +8,8 @@ export type LoginOutcome = 'ok' | 'invalid' | 'pending-validation';
 
 @Injectable()
 export class LoginService {
-    constructor(
-        private http: HttpClient,
-        private userService: UserService
-    ) {}
+    private http = inject(HttpClient);
+    private userService = inject(UserService);
 
     async login(
         username: string,

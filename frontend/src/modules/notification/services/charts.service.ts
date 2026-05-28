@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AbstractService } from '@common/services';
 import { Observable } from 'rxjs';
 
@@ -27,9 +27,7 @@ export interface UserCreate {
 
 @Injectable()
 export class ChartsService extends AbstractService {
-    constructor(private http: HttpClient) {
-        super();
-    }
+    private http = inject(HttpClient);
 
     me(): Observable<HermanasUser> {
         return this.http.get<HermanasUser>(`${this.domainBase}/users/me`, {

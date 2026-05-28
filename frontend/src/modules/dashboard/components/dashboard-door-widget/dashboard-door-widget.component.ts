@@ -7,6 +7,7 @@ import {
     OnDestroy,
     OnInit,
     Output,
+    inject,
 } from '@angular/core';
 import { NextEvents, SchedulerService } from '@modules/dashboard/services';
 import { DoorService, DoorStatus } from '@modules/dashboard/services/door.service';
@@ -21,6 +22,10 @@ import { takeUntil } from 'rxjs/operators';
     standalone: false,
 })
 export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
+    doorService = inject(DoorService);
+    private schedulerService = inject(SchedulerService);
+    private changeDetectorRef = inject(ChangeDetectorRef);
+
     @Input() retryEvents: Observable<void>;
     @Input() domainBase: string;
     @Output() componentError = new EventEmitter<any>();
@@ -35,12 +40,6 @@ export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
     public picturePath = 'favicon.ico';
 
     private destroy$ = new Subject<void>();
-
-    constructor(
-        public doorService: DoorService,
-        private schedulerService: SchedulerService,
-        private changeDetectorRef: ChangeDetectorRef
-    ) {}
 
     ngOnInit() {
         this.loadDoorStatus();

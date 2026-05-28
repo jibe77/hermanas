@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AbstractService } from '@common/services';
 import { Observable } from 'rxjs';
 
@@ -9,9 +9,7 @@ export interface EmailTestResponse {
 
 @Injectable()
 export class EmailTestService extends AbstractService {
-    constructor(private http: HttpClient) {
-        super();
-    }
+    private http = inject(HttpClient);
 
     public sendTestEmail(): Observable<EmailTestResponse> {
         return this.http.post<EmailTestResponse>(

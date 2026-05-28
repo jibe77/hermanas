@@ -1,4 +1,4 @@
-import { OnInit, Component } from '@angular/core';
+import { OnInit, Component, inject } from '@angular/core';
 import { UtilityService } from '@modules/utility/services';
 import { take } from 'rxjs/operators';
 
@@ -9,8 +9,9 @@ import { take } from 'rxjs/operators';
     standalone: false,
 })
 export class VersionComponent implements OnInit {
+    private utilityService = inject(UtilityService);
+
     version!: string;
-    constructor(private utilityService: UtilityService) {}
     ngOnInit() {
         this.utilityService.version$.pipe(take(1)).subscribe(v => (this.version = v));
     }

@@ -1,4 +1,4 @@
-import { OnInit, ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { OnInit, ChangeDetectionStrategy, Component, OnDestroy, inject } from '@angular/core';
 import { Breadcrumb } from '@modules/navigation/models';
 import { NavigationService } from '@modules/navigation/services';
 import { Subject } from 'rxjs';
@@ -12,10 +12,10 @@ import { takeUntil } from 'rxjs/operators';
     standalone: false,
 })
 export class BreadcrumbsComponent implements OnInit, OnDestroy {
+    navigationService = inject(NavigationService);
+
     breadcrumbs!: Breadcrumb[];
     private destroy$ = new Subject<void>();
-
-    constructor(public navigationService: NavigationService) {}
 
     ngOnInit() {
         this.navigationService

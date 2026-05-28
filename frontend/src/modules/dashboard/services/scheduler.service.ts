@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AbstractService } from '@common/services';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -15,9 +15,7 @@ export interface NextEvents {
 
 @Injectable()
 export class SchedulerService extends AbstractService {
-    constructor(private _httpClient: HttpClient) {
-        super();
-    }
+    private _httpClient = inject(HttpClient);
 
     public getNextEvents(): Observable<NextEvents> {
         const nextEventsUrl = this.domainBase + '/scheduler/nextEvents';

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    OnInit,
+    inject,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoginService, UserService } from '@modules/auth/services';
@@ -12,17 +18,17 @@ import { AuthState } from '@modules/auth/models';
     standalone: false,
 })
 export class LoginComponent implements OnInit {
+    private fb = inject(FormBuilder);
+    private loginService = inject(LoginService);
+    private userService = inject(UserService);
+    private router = inject(Router);
+    private cdr = inject(ChangeDetectorRef);
+
     loginForm: FormGroup;
     errorMessage = '';
     submitting = false;
 
-    constructor(
-        private fb: FormBuilder,
-        private loginService: LoginService,
-        private userService: UserService,
-        private router: Router,
-        private cdr: ChangeDetectorRef
-    ) {
+    constructor() {
         this.loginForm = this.fb.group({
             username: ['', Validators.required],
             password: ['', Validators.required],

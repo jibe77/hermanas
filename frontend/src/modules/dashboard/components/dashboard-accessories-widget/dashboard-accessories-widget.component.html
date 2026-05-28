@@ -11,36 +11,56 @@
         </div>
     </div>
     <div class="card-body">
-        <div
-            class="spinner-border"
-            *ngIf="(musicStatus === undefined &amp;&amp; musicStatusOnError === false) || (lightStatus === undefined &amp;&amp; lightStatusOnError === false) || (fanStatus === undefined &amp;&amp; fanStatusOnError === false)"
-            role="status"
-        >
-            <span class="sr-only" i18n="@@loading">Loading...</span>
-        </div>
-        <div *ngIf="lightStatus !== undefined || lightStatusOnError === true">
-            <span i18n="@@light">Light</span>{{ ' ' }}:{{ ' '
-            }}<span *ngIf="lightStatus === true" i18n="@@on"> On</span
-            ><span *ngIf="lightStatus === false" i18n="@@off"> Off</span
-            ><span *ngIf="lightStatusOnError === true" i18n="@@informationNotAvailable">
-                Information not available</span
-            >
-        </div>
-        <div *ngIf="musicStatus !== undefined || musicStatusOnError === true">
-            <span i18n="@@music">Music</span>{{ ' ' }}:{{ ' '
-            }}<span *ngIf="musicStatus === true" i18n="@@on"> On</span
-            ><span *ngIf="musicStatus === false" i18n="@@off"> Off</span
-            ><span *ngIf="musicStatusOnError === true" i18n="@@informationNotAvailable">
-                Information not available</span
-            >
-        </div>
-        <div *ngIf="fanStatus !== undefined || fanStatusOnError === true">
-            <span i18n="@@fan">Fan</span>{{ ' ' }}:{{ ' '
-            }}<span *ngIf="fanStatus === true" i18n="@@on"> On</span
-            ><span *ngIf="fanStatus === false" i18n="@@off"> Off</span
-            ><span *ngIf="fanStatusOnError === true" i18n="@@informationNotAvailable">
-                Information not available</span
-            >
-        </div>
+        @if (
+            (musicStatus === undefined && musicStatusOnError === false) ||
+            (lightStatus === undefined && lightStatusOnError === false) ||
+            (fanStatus === undefined && fanStatusOnError === false)
+        ) {
+            <div class="spinner-border" role="status">
+                <span class="sr-only" i18n="@@loading">Loading...</span>
+            </div>
+        }
+        @if (lightStatus !== undefined || lightStatusOnError === true) {
+            <div>
+                <span i18n="@@light">Light</span>{{ ' ' }}:{{ ' ' }}
+                @if (lightStatus === true) {
+                    <span i18n="@@on"> On</span>
+                }
+                @if (lightStatus === false) {
+                    <span i18n="@@off"> Off</span>
+                }
+                @if (lightStatusOnError === true) {
+                    <span i18n="@@informationNotAvailable"> Information not available</span>
+                }
+            </div>
+        }
+        @if (musicStatus !== undefined || musicStatusOnError === true) {
+            <div>
+                <span i18n="@@music">Music</span>{{ ' ' }}:{{ ' ' }}
+                @if (musicStatus === true) {
+                    <span i18n="@@on"> On</span>
+                }
+                @if (musicStatus === false) {
+                    <span i18n="@@off"> Off</span>
+                }
+                @if (musicStatusOnError === true) {
+                    <span i18n="@@informationNotAvailable"> Information not available</span>
+                }
+            </div>
+        }
+        @if (fanStatus !== undefined || fanStatusOnError === true) {
+            <div>
+                <span i18n="@@fan">Fan</span>{{ ' ' }}:{{ ' ' }}
+                @if (fanStatus === true) {
+                    <span i18n="@@on"> On</span>
+                }
+                @if (fanStatus === false) {
+                    <span i18n="@@off"> Off</span>
+                }
+                @if (fanStatusOnError === true) {
+                    <span i18n="@@informationNotAvailable"> Information not available</span>
+                }
+            </div>
+        }
     </div></sb-card
 >

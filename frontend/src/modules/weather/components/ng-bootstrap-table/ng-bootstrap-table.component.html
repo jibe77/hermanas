@@ -5,61 +5,63 @@
             type="text"
             name="searchTerm"
             [(ngModel)]="countryService.searchTerm"
-        /><span class="ml-3" *ngIf="countryService.loading$ | async">Loading...</span>
+        />
+        @if (countryService.loading$ | async) {
+            <span class="ml-3">Loading...</span>
+        }
     </div>
     <table class="table table-striped">
         <thead>
             <tr>
                 <th scope="col">#</th>
                 <th scope="col" sbSortable="name" (sort)="onSort($event)">
-                    <span>Country</span
-                    ><sb-sort-icon
-                        *ngIf="sortedColumn === 'name'"
-                        [direction]="sortedDirection"
-                    ></sb-sort-icon>
+                    <span>Country</span>
+                    @if (sortedColumn === 'name') {
+                        <sb-sort-icon [direction]="sortedDirection"></sb-sort-icon>
+                    }
                 </th>
                 <th scope="col" sbSortable="area" (sort)="onSort($event)">
-                    <span>Area</span
-                    ><sb-sort-icon
-                        *ngIf="sortedColumn === 'area'"
-                        [direction]="sortedDirection"
-                    ></sb-sort-icon>
+                    <span>Area</span>
+                    @if (sortedColumn === 'area') {
+                        <sb-sort-icon [direction]="sortedDirection"></sb-sort-icon>
+                    }
                 </th>
                 <th scope="col" sbSortable="population" (sort)="onSort($event)">
-                    <span>Population</span
-                    ><sb-sort-icon
-                        *ngIf="sortedColumn === 'population'"
-                        [direction]="sortedDirection"
-                    ></sb-sort-icon>
+                    <span>Population</span>
+                    @if (sortedColumn === 'population') {
+                        <sb-sort-icon [direction]="sortedDirection"></sb-sort-icon>
+                    }
                 </th>
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let country of countries$ | async">
-                <th scope="row">{{ country.id }}</th>
-                <td>
-                    <img
-                        class="mr-2"
-                        [src]="'https://upload.wikimedia.org/wikipedia/commons/' + country.flag"
-                        style="width: 20px"
-                    /><ngb-highlight
-                        [result]="country.name"
-                        [term]="countryService.searchTerm"
-                    ></ngb-highlight>
-                </td>
-                <td>
-                    <ngb-highlight
-                        [result]="country.area | number"
-                        [term]="countryService.searchTerm"
-                    ></ngb-highlight>
-                </td>
-                <td>
-                    <ngb-highlight
-                        [result]="country.population | number"
-                        [term]="countryService.searchTerm"
-                    ></ngb-highlight>
-                </td>
-            </tr>
+            @for (country of countries$ | async; track country) {
+                <tr>
+                    <th scope="row">{{ country.id }}</th>
+                    <td>
+                        <img
+                            class="mr-2"
+                            [src]="'https://upload.wikimedia.org/wikipedia/commons/' + country.flag"
+                            style="width: 20px"
+                        /><ngb-highlight
+                            [result]="country.name"
+                            [term]="countryService.searchTerm"
+                        ></ngb-highlight>
+                    </td>
+                    <td>
+                        <ngb-highlight
+                            [result]="country.area | number"
+                            [term]="countryService.searchTerm"
+                        ></ngb-highlight>
+                    </td>
+                    <td>
+                        <ngb-highlight
+                            [result]="country.population | number"
+                            [term]="countryService.searchTerm"
+                        ></ngb-highlight>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
     <div class="d-flex justify-content-between p-2">
