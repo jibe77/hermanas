@@ -30,7 +30,7 @@
       "declaration": false,
       "downlevelIteration": true,
       "experimentalDecorators": true,
-      "moduleResolution": "node",
+      "moduleResolution": "bundler",
       "importHelpers": true,
       "allowJs": true,
       "target": "ES2022",
