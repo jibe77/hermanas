@@ -1,25 +1,26 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { AuthState } from '@modules/auth/models';
+import { AuthState, User } from '@modules/auth/models';
 import { UserService } from '@modules/auth/services';
 
 import { NavigationGuard } from './navigation.guard';
 
 describe('Navigation Guards', () => {
     let navigationGuard: NavigationGuard;
-    let mockUserService: jasmine.SpyObj<UserService>;
-    let mockRouter: jasmine.SpyObj<Router>;
+    let mockUserService: { user$: ReturnType<typeof of<User>> };
+    let mockRouter: Partial<Router>;
 
     beforeEach(() => {
-        mockUserService = jasmine.createSpyObj('UserService', [], {
+        mockUserService = {
             user$: of({
+                id: 'test',
+                login: 'test',
+                email: 'test',
                 authState: AuthState.SignedIn,
-                backEndUser: 'test',
-                backEndPassword: 'test',
-            }),
-        });
-        mockRouter = jasmine.createSpyObj('Router', ['createUrlTree']);
+            } as User),
+        };
+        mockRouter = { createUrlTree: vi.fn() };
 
         TestBed.configureTestingModule({
             imports: [],

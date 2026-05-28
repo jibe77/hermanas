@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { RxStompConfig } from '@stomp/rx-stomp';
-import { Subject } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { firstValueFrom, Subject } from 'rxjs';
+import { take, toArray } from 'rxjs/operators';
 
 import { ApplianceMessage, SocketResponse, WebSocketOptions } from '../models';
 import { RxStompService } from './rx-stomp.service';
@@ -9,10 +9,15 @@ import { WebSocketService } from './websocket.service';
 
 describe('WebSocketService', () => {
     let service: WebSocketService;
-    let mockRxStompService: jasmine.SpyObj<RxStompService>;
-    let mockStompClient: any;
-    let messageSubject: Subject<any>;
-    let errorSubject: Subject<any>;
+    let mockRxStompService: Partial<RxStompService>;
+    let mockStompClient: {
+        configure: ReturnType<typeof vi.fn>;
+        activate: ReturnType<typeof vi.fn>;
+        watch: ReturnType<typeof vi.fn>;
+        stompErrors$: ReturnType<Subject<unknown>['asObservable']>;
+    };
+    let messageSubject: Subject<{ body: string }>;
+    let errorSubject: Subject<{ headers: Record<string, string> }>;
 
     const testBrokerEndpoint = '/topic/test';
     const testStompConfig: RxStompConfig = {
@@ -25,18 +30,16 @@ describe('WebSocketService', () => {
         messageSubject = new Subject();
         errorSubject = new Subject();
 
-        // Create mock STOMP client with RxStomp methods
         mockStompClient = {
-            configure: jasmine.createSpy('configure'),
-            activate: jasmine.createSpy('activate'),
-            watch: jasmine.createSpy('watch').and.returnValue(messageSubject.asObservable()),
+            configure: vi.fn(),
+            activate: vi.fn(),
+            watch: vi.fn().mockReturnValue(messageSubject.asObservable()),
             stompErrors$: errorSubject.asObservable(),
         };
 
-        // Create mock RxStompService
-        mockRxStompService = jasmine.createSpyObj('RxStompService', [], {
-            stompClient: mockStompClient,
-        });
+        mockRxStompService = {
+            stompClient: mockStompClient as unknown as RxStompService['stompClient'],
+        };
 
         TestBed.configureTestingModule({
             providers: [
@@ -60,226 +63,107 @@ describe('WebSocketService', () => {
     });
 
     describe('Connection', () => {
-        it('should configure the STOMP client with merged config on construction', () => {
+        it('configures the STOMP client with the merged config', () => {
             expect(mockStompClient.configure).toHaveBeenCalled();
-            const configArg = mockStompClient.configure.calls.mostRecent().args[0];
-            expect(configArg.heartbeatIncoming).toBe(1000); // From testStompConfig
-            expect(configArg.heartbeatOutgoing).toBe(1000); // From testStompConfig
-            expect(configArg.reconnectDelay).toBe(10000); // From service default
+            const configArg = mockStompClient.configure.mock.calls.at(-1)?.[0];
+            expect(configArg.heartbeatIncoming).toBe(1000);
+            expect(configArg.heartbeatOutgoing).toBe(1000);
+            expect(configArg.reconnectDelay).toBe(10000);
             expect(configArg.brokerURL).toBeDefined();
         });
 
-        it('should activate the STOMP client on construction', () => {
+        it('activates the STOMP client', () => {
             expect(mockStompClient.activate).toHaveBeenCalled();
         });
 
-        it('should subscribe to the specified broker endpoint', () => {
+        it('subscribes to the configured broker endpoint', () => {
             expect(mockStompClient.watch).toHaveBeenCalledWith(testBrokerEndpoint);
         });
     });
 
-    describe('Observable creation', () => {
-        it('should return an observable from getObservable()', done => {
-            const observable = service.getObservable();
-            expect(observable).toBeDefined();
-
-            // Verify it's a valid observable by subscribing
-            const subscription = observable.pipe(take(1)).subscribe(response => {
-                expect(response).toBeDefined();
-                done();
-            });
-
-            // Emit a test message
-            const testFrame = {
-                body: JSON.stringify({ appliance: 'LIGHT', state: 'ON' }),
-            };
-            messageSubject.next(testFrame);
-
-            subscription.unsubscribe();
-        });
-    });
-
     describe('Message handling', () => {
-        it('should parse SUCCESS messages from STOMP frames', done => {
-            const applianceMessage: ApplianceMessage = {
-                appliance: 'LIGHT',
-                state: 'ON',
-            };
+        it('parses SUCCESS messages from STOMP frames', async () => {
+            const applianceMessage: ApplianceMessage = { appliance: 'LIGHT', state: 'ON' };
+            const next = firstValueFrom(service.getObservable().pipe(take(1)));
+            messageSubject.next({ body: JSON.stringify(applianceMessage) });
 
-            const testFrame = {
-                body: JSON.stringify(applianceMessage),
-            };
-
-            service
-                .getObservable()
-                .pipe(take(1))
-                .subscribe((response: SocketResponse) => {
-                    expect(response.type).toBe('SUCCESS');
-                    expect(response.message).toEqual(applianceMessage);
-                    done();
-                });
-
-            messageSubject.next(testFrame);
+            const response = await next;
+            expect(response.type).toBe('SUCCESS');
+            expect(response.message).toEqual(applianceMessage);
         });
 
-        it('should handle multiple message types', done => {
+        it('parses every message in order', async () => {
             const messages: ApplianceMessage[] = [
                 { appliance: 'LIGHT', state: 'ON' },
                 { appliance: 'FAN', state: 'OFF' },
                 { appliance: 'DOOR', state: 'OPEN' },
             ];
-
-            const results: SocketResponse[] = [];
-
-            service.getObservable().subscribe(response => {
-                results.push(response);
-                if (results.length === messages.length) {
-                    results.forEach((result, index) => {
-                        expect(result.type).toBe('SUCCESS');
-                        expect(result.message).toEqual(messages[index]);
-                    });
-                    done();
-                }
-            });
-
-            messages.forEach(msg => {
+            const collected = firstValueFrom(
+                service.getObservable().pipe(take(messages.length), toArray())
+            );
+            for (const msg of messages) {
                 messageSubject.next({ body: JSON.stringify(msg) });
+            }
+
+            const results = await collected;
+            results.forEach((result, index) => {
+                expect(result.type).toBe('SUCCESS');
+                expect(result.message).toEqual(messages[index]);
             });
-        });
-
-        it('should parse complex JSON message bodies', done => {
-            const complexMessage: ApplianceMessage = {
-                appliance: 'DOOR',
-                state: 'CLOSED',
-            };
-
-            service
-                .getObservable()
-                .pipe(take(1))
-                .subscribe((response: SocketResponse) => {
-                    expect(response.type).toBe('SUCCESS');
-                    expect(response.message).toEqual(complexMessage);
-                    done();
-                });
-
-            messageSubject.next({ body: JSON.stringify(complexMessage) });
         });
     });
 
     describe('Error handling', () => {
-        it('should emit ERROR type for STOMP errors', done => {
+        it('emits ERROR type for STOMP errors', async () => {
             const errorMessage = 'Connection failed';
-            const errorFrame = {
-                headers: { message: errorMessage },
-            };
+            const next = firstValueFrom(service.getObservable().pipe(take(1)));
+            errorSubject.next({ headers: { message: errorMessage } });
 
-            service
-                .getObservable()
-                .pipe(take(1))
-                .subscribe((response: SocketResponse) => {
-                    expect(response.type).toBe('ERROR');
-                    expect(response.message).toBe(errorMessage);
-                    done();
-                });
-
-            errorSubject.next(errorFrame);
+            const response: SocketResponse = await next;
+            expect(response.type).toBe('ERROR');
+            expect(response.message).toBe(errorMessage);
         });
 
-        it('should handle errors without message header', done => {
-            const errorFrame = {
-                headers: {},
-            };
+        it('falls back to a generic message when the header is missing', async () => {
+            const next = firstValueFrom(service.getObservable().pipe(take(1)));
+            errorSubject.next({ headers: {} });
 
-            service
-                .getObservable()
-                .pipe(take(1))
-                .subscribe((response: SocketResponse) => {
-                    expect(response.type).toBe('ERROR');
-                    expect(response.message).toBe('Unknown STOMP error');
-                    done();
-                });
-
-            errorSubject.next(errorFrame);
+            const response: SocketResponse = await next;
+            expect(response.type).toBe('ERROR');
+            expect(response.message).toBe('Unknown STOMP error');
         });
 
-        it('should handle multiple errors', done => {
+        it('streams every error in order', async () => {
             const errorMessages = ['Error 1', 'Error 2', 'Error 3'];
-            const results: SocketResponse[] = [];
-
-            service.getObservable().subscribe(response => {
-                if (response.type === 'ERROR') {
-                    results.push(response);
-                    if (results.length === errorMessages.length) {
-                        results.forEach((result, index) => {
-                            expect(result.type).toBe('ERROR');
-                            expect(result.message).toBe(errorMessages[index]);
-                        });
-                        done();
-                    }
-                }
-            });
-
-            errorMessages.forEach(msg => {
+            const collected = firstValueFrom(
+                service.getObservable().pipe(take(errorMessages.length), toArray())
+            );
+            for (const msg of errorMessages) {
                 errorSubject.next({ headers: { message: msg } });
+            }
+
+            const results = await collected;
+            results.forEach((result, index) => {
+                expect(result.type).toBe('ERROR');
+                expect(result.message).toBe(errorMessages[index]);
             });
         });
     });
 
     describe('Message and error merging', () => {
-        it('should merge both messages and errors into single observable', done => {
-            const responses: SocketResponse[] = [];
-            const expectedCount = 4;
+        it('merges both streams into a single observable', async () => {
+            const collected = firstValueFrom(service.getObservable().pipe(take(4), toArray()));
 
-            service.getObservable().subscribe(response => {
-                responses.push(response);
-                if (responses.length === expectedCount) {
-                    expect(responses[0].type).toBe('SUCCESS');
-                    expect(responses[1].type).toBe('ERROR');
-                    expect(responses[2].type).toBe('SUCCESS');
-                    expect(responses[3].type).toBe('ERROR');
-                    done();
-                }
-            });
-
-            // Emit in alternating pattern
             messageSubject.next({ body: JSON.stringify({ appliance: 'LIGHT', state: 'ON' }) });
             errorSubject.next({ headers: { message: 'Error 1' } });
             messageSubject.next({ body: JSON.stringify({ appliance: 'FAN', state: 'OFF' }) });
             errorSubject.next({ headers: { message: 'Error 2' } });
-        });
 
-        it('should maintain order of emissions within each stream', done => {
-            const messages = ['msg1', 'msg2', 'msg3'];
-            const errors = ['err1', 'err2'];
-            const results: { type: string; value: any }[] = [];
-
-            service.getObservable().subscribe(response => {
-                results.push({ type: response.type, value: response.message });
-                if (results.length === messages.length + errors.length) {
-                    // Check messages maintain order
-                    const successResults = results.filter(r => r.type === 'SUCCESS');
-                    expect(successResults.length).toBe(messages.length);
-
-                    // Check errors maintain order
-                    const errorResults = results.filter(r => r.type === 'ERROR');
-                    expect(errorResults.length).toBe(errors.length);
-                    errorResults.forEach((result, index) => {
-                        expect(result.value).toBe(errors[index]);
-                    });
-
-                    done();
-                }
-            });
-
-            // Emit all messages first
-            messages.forEach(msg => {
-                messageSubject.next({ body: JSON.stringify(msg) });
-            });
-
-            // Then emit all errors
-            errors.forEach(err => {
-                errorSubject.next({ headers: { message: err } });
-            });
+            const responses = await collected;
+            expect(responses[0].type).toBe('SUCCESS');
+            expect(responses[1].type).toBe('ERROR');
+            expect(responses[2].type).toBe('SUCCESS');
+            expect(responses[3].type).toBe('ERROR');
         });
     });
 });

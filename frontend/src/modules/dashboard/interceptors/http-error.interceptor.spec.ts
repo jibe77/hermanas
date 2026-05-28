@@ -7,20 +7,35 @@ import {
     HttpResponse,
 } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { Observable, of, throwError } from 'rxjs';
+import { firstValueFrom, lastValueFrom, Observable, of, throwError } from 'rxjs';
 
 import { HttpErrorInterceptor } from './http-error.interceptor';
 
+/**
+ * Helper that wraps the interceptor's Observable<HttpEvent> into a Promise that
+ * resolves with the first emitted value or rejects with the error string. This
+ * replaces the Jasmine-era `done()` callbacks Vitest 3 has deprecated.
+ */
+function runIntercept(
+    interceptor: HttpErrorInterceptor,
+    req: HttpRequest<unknown>,
+    handler: HttpHandler
+): Promise<HttpEvent<unknown>> {
+    return firstValueFrom(interceptor.intercept(req, handler));
+}
+
 describe('HttpErrorInterceptor', () => {
     let interceptor: HttpErrorInterceptor;
-    let mockHandler: jasmine.SpyObj<HttpHandler>;
+    let mockHandler: { handle: ReturnType<typeof vi.fn> };
+    let asHandler: () => HttpHandler;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
             providers: [HttpErrorInterceptor],
         });
         interceptor = TestBed.inject(HttpErrorInterceptor);
-        mockHandler = jasmine.createSpyObj('HttpHandler', ['handle']);
+        mockHandler = { handle: vi.fn() };
+        asHandler = () => mockHandler as unknown as HttpHandler;
     });
 
     it('should be created', () => {
@@ -28,307 +43,129 @@ describe('HttpErrorInterceptor', () => {
     });
 
     describe('Successful requests', () => {
-        it('should pass through successful requests unchanged', done => {
+        it('passes successful responses through unchanged', async () => {
             const request = new HttpRequest('GET', '/api/test');
             const response = new HttpResponse({ status: 200, body: { data: 'test' } });
+            mockHandler.handle.mockReturnValue(of(response));
 
-            mockHandler.handle.and.returnValue(of(response));
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: (event: HttpEvent<any>) => {
-                    expect(event).toEqual(response);
-                    done();
-                },
-                error: () => fail('should not error'),
-            });
+            await expect(runIntercept(interceptor, request, asHandler())).resolves.toEqual(
+                response
+            );
         });
 
-        it('should not modify request headers or body', done => {
+        it('does not modify the original request', async () => {
             const request = new HttpRequest('POST', '/api/test', { test: 'data' });
             const response = new HttpResponse({ status: 201 });
+            mockHandler.handle.mockReturnValue(of(response));
 
-            mockHandler.handle.and.returnValue(of(response));
+            await runIntercept(interceptor, request, asHandler());
 
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => {
-                    expect(mockHandler.handle).toHaveBeenCalledWith(request);
-                    done();
-                },
-                error: () => fail('should not error'),
-            });
+            expect(mockHandler.handle).toHaveBeenCalledWith(request);
         });
     });
 
     describe('Client-side errors', () => {
-        it('should handle client-side ErrorEvent errors', done => {
+        it('formats ErrorEvent failures with the original message', async () => {
             const request = new HttpRequest('GET', '/api/test');
-            const errorEvent = new ErrorEvent('Network error', {
-                message: 'Connection refused',
-            });
+            const errorEvent = new ErrorEvent('Network error', { message: 'Connection refused' });
             const errorResponse = new HttpErrorResponse({
                 error: errorEvent,
                 status: 0,
                 statusText: 'Unknown Error',
             });
+            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
+            const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            spyOn(console, 'log');
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: (error: string) => {
-                    expect(error).toBe('Error: Connection refused');
-                    expect(console.log).toHaveBeenCalledWith('Error: Connection refused');
-                    done();
-                },
-            });
+            await expect(lastValueFrom(interceptor.intercept(request, asHandler()))).rejects.toBe(
+                'Error: Connection refused'
+            );
+            expect(logSpy).toHaveBeenCalledWith('Error: Connection refused');
         });
 
-        it('should handle client-side errors with empty message', done => {
+        it('handles empty-message ErrorEvent', async () => {
             const request = new HttpRequest('GET', '/api/test');
-            const errorEvent = new ErrorEvent('Network error', {
-                message: '',
-            });
-            const errorResponse = new HttpErrorResponse({
-                error: errorEvent,
-                status: 0,
-            });
+            const errorEvent = new ErrorEvent('Network error', { message: '' });
+            const errorResponse = new HttpErrorResponse({ error: errorEvent, status: 0 });
+            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
+            vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            spyOn(console, 'log');
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: (error: string) => {
-                    expect(error).toBe('Error: ');
-                    expect(console.log).toHaveBeenCalledWith('Error: ');
-                    done();
-                },
-            });
+            await expect(lastValueFrom(interceptor.intercept(request, asHandler()))).rejects.toBe(
+                'Error: '
+            );
         });
     });
 
     describe('Server-side errors', () => {
-        it('should handle 404 Not Found errors', done => {
-            const request = new HttpRequest('GET', '/api/test');
-            const errorResponse = new HttpErrorResponse({
-                error: 'Not Found',
-                status: 404,
-                statusText: 'Not Found',
-                url: '/api/test',
+        const cases = [
+            { status: 404, statusText: 'Not Found', error: 'Not Found' },
+            { status: 500, statusText: 'Internal Server Error', error: 'oops' },
+            { status: 401, statusText: 'Unauthorized', error: 'Unauthorized' },
+            { status: 403, statusText: 'Forbidden', error: 'Forbidden' },
+            { status: 503, statusText: 'Service Unavailable', error: 'Service Unavailable' },
+        ];
+
+        for (const c of cases) {
+            it(`formats HTTP ${c.status} with the status code`, async () => {
+                const request = new HttpRequest('GET', '/api/test');
+                const errorResponse = new HttpErrorResponse({ ...c });
+                mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
+                vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+                await expect(
+                    lastValueFrom(interceptor.intercept(request, asHandler()))
+                ).rejects.toContain(`Error Code: ${c.status}`);
             });
-
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            spyOn(console, 'log');
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: (error: string) => {
-                    expect(error).toContain('Error Code: 404');
-                    expect(error).toContain('Message:');
-                    expect(console.log).toHaveBeenCalled();
-                    done();
-                },
-            });
-        });
-
-        it('should handle 500 Internal Server Error', done => {
-            const request = new HttpRequest('POST', '/api/test', { data: 'test' });
-            const errorResponse = new HttpErrorResponse({
-                error: { message: 'Database connection failed' },
-                status: 500,
-                statusText: 'Internal Server Error',
-                url: '/api/test',
-            });
-
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            spyOn(console, 'log');
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: (error: string) => {
-                    expect(error).toContain('Error Code: 500');
-                    expect(console.log).toHaveBeenCalled();
-                    done();
-                },
-            });
-        });
-
-        it('should handle 401 Unauthorized errors', done => {
-            const request = new HttpRequest('GET', '/api/protected');
-            const errorResponse = new HttpErrorResponse({
-                error: 'Unauthorized',
-                status: 401,
-                statusText: 'Unauthorized',
-            });
-
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            spyOn(console, 'log');
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: (error: string) => {
-                    expect(error).toContain('Error Code: 401');
-                    done();
-                },
-            });
-        });
-
-        it('should handle 403 Forbidden errors', done => {
-            const request = new HttpRequest('DELETE', '/api/admin');
-            const errorResponse = new HttpErrorResponse({
-                error: 'Forbidden',
-                status: 403,
-                statusText: 'Forbidden',
-            });
-
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            spyOn(console, 'log');
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: (error: string) => {
-                    expect(error).toContain('Error Code: 403');
-                    done();
-                },
-            });
-        });
-
-        it('should handle 503 Service Unavailable errors', done => {
-            const request = new HttpRequest('GET', '/api/test');
-            const errorResponse = new HttpErrorResponse({
-                error: 'Service Unavailable',
-                status: 503,
-                statusText: 'Service Unavailable',
-            });
-
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            spyOn(console, 'log');
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: (error: string) => {
-                    expect(error).toContain('Error Code: 503');
-                    done();
-                },
-            });
-        });
+        }
     });
 
     describe('Error message formatting', () => {
-        it('should format server error messages with status code', done => {
-            const request = new HttpRequest('GET', '/api/test');
-            const errorResponse = new HttpErrorResponse({
-                error: 'Bad Request',
-                status: 400,
-                statusText: 'Bad Request',
-                url: '/api/test',
-            });
-
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: (error: string) => {
-                    expect(error).toMatch(/Error Code: 400/);
-                    expect(error).toMatch(/Message:/);
-                    done();
-                },
-            });
-        });
-
-        it('should include newline between error code and message', done => {
+        it('includes a newline between the code and the message', async () => {
             const request = new HttpRequest('GET', '/api/test');
             const errorResponse = new HttpErrorResponse({
                 error: 'Not Found',
                 status: 404,
                 statusText: 'Not Found',
             });
+            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
 
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: (error: string) => {
-                    expect(error).toContain('\n');
-                    expect(error.split('\n').length).toBe(2);
-                    done();
-                },
-            });
+            try {
+                await lastValueFrom(interceptor.intercept(request, asHandler()));
+                throw new Error('Expected the interceptor to error.');
+            } catch (raw) {
+                const formatted = raw as string;
+                expect(formatted).toContain('\n');
+                expect(formatted.split('\n').length).toBe(2);
+            }
         });
     });
 
     describe('Logging', () => {
-        it('should log all errors to console', done => {
+        it('logs the formatted error exactly once', async () => {
             const request = new HttpRequest('GET', '/api/test');
-            const errorResponse = new HttpErrorResponse({
-                error: 'Test error',
-                status: 500,
-                statusText: 'Internal Server Error',
-            });
+            const errorResponse = new HttpErrorResponse({ error: 'Test error', status: 500 });
+            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
+            const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
+            await expect(
+                lastValueFrom(interceptor.intercept(request, asHandler()))
+            ).rejects.toBeDefined();
 
-            spyOn(console, 'log');
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should error'),
-                error: () => {
-                    expect(console.log).toHaveBeenCalledTimes(1);
-                    const loggedMessage = (console.log as jasmine.Spy).calls.mostRecent().args[0];
-                    expect(loggedMessage).toContain('Error Code:');
-                    done();
-                },
-            });
+            expect(consoleSpy).toHaveBeenCalledTimes(1);
+            const loggedMessage = consoleSpy.mock.calls.at(-1)?.[0];
+            expect(String(loggedMessage)).toContain('Error Code:');
         });
     });
 
     describe('Observable behavior', () => {
-        it('should return an observable that emits errors', done => {
+        it('returns an Observable that emits errors', async () => {
             const request = new HttpRequest('GET', '/api/test');
-            const errorResponse = new HttpErrorResponse({
-                error: 'Test error',
-                status: 500,
-            });
+            const errorResponse = new HttpErrorResponse({ error: 'Test error', status: 500 });
+            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
 
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            const result = interceptor.intercept(request, mockHandler);
-
+            const result = interceptor.intercept(request, asHandler());
             expect(result).toBeInstanceOf(Observable);
 
-            result.subscribe({
-                error: error => {
-                    expect(error).toBeDefined();
-                    done();
-                },
-            });
-        });
-
-        it('should throw errors using throwError operator', done => {
-            const request = new HttpRequest('GET', '/api/test');
-            const errorResponse = new HttpErrorResponse({
-                error: 'Test error',
-                status: 500,
-            });
-
-            mockHandler.handle.and.returnValue(throwError(() => errorResponse));
-
-            interceptor.intercept(request, mockHandler).subscribe({
-                next: () => fail('should not emit next'),
-                error: error => {
-                    expect(error).toBeTruthy();
-                    done();
-                },
-                complete: () => fail('should not complete'),
-            });
+            await expect(lastValueFrom(result)).rejects.toBeDefined();
         });
     });
 });

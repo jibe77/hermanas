@@ -136,7 +136,6 @@ describe('DoorService', () => {
             req.flush({ success: true });
         });
 
-
         it('should handle successful response', () => {
             const mockResponse = { success: true, message: 'Door opened' };
 

@@ -163,7 +163,7 @@ describe('SBSortableHeaderDirective (System)', () => {
 
     describe('Sort event emission', () => {
         it('should emit sort event on click', () => {
-            spyOn(directive.sort, 'emit');
+            vi.spyOn(directive.sort, 'emit');
 
             directiveElement.nativeElement.click();
 

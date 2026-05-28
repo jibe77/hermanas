@@ -70,6 +70,5 @@ describe('WeatherService', () => {
             );
             req.flush([]);
         });
-
     });
 });

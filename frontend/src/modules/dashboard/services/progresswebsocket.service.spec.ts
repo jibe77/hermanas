@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { Subject } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { firstValueFrom, Subject } from 'rxjs';
+import { take, toArray } from 'rxjs/operators';
 import { LoggerService } from '@common/services';
 
 import { ApplianceMessage, SocketResponse } from '../models';
@@ -9,36 +9,38 @@ import { ProgressWebsocketService } from './progresswebsocket.service';
 
 describe('ProgressWebsocketService', () => {
     let service: ProgressWebsocketService;
-    let mockRxStompService: jasmine.SpyObj<RxStompService>;
-    let mockLoggerService: jasmine.SpyObj<LoggerService>;
-    let mockStompClient: any;
-    let messageSubject: Subject<any>;
-    let errorSubject: Subject<any>;
+    let mockRxStompService: Partial<RxStompService>;
+    let mockLoggerService: Partial<LoggerService>;
+    let mockStompClient: {
+        configure: ReturnType<typeof vi.fn>;
+        activate: ReturnType<typeof vi.fn>;
+        watch: ReturnType<typeof vi.fn>;
+        stompErrors$: ReturnType<Subject<unknown>['asObservable']>;
+    };
+    let messageSubject: Subject<{ body: string }>;
+    let errorSubject: Subject<{ headers: Record<string, string> }>;
 
     beforeEach(() => {
         messageSubject = new Subject();
         errorSubject = new Subject();
 
-        // Create mock STOMP client with RxStomp methods
         mockStompClient = {
-            configure: jasmine.createSpy('configure'),
-            activate: jasmine.createSpy('activate'),
-            watch: jasmine.createSpy('watch').and.returnValue(messageSubject.asObservable()),
+            configure: vi.fn(),
+            activate: vi.fn(),
+            watch: vi.fn().mockReturnValue(messageSubject.asObservable()),
             stompErrors$: errorSubject.asObservable(),
         };
 
-        // Create mock RxStompService
-        mockRxStompService = jasmine.createSpyObj('RxStompService', [], {
-            stompClient: mockStompClient,
-        });
+        mockRxStompService = {
+            stompClient: mockStompClient as unknown as RxStompService['stompClient'],
+        };
 
-        // Create mock LoggerService
-        mockLoggerService = jasmine.createSpyObj('LoggerService', [
-            'debug',
-            'info',
-            'warn',
-            'error',
-        ]);
+        mockLoggerService = {
+            debug: vi.fn(),
+            info: vi.fn(),
+            warn: vi.fn(),
+            error: vi.fn(),
+        };
 
         TestBed.configureTestingModule({
             providers: [
@@ -61,110 +63,77 @@ describe('ProgressWebsocketService', () => {
     });
 
     describe('Configuration', () => {
-        it('should configure with progressStompConfig', () => {
+        it('configures with the progress STOMP config', () => {
             expect(mockStompClient.configure).toHaveBeenCalled();
-            const configArg = mockStompClient.configure.calls.mostRecent().args[0];
+            const configArg = mockStompClient.configure.mock.calls.at(-1)?.[0];
             expect(configArg.webSocketFactory).toBeDefined();
         });
 
-        it('should subscribe to /topic/progress endpoint', () => {
+        it('subscribes to /topic/progress', () => {
             expect(mockStompClient.watch).toHaveBeenCalledWith('/topic/progress');
         });
 
-        it('should activate the STOMP client on construction', () => {
+        it('activates the STOMP client on construction', () => {
             expect(mockStompClient.activate).toHaveBeenCalled();
         });
     });
 
     describe('Inherited functionality from WebSocketService', () => {
-        it('should inherit getObservable() method', () => {
+        it('inherits getObservable()', () => {
             const observable = service.getObservable();
             expect(observable).toBeDefined();
             expect(typeof observable.subscribe).toBe('function');
         });
 
-        it('should parse progress messages correctly', done => {
-            const progressMessage: ApplianceMessage = {
-                appliance: 'DOOR',
-                state: 'OPENING',
-            };
+        it('parses progress messages correctly', async () => {
+            const progressMessage: ApplianceMessage = { appliance: 'DOOR', state: 'OPENING' };
+            const next = firstValueFrom(service.getObservable().pipe(take(1)));
+            messageSubject.next({ body: JSON.stringify(progressMessage) });
 
-            const testFrame = {
-                body: JSON.stringify(progressMessage),
-            };
-
-            service
-                .getObservable()
-                .pipe(take(1))
-                .subscribe((response: SocketResponse) => {
-                    expect(response.type).toBe('SUCCESS');
-                    expect(response.message).toEqual(progressMessage);
-                    done();
-                });
-
-            messageSubject.next(testFrame);
+            const response: SocketResponse = await next;
+            expect(response.type).toBe('SUCCESS');
+            expect(response.message).toEqual(progressMessage);
         });
 
-        it('should handle progress errors correctly', done => {
+        it('handles progress errors correctly', async () => {
             const errorMessage = 'Progress update failed';
-            const errorFrame = {
-                headers: { message: errorMessage },
-            };
+            const next = firstValueFrom(service.getObservable().pipe(take(1)));
+            errorSubject.next({ headers: { message: errorMessage } });
 
-            service
-                .getObservable()
-                .pipe(take(1))
-                .subscribe((response: SocketResponse) => {
-                    expect(response.type).toBe('ERROR');
-                    expect(response.message).toBe(errorMessage);
-                    done();
-                });
-
-            errorSubject.next(errorFrame);
+            const response: SocketResponse = await next;
+            expect(response.type).toBe('ERROR');
+            expect(response.message).toBe(errorMessage);
         });
 
-        it('should handle multiple progress updates', done => {
+        it('streams every progress update in order', async () => {
             const progressStates = ['STARTING', 'IN_PROGRESS', 'COMPLETING', 'COMPLETED'];
-            const results: SocketResponse[] = [];
+            const collected = firstValueFrom(
+                service.getObservable().pipe(take(progressStates.length), toArray())
+            );
+            for (const state of progressStates) {
+                messageSubject.next({ body: JSON.stringify({ appliance: 'DOOR', state }) });
+            }
 
-            service.getObservable().subscribe(response => {
-                results.push(response);
-                if (results.length === progressStates.length) {
-                    results.forEach((result, index) => {
-                        expect(result.type).toBe('SUCCESS');
-                        const message = result.message as ApplianceMessage;
-                        expect(message.state).toBe(progressStates[index]);
-                    });
-                    done();
-                }
-            });
-
-            progressStates.forEach(state => {
-                messageSubject.next({
-                    body: JSON.stringify({ appliance: 'DOOR', state }),
-                });
+            const results = await collected;
+            results.forEach((result, index) => {
+                expect(result.type).toBe('SUCCESS');
+                expect((result.message as ApplianceMessage).state).toBe(progressStates[index]);
             });
         });
 
-        it('should merge progress messages and errors', done => {
-            const responses: SocketResponse[] = [];
-            const expectedCount = 3;
-
-            service.getObservable().subscribe(response => {
-                responses.push(response);
-                if (responses.length === expectedCount) {
-                    expect(responses[0].type).toBe('SUCCESS');
-                    expect(responses[1].type).toBe('ERROR');
-                    expect(responses[2].type).toBe('SUCCESS');
-                    done();
-                }
-            });
+        it('merges progress messages and errors', async () => {
+            const collected = firstValueFrom(service.getObservable().pipe(take(3), toArray()));
 
             messageSubject.next({ body: JSON.stringify({ appliance: 'DOOR', state: 'STARTING' }) });
             errorSubject.next({ headers: { message: 'Temporary error' } });
             messageSubject.next({
                 body: JSON.stringify({ appliance: 'DOOR', state: 'COMPLETED' }),
             });
+
+            const responses = await collected;
+            expect(responses[0].type).toBe('SUCCESS');
+            expect(responses[1].type).toBe('ERROR');
+            expect(responses[2].type).toBe('SUCCESS');
         });
     });
 });
