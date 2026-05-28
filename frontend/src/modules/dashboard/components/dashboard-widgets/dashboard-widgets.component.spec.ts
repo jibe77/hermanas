@@ -8,6 +8,7 @@ import { ProgressWebsocketService } from '@modules/dashboard/services/progresswe
 
 @Component({
     template: ` <sb-dashboard-widgets></sb-dashboard-widgets> `,
+    standalone: false
 })
 class TestHostComponent {}
 

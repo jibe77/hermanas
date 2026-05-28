@@ -10,6 +10,7 @@ import { environment } from '../../../../environments/environment';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './register.component.html',
     styleUrls: ['register.component.scss'],
+    standalone: false
 })
 export class RegisterComponent {
     registerForm: FormGroup;

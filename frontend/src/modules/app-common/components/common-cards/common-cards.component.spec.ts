@@ -11,6 +11,7 @@ import { CommonCardsComponent } from './common-cards.component';
             (someFunction)="someFunction($event)"
         ></sb-dashboard-cards>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

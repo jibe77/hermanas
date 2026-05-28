@@ -11,6 +11,7 @@ import { DashboardHeadComponent } from './dashboard-head.component';
             (someFunction)="someFunction($event)"
         ></sb-dashboard-head>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

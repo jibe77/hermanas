@@ -13,6 +13,7 @@ import { LayoutDashboardComponent } from './layout-dashboard.component';
             (someFunction)="someFunction($event)"
         ></sb-layout-dashboard>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

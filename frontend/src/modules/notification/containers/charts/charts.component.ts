@@ -22,6 +22,7 @@ import { takeUntil } from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './charts.component.html',
     styleUrls: ['charts.component.scss'],
+    standalone: false
 })
 export class ChartsComponent implements OnInit, OnDestroy {
     me?: HermanasUser;

@@ -21,6 +21,7 @@ import { Observable, Subscription } from 'rxjs';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './weather-table-area.component.html',
     styleUrls: ['weather-table-area.component.scss'],
+    standalone: false
 })
 export class WeatherTableAreaComponent implements OnInit, OnDestroy {
     @Output() serviceCommunicationError = new EventEmitter();

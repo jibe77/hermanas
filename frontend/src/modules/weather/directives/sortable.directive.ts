@@ -10,6 +10,7 @@ export interface SortEvent {
 
 @Directive({
     selector: 'th[sbSortable]',
+    standalone: false
 })
 export class SBSortableHeaderDirective {
     @Input() sbSortable!: string;

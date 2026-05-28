@@ -10,6 +10,7 @@ import { take } from 'rxjs/operators';
     selector: 'sb-dashboard-door-action',
     templateUrl: './dashboard-door-action.component.html',
     styleUrls: ['dashboard-door-action.component.scss'],
+    standalone: false
 })
 export class DashboardDoorActionComponent implements OnInit, OnDestroy {
     @Input() public doorStatus;

@@ -16,6 +16,7 @@ import { takeUntil } from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './common-cards.component.html',
     styleUrls: ['common-cards.component.scss'],
+    standalone: false
 })
 export class CommonCardsComponent implements OnInit, OnDestroy {
     retryMessageIsDisplayed = false;

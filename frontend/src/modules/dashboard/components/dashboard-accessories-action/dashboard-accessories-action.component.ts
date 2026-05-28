@@ -10,6 +10,7 @@ import { take } from 'rxjs/operators';
     selector: 'sb-dashboard-accessories-action',
     templateUrl: './dashboard-accessories-action.component.html',
     styleUrls: ['dashboard-accessories-action.component.scss'],
+    standalone: false
 })
 export class DashboardAccessoriesActionComponent implements OnInit, OnDestroy {
     @Input() public musicStatus;

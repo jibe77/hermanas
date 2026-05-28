@@ -8,6 +8,7 @@ import { SystemComponent } from './system.component';
     template: `
         <sb-tables [someInput]="someInput" (someFunction)="someFunction($event)"></sb-tables>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

@@ -11,6 +11,7 @@ import { TopNavLangComponent } from './top-nav-lang.component';
             (someFunction)="someFunction($event)"
         ></sbpro-top-nav-user>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

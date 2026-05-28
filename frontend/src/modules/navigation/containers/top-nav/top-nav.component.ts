@@ -6,6 +6,7 @@ import { NavigationService } from '@modules/navigation/services';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './top-nav.component.html',
     styleUrls: ['top-nav.component.scss'],
+    standalone: false
 })
 export class TopNavComponent {
     constructor(private navigationService: NavigationService) {}

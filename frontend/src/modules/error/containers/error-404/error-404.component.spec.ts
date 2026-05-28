@@ -8,6 +8,7 @@ import { Error404Component } from './error-404.component';
     template: `
         <sb-error-404 [someInput]="someInput" (someFunction)="someFunction($event)"></sb-error-404>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

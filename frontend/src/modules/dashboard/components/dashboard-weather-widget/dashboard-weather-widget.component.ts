@@ -17,6 +17,7 @@ import { takeUntil } from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-weather-widget.component.html',
     styleUrls: ['./dashboard-weather-widget.component.scss'],
+    standalone: false
 })
 export class DashboardWeatherWidgetComponent implements OnInit, OnDestroy {
     @Input() retryEvents: Observable<void>;

@@ -6,6 +6,7 @@ import { take } from 'rxjs/operators';
     selector: 'sb-version',
     templateUrl: './version.component.html',
     styleUrls: ['version.component.scss'],
+    standalone: false
 })
 export class VersionComponent implements OnInit {
     version!: string;

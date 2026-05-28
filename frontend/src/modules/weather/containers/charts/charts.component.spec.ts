@@ -8,6 +8,7 @@ import { ChartsComponent } from './charts.component';
     template: `
         <sb-charts [someInput]="someInput" (someFunction)="someFunction($event)"></sb-charts>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

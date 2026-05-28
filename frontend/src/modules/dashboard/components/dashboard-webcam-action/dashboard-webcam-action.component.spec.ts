@@ -11,6 +11,7 @@ import { DashboardWebcamActionComponent } from './dashboard-webcam-action.compon
             (someFunction)="someFunction($event)"
         ></sbpro-top-nav-user>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

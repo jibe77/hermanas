@@ -18,6 +18,7 @@ import { takeUntil } from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-door-widget.component.html',
     styleUrls: ['./dashboard-door-widget.component.scss'],
+    standalone: false
 })
 export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
     @Input() retryEvents: Observable<void>;

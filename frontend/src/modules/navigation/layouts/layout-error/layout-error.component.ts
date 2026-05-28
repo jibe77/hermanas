@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './layout-error.component.html',
     styleUrls: ['layout-error.component.scss'],
+    standalone: false
 })
 export class LayoutErrorComponent {
     constructor() {}

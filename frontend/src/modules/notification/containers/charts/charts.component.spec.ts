@@ -13,6 +13,7 @@ import { ToastService } from '@common/services';
     template: `
         <sb-charts [someInput]="someInput" (someFunction)="someFunction($event)"></sb-charts>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

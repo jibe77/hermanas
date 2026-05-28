@@ -10,6 +10,7 @@ import { VersionComponent } from './version.component';
             (someFunction)="someFunction($event)"
         ></sbpro-version>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

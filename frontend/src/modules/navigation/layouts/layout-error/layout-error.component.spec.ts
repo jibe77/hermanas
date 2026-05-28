@@ -11,6 +11,7 @@ import { LayoutErrorComponent } from './layout-error.component';
             (someFunction)="someFunction($event)"
         ></sbpro-layout-error>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

@@ -10,6 +10,7 @@ import { TopNavComponent } from './top-nav.component';
     template: `
         <sb-top-nav [someInput]="someInput" (someFunction)="someFunction($event)"></sb-top-nav>
     `,
+    standalone: false
 })
 class TestHostComponent {
     // someInput = 1;

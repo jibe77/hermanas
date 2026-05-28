@@ -53,7 +53,14 @@
       "Bash(grep -l \"634:\" *.js)",
       "Bash(ls common*.js)",
       "Bash(mvn -q compile)",
-      "Bash(mvn -q test)"
+      "Bash(mvn -q test)",
+      "Bash(./node_modules/.bin/ng version *)",
+      "Bash(npm view *)",
+      "Bash(git commit *)",
+      "Bash(npm install *)",
+      "Bash(mvn -q package -DskipTests)",
+      "Bash(xxd)",
+      "Bash(git tag -a pre-ng19-migration -m 'Snapshot before Angular 18 → 19 migration \\(session 2\\) *)"
     ],
     "deny": [],
     "ask": []

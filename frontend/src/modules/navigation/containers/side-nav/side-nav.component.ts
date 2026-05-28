@@ -9,6 +9,7 @@ import { NavigationService } from '@modules/navigation/services';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './side-nav.component.html',
     styleUrls: ['side-nav.component.scss'],
+    standalone: false
 })
 export class SideNavComponent {
     @Input() sideNavItems!: SideNavItems;
