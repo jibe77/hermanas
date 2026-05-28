@@ -109,10 +109,13 @@ public class SecurityConfig
 
                 // ─── Protected: every mutating call ───────────────────────────────────────────
                 // Any state-changing HTTP verb on the API requires authentication.
-                .antMatchers(HttpMethod.POST, "/api/v1/**").hasRole(ROLE_USER)
-                .antMatchers(HttpMethod.PUT, "/api/v1/**").hasRole(ROLE_USER)
-                .antMatchers(HttpMethod.DELETE, "/api/v1/**").hasRole(ROLE_USER)
-                .antMatchers(HttpMethod.PATCH, "/api/v1/**").hasRole(ROLE_USER)
+                // Use hasAnyRole(USER, ADMIN) — Spring Security does NOT give admins the USER
+                // role automatically (no role hierarchy is configured), so hasRole(USER) on its
+                // own would 403 every admin call.
+                .antMatchers(HttpMethod.POST, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                .antMatchers(HttpMethod.PUT, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                .antMatchers(HttpMethod.DELETE, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                .antMatchers(HttpMethod.PATCH, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
 
                 // ─── Protected: GET endpoints that actually mutate state ──────────────────────
                 // Legacy GET handlers that should have been POST/PUT but are kept for back-compat.
@@ -130,7 +133,7 @@ public class SecurityConfig
                         "/api/v1/energy/wifi/wifiSwitchEnabled",
                         // Camera streaming control.
                         "/api/v1/camera/stopStream"
-                        ).hasRole(ROLE_USER)
+                        ).hasAnyRole(ROLE_USER, ROLE_ADMIN)
 
                 // ─── Everything else (SPA shell, static assets, GET status endpoints, swagger,
                 // websockets, API GET reads, deep-link SPA routes) is public ──────────────────

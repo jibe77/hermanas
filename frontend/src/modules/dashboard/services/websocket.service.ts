@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { RxStompConfig } from '@stomp/rx-stomp';
 import { merge, Observable } from 'rxjs';
@@ -9,9 +10,15 @@ import { SocketResponse, WebSocketOptions } from '../models';
 import { RxStompService } from './rx-stomp.service';
 
 /**
- * A WebSocket service allowing subscription to a broker.
+ * Base class for feature-specific STOMP wrappers (e.g. ProgressWebsocketService).
+ * Decorated with @Injectable() (no `providedIn`) so subclasses can call `super`
+ * and TestBed can instantiate it with explicit providers, but DELIBERATELY NOT
+ * `providedIn: 'root'` — the constructor takes plain values (RxStompConfig +
+ * WebSocketOptions) that the root injector cannot supply. The subclasses are
+ * the ones registered as `providedIn: 'root'`; they pass the config / options
+ * by hand via `super(...)`.
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class WebSocketService {
     private obsStompConnection: Observable<SocketResponse>;
     private brokerURL = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${environment.wsUrl}`;
