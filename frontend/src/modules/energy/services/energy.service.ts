@@ -14,7 +14,6 @@ export interface EnergyMode {
 
 export interface EnergyModeConfig {
     energyMode: EnergyModeEnum;
-    machineShutdown: boolean;
     /** Hidden in the UI but still part of the payload; the backend ignores it. */
     wifiDisabled: boolean;
     durationOfFanInMilliseconds: number;

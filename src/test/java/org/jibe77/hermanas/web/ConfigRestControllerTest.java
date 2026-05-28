@@ -50,11 +50,8 @@ class ConfigRestControllerTest {
         when(configService.getMonthMode(anyInt())).thenReturn(
                 org.jibe77.hermanas.service.energy.EnergyModeEnum.REGULAR);
         when(configService.isConsumptionModeEcoForce()).thenReturn(false);
-        when(configService.isMachineShutdownInEcoMode()).thenReturn(true);
         when(configService.isWifiDisabledInEcoMode()).thenReturn(true);
-        when(configService.isMachineShutdownInRegularMode()).thenReturn(false);
         when(configService.isWifiDisabledInRegularMode()).thenReturn(false);
-        when(configService.isMachineShutdownInSunnyMode()).thenReturn(false);
         when(configService.isWifiDisabledInSunnyMode()).thenReturn(false);
 
         // When/Then
@@ -64,7 +61,7 @@ class ConfigRestControllerTest {
                 .andExpect(jsonPath("$.fan_timers.eco_delay_ms").value(300000))
                 .andExpect(jsonPath("$.music_timers.eco_delay_ms").value(300000))
                 .andExpect(jsonPath("$.consumption_mode.monthly_mapping").exists())
-                .andExpect(jsonPath("$.system_behavior.eco.machine_shutdown").value(true));
+                .andExpect(jsonPath("$.system_behavior.eco.wifi_disabled").value(true));
     }
 
     @Test
@@ -151,18 +148,6 @@ class ConfigRestControllerTest {
     // ============================================================================
     // PUT /api/v1/config/system/* - Update System Behavior
     // ============================================================================
-
-    @Test
-    @WithMockUser(roles = "USER")
-    void setEcoShutdown_shouldUpdateShutdownBehavior() throws Exception {
-        mockMvc.perform(put("/api/v1/config/system/eco/shutdown")
-                        .param("enabled", "false")
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Machine shutdown in eco mode set to false"));
-
-        verify(configService).setMachineShutdownInEcoMode(false);
-    }
 
     @Test
     @WithMockUser(roles = "USER")

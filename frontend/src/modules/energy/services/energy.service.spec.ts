@@ -64,7 +64,6 @@ describe('EnergyService', () => {
             expect(req.request.method).toBe('GET');
             req.flush({
                 energyMode: 'SUNNY',
-                machineShutdown: false,
                 wifiDisabled: false,
                 durationOfFanInMilliseconds: 1200000,
                 durationOfLightInMilliseconds: 3600000,
@@ -79,7 +78,6 @@ describe('EnergyService', () => {
         it('PUTs the full config body to /energy/updateMode', async () => {
             const config: EnergyModeConfig = {
                 energyMode: 'REGULAR',
-                machineShutdown: false,
                 wifiDisabled: false,
                 durationOfFanInMilliseconds: 600000,
                 durationOfLightInMilliseconds: 1800000,

@@ -68,20 +68,11 @@ public class ConfigService {
     @Value("${consumption.mode.eco.force}")
     private boolean consumptionModeEcoForce;
 
-    @Value("${machine.shutdown.eco}")
-    boolean machineShutdownInEcoMode;
-
     @Value("${wifi.disabled.eco}")
     boolean wifiDisabledInEcoMode;
 
-    @Value("${machine.shutdown.sunny}")
-    boolean machineShutdownInSunnyMode;
-
     @Value("${wifi.disabled.sunny}")
     boolean wifiDisabledInSunnyMode;
-
-    @Value("${machine.shutdown.regular}")
-    boolean machineShutdownInRegularMode;
 
     @Value("${wifi.disabled.regular}")
     boolean wifiDisabledInRegularMode;
@@ -515,26 +506,6 @@ public class ConfigService {
     // ============================================================================
 
     /**
-     * Checks if machine should shut down in eco mode.
-     *
-     * @return true if shutdown enabled in eco mode
-     */
-    @Cacheable(value = {"machineShutdownInEcoMode"})
-    public boolean isMachineShutdownInEcoMode() {
-        return getConfigValue("machine.shutdown.eco", machineShutdownInEcoMode, Boolean::valueOf);
-    }
-
-    /**
-     * Sets whether machine should shut down in eco mode.
-     *
-     * @param machineShutdownInEcoMode true to enable shutdown
-     */
-    @CacheEvict(value = "machineShutdownInEcoMode")
-    public void setMachineShutdownInEcoMode(boolean machineShutdownInEcoMode) {
-        setConfigValue("machine.shutdown.eco", machineShutdownInEcoMode, null);
-    }
-
-    /**
      * Checks if WiFi should be disabled in eco mode.
      *
      * @return true if WiFi should be disabled
@@ -555,26 +526,6 @@ public class ConfigService {
     }
 
     /**
-     * Checks if machine should shut down in sunny mode.
-     *
-     * @return true if shutdown enabled in sunny mode
-     */
-    @Cacheable(value = {"machineShutdownInSunnyMode"})
-    public boolean isMachineShutdownInSunnyMode() {
-        return getConfigValue("machine.shutdown.sunny", machineShutdownInSunnyMode, Boolean::valueOf);
-    }
-
-    /**
-     * Sets whether machine should shut down in sunny mode.
-     *
-     * @param machineShutdownInSunnyMode true to enable shutdown
-     */
-    @CacheEvict(value = "machineShutdownInSunnyMode")
-    public void setMachineShutdownInSunnyMode(boolean machineShutdownInSunnyMode) {
-        setConfigValue("machine.shutdown.sunny", machineShutdownInSunnyMode, null);
-    }
-
-    /**
      * Checks if WiFi should be disabled in sunny mode.
      *
      * @return true if WiFi should be disabled
@@ -592,26 +543,6 @@ public class ConfigService {
     @CacheEvict(value = "wifiDisabledInSunnyMode")
     public void setWifiDisabledInSunnyMode(boolean wifiDisabledInSunnyMode) {
         setConfigValue("wifi.disabled.sunny", wifiDisabledInSunnyMode, null);
-    }
-
-    /**
-     * Checks if machine should shut down in regular mode.
-     *
-     * @return true if shutdown enabled in regular mode
-     */
-    @Cacheable(value = {"machineShutdownInRegularMode"})
-    public boolean isMachineShutdownInRegularMode() {
-        return getConfigValue("machine.shutdown.regular", machineShutdownInRegularMode, Boolean::valueOf);
-    }
-
-    /**
-     * Sets whether machine should shut down in regular mode.
-     *
-     * @param machineShutdownInRegularMode true to enable shutdown
-     */
-    @CacheEvict(value = "machineShutdownInRegularMode")
-    public void setMachineShutdownInRegularMode(boolean machineShutdownInRegularMode) {
-        setConfigValue("machine.shutdown.regular", machineShutdownInRegularMode, null);
     }
 
     /**

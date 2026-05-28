@@ -184,7 +184,6 @@ export class ChartsComponent implements OnInit {
     private emptyConfig(mode: EnergyModeEnum): EnergyModeConfig {
         return {
             energyMode: mode,
-            machineShutdown: false,
             wifiDisabled: false,
             durationOfFanInMilliseconds: 0,
             durationOfLightInMilliseconds: 0,

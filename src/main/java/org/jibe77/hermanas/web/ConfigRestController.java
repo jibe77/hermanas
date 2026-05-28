@@ -104,20 +104,19 @@ public class ConfigRestController {
         consumption.put("eco_mode_forced", configService.isConsumptionModeEcoForce());
         config.put("consumption_mode", consumption);
 
-        // System behavior per mode
+        // System behavior per mode — wifi.disabled.* is a hidden safety knob, but we
+        // keep it readable here for diagnostics. machine_shutdown was removed: it never
+        // had a consumer in the runtime, just an unused setter on the admin UI.
         Map<String, Map<String, Boolean>> systemBehavior = new LinkedHashMap<>();
         Map<String, Boolean> eco = new LinkedHashMap<>();
-        eco.put("machine_shutdown", configService.isMachineShutdownInEcoMode());
         eco.put("wifi_disabled", configService.isWifiDisabledInEcoMode());
         systemBehavior.put("eco", eco);
 
         Map<String, Boolean> regular = new LinkedHashMap<>();
-        regular.put("machine_shutdown", configService.isMachineShutdownInRegularMode());
         regular.put("wifi_disabled", configService.isWifiDisabledInRegularMode());
         systemBehavior.put("regular", regular);
 
         Map<String, Boolean> sunny = new LinkedHashMap<>();
-        sunny.put("machine_shutdown", configService.isMachineShutdownInSunnyMode());
         sunny.put("wifi_disabled", configService.isWifiDisabledInSunnyMode());
         systemBehavior.put("sunny", sunny);
 
@@ -273,12 +272,8 @@ public class ConfigRestController {
         return ResponseEntity.ok("Eco mode force set to " + force);
     }
 
-    @Operation(summary = "Set machine shutdown behavior for eco mode")
-    @PutMapping("/system/eco/shutdown")
-    public ResponseEntity<String> setEcoShutdown(@RequestParam boolean enabled) {
-        configService.setMachineShutdownInEcoMode(enabled);
-        return ResponseEntity.ok("Machine shutdown in eco mode set to " + enabled);
-    }
+    // /system/<mode>/shutdown endpoints were removed: the flag they set
+    // (machine.shutdown.*) was never read by any runtime code, only stored.
 
     @Operation(summary = "Set WiFi disable behavior for eco mode")
     @PutMapping("/system/eco/wifi")
@@ -287,25 +282,11 @@ public class ConfigRestController {
         return ResponseEntity.ok("WiFi disabled in eco mode set to " + disabled);
     }
 
-    @Operation(summary = "Set machine shutdown behavior for regular mode")
-    @PutMapping("/system/regular/shutdown")
-    public ResponseEntity<String> setRegularShutdown(@RequestParam boolean enabled) {
-        configService.setMachineShutdownInRegularMode(enabled);
-        return ResponseEntity.ok("Machine shutdown in regular mode set to " + enabled);
-    }
-
     @Operation(summary = "Set WiFi disable behavior for regular mode")
     @PutMapping("/system/regular/wifi")
     public ResponseEntity<String> setRegularWifi(@RequestParam boolean disabled) {
         configService.setWifiDisabledInRegularMode(disabled);
         return ResponseEntity.ok("WiFi disabled in regular mode set to " + disabled);
-    }
-
-    @Operation(summary = "Set machine shutdown behavior for sunny mode")
-    @PutMapping("/system/sunny/shutdown")
-    public ResponseEntity<String> setSunnyShutdown(@RequestParam boolean enabled) {
-        configService.setMachineShutdownInSunnyMode(enabled);
-        return ResponseEntity.ok("Machine shutdown in sunny mode set to " + enabled);
     }
 
     @Operation(summary = "Set WiFi disable behavior for sunny mode")

@@ -12,7 +12,6 @@ import { ChartsComponent } from './charts.component';
 
 const baseConfig: EnergyModeConfig = {
     energyMode: 'REGULAR',
-    machineShutdown: false,
     wifiDisabled: false,
     durationOfFanInMilliseconds: 1200000, // 20 min
     durationOfLightInMilliseconds: 3600000, // 60 min

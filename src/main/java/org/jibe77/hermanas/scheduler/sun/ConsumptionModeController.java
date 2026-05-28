@@ -98,21 +98,18 @@ public class ConsumptionModeController {
                 energyModeConfig.setDurationOfFanInMilliseconds(configService.getFanSecurityTimerDelayEco());
                 energyModeConfig.setDurationOfLightInMilliseconds(configService.getLightSecurityTimerDelayEco());
                 energyModeConfig.setDurationOfMusicInMilliseconds(configService.getMusicSecurityTimerDelayEco());
-                energyModeConfig.setMachineShutdown(configService.isMachineShutdownInEcoMode());
                 energyModeConfig.setWifiDisabled(configService.isWifiDisabledInEcoMode());
                 break;
             case SUNNY:
                 energyModeConfig.setDurationOfFanInMilliseconds(configService.getFanSecurityTimerDelaySunny());
                 energyModeConfig.setDurationOfLightInMilliseconds(configService.getLightSecurityTimerDelaySunny());
                 energyModeConfig.setDurationOfMusicInMilliseconds(configService.getMusicSecurityTimerDelaySunny());
-                energyModeConfig.setMachineShutdown(configService.isMachineShutdownInSunnyMode());
                 energyModeConfig.setWifiDisabled(configService.isWifiDisabledInSunnyMode());
                 break;
             case REGULAR:
                 energyModeConfig.setDurationOfFanInMilliseconds(configService.getFanSecurityTimerDelayRegular());
                 energyModeConfig.setDurationOfLightInMilliseconds(configService.getLightSecurityTimerDelayRegular());
                 energyModeConfig.setDurationOfMusicInMilliseconds(configService.getMusicSecurityTimerDelayRegular());
-                energyModeConfig.setMachineShutdown(configService.isMachineShutdownInRegularMode());
                 energyModeConfig.setWifiDisabled(configService.isWifiDisabledInRegularMode());
                 break;
         }
@@ -125,7 +122,6 @@ public class ConsumptionModeController {
                 configService.setFanSecurityTimerDelayEco(energyModeConfig.getDurationOfFanInMilliseconds());
                 configService.setLightSecurityTimerDelayEco(energyModeConfig.getDurationOfLightInMilliseconds());
                 configService.setMusicSecurityTimerDelayEco(energyModeConfig.getDurationOfMusicInMilliseconds());
-                configService.setMachineShutdownInEcoMode(energyModeConfig.isMachineShutdown());
                 // wifi.disabled.* is intentionally not exposed to the admin UI — see
                 // application.properties. We do not propagate the incoming flag.
                 break;
@@ -133,13 +129,11 @@ public class ConsumptionModeController {
                 configService.setFanSecurityTimerDelaySunny(energyModeConfig.getDurationOfFanInMilliseconds());
                 configService.setLightSecurityTimerDelaySunny(energyModeConfig.getDurationOfLightInMilliseconds());
                 configService.setMusicSecurityTimerDelaySunny(energyModeConfig.getDurationOfMusicInMilliseconds());
-                configService.setMachineShutdownInSunnyMode(energyModeConfig.isMachineShutdown());
                 break;
             case REGULAR:
                 configService.setFanSecurityTimerDelayRegular(energyModeConfig.getDurationOfFanInMilliseconds());
                 configService.setLightSecurityTimerDelayRegular(energyModeConfig.getDurationOfLightInMilliseconds());
                 configService.setMusicSecurityTimerDelayRegular(energyModeConfig.getDurationOfMusicInMilliseconds());
-                configService.setMachineShutdownInRegularMode(energyModeConfig.isMachineShutdown());
                 break;
         }
         return energyModeConfig;

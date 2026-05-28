@@ -1093,10 +1093,6 @@
                 <source>Music duration</source>
                 <target>Durée de la musique</target>
             </trans-unit>
-            <trans-unit id="energyMachineShutdown" datatype="html">
-                <source>Shut down the machine</source>
-                <target>Éteindre la machine</target>
-            </trans-unit>
             <trans-unit id="minutesShort" datatype="html">
                 <source>min</source>
                 <target>min</target>

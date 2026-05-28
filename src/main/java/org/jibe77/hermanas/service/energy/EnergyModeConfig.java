@@ -2,7 +2,6 @@ package org.jibe77.hermanas.service.energy;
 
 public class EnergyModeConfig {
     private EnergyModeEnum energyMode;
-    private boolean machineShutdown;
     private boolean wifiDisabled;
     private long durationOfFanInMilliseconds;
     private long durationOfLightInMilliseconds;
@@ -14,14 +13,6 @@ public class EnergyModeConfig {
 
     public void setEnergyMode(EnergyModeEnum energyMode) {
         this.energyMode = energyMode;
-    }
-
-    public boolean isMachineShutdown() {
-        return machineShutdown;
-    }
-
-    public void setMachineShutdown(boolean machineShutdown) {
-        this.machineShutdown = machineShutdown;
     }
 
     public boolean isWifiDisabled() {
