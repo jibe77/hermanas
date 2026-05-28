@@ -1,11 +1,12 @@
 import { OnInit, ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { NgClass } from '@angular/common';
 
 @Component({
     selector: 'sb-card',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './card.component.html',
     styleUrls: ['card.component.scss'],
-    standalone: false,
+    imports: [NgClass],
 })
 export class CardComponent implements OnInit {
     @Input() background!: string;

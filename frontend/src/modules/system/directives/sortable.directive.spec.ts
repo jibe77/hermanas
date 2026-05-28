@@ -16,7 +16,7 @@ import { SBSortableHeaderDirective, SortEvent } from './sortable.directive';
             </thead>
         </table>
     `,
-    standalone: false,
+    imports: [SBSortableHeaderDirective],
 })
 class TestComponent {
     sortDirection: 'asc' | 'desc' | '' = '';
@@ -36,7 +36,7 @@ describe('SBSortableHeaderDirective (System)', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [SBSortableHeaderDirective, TestComponent],
+            imports: [TestComponent],
         });
 
         fixture = TestBed.createComponent(TestComponent);

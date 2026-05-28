@@ -6,18 +6,28 @@ import {
     OnInit,
     inject,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LoginService, UserService } from '@modules/auth/services';
 import { AuthState } from '@modules/auth/models';
 import { NavigationService } from '@modules/navigation/services';
 import { Subscription } from 'rxjs';
+import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu } from '@ng-bootstrap/ng-bootstrap';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'sb-top-nav-user',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './top-nav-user.component.html',
     styleUrls: ['top-nav-user.component.scss'],
-    standalone: false,
+    imports: [
+        NgbDropdown,
+        NgbDropdownToggle,
+        FaIconComponent,
+        NgbDropdownMenu,
+        RouterLink,
+        AsyncPipe,
+    ],
 })
 export class TopNavUserComponent implements OnInit, OnDestroy {
     navigationService = inject(NavigationService);

@@ -11,13 +11,14 @@ import {
 } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { CardViewDetailsComponent } from '../card-view-details/card-view-details.component';
 
 @Component({
     selector: 'sb-common-cards',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './common-cards.component.html',
     styleUrls: ['common-cards.component.scss'],
-    standalone: false,
+    imports: [CardViewDetailsComponent],
 })
 export class CommonCardsComponent implements OnInit, OnDestroy {
     _changeDetectorRef = inject(ChangeDetectorRef);

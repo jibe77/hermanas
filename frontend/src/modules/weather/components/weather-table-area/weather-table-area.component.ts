@@ -11,18 +11,38 @@ import {
     inject,
 } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort, MatSortable } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatSort, MatSortable, MatSortHeader } from '@angular/material/sort';
+import { MatTableDataSource, MatTable, MatColumnDef, MatHeaderCellDef, MatHeaderCell, MatCellDef, MatCell, MatHeaderRowDef, MatHeaderRow, MatRowDef, MatRow } from '@angular/material/table';
 import { MeteoInfo } from '@modules/dashboard/services';
 import { WeatherService } from '@modules/weather/services';
 import { Observable, Subscription } from 'rxjs';
+import { DatePipe } from '@angular/common';
+import { TemperaturePipe } from '../pipe/TemperaturePipe';
+import { HumidityPipe } from '../pipe/HumidityPipe';
 
 @Component({
     selector: 'hermanas-weather-table-area',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './weather-table-area.component.html',
     styleUrls: ['weather-table-area.component.scss'],
-    standalone: false,
+    imports: [
+        MatTable,
+        MatSort,
+        MatColumnDef,
+        MatHeaderCellDef,
+        MatHeaderCell,
+        MatSortHeader,
+        MatCellDef,
+        MatCell,
+        MatHeaderRowDef,
+        MatHeaderRow,
+        MatRowDef,
+        MatRow,
+        MatPaginator,
+        DatePipe,
+        TemperaturePipe,
+        HumidityPipe,
+    ],
 })
 export class WeatherTableAreaComponent implements OnInit, OnDestroy {
     weatherService = inject(WeatherService);

@@ -13,6 +13,11 @@ import {
     EnergyService,
 } from '@modules/energy/services/energy.service';
 import { forkJoin } from 'rxjs';
+import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
+import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
+import { CardComponent } from '../../../app-common/components/card/card.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 interface MonthEntry {
     /** 1-12 */
@@ -46,7 +51,14 @@ const MUSIC_MAX_MINUTES = 180;
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './charts.component.html',
     styleUrls: ['charts.component.scss'],
-    standalone: false,
+    imports: [
+        LayoutDashboardComponent,
+        DashboardHeadComponent,
+        CardComponent,
+        FaIconComponent,
+        ReactiveFormsModule,
+        FormsModule,
+    ],
 })
 export class ChartsComponent implements OnInit {
     private energyService = inject(EnergyService);

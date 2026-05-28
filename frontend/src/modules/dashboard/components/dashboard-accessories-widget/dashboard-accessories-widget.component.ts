@@ -19,13 +19,20 @@ import {
 } from '@modules/dashboard/services';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { CardComponent } from '../../../app-common/components/card/card.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { DashboardAccessoriesActionComponent } from '../dashboard-accessories-action/dashboard-accessories-action.component';
 
 @Component({
     selector: 'sb-dashboard-accessories-widget',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-accessories-widget.component.html',
     styleUrls: ['./dashboard-accessories-widget.component.scss'],
-    standalone: false,
+    imports: [
+        CardComponent,
+        FaIconComponent,
+        DashboardAccessoriesActionComponent,
+    ],
 })
 export class DashboardAccessoriesWidgetComponent implements OnInit, OnDestroy {
     private lightService = inject(LightService);

@@ -13,13 +13,22 @@ import { NextEvents, SchedulerService } from '@modules/dashboard/services';
 import { DoorService, DoorStatus } from '@modules/dashboard/services/door.service';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { CardComponent } from '../../../app-common/components/card/card.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { DashboardDoorActionComponent } from '../dashboard-door-action/dashboard-door-action.component';
+import { DashboardWebcamActionComponent } from '../dashboard-webcam-action/dashboard-webcam-action.component';
 
 @Component({
     selector: 'sb-dashboard-door-widget',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-door-widget.component.html',
     styleUrls: ['./dashboard-door-widget.component.scss'],
-    standalone: false,
+    imports: [
+        CardComponent,
+        FaIconComponent,
+        DashboardDoorActionComponent,
+        DashboardWebcamActionComponent,
+    ],
 })
 export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
     doorService = inject(DoorService);

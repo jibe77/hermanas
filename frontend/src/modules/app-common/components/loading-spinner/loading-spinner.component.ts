@@ -16,7 +16,6 @@ import { LoadingService } from '../../services/loading/loading.service';
             transition(':leave', [animate('200ms ease-out', style({ opacity: 0 }))]),
         ]),
     ],
-    standalone: false,
 })
 export class LoadingSpinnerComponent {
     loadingService = inject(LoadingService);

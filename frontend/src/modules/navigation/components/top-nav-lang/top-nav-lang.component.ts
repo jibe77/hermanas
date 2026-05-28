@@ -1,12 +1,17 @@
 import { OnInit, ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NavigationService } from '@modules/navigation/services';
+import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
     selector: 'sb-top-nav-lang',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './top-nav-lang.component.html',
     styleUrls: ['top-nav-lang.component.scss'],
-    standalone: false,
+    imports: [
+        NgbDropdown,
+        NgbDropdownToggle,
+        NgbDropdownMenu,
+    ],
 })
 export class TopNavLangComponent implements OnInit {
     navigationService = inject(NavigationService);

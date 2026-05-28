@@ -30,9 +30,9 @@ import * as authServices from './services';
         HttpClientModule,
         AppCommonModule,
         NavigationModule,
+        ...authContainers.containers, ...authComponents.components,
     ],
     providers: [...authServices.services, ...authGuards.guards],
-    declarations: [...authContainers.containers, ...authComponents.components],
     exports: [...authContainers.containers, ...authComponents.components],
 })
 export class AuthModule {}

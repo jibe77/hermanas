@@ -37,13 +37,13 @@ import * as tablesDirectives from './directives';
         MatTableModule,
         MatPaginatorModule,
         MatSortModule,
+        ...chartsContainers.containers, ...chartsComponents.components,
+        ...tablesDirectives.directives,
     ],
     providers: [
         ...weatherServices.services,
         ...chartsGuards.guards,
-        ...tablesDirectives.directives,
     ],
-    declarations: [...chartsContainers.containers, ...chartsComponents.components],
     exports: [...chartsContainers.containers, ...chartsComponents.components],
 })
 export class WeatherModule {}

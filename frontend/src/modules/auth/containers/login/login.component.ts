@@ -5,17 +5,22 @@ import {
     OnInit,
     inject,
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { LoginService, UserService } from '@modules/auth/services';
 import { AuthState } from '@modules/auth/models';
+import { LayoutAuthComponent } from '../../../navigation/layouts/layout-auth/layout-auth.component';
 
 @Component({
     selector: 'sb-login',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './login.component.html',
     styleUrls: ['login.component.scss'],
-    standalone: false,
+    imports: [
+        LayoutAuthComponent,
+        ReactiveFormsModule,
+        RouterLink,
+    ],
 })
 export class LoginComponent implements OnInit {
     private fb = inject(FormBuilder);

@@ -1,9 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({
-    name: 'temperature',
-    standalone: false,
-})
+@Pipe({ name: 'temperature', })
 export class TemperaturePipe implements PipeTransform {
     transform(temperature: number): string {
         if (temperature === -100) {

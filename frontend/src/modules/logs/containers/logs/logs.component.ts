@@ -11,13 +11,27 @@ import { ToastService } from '@common/services';
 import { LogFileInfo, LogLevel, LogsService } from '@modules/logs/services/logs.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
+import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
+import { CardComponent } from '../../../app-common/components/card/card.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { NgClass } from '@angular/common';
 
 @Component({
     selector: 'sb-logs',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './logs.component.html',
     styleUrls: ['logs.component.scss'],
-    standalone: false,
+    imports: [
+        LayoutDashboardComponent,
+        DashboardHeadComponent,
+        CardComponent,
+        FaIconComponent,
+        ReactiveFormsModule,
+        FormsModule,
+        NgClass,
+    ],
 })
 export class LogsComponent implements OnInit, OnDestroy {
     private _logsService = inject(LogsService);

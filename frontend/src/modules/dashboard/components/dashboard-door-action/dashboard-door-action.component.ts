@@ -5,12 +5,23 @@ import { DashboardWidgetsComponent } from '@modules/dashboard/components/dashboa
 import { DoorService } from '@modules/dashboard/services';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu } from '@ng-bootstrap/ng-bootstrap';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { RouterLink } from '@angular/router';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'sb-dashboard-door-action',
     templateUrl: './dashboard-door-action.component.html',
     styleUrls: ['dashboard-door-action.component.scss'],
-    standalone: false,
+    imports: [
+        NgbDropdown,
+        NgbDropdownToggle,
+        FaIconComponent,
+        NgbDropdownMenu,
+        RouterLink,
+        AsyncPipe,
+    ],
 })
 export class DashboardDoorActionComponent implements OnInit, OnDestroy {
     _doorService = inject(DoorService);

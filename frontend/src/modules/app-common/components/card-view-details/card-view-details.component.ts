@@ -6,13 +6,15 @@ import {
     OnInit,
     Output,
 } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
     selector: 'sb-card-view-details',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './card-view-details.component.html',
     styleUrls: ['card-view-details.component.scss'],
-    standalone: false,
+    imports: [NgClass, FaIconComponent],
 })
 export class CardViewDetailsComponent implements OnInit {
     @Input() background!: string;

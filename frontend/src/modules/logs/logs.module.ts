@@ -25,9 +25,9 @@ import * as logsServices from './services';
         FormsModule,
         AppCommonModule,
         NavigationModule,
+        ...logsContainers.containers, ...logsComponents.components,
     ],
     providers: [...logsServices.services],
-    declarations: [...logsContainers.containers, ...logsComponents.components],
     exports: [...logsContainers.containers, ...logsComponents.components],
 })
 export class LogsModule {}

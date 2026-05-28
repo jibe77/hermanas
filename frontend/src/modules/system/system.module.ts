@@ -25,11 +25,6 @@ import * as systemService from './services';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @NgModule({
-    declarations: [
-        ...systemContainers.containers,
-        ...systemComponents.components,
-        ...systemDirectives.directives,
-    ],
     exports: [...systemContainers.containers, ...systemComponents.components],
     imports: [
         CommonModule,
@@ -38,6 +33,9 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
         FormsModule,
         AppCommonModule,
         NavigationModule,
+        ...systemContainers.containers,
+        ...systemComponents.components,
+        ...systemDirectives.directives,
     ],
     providers: [
         DecimalPipe,

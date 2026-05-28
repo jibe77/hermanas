@@ -5,12 +5,23 @@ import { DashboardWidgetsComponent } from '@modules/dashboard/components/dashboa
 import { FanService, LightService, MusicService } from '@modules/dashboard/services';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu } from '@ng-bootstrap/ng-bootstrap';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { RouterLink } from '@angular/router';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
     selector: 'sb-dashboard-accessories-action',
     templateUrl: './dashboard-accessories-action.component.html',
     styleUrls: ['dashboard-accessories-action.component.scss'],
-    standalone: false,
+    imports: [
+        NgbDropdown,
+        NgbDropdownToggle,
+        FaIconComponent,
+        NgbDropdownMenu,
+        RouterLink,
+        AsyncPipe,
+    ],
 })
 export class DashboardAccessoriesActionComponent implements OnInit, OnDestroy {
     _lightService = inject(LightService);

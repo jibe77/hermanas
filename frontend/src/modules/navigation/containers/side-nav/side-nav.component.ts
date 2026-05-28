@@ -3,13 +3,19 @@ import { UserService } from '@modules/auth/services';
 import { AuthState } from '@modules/auth/models';
 import { SideNavItems, SideNavSection } from '@modules/navigation/models';
 import { NavigationService } from '@modules/navigation/services';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
     selector: 'sb-side-nav',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './side-nav.component.html',
     styleUrls: ['side-nav.component.scss'],
-    standalone: false,
+    imports: [
+        RouterLink,
+        RouterLinkActive,
+        FaIconComponent,
+    ],
 })
 export class SideNavComponent {
     navigationService = inject(NavigationService);

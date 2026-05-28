@@ -28,9 +28,9 @@ import * as errorServices from './services';
         FormsModule,
         AppCommonModule,
         NavigationModule,
+        ...errorContainers.containers, ...errorComponents.components,
     ],
     providers: [...errorServices.services, ...errorGuards.guards],
-    declarations: [...errorContainers.containers, ...errorComponents.components],
     exports: [...errorContainers.containers, ...errorComponents.components],
 })
 export class ErrorModule {}

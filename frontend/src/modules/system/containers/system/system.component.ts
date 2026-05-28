@@ -21,6 +21,13 @@ import { SystemPowerService } from '@modules/system/services/system-power.servic
 import { VersionInfo, VersionService } from '@modules/system/services/version.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
+import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
+import { CommonCardsComponent } from '../../../app-common/components/common-cards/common-cards.component';
+import { CardComponent } from '../../../app-common/components/card/card.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu } from '@ng-bootstrap/ng-bootstrap';
+import { DatePipe } from '@angular/common';
 
 interface ButtonState {
     pressed?: boolean;
@@ -33,7 +40,17 @@ interface ButtonState {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './system.component.html',
     styleUrls: ['system.component.scss'],
-    standalone: false,
+    imports: [
+        LayoutDashboardComponent,
+        DashboardHeadComponent,
+        CommonCardsComponent,
+        CardComponent,
+        FaIconComponent,
+        NgbDropdown,
+        NgbDropdownToggle,
+        NgbDropdownMenu,
+        DatePipe,
+    ],
 })
 export class SystemComponent implements OnInit, OnDestroy {
     private _versionService = inject(VersionService);

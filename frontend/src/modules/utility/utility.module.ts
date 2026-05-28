@@ -28,9 +28,9 @@ import * as utilityServices from './services';
         FormsModule,
         AppCommonModule,
         NavigationModule,
+        ...utilityContainers.containers, ...utilityComponents.components,
     ],
     providers: [...utilityServices.services, ...utilityGuards.guards],
-    declarations: [...utilityContainers.containers, ...utilityComponents.components],
     exports: [...utilityContainers.containers, ...utilityComponents.components],
 })
 export class UtilityModule {}

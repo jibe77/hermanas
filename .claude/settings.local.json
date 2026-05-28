@@ -60,7 +60,21 @@
       "Bash(npm install *)",
       "Bash(mvn -q package -DskipTests)",
       "Bash(xxd)",
-      "Bash(git tag -a pre-ng19-migration -m 'Snapshot before Angular 18 → 19 migration \\(session 2\\) *)"
+      "Bash(git tag -a pre-ng19-migration -m 'Snapshot before Angular 18 → 19 migration \\(session 2\\) *)",
+      "Bash(cp frontend/.eslintrc.json /tmp/eslintrc.session2.json)",
+      "Bash(git checkout *)",
+      "Bash(cp /tmp/eslintrc.session2.json frontend/.eslintrc.json)",
+      "Bash(git tag -a post-ng19-migration -m 'Snapshot after Angular 18 → 19 migration \\(end of session 2\\) *)",
+      "Bash(git tag -a post-ng20-migration -m 'Snapshot after Angular 19 → 20 migration \\(end of session 3\\) *)",
+      "Bash(npm uninstall *)",
+      "Bash(grep -E \" FAILED$\")",
+      "Bash(grep -E \"^TOTAL|FAILED$\")",
+      "Bash(grep -A20 \"getUser\\\\$ should return\")",
+      "Bash(npm test *)",
+      "Bash(awk '{gsub\\(/intercept\\\\\\(request, mockHandler\\\\\\)/, \"intercept\\(request, asHandler\\(\\)\\)\"\\); print}' src/modules/dashboard/interceptors/http-error.interceptor.spec.ts)",
+      "Bash(mv /tmp/spec.tmp src/modules/dashboard/interceptors/http-error.interceptor.spec.ts)",
+      "Bash(awk '{gsub\\(/fail\\\\\\(\\([^\\)]*\\)\\\\\\)/, \"\\(\\(\\) => { throw new Error\\(\\\\\\\\1\\); }\\)\\(\\)\"\\); print}' src/modules/dashboard/interceptors/http-error.interceptor.spec.ts)",
+      "Bash(echo \"Exit code: $?\")"
     ],
     "deny": [],
     "ask": []

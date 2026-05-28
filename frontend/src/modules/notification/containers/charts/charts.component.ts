@@ -17,13 +17,27 @@ import {
 import { UserService } from '@modules/auth/services';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
+import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
+import { CardComponent } from '../../../app-common/components/card/card.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { NgClass } from '@angular/common';
 
 @Component({
     selector: 'sb-charts',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './charts.component.html',
     styleUrls: ['charts.component.scss'],
-    standalone: false,
+    imports: [
+        LayoutDashboardComponent,
+        DashboardHeadComponent,
+        CardComponent,
+        FaIconComponent,
+        ReactiveFormsModule,
+        FormsModule,
+        NgClass,
+    ],
 })
 export class ChartsComponent implements OnInit, OnDestroy {
     private _chartsService = inject(ChartsService);

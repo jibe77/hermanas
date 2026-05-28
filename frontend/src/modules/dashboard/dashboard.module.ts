@@ -20,7 +20,6 @@ import * as dashboardServices from './services';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 @NgModule({
-    declarations: [...dashboardContainers.containers, ...dashboardComponents.components],
     exports: [...dashboardContainers.containers, ...dashboardComponents.components],
     imports: [
         CommonModule,
@@ -29,6 +28,7 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@a
         FormsModule,
         AppCommonModule,
         NavigationModule,
+        ...dashboardContainers.containers, ...dashboardComponents.components,
     ],
     providers: [
         ...dashboardServices.services,

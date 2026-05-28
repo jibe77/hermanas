@@ -3,13 +3,15 @@ import { Breadcrumb } from '@modules/navigation/models';
 import { NavigationService } from '@modules/navigation/services';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { NgClass } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'sb-breadcrumbs',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './breadcrumbs.component.html',
     styleUrls: ['breadcrumbs.component.scss'],
-    standalone: false,
+    imports: [NgClass, RouterLink],
 })
 export class BreadcrumbsComponent implements OnInit, OnDestroy {
     navigationService = inject(NavigationService);

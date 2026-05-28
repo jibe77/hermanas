@@ -12,13 +12,20 @@ import {
 import { MeteoInfo, MeteoService } from '@modules/dashboard/services';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { CardComponent } from '../../../app-common/components/card/card.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { DashboardWeatherActionComponent } from '../dashboard-weather-action/dashboard-weather-action.component';
 
 @Component({
     selector: 'sb-dashboard-weather-widget',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-weather-widget.component.html',
     styleUrls: ['./dashboard-weather-widget.component.scss'],
-    standalone: false,
+    imports: [
+        CardComponent,
+        FaIconComponent,
+        DashboardWeatherActionComponent,
+    ],
 })
 export class DashboardWeatherWidgetComponent implements OnInit, OnDestroy {
     private meteoService = inject(MeteoService);

@@ -12,13 +12,25 @@ import { SBSortableHeaderDirective, SortEvent } from '@modules/system/directives
 import { Country } from '@modules/system/models';
 import { CountryService } from '@modules/system/services';
 import { Observable } from 'rxjs';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { SortIconComponent } from '../sort-icon/sort-icon.component';
+import { NgbHighlight, NgbPagination } from '@ng-bootstrap/ng-bootstrap';
+import { AsyncPipe, DecimalPipe } from '@angular/common';
 
 @Component({
     selector: 'sb-ng-bootstrap-table',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './ng-bootstrap-table.component.html',
     styleUrls: ['ng-bootstrap-table.component.scss'],
-    standalone: false,
+    imports: [
+        ReactiveFormsModule,
+        FormsModule,
+        SortIconComponent,
+        NgbHighlight,
+        NgbPagination,
+        AsyncPipe,
+        DecimalPipe,
+    ],
 })
 export class NgBootstrapTableComponent implements OnInit {
     countryService = inject(CountryService);

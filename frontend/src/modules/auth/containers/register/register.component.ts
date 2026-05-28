@@ -1,16 +1,21 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { LayoutAuthComponent } from '../../../navigation/layouts/layout-auth/layout-auth.component';
 
 @Component({
     selector: 'sb-register',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './register.component.html',
     styleUrls: ['register.component.scss'],
-    standalone: false,
+    imports: [
+        LayoutAuthComponent,
+        ReactiveFormsModule,
+        RouterLink,
+    ],
 })
 export class RegisterComponent {
     private fb = inject(FormBuilder);

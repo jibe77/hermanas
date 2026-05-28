@@ -22,7 +22,11 @@ import { DashboardWeatherWidgetComponent } from '../dashboard-weather-widget/das
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-widgets.component.html',
     styleUrls: ['dashboard-widgets.component.scss'],
-    standalone: false,
+    imports: [
+        DashboardDoorWidgetComponent,
+        DashboardWeatherWidgetComponent,
+        DashboardAccessoriesWidgetComponent,
+    ],
 })
 export class DashboardWidgetsComponent implements OnInit, OnDestroy {
     private websocketService = inject(ProgressWebsocketService);

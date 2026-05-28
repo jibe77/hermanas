@@ -8,6 +8,10 @@ import {
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '@common/services';
 import { PhotoEntry, PhotoListing, PhotosService } from '@modules/camera/services/photos.service';
+import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
+import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
+import { CardComponent } from '../../../app-common/components/card/card.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 interface Crumb {
     label: string;
@@ -24,7 +28,12 @@ interface PhotoFile extends PhotoEntry {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './charts.component.html',
     styleUrls: ['charts.component.scss'],
-    standalone: false,
+    imports: [
+        LayoutDashboardComponent,
+        DashboardHeadComponent,
+        CardComponent,
+        FaIconComponent,
+    ],
 })
 export class ChartsComponent implements OnInit {
     private photos = inject(PhotosService);

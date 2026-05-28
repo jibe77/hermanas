@@ -28,9 +28,9 @@ import * as chartsServices from './services';
         FormsModule,
         AppCommonModule,
         NavigationModule,
+        ...chartsContainers.containers, ...chartsComponents.components,
     ],
     providers: [...chartsServices.services, ...chartsGuards.guards],
-    declarations: [...chartsContainers.containers, ...chartsComponents.components],
     exports: [...chartsContainers.containers, ...chartsComponents.components],
 })
 export class NotificationModule {}
