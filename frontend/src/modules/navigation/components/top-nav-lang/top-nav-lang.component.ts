@@ -22,12 +22,6 @@ export class TopNavLangComponent implements OnInit {
     ngOnInit(): void {
         this.siteLocale = window.location.pathname.split('/')[1];
         const language = this.languageList.find(f => f.code === this.siteLocale);
-        if (language) {
-            this.siteLanguage = language.label;
-            // Note: I18n API removed in Amplify v6 - translations now configured via Amplify UI components
-        } else {
-            this.siteLanguage = this.languageList[1].label;
-            // Note: I18n API removed in Amplify v6 - translations now configured via Amplify UI components
-        }
+        this.siteLanguage = (language ?? this.languageList[1]).label;
     }
 }

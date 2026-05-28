@@ -13,8 +13,6 @@ describe('LightService', () => {
     const mockUser: User = {
         login: 'testuser',
         email: 'test@test.com',
-        backEndUser: 'admin',
-        backEndPassword: 'password',
     } as User;
 
     beforeEach(() => {
