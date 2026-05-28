@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './charts.component.html',
     styleUrls: ['charts.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class ChartsComponent {
     constructor() {}

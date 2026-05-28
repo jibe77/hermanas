@@ -8,7 +8,7 @@ import { DashboardComponent } from './dashboard.component';
     template: `
         <sb-dashboard [someInput]="someInput" (someFunction)="someFunction($event)"></sb-dashboard>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

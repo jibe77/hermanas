@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-head.component.html',
     styleUrls: ['dashboard-head.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class DashboardHeadComponent {
     @Input() title!: string;

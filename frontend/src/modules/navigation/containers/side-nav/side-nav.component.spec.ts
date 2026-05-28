@@ -11,7 +11,7 @@ import { SideNavComponent } from './side-nav.component';
     template: `
         <sb-side-nav [someInput]="someInput" (someFunction)="someFunction($event)"></sb-side-nav>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

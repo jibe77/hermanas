@@ -9,7 +9,7 @@ import { takeUntil } from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './breadcrumbs.component.html',
     styleUrls: ['breadcrumbs.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class BreadcrumbsComponent implements OnInit, OnDestroy {
     breadcrumbs!: Breadcrumb[];

@@ -7,7 +7,7 @@ import { environment } from '../../../../environments/environment';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard.component.html',
     styleUrls: ['dashboard.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class DashboardComponent {
     notificationSubject: Subject<void> = new Subject<void>();

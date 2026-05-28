@@ -12,7 +12,7 @@ import { WeatherTableAreaComponent } from './weather-table-area.component';
             (someFunction)="someFunction($event)"
         ></sb-ng-bootstrap-table>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

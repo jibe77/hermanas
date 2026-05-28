@@ -12,7 +12,7 @@ import { NgBootstrapTableComponent } from './ng-bootstrap-table.component';
             (someFunction)="someFunction($event)"
         ></sb-ng-bootstrap-table>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

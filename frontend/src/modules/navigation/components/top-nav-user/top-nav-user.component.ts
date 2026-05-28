@@ -16,7 +16,7 @@ import { Subscription } from 'rxjs';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './top-nav-user.component.html',
     styleUrls: ['top-nav-user.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class TopNavUserComponent implements OnInit, OnDestroy {
     authState: AuthState = AuthState.SignedOut;

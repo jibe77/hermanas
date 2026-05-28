@@ -16,7 +16,7 @@ import { takeUntil } from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './logs.component.html',
     styleUrls: ['logs.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class LogsComponent implements OnInit, OnDestroy {
     files: LogFileInfo[] = [];

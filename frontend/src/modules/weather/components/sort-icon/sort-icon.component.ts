@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './sort-icon.component.html',
     styleUrls: ['sort-icon.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class SortIconComponent {
     @Input() direction!: string;

@@ -10,7 +10,7 @@ import { NavigationService } from '@modules/navigation/services';
 
 @Component({
     template: ` <sb-login></sb-login> `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {}
 

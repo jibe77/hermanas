@@ -11,7 +11,7 @@ import { CardViewDetailsComponent } from './card-view-details.component';
             (someFunction)="someFunction($event)"
         ></sb-card-view-details>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

@@ -11,7 +11,7 @@ import { DashboardAccessoriesActionComponent } from './dashboard-accessories-act
             (someFunction)="someFunction($event)"
         ></sbpro-top-nav-user>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

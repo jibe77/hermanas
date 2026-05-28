@@ -6,7 +6,7 @@ import { NavigationService } from '@modules/navigation/services';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './top-nav-lang.component.html',
     styleUrls: ['top-nav-lang.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class TopNavLangComponent implements OnInit {
     siteLanguage = 'English';

@@ -21,7 +21,7 @@ import { DashboardWeatherWidgetComponent } from '../dashboard-weather-widget/das
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './dashboard-widgets.component.html',
     styleUrls: ['dashboard-widgets.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class DashboardWidgetsComponent implements OnInit, OnDestroy {
     @Output() serviceCommunicationError = new EventEmitter<any>();

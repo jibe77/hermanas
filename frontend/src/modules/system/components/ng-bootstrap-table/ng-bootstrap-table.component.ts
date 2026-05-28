@@ -17,7 +17,7 @@ import { Observable } from 'rxjs';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './ng-bootstrap-table.component.html',
     styleUrls: ['ng-bootstrap-table.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class NgBootstrapTableComponent implements OnInit {
     @Input() pageSize = 4;

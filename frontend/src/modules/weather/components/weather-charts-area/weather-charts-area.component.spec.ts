@@ -11,7 +11,7 @@ import { WeatherChartsAreaComponent } from './weather-charts-area.component';
             (someFunction)="someFunction($event)"
         ></sb-charts-area>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

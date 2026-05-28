@@ -16,7 +16,7 @@ import { SBSortableHeaderDirective, SortEvent } from './sortable.directive';
             </thead>
         </table>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestComponent {
     sortDirection: 'asc' | 'desc' | '' = '';

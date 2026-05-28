@@ -13,7 +13,7 @@ import { BreadcrumbsComponent } from './breadcrumbs.component';
             (someFunction)="someFunction($event)"
         ></sb-breadcrumbs>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

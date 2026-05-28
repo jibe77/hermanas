@@ -15,7 +15,7 @@ import { takeUntil } from 'rxjs/operators';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './layout-dashboard.component.html',
     styleUrls: ['layout-dashboard.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class LayoutDashboardComponent implements OnInit, OnDestroy {
     @HostBinding('class.sb-sidenav-toggled') sideNavHidden = false;

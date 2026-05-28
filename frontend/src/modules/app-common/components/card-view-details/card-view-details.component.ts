@@ -12,7 +12,7 @@ import {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './card-view-details.component.html',
     styleUrls: ['card-view-details.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class CardViewDetailsComponent implements OnInit {
     @Input() background!: string;

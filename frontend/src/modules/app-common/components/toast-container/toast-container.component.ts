@@ -18,7 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
             ]),
         ]),
     ],
-    standalone: false
+    standalone: false,
 })
 export class ToastContainerComponent implements OnInit, OnDestroy {
     public toasts: Toast[] = [];

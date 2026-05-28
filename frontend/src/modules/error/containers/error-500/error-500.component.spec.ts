@@ -8,7 +8,7 @@ import { Error500Component } from './error-500.component';
     template: `
         <sb-error-500 [someInput]="someInput" (someFunction)="someFunction($event)"></sb-error-500>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

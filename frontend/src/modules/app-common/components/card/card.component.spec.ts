@@ -6,7 +6,7 @@ import { CardComponent } from './card.component';
 
 @Component({
     template: ` <sb-card [someInput]="someInput" (someFunction)="someFunction($event)"></sb-card> `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

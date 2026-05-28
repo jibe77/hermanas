@@ -12,7 +12,7 @@ import { Chart } from 'chart.js';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './weather-charts-area.component.html',
     styleUrls: ['weather-charts-area.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class WeatherChartsAreaComponent implements AfterViewInit {
     @ViewChild('myAreaChart') myAreaChart!: ElementRef<HTMLCanvasElement>;

@@ -5,7 +5,7 @@ import { DashboardWidgetsComponent } from '@modules/dashboard/components/dashboa
     selector: 'sb-dashboard-weather-action',
     templateUrl: './dashboard-weather-action.component.html',
     styleUrls: ['dashboard-weather-action.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class DashboardWeatherActionComponent {
     constructor(private _dashboardWidgetsComponent: DashboardWidgetsComponent) {}

@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './error-401.component.html',
     styleUrls: ['error-401.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class Error401Component {
     constructor() {}

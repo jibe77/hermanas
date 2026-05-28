@@ -31,7 +31,7 @@ interface ButtonState {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './system.component.html',
     styleUrls: ['system.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class SystemComponent implements OnInit, OnDestroy {
     public backEndVersion: string;

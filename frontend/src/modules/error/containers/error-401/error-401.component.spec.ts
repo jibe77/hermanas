@@ -8,7 +8,7 @@ import { Error401Component } from './error-401.component';
     template: `
         <sb-error-401 [someInput]="someInput" (someFunction)="someFunction($event)"></sb-error-401>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

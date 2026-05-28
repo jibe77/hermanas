@@ -8,7 +8,7 @@ import { FooterComponent } from './footer.component';
     template: `
         <sb-footer [someInput]="someInput" (someFunction)="someFunction($event)"></sb-footer>
     `,
-    standalone: false
+    standalone: false,
 })
 class TestHostComponent {
     // someInput = 1;

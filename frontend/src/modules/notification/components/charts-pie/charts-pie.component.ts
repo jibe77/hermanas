@@ -12,7 +12,7 @@ import { Chart } from 'chart.js';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './charts-pie.component.html',
     styleUrls: ['charts-pie.component.scss'],
-    standalone: false
+    standalone: false,
 })
 export class ChartsPieComponent implements AfterViewInit {
     @ViewChild('myPieChart') myPieChart!: ElementRef<HTMLCanvasElement>;
