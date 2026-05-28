@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 
 import { SBRouteData } from '../models';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class NavigationService {
     route = inject(ActivatedRoute);
     router = inject(Router);
