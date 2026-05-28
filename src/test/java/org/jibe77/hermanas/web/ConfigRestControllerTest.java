@@ -50,18 +50,16 @@ class ConfigRestControllerTest {
         when(configService.getMonthMode(anyInt())).thenReturn(
                 org.jibe77.hermanas.service.energy.EnergyModeEnum.REGULAR);
         when(configService.isConsumptionModeEcoForce()).thenReturn(false);
-        when(configService.isWifiDisabledInEcoMode()).thenReturn(true);
-        when(configService.isWifiDisabledInRegularMode()).thenReturn(false);
-        when(configService.isWifiDisabledInSunnyMode()).thenReturn(false);
 
-        // When/Then
+        // When/Then. system_behavior used to expose wifi_disabled per mode, but the
+        // section was removed when the matching admin endpoints were dropped.
         mockMvc.perform(get("/api/v1/config"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.light_timers.eco_delay_ms").value(300000))
                 .andExpect(jsonPath("$.fan_timers.eco_delay_ms").value(300000))
                 .andExpect(jsonPath("$.music_timers.eco_delay_ms").value(300000))
                 .andExpect(jsonPath("$.consumption_mode.monthly_mapping").exists())
-                .andExpect(jsonPath("$.system_behavior.eco.wifi_disabled").value(true));
+                .andExpect(jsonPath("$.system_behavior").doesNotExist());
     }
 
     @Test
@@ -145,19 +143,6 @@ class ConfigRestControllerTest {
         verify(configService).setConsumptionModeEcoForce(true);
     }
 
-    // ============================================================================
-    // PUT /api/v1/config/system/* - Update System Behavior
-    // ============================================================================
-
-    @Test
-    @WithMockUser(roles = "USER")
-    void setEcoWifi_shouldUpdateWifiBehavior() throws Exception {
-        mockMvc.perform(put("/api/v1/config/system/eco/wifi")
-                        .param("disabled", "true")
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("WiFi disabled in eco mode set to true"));
-
-        verify(configService).setWifiDisabledInEcoMode(true);
-    }
+    // PUT /api/v1/config/system/<mode>/wifi and /shutdown endpoints have been
+    // removed — see ConfigRestController for the rationale.
 }

@@ -104,23 +104,9 @@ public class ConfigRestController {
         consumption.put("eco_mode_forced", configService.isConsumptionModeEcoForce());
         config.put("consumption_mode", consumption);
 
-        // System behavior per mode — wifi.disabled.* is a hidden safety knob, but we
-        // keep it readable here for diagnostics. machine_shutdown was removed: it never
-        // had a consumer in the runtime, just an unused setter on the admin UI.
-        Map<String, Map<String, Boolean>> systemBehavior = new LinkedHashMap<>();
-        Map<String, Boolean> eco = new LinkedHashMap<>();
-        eco.put("wifi_disabled", configService.isWifiDisabledInEcoMode());
-        systemBehavior.put("eco", eco);
-
-        Map<String, Boolean> regular = new LinkedHashMap<>();
-        regular.put("wifi_disabled", configService.isWifiDisabledInRegularMode());
-        systemBehavior.put("regular", regular);
-
-        Map<String, Boolean> sunny = new LinkedHashMap<>();
-        sunny.put("wifi_disabled", configService.isWifiDisabledInSunnyMode());
-        systemBehavior.put("sunny", sunny);
-
-        config.put("system_behavior", systemBehavior);
+        // System behavior block intentionally omitted: the only flags it used to expose
+        // (machine.shutdown.*, wifi.disabled.*) are either unused or hidden safety knobs
+        // that should not surface in the admin UI.
 
         return ResponseEntity.ok(config);
     }
@@ -272,27 +258,11 @@ public class ConfigRestController {
         return ResponseEntity.ok("Eco mode force set to " + force);
     }
 
-    // /system/<mode>/shutdown endpoints were removed: the flag they set
-    // (machine.shutdown.*) was never read by any runtime code, only stored.
-
-    @Operation(summary = "Set WiFi disable behavior for eco mode")
-    @PutMapping("/system/eco/wifi")
-    public ResponseEntity<String> setEcoWifi(@RequestParam boolean disabled) {
-        configService.setWifiDisabledInEcoMode(disabled);
-        return ResponseEntity.ok("WiFi disabled in eco mode set to " + disabled);
-    }
-
-    @Operation(summary = "Set WiFi disable behavior for regular mode")
-    @PutMapping("/system/regular/wifi")
-    public ResponseEntity<String> setRegularWifi(@RequestParam boolean disabled) {
-        configService.setWifiDisabledInRegularMode(disabled);
-        return ResponseEntity.ok("WiFi disabled in regular mode set to " + disabled);
-    }
-
-    @Operation(summary = "Set WiFi disable behavior for sunny mode")
-    @PutMapping("/system/sunny/wifi")
-    public ResponseEntity<String> setSunnyWifi(@RequestParam boolean disabled) {
-        configService.setWifiDisabledInSunnyMode(disabled);
-        return ResponseEntity.ok("WiFi disabled in sunny mode set to " + disabled);
-    }
+    // Removed:
+    //   /system/<mode>/shutdown — the flag (machine.shutdown.*) was never read
+    //     by any runtime code, only stored.
+    //   /system/<mode>/wifi     — wifi.disabled.* is a hidden safety knob kept
+    //     out of the admin UI on purpose (cutting wifi makes the chicken coop
+    //     unreachable, including the admin doing the cutting). The seed value
+    //     lives in application.properties.
 }
