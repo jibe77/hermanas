@@ -525,6 +525,32 @@ Image processing tests are tagged and excluded by default:
 mvn test -Dgroups=image_processing
 ```
 
+#### Frontend tests (Vitest)
+
+The Angular frontend uses **Vitest** with `@analogjs/vitest-angular`. Tests run
+under jsdom + zone.js (no headless browser needed) — typically a few seconds
+per run.
+
+```bash
+cd frontend
+
+# Single pass (CI mode, exits with non-zero on failure)
+npm test
+
+# Watch mode while developing
+npm run test:watch
+
+# With coverage report (HTML at coverage/index.html)
+npm run test:coverage
+```
+
+The suite covers the auth flow (LoginService outcomes, AuthGuard, AdminGuard,
+UserService.isAdmin), the EnergyService HTTP surface, the Energy admin
+ChartsComponent (ms ↔ minutes conversion, save fan-out, force-ECO radio),
+PhotosService URL encoding, the side-nav signal derivations, and the
+existing dashboard websocket / HTTP-error-interceptor specs that were
+ported from Jasmine.
+
 ### Code Quality
 
 - **Logger Pattern**: All classes use `private static final Logger logger = LoggerFactory.getLogger(ClassName.class)`

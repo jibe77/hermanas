@@ -99,9 +99,28 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 
 ## Testing Notes
 
+### Backend (JUnit 5 + Spring Boot Test)
 - Image processing tests use `@Tag("image_processing")` and are excluded by default
 - Use `gpio-fake` profile to run tests without Raspberry Pi hardware
 - Native library `picam-2.0.1.so` required for camera on Pi (versions >2.4.0 incompatible with Pi Zero + Java 11)
+
+### Frontend (Vitest + @analogjs/vitest-angular)
+- Runner: **Vitest 3** (not Karma — migrated). Karma was deprecated in Angular 20.
+- Environment: **jsdom + zone.js**, no headless browser. `vitest.config.ts` at the
+  frontend root, setup file `src/test-setup.ts`.
+- Commands (from `frontend/`):
+  - `npm test` — single pass, exits non-zero on failure (CI-friendly).
+  - `npm run test:watch` — re-runs on save.
+  - `npm run test:coverage` — adds the v8 coverage report under `coverage/`.
+- Assertion style is Jest-compatible (`expect`, `vi.fn()`, `vi.spyOn()`).
+  **No Jasmine globals** (`jasmine.SpyObj`, `jasmine.createSpyObj`, `spyOn`,
+  `.and.returnValue`) — they were translated during the port.
+- `done()` callbacks are forbidden by Vitest 3. Use `firstValueFrom` /
+  `lastValueFrom` for Observables, or return a Promise from the test body.
+- TestBed setup: most specs use plain `provideHttpClient()` +
+  `provideHttpClientTesting()`. For services that depend on Angular signals or
+  Router, mock those services directly (see `side-nav.component.spec.ts` for
+  an example mocking NavigationService).
 
 ---
 
