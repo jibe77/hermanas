@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, Input, OnDestroy, Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, Input, Signal } from '@angular/core';
 import { UserService } from '@modules/auth/services';
 import { AuthState } from '@modules/auth/models';
 import { SideNavItems, SideNavSection } from '@modules/navigation/models';
 import { NavigationService } from '@modules/navigation/services';
-import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'sb-side-nav',
@@ -11,10 +10,9 @@ import { Subscription } from 'rxjs';
     templateUrl: './side-nav.component.html',
     styleUrls: ['side-nav.component.scss'],
 })
-export class SideNavComponent implements OnDestroy {
+export class SideNavComponent {
     @Input() sideNavItems!: SideNavItems;
     @Input() sideNavSections!: SideNavSection[];
-    subscription: Subscription = new Subscription();
 
     // Derived signals: Angular re-evaluates only the *ngIfs that read them when the user
     // signal changes — no need to wrap the whole template in a *ngIf, which would otherwise
@@ -22,10 +20,11 @@ export class SideNavComponent implements OnDestroy {
     readonly isSignedIn: Signal<boolean>;
     readonly currentLogin: Signal<string>;
 
-    constructor(public navigationService: NavigationService, public userService: UserService) {
+    constructor(
+        public navigationService: NavigationService,
+        public userService: UserService
+    ) {
         this.isSignedIn = computed(() => this.userService.user().authState === AuthState.SignedIn);
         this.currentLogin = computed(() => this.userService.user().login);
     }
-
-    ngOnDestroy() {}
 }

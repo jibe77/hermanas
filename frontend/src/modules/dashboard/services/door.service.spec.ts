@@ -39,7 +39,7 @@ describe('DoorService', () => {
 
     describe('getDoorStatus', () => {
         it('should return door status', () => {
-            const mockResponse: DoorStatus = {
+            const _mockResponse: DoorStatus = {
                 status: 'OPEN',
                 timeStatusHasChanged: '2025-12-04T10:00:00Z',
                 timeStatusHasChangedAsDate: new Date('2025-12-04T10:00:00Z'),

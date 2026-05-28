@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+import { trigger, style, transition, animate } from '@angular/animations';
 import { Toast, ToastService } from '../../services/toast/toast.service';
 import { Subject, takeUntil } from 'rxjs';
 

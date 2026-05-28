@@ -1,6 +1,6 @@
 {
   "root": true,
-  "ignorePatterns": ["projects/**/*"],
+  "ignorePatterns": ["projects/**/*", "src/redirect.html", "src/index.html"],
   "overrides": [
     {
       "files": ["*.ts"],
@@ -78,6 +78,14 @@
         ],
         "@typescript-eslint/no-non-null-assertion": ["error"],
         "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/no-unused-vars": [
+          "error",
+          {
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_",
+            "caughtErrorsIgnorePattern": "^_"
+          }
+        ],
         "@typescript-eslint/no-var-requires": "off",
         "no-console": [
           "error",

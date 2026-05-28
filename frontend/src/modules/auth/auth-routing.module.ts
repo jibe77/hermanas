@@ -9,9 +9,6 @@ import { AuthModule } from './auth.module';
 /* Containers */
 import * as authContainers from './containers';
 
-/* Guards */
-import * as authGuards from './guards';
-
 /* Routes */
 export const ROUTES: Routes = [
     {

@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 
 const mockUser = new MockUser();
 
-// @ts-ignore
+// @ts-expect-error: stub does not implement the full UserService surface (e.g. providedIn-root behaviour).
 export class UserServiceStub implements UserService {
     private _user: WritableSignal<User> = signal(mockUser);
     private _user$: Observable<User> = toObservable(this._user);

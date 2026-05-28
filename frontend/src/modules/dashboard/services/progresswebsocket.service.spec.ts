@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import { RxStompConfig } from '@stomp/rx-stomp';
 import { Subject } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { LoggerService } from '@common/services';

@@ -7,7 +7,10 @@ import { map, take } from 'rxjs/operators';
 
 @Injectable()
 export class NavigationGuard {
-    constructor(private userService: UserService, private router: Router) {}
+    constructor(
+        private userService: UserService,
+        private router: Router
+    ) {}
 
     canActivate(): Observable<boolean | UrlTree> {
         return this.userService.user$.pipe(

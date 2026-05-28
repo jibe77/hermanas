@@ -1,4 +1,4 @@
-import { Injectable, signal, WritableSignal, Signal, computed } from '@angular/core';
+import { Injectable, signal, WritableSignal, Signal } from '@angular/core';
 import { ActivatedRoute, ChildActivationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -22,7 +22,10 @@ export class NavigationService {
     private readonly _routeData$: Observable<SBRouteData>;
     private readonly _currentURL$: Observable<string>;
 
-    constructor(public route: ActivatedRoute, public router: Router) {
+    constructor(
+        public route: ActivatedRoute,
+        public router: Router
+    ) {
         this._sideNavVisible$ = toObservable(this._sideNavVisible);
         this._routeData$ = toObservable(this._routeData);
         this._currentURL$ = toObservable(this._currentURL);

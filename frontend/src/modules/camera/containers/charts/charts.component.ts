@@ -67,9 +67,7 @@ export class ChartsComponent implements OnInit {
                 this.directories = listing.directories;
                 this.files = listing.files.map(f => ({
                     ...f,
-                    url: this.photos.fileUrl(
-                        listing.path ? `${listing.path}/${f.name}` : f.name
-                    ),
+                    url: this.photos.fileUrl(listing.path ? `${listing.path}/${f.name}` : f.name),
                 }));
                 this.crumbs = this.buildCrumbs(listing.path);
                 this.loading = false;

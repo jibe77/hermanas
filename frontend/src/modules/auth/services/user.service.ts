@@ -19,7 +19,10 @@ export class UserService {
     private readonly _user$: Observable<User>;
     private _initialCheck?: Promise<void>;
 
-    constructor(private http: HttpClient, private logger: LoggerService) {
+    constructor(
+        private http: HttpClient,
+        private logger: LoggerService
+    ) {
         this._user = signal(this.createDefaultNewUser());
         this._user$ = toObservable(this._user);
     }

@@ -1,23 +1,61 @@
 <sb-layout-dashboard
-    ><sb-dashboard-head title="Music" i18n-title="@@music" [hideBreadcrumbs]="true"></sb-dashboard-head
+    ><sb-dashboard-head
+        title="Music"
+        i18n-title="@@music"
+        [hideBreadcrumbs]="true"
+    ></sb-dashboard-head
     ><sb-card
-        ><div class="card-body"><span i18n="@@musicInfo">This board allows you to configure the music parameters.</span></div></sb-card
+        ><div class="card-body">
+            <span i18n="@@musicInfo">This board allows you to configure the music parameters.</span>
+        </div></sb-card
     >
     <div class="row">
         <div class="col-lg-6">
             <sb-card
-                ><div class="card-header"><fa-icon class="me-1" [icon]='["fas", "music"]'></fa-icon><span i18n="@@musicPlaylistSelection">Playlist selection</span></div>
+                ><div class="card-header">
+                    <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon
+                    ><span i18n="@@musicPlaylistSelection">Playlist selection</span>
+                </div>
                 <div class="card-body">
-                    <div *ngIf="loadingPlaylists" class="spinner-border spinner-border-sm" role="status"></div>
-                    <div *ngIf="!loadingPlaylists && playlists.length === 0" class="text-muted" i18n="@@musicNoPlaylist">No playlist available on the device.</div>
+                    <div
+                        *ngIf="loadingPlaylists"
+                        class="spinner-border spinner-border-sm"
+                        role="status"
+                    ></div>
+                    <div
+                        *ngIf="!loadingPlaylists && playlists.length === 0"
+                        class="text-muted"
+                        i18n="@@musicNoPlaylist"
+                    >
+                        No playlist available on the device.
+                    </div>
                     <div *ngIf="!loadingPlaylists && playlists.length > 0">
-                        <label for="musicPlaylist" class="form-label small" i18n="@@musicPlaylistLabel">Playlist</label>
-                        <select id="musicPlaylist" class="form-select form-select-sm mb-2" [ngModel]="selectedPlaylist" (ngModelChange)="onPlaylistChange($event)">
-                            <option *ngFor="let p of playlists" [value]="p">{{p}}</option>
+                        <label
+                            for="musicPlaylist"
+                            class="form-label small"
+                            i18n="@@musicPlaylistLabel"
+                            >Playlist</label
+                        >
+                        <select
+                            id="musicPlaylist"
+                            class="form-select form-select-sm mb-2"
+                            [ngModel]="selectedPlaylist"
+                            (ngModelChange)="onPlaylistChange($event)"
+                        >
+                            <option *ngFor="let p of playlists" [value]="p">{{ p }}</option>
                         </select>
-                        <div class="small text-muted mb-2" *ngIf="persistedPlaylist"><span i18n="@@musicPersistedSelection">Currently saved selection:</span> <strong>{{persistedPlaylist}}</strong></div>
-                        <button type="button" class="btn btn-primary btn-sm" (click)="validate()" [disabled]="!selectedPlaylist || saving || !isDirty">
-                            <fa-icon class="me-1" [icon]='["fas", "check"]'></fa-icon><span i18n="@@validate">Validate</span>
+                        <div class="small text-muted mb-2" *ngIf="persistedPlaylist">
+                            <span i18n="@@musicPersistedSelection">Currently saved selection:</span>
+                            <strong>{{ persistedPlaylist }}</strong>
+                        </div>
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            (click)="validate()"
+                            [disabled]="!selectedPlaylist || saving || !isDirty"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon
+                            ><span i18n="@@validate">Validate</span>
                         </button>
                     </div>
                 </div></sb-card
@@ -25,12 +63,33 @@
         </div>
         <div class="col-lg-6">
             <sb-card
-                ><div class="card-header"><fa-icon class="me-1" [icon]='["fas", "list"]'></fa-icon><span i18n="@@musicPlaylistContent">Playlist content</span><span *ngIf="selectedPlaylist" class="text-muted ms-2 small">({{selectedPlaylist}})</span></div>
+                ><div class="card-header">
+                    <fa-icon class="me-1" [icon]="['fas', 'list']"></fa-icon
+                    ><span i18n="@@musicPlaylistContent">Playlist content</span
+                    ><span *ngIf="selectedPlaylist" class="text-muted ms-2 small"
+                        >({{ selectedPlaylist }})</span
+                    >
+                </div>
                 <div class="card-body">
-                    <div *ngIf="loadingSongs" class="spinner-border spinner-border-sm" role="status"></div>
-                    <div *ngIf="!loadingSongs && songs.length === 0 && selectedPlaylist" class="text-muted" i18n="@@musicNoSong">No song in this playlist.</div>
-                    <ul *ngIf="!loadingSongs && songs.length > 0" class="list-group list-group-flush">
-                        <li *ngFor="let song of songs" class="list-group-item py-1 px-0">{{song}}</li>
+                    <div
+                        *ngIf="loadingSongs"
+                        class="spinner-border spinner-border-sm"
+                        role="status"
+                    ></div>
+                    <div
+                        *ngIf="!loadingSongs && songs.length === 0 && selectedPlaylist"
+                        class="text-muted"
+                        i18n="@@musicNoSong"
+                    >
+                        No song in this playlist.
+                    </div>
+                    <ul
+                        *ngIf="!loadingSongs && songs.length > 0"
+                        class="list-group list-group-flush"
+                    >
+                        <li *ngFor="let song of songs" class="list-group-item py-1 px-0">
+                            {{ song }}
+                        </li>
                     </ul>
                 </div></sb-card
             >

@@ -26,7 +26,7 @@ describe('TopNavComponent', () => {
     let componentDE: DebugElement;
     let _componentNE: Element;
 
-    let navigationService: NavigationService;
+    let _navigationService: NavigationService;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -45,7 +45,7 @@ describe('TopNavComponent', () => {
         component = componentDE.componentInstance;
         componentNE = componentDE.nativeElement;
 
-        navigationService = TestBed.inject(NavigationService);
+        _navigationService = TestBed.inject(NavigationService);
 
         fixture.detectChanges();
     });

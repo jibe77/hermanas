@@ -147,7 +147,10 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 error: (err: HttpErrorResponse) => {
                     this.saving = false;
                     this._toastService.error(
-                        err.error?.error || err.error?.message || err.message || 'Cannot save selection',
+                        err.error?.error ||
+                            err.error?.message ||
+                            err.message ||
+                            'Cannot save selection',
                         `Music — HTTP ${err.status}`
                     );
                     this.cdr.detectChanges();

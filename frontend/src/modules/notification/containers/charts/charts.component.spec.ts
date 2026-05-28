@@ -31,14 +31,21 @@ describe('ChartsComponent', () => {
 
     const chartsServiceStub: Partial<ChartsService> = {
         me: () => of({ login: 'guest', email: null, role: 'USER', notificationsEnabled: false }),
-        updateMe: () => of({ login: 'guest', email: null, role: 'USER', notificationsEnabled: false }),
+        updateMe: () =>
+            of({ login: 'guest', email: null, role: 'USER', notificationsEnabled: false }),
         list: () => of([]),
         create: () => of({ login: 'x', email: null, role: 'USER', notificationsEnabled: false }),
         update: () => of({ login: 'x', email: null, role: 'USER', notificationsEnabled: false }),
         delete: () => of(undefined),
     };
     const userServiceStub: Partial<UserService> = {
-        getCurrentUser: () => ({ id: 'guest', login: 'guest', email: 'guest', authState: 'signedOut', roles: [] }),
+        getCurrentUser: () => ({
+            id: 'guest',
+            login: 'guest',
+            email: 'guest',
+            authState: 'signedOut',
+            roles: [],
+        }),
     };
     const toastServiceStub: Partial<ToastService> = {
         success: () => {},

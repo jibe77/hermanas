@@ -1,26 +1,86 @@
 <sb-layout-dashboard
-    ><sb-dashboard-head title="System" i18n-title="@@system" [hideBreadcrumbs]="true"></sb-dashboard-head><sb-common-cards [notificationEvents]="notificationSubject.asObservable()" (serviceRetry)="onServiceRetry($event)"></sb-common-cards
+    ><sb-dashboard-head
+        title="System"
+        i18n-title="@@system"
+        [hideBreadcrumbs]="true"
+    ></sb-dashboard-head
+    ><sb-common-cards
+        [notificationEvents]="notificationSubject.asObservable()"
+        (serviceRetry)="onServiceRetry($event)"
+    ></sb-common-cards
     ><sb-card
-        ><div class="card-body"><span i18n="@@systemInfo">This board allows you to configure the system parameters.</span></div></sb-card
+        ><div class="card-body">
+            <span i18n="@@systemInfo"
+                >This board allows you to configure the system parameters.</span
+            >
+        </div></sb-card
     ><sb-card
-        ><div class="card-header"><fa-icon class="me-1" [icon]='["fas", "laptop"]'></fa-icon><span i18n="@@about">About</span></div>
+        ><div class="card-header">
+            <fa-icon class="me-1" [icon]="['fas', 'laptop']"></fa-icon
+            ><span i18n="@@about">About</span>
+        </div>
         <div class="card-body">
-            <div class="spinner-border" *ngIf="backEndVersion === undefined  &amp;&amp; backEndVersionOnError === false" role="status"><span class="sr-only" i18n="@@loading">Loading...</span></div>
-            <div *ngIf="backEndVersion !== undefined || backEndVersionOnError === true">Version {{' '}}:{{' '}}<span *ngIf="backEndVersion !== undefined">{{backEndVersion}}<span *ngIf="backEndBuildTime"> <small class="text-muted">(<span i18n="@@buildTime">built</span> {{backEndBuildTime | date:'yyyy-MM-dd HH:mm'}})</small></span></span><span *ngIf="backEndVersionOnError === true" i18n="@@informationNotAvailable">Information not available</span></div>
-            <div class="mt-2"><span i18n="@@producedBy">Brought to you by</span>{{' '}}<a href="https://twitter.com/jibe77">&#64;jibe77</a></div>
-            <div class="mt-1"><span i18n="@@sourceCode">Source code</span>{{' '}}:{{' '}}<a href="https://github.com/jibe77/hermanas">https://github.com/jibe77/hermanas</a></div>
+            <div
+                class="spinner-border"
+                *ngIf="backEndVersion === undefined  &amp;&amp; backEndVersionOnError === false"
+                role="status"
+            >
+                <span class="sr-only" i18n="@@loading">Loading...</span>
+            </div>
+            <div *ngIf="backEndVersion !== undefined || backEndVersionOnError === true">
+                Version {{ ' ' }}:{{ ' '
+                }}<span *ngIf="backEndVersion !== undefined"
+                    >{{ backEndVersion
+                    }}<span *ngIf="backEndBuildTime">
+                        <small class="text-muted"
+                            >(<span i18n="@@buildTime">built</span>
+                            {{ backEndBuildTime | date: 'yyyy-MM-dd HH:mm' }})</small
+                        ></span
+                    ></span
+                ><span *ngIf="backEndVersionOnError === true" i18n="@@informationNotAvailable"
+                    >Information not available</span
+                >
+            </div>
+            <div class="mt-2">
+                <span i18n="@@producedBy">Brought to you by</span>{{ ' '
+                }}<a href="https://twitter.com/jibe77">&#64;jibe77</a>
+            </div>
+            <div class="mt-1">
+                <span i18n="@@sourceCode">Source code</span>{{ ' ' }}:{{ ' '
+                }}<a href="https://github.com/jibe77/hermanas"
+                    >https://github.com/jibe77/hermanas</a
+                >
+            </div>
         </div></sb-card
     ><sb-card *ngIf="isAdmin"
         ><div class="card-header">
-            <fa-icon class="me-1" [icon]='["fas", "laptop"]'></fa-icon><span i18n="@@diagnostic">Diagnostic</span>
+            <fa-icon class="me-1" [icon]="['fas', 'laptop']"></fa-icon
+            ><span i18n="@@diagnostic">Diagnostic</span>
             <div class="float-end">
                 <div ngbDropdown placement="bottom-right" display="dynamic" class="d-inline-block">
-                    <a class="nav-link p-0" id="diagnosticActionMenu" ngbDropdownToggle role="button" aria-haspopup="true" aria-expanded="false">
-                        <fa-icon [icon]='["fas", "ellipsis-v"]'></fa-icon>
+                    <a
+                        class="nav-link p-0"
+                        id="diagnosticActionMenu"
+                        ngbDropdownToggle
+                        role="button"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                    >
+                        <fa-icon [icon]="['fas', 'ellipsis-v']"></fa-icon>
                     </a>
-                    <div class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="diagnosticActionMenu">
-                        <a class="dropdown-item" [class.disabled]="emailTestSending" (click)="sendTestEmail()">
-                            <span *ngIf="!emailTestSending" i18n="@@sendTestEmail">Send test email</span>
+                    <div
+                        class="dropdown-menu dropdown-menu-end"
+                        ngbDropdownMenu
+                        aria-labelledby="diagnosticActionMenu"
+                    >
+                        <a
+                            class="dropdown-item"
+                            [class.disabled]="emailTestSending"
+                            (click)="sendTestEmail()"
+                        >
+                            <span *ngIf="!emailTestSending" i18n="@@sendTestEmail"
+                                >Send test email</span
+                            >
                             <span *ngIf="emailTestSending" i18n="@@sendingTestEmail">Sending…</span>
                         </a>
                     </div>
@@ -29,47 +89,99 @@
         </div>
         <div class="card-body">
             <div>
-                <span i18n="@@upperButtonStatus">Upper end-stop button</span>{{' '}}:{{' '}}
-                <span *ngIf="upButton.error" i18n="@@informationNotAvailable">Information not available</span>
+                <span i18n="@@upperButtonStatus">Upper end-stop button</span>{{ ' ' }}:{{ ' ' }}
+                <span *ngIf="upButton.error" i18n="@@informationNotAvailable"
+                    >Information not available</span
+                >
                 <ng-container *ngIf="!upButton.error">
                     <span *ngIf="upButton.pressed === undefined" i18n="@@loading">Loading...</span>
-                    <span *ngIf="upButton.pressed === true" class="badge text-bg-danger" i18n="@@buttonPressed">Pressed</span>
-                    <span *ngIf="upButton.pressed === false" class="badge text-bg-success" i18n="@@buttonReleased">Released</span>
-                    <small *ngIf="upButton.timestamp" class="text-muted ms-2">({{upButton.timestamp | date:'HH:mm:ss'}})</small>
+                    <span
+                        *ngIf="upButton.pressed === true"
+                        class="badge text-bg-danger"
+                        i18n="@@buttonPressed"
+                        >Pressed</span
+                    >
+                    <span
+                        *ngIf="upButton.pressed === false"
+                        class="badge text-bg-success"
+                        i18n="@@buttonReleased"
+                        >Released</span
+                    >
+                    <small *ngIf="upButton.timestamp" class="text-muted ms-2"
+                        >({{ upButton.timestamp | date: 'HH:mm:ss' }})</small
+                    >
                 </ng-container>
             </div>
             <div class="mt-2">
-                <span i18n="@@bottomButtonStatus">Bottom end-stop button</span>{{' '}}:{{' '}}
-                <span *ngIf="bottomButton.error" i18n="@@informationNotAvailable">Information not available</span>
+                <span i18n="@@bottomButtonStatus">Bottom end-stop button</span>{{ ' ' }}:{{ ' ' }}
+                <span *ngIf="bottomButton.error" i18n="@@informationNotAvailable"
+                    >Information not available</span
+                >
                 <ng-container *ngIf="!bottomButton.error">
-                    <span *ngIf="bottomButton.pressed === undefined" i18n="@@loading">Loading...</span>
-                    <span *ngIf="bottomButton.pressed === true" class="badge text-bg-danger" i18n="@@buttonPressed">Pressed</span>
-                    <span *ngIf="bottomButton.pressed === false" class="badge text-bg-success" i18n="@@buttonReleased">Released</span>
-                    <small *ngIf="bottomButton.timestamp" class="text-muted ms-2">({{bottomButton.timestamp | date:'HH:mm:ss'}})</small>
+                    <span *ngIf="bottomButton.pressed === undefined" i18n="@@loading"
+                        >Loading...</span
+                    >
+                    <span
+                        *ngIf="bottomButton.pressed === true"
+                        class="badge text-bg-danger"
+                        i18n="@@buttonPressed"
+                        >Pressed</span
+                    >
+                    <span
+                        *ngIf="bottomButton.pressed === false"
+                        class="badge text-bg-success"
+                        i18n="@@buttonReleased"
+                        >Released</span
+                    >
+                    <small *ngIf="bottomButton.timestamp" class="text-muted ms-2"
+                        >({{ bottomButton.timestamp | date: 'HH:mm:ss' }})</small
+                    >
                 </ng-container>
             </div>
             <div class="mt-2">
-                <span i18n="@@birdhouseButtonStatus">Birdhouse button</span>{{' '}}:{{' '}}
-                <span *ngIf="birdhouseButton.error" i18n="@@informationNotAvailable">Information not available</span>
+                <span i18n="@@birdhouseButtonStatus">Birdhouse button</span>{{ ' ' }}:{{ ' ' }}
+                <span *ngIf="birdhouseButton.error" i18n="@@informationNotAvailable"
+                    >Information not available</span
+                >
                 <ng-container *ngIf="!birdhouseButton.error">
-                    <span *ngIf="birdhouseButton.pressed === undefined" i18n="@@loading">Loading...</span>
-                    <span *ngIf="birdhouseButton.pressed === true" class="badge text-bg-danger" i18n="@@buttonPressed">Pressed</span>
-                    <span *ngIf="birdhouseButton.pressed === false" class="badge text-bg-success" i18n="@@buttonReleased">Released</span>
-                    <small *ngIf="birdhouseButton.timestamp" class="text-muted ms-2">({{birdhouseButton.timestamp | date:'HH:mm:ss'}})</small>
+                    <span *ngIf="birdhouseButton.pressed === undefined" i18n="@@loading"
+                        >Loading...</span
+                    >
+                    <span
+                        *ngIf="birdhouseButton.pressed === true"
+                        class="badge text-bg-danger"
+                        i18n="@@buttonPressed"
+                        >Pressed</span
+                    >
+                    <span
+                        *ngIf="birdhouseButton.pressed === false"
+                        class="badge text-bg-success"
+                        i18n="@@buttonReleased"
+                        >Released</span
+                    >
+                    <small *ngIf="birdhouseButton.timestamp" class="text-muted ms-2"
+                        >({{ birdhouseButton.timestamp | date: 'HH:mm:ss' }})</small
+                    >
                 </ng-container>
             </div>
             <div class="mt-3">
-                <span i18n="@@diskUsage">Disk usage</span>{{' '}}:{{' '}}
+                <span i18n="@@diskUsage">Disk usage</span>{{ ' ' }}:{{ ' ' }}
                 <span *ngIf="diskUsageLoading" i18n="@@loading">Loading...</span>
-                <span *ngIf="diskUsageError && !diskUsageLoading" i18n="@@diskUsageError">Disk usage unavailable</span>
+                <span *ngIf="diskUsageError && !diskUsageLoading" i18n="@@diskUsageError"
+                    >Disk usage unavailable</span
+                >
                 <ng-container *ngIf="diskUsage && !diskUsageLoading && !diskUsageError">
-                    <span class="badge"
-                          [class.text-bg-success]="diskUsage.usedPercent < 70"
-                          [class.text-bg-warning]="diskUsage.usedPercent >= 70 && diskUsage.usedPercent < 90"
-                          [class.text-bg-danger]="diskUsage.usedPercent >= 90">
-                        {{diskUsage.usedPercent}}%
+                    <span
+                        class="badge"
+                        [class.text-bg-success]="diskUsage.usedPercent < 70"
+                        [class.text-bg-warning]="
+                            diskUsage.usedPercent >= 70 && diskUsage.usedPercent < 90
+                        "
+                        [class.text-bg-danger]="diskUsage.usedPercent >= 90"
+                    >
+                        {{ diskUsage.usedPercent }}%
                     </span>
-                    <small class="text-muted ms-2">{{diskUsage.path}}</small>
+                    <small class="text-muted ms-2">{{ diskUsage.path }}</small>
                 </ng-container>
             </div>
         </div></sb-card

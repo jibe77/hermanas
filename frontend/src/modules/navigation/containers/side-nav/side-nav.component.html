@@ -5,32 +5,60 @@
                 ><div class="sb-sidenav-menu-heading">Menu</div>
                 <ng-container
                     ><a class="nav-link" routerLink="/dashboard" routerLinkActive="active"
-                        ><div class="sb-nav-link-icon"><fa-icon [icon]='["fas", "tachometer-alt"]'></fa-icon></div>
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'tachometer-alt']"></fa-icon>
+                        </div>
                         <span i18n="@@dashboard">Dashboard</span></a
                     ><a class="nav-link" routerLink="/weather" routerLinkActive="active"
-                        ><div class="sb-nav-link-icon"><fa-icon [icon]='["fas", "sun"]'></fa-icon></div>
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'sun']"></fa-icon>
+                        </div>
                         <span i18n="@@weatherMenu">Weather</span></a
-                    ><a class="nav-link" routerLink="/camera" routerLinkActive="active" *ngIf="isSignedIn()"
-                        ><div class="sb-nav-link-icon"><fa-icon [icon]='["fas", "camera"]'></fa-icon></div>
+                    ><a
+                        class="nav-link"
+                        routerLink="/camera"
+                        routerLinkActive="active"
+                        *ngIf="isSignedIn()"
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'camera']"></fa-icon>
+                        </div>
                         <span i18n="@@webcamMenu">Webcam</span></a
-                    ><a class="nav-link" routerLink="/logs" routerLinkActive="active" *ngIf="isSignedIn()"
-                        ><div class="sb-nav-link-icon"><fa-icon [icon]='["fas", "file-contract"]'></fa-icon></div>
+                    ><a
+                        class="nav-link"
+                        routerLink="/logs"
+                        routerLinkActive="active"
+                        *ngIf="isSignedIn()"
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'file-contract']"></fa-icon>
+                        </div>
                         <span i18n="@@logsMenu">Logs</span></a
                     ></ng-container
                 >
                 <div class="sb-sidenav-menu-heading">Config</div>
                 <ng-container
                     ><a class="nav-link" routerLink="/energy" routerLinkActive="active"
-                        ><div class="sb-nav-link-icon"><fa-icon [icon]='["fas", "car-battery"]'></fa-icon></div>
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'car-battery']"></fa-icon>
+                        </div>
                         <span i18n="@@energySavingMenu">Energy saving</span></a
-                    ><a class="nav-link" routerLink="/notification" routerLinkActive="active" *ngIf="isSignedIn()"
-                        ><div class="sb-nav-link-icon"><fa-icon [icon]='["fas", "users"]'></fa-icon></div>
+                    ><a
+                        class="nav-link"
+                        routerLink="/notification"
+                        routerLinkActive="active"
+                        *ngIf="isSignedIn()"
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'users']"></fa-icon>
+                        </div>
                         <span i18n="@@usersMenu">Users</span></a
                     ><a class="nav-link" routerLink="/music" routerLinkActive="active"
-                        ><div class="sb-nav-link-icon"><fa-icon [icon]='["fas", "music"]'></fa-icon></div>
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'music']"></fa-icon>
+                        </div>
                         <span i18n="@@playlistMenu">Music playlist</span></a
                     ><a class="nav-link" routerLink="/system" routerLinkActive="active"
-                        ><div class="sb-nav-link-icon"><fa-icon [icon]='["fas", "laptop"]'></fa-icon></div>
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'laptop']"></fa-icon>
+                        </div>
                         <span i18n="@@systemMenu">System</span></a
                     ></ng-container
                 ></ng-container
@@ -39,6 +67,9 @@
     </div>
     <div class="sb-sidenav-footer">
         <div class="small" i18n="@@logged_in_as">Logged in as:</div>
-        <span><span *ngIf="currentLogin() === 'guest'" i18n="@@guest">Guest</span><span *ngIf="currentLogin() !== 'guest'">{{currentLogin()}}</span></span>
+        <span
+            ><span *ngIf="currentLogin() === 'guest'" i18n="@@guest">Guest</span
+            ><span *ngIf="currentLogin() !== 'guest'">{{ currentLogin() }}</span></span
+        >
     </div>
 </nav>

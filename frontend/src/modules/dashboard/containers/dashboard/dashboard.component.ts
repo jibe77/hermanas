@@ -15,11 +15,11 @@ export class DashboardComponent {
 
     constructor() {}
 
-    onServiceCommunicationError(event: any) {
+    onServiceCommunicationError(_event: any) {
         this.notificationSubject.next();
     }
 
-    onServiceRetry(event: any) {
+    onServiceRetry(_event: any) {
         this.retrySubject.next();
     }
 }

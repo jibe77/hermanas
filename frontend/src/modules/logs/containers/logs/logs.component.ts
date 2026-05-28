@@ -7,11 +7,7 @@ import {
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '@common/services';
-import {
-    LogFileInfo,
-    LogLevel,
-    LogsService,
-} from '@modules/logs/services/logs.service';
+import { LogFileInfo, LogLevel, LogsService } from '@modules/logs/services/logs.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 

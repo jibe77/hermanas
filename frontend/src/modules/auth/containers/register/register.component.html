@@ -6,31 +6,78 @@
 
                 <div *ngIf="success" class="text-center">
                     <div class="alert alert-success" i18n="@@registerSuccessMessage">
-                        Votre compte a été créé. Un administrateur doit valider votre inscription avant que vous puissiez vous connecter. Vous recevrez un email de confirmation.
+                        Votre compte a été créé. Un administrateur doit valider votre inscription
+                        avant que vous puissiez vous connecter. Vous recevrez un email de
+                        confirmation.
                     </div>
-                    <button class="btn btn-primary" type="button" (click)="goToLogin()" i18n="@@registerBackToLogin">Retour à la connexion</button>
+                    <button
+                        class="btn btn-primary"
+                        type="button"
+                        (click)="goToLogin()"
+                        i18n="@@registerBackToLogin"
+                    >
+                        Retour à la connexion
+                    </button>
                 </div>
 
-                <form *ngIf="!success" [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
+                <form
+                    *ngIf="!success"
+                    [formGroup]="registerForm"
+                    (ngSubmit)="onSubmit()"
+                    novalidate
+                >
                     <div class="form-group mb-3">
                         <label for="r-login" i18n="@@username">Identifiant</label>
-                        <input class="form-control" id="r-login" type="text" formControlName="login" autocomplete="username" data-cy="registerLogin" required />
+                        <input
+                            class="form-control"
+                            id="r-login"
+                            type="text"
+                            formControlName="login"
+                            autocomplete="username"
+                            data-cy="registerLogin"
+                            required
+                        />
                     </div>
                     <div class="form-group mb-3">
                         <label for="r-email" i18n="@@email">Email</label>
-                        <input class="form-control" id="r-email" type="email" formControlName="email" autocomplete="email" data-cy="registerEmail" required />
+                        <input
+                            class="form-control"
+                            id="r-email"
+                            type="email"
+                            formControlName="email"
+                            autocomplete="email"
+                            data-cy="registerEmail"
+                            required
+                        />
                     </div>
                     <div class="form-group mb-3">
                         <label for="r-password" i18n="@@password">Mot de passe</label>
-                        <input class="form-control" id="r-password" type="password" formControlName="password" autocomplete="new-password" data-cy="registerPassword" required />
+                        <input
+                            class="form-control"
+                            id="r-password"
+                            type="password"
+                            formControlName="password"
+                            autocomplete="new-password"
+                            data-cy="registerPassword"
+                            required
+                        />
                     </div>
-                    <div class="alert alert-danger" *ngIf="errorMessage" data-cy="registerError">{{ errorMessage }}</div>
-                    <button class="btn btn-primary w-100" type="submit" [disabled]="registerForm.invalid || submitting" data-cy="registerSubmit">
+                    <div class="alert alert-danger" *ngIf="errorMessage" data-cy="registerError">
+                        {{ errorMessage }}
+                    </div>
+                    <button
+                        class="btn btn-primary w-100"
+                        type="submit"
+                        [disabled]="registerForm.invalid || submitting"
+                        data-cy="registerSubmit"
+                    >
                         <span *ngIf="!submitting" i18n="@@registerSubmit">Créer mon compte</span>
                         <span *ngIf="submitting" i18n="@@registerInProgress">Création…</span>
                     </button>
                     <div class="mt-3 text-center">
-                        <a routerLink="/auth/login" i18n="@@registerAlreadyHaveAccount">J'ai déjà un compte</a>
+                        <a routerLink="/auth/login" i18n="@@registerAlreadyHaveAccount"
+                            >J'ai déjà un compte</a
+                        >
                     </div>
                 </form>
             </div>

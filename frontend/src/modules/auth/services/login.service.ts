@@ -8,12 +8,17 @@ export type LoginOutcome = 'ok' | 'invalid' | 'pending-validation';
 
 @Injectable()
 export class LoginService {
-    constructor(private http: HttpClient, private userService: UserService) {}
+    constructor(
+        private http: HttpClient,
+        private userService: UserService
+    ) {}
 
-    async login(username: string, password: string, rememberMe: boolean = false): Promise<LoginOutcome> {
-        let body = new HttpParams()
-            .set('username', username)
-            .set('password', password);
+    async login(
+        username: string,
+        password: string,
+        rememberMe: boolean = false
+    ): Promise<LoginOutcome> {
+        let body = new HttpParams().set('username', username).set('password', password);
         if (rememberMe) {
             // Spring Security's PersistentTokenBasedRememberMeServices reads this exact param
             // name (see SecurityConfig#rememberMeServices) and only activates when the value

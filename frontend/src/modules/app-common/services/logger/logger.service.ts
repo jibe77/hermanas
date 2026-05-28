@@ -121,6 +121,7 @@ export class LoggerService {
         const source = entry.source ? `[${entry.source}]` : '';
         const message = `${prefix} ${timestamp} ${source} ${entry.message}`;
 
+        /* eslint-disable no-console -- this is the central console wrapper */
         switch (entry.level) {
             case LogLevel.Debug:
                 console.debug(message, entry.data || '');
@@ -135,12 +136,13 @@ export class LoggerService {
                 console.error(message, entry.data || '');
                 break;
         }
+        /* eslint-enable no-console */
     }
 
     /**
      * Send log to external logging service (implement based on your needs)
      */
-    private sendToLoggingService(entry: LogEntry): void {
+    private sendToLoggingService(_entry: LogEntry): void {
         // Example: Send to Sentry, LogRocket, or custom logging endpoint
         // try {
         //     this.http.post('/api/logs', entry).subscribe();

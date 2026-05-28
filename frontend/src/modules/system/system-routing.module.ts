@@ -8,8 +8,6 @@ import { SystemModule } from './system.module';
 /* Containers */
 import * as tablesContainers from './containers';
 
-/* Guards */
-import * as tablesGuards from './guards';
 import { SBRouteData } from '@modules/navigation/models';
 
 /* Routes */

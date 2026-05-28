@@ -1,6 +1,5 @@
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { MeteoService } from '@modules/dashboard/services';
 
 import { VersionService } from './version.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';

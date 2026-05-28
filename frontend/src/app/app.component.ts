@@ -1,4 +1,4 @@
-import { OnInit, ChangeDetectorRef, Component, OnDestroy} from '@angular/core';
+import { OnInit, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ChildActivationEnd, Router } from '@angular/router';
 import { Subject } from 'rxjs';

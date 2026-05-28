@@ -1,4 +1,4 @@
-import { OnInit, ChangeDetectionStrategy, Component} from '@angular/core';
+import { OnInit, ChangeDetectionStrategy, Component } from '@angular/core';
 import { NavigationService } from '@modules/navigation/services';
 
 @Component({

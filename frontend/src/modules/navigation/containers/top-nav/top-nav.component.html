@@ -1,5 +1,12 @@
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-    <a class="navbar-brand" routerLink="/dashboard">Hermanas</a><button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" data-cy="topNavToggleSideNav" (click)="toggleSideNav()"><fa-icon [icon]='["fas", "bars"]'></fa-icon></button
+    <a class="navbar-brand" routerLink="/dashboard">Hermanas</a
+    ><button
+        class="btn btn-link btn-sm order-1 order-lg-0"
+        id="sidebarToggle"
+        data-cy="topNavToggleSideNav"
+        (click)="toggleSideNav()"
+    >
+        <fa-icon [icon]="['fas', 'bars']"></fa-icon></button
     ><!-- Navbar-->
     <ul class="nav navbar-nav ms-auto me-3">
         <sb-top-nav-lang></sb-top-nav-lang

@@ -98,7 +98,7 @@ export class SystemComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
     }
 
-    onServiceRetry(event: any) {
+    onServiceRetry(_event: any) {
         if (this.backEndVersionOnError) {
             this.createSubscriptionToBackendVersion();
         }
@@ -158,17 +158,15 @@ export class SystemComponent implements OnInit, OnDestroy {
     }
 
     private subscribeToAuthState(): void {
-        this._userService.user$
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((user: User) => {
-                this.isAuthenticated = !!user && user.authState === AuthState.SignedIn;
-                const wasAdmin = this.isAdmin;
-                this.isAdmin = this._userService.isAdmin();
-                if (this.isAdmin && !wasAdmin) {
-                    this.loadDiskUsage();
-                }
-                this.changeDetectorRef.detectChanges();
-            });
+        this._userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: User) => {
+            this.isAuthenticated = !!user && user.authState === AuthState.SignedIn;
+            const wasAdmin = this.isAdmin;
+            this.isAdmin = this._userService.isAdmin();
+            if (this.isAdmin && !wasAdmin) {
+                this.loadDiskUsage();
+            }
+            this.changeDetectorRef.detectChanges();
+        });
     }
 
     public loadDiskUsage(): void {
@@ -205,10 +203,7 @@ export class SystemComponent implements OnInit, OnDestroy {
             .subscribe({
                 next: response => {
                     this.emailTestSending = false;
-                    this._toastService.success(
-                        response.message || 'Test email sent.',
-                        'Email'
-                    );
+                    this._toastService.success(response.message || 'Test email sent.', 'Email');
                     this.changeDetectorRef.detectChanges();
                 },
                 error: (err: HttpErrorResponse) => {

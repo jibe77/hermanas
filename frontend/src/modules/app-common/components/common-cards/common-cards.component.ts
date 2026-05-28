@@ -39,7 +39,7 @@ export class CommonCardsComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    onEvent(event: any) {
+    onEvent(_event: any) {
         this.eventSubject.next();
         this.retry();
     }

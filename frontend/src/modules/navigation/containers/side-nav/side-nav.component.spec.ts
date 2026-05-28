@@ -27,8 +27,8 @@ describe('SideNavComponent', () => {
     let componentDE: DebugElement;
     let _componentNE: Element;
 
-    let navigationService: NavigationService;
-    let userService: UserService;
+    let _navigationService: NavigationService;
+    let _userService: UserService;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -50,8 +50,8 @@ describe('SideNavComponent', () => {
         component = componentDE.componentInstance;
         componentNE = componentDE.nativeElement;
 
-        navigationService = TestBed.inject(NavigationService);
-        userService = TestBed.inject(UserService);
+        _navigationService = TestBed.inject(NavigationService);
+        _userService = TestBed.inject(UserService);
 
         fixture.detectChanges();
     });

@@ -1,6 +1,5 @@
 import { AuthService } from './auth.service';
 import { LoginService } from './login.service';
-import { UserService } from './user.service';
 
 // UserService is providedIn: 'root' (single global instance — required so APP_INITIALIZER
 // and lazy-loaded modules share the same auth state). It must not appear in this list.

@@ -28,14 +28,15 @@ export class ButtonStatusService extends AbstractService implements OnDestroy {
     }
 
     public getInitialStatus(): Observable<ButtonStatus[]> {
-        return this.httpClient
-            .get<ButtonStatus[]>(this.domainBase + '/buttons/status', { headers: this.getHeaders() });
+        return this.httpClient.get<ButtonStatus[]>(this.domainBase + '/buttons/status', {
+            headers: this.getHeaders(),
+        });
     }
 
     public observeUpdates(): Observable<ButtonStatus> {
-        return this.stompService.stompClient.watch('/topic/buttons').pipe(
-            map(frame => JSON.parse(frame.body) as ButtonStatus)
-        );
+        return this.stompService.stompClient
+            .watch('/topic/buttons')
+            .pipe(map(frame => JSON.parse(frame.body) as ButtonStatus));
     }
 
     private ensureStompActivated(): void {

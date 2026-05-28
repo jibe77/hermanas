@@ -1,4 +1,4 @@
-import { OnInit, Component} from '@angular/core';
+import { OnInit, Component } from '@angular/core';
 import { UtilityService } from '@modules/utility/services';
 import { take } from 'rxjs/operators';
 

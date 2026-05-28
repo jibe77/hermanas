@@ -16,8 +16,14 @@
 )
     .card-body Door is now opened-->
     <div class="col-xl-3 col-md-6">
-        <sb-card-view-details *ngIf="retryMessageIsDisplayed" link="retry_dashboard" background="bg-danger" (events)="onEvent($event)"
-            ><div class="card-body"><span i18n="@@connectionFailed">Connection with chicken coop failed</span></div></sb-card-view-details
+        <sb-card-view-details
+            *ngIf="retryMessageIsDisplayed"
+            link="retry_dashboard"
+            background="bg-danger"
+            (events)="onEvent($event)"
+            ><div class="card-body">
+                <span i18n="@@connectionFailed">Connection with chicken coop failed</span>
+            </div></sb-card-view-details
         >
     </div>
 </div>

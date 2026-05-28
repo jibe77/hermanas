@@ -8,9 +8,6 @@ import { UtilityModule } from './utility.module';
 /* Containers */
 import * as utilityContainers from './containers';
 
-/* Guards */
-import * as utilityGuards from './guards';
-
 /* Routes */
 export const ROUTES: Routes = [
     {

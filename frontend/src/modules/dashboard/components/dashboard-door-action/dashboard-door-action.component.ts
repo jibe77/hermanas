@@ -1,4 +1,4 @@
-import { OnInit, ChangeDetectorRef, Component, Input, OnDestroy} from '@angular/core';
+import { OnInit, ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { User } from '@modules/auth/models';
 import { UserService } from '@modules/auth/services';
 import { DashboardWidgetsComponent } from '@modules/dashboard/components/dashboard-widgets/dashboard-widgets.component';

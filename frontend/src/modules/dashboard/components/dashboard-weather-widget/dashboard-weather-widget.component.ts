@@ -30,7 +30,10 @@ export class DashboardWeatherWidgetComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
 
-    constructor(private meteoService: MeteoService, private changeDetectorRef: ChangeDetectorRef) {}
+    constructor(
+        private meteoService: MeteoService,
+        private changeDetectorRef: ChangeDetectorRef
+    ) {}
 
     ngOnInit() {
         this.loadMeteoInfo();

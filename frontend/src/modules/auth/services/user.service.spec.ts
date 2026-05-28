@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { MockUser, User } from '@testing/mocks';
+import { MockUser } from '@testing/mocks';
 import { skip, take } from 'rxjs/operators';
 
 import { UserService } from './user.service';

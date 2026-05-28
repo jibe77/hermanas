@@ -9,9 +9,6 @@ import { SBRouteData } from '@modules/navigation/models';
 /* Containers */
 import * as chartsContainers from './containers';
 
-/* Guards */
-import * as chartsGuards from './guards';
-
 /* Routes */
 export const ROUTES: Routes = [
     {

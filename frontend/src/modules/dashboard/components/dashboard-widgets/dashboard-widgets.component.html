@@ -1,5 +1,21 @@
 <div class="row">
-    <div class="col-xl-12"><sb-dashboard-door-widget [retryEvents]="retryLauncherEvents" [domainBase]="domainBase" (componentError)="onChildError($event)"></sb-dashboard-door-widget></div>
-    <div class="col-xl-6"><sb-dashboard-weather-widget [retryEvents]="retryLauncherEvents" (componentError)="onChildError($event)"></sb-dashboard-weather-widget></div>
-    <div class="col-xl-6"><sb-dashboard-accessories-widget [retryEvents]="retryLauncherEvents" (componentError)="onChildError($event)"></sb-dashboard-accessories-widget></div>
+    <div class="col-xl-12">
+        <sb-dashboard-door-widget
+            [retryEvents]="retryLauncherEvents"
+            [domainBase]="domainBase"
+            (componentError)="onChildError($event)"
+        ></sb-dashboard-door-widget>
+    </div>
+    <div class="col-xl-6">
+        <sb-dashboard-weather-widget
+            [retryEvents]="retryLauncherEvents"
+            (componentError)="onChildError($event)"
+        ></sb-dashboard-weather-widget>
+    </div>
+    <div class="col-xl-6">
+        <sb-dashboard-accessories-widget
+            [retryEvents]="retryLauncherEvents"
+            (componentError)="onChildError($event)"
+        ></sb-dashboard-accessories-widget>
+    </div>
 </div>

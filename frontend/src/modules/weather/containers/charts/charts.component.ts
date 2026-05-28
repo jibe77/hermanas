@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component} from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -13,11 +13,11 @@ export class ChartsComponent {
     notificationSubject: Subject<void> = new Subject<void>();
     retrySubject: Subject<void> = new Subject<void>();
 
-    onServiceCommunicationError(event: any) {
+    onServiceCommunicationError(_event: any) {
         this.notificationSubject.next();
     }
 
-    onServiceRetry(event: any) {
+    onServiceRetry(_event: any) {
         this.retrySubject.next();
     }
 }

@@ -9,9 +9,6 @@ import { ErrorModule } from './error.module';
 /* Containers */
 import * as errorContainers from './containers';
 
-/* Guards */
-import * as errorGuards from './guards';
-
 /* Routes */
 export const ROUTES: Routes = [
     {

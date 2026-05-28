@@ -40,9 +40,9 @@ export class LogsService extends AbstractService {
         if (options.search && options.search.trim().length > 0) {
             params = params.set('search', options.search.trim());
         }
-        return this.http.get<string[]>(
-            `${this.domainBase}/logs/${encodeURIComponent(filename)}`,
-            { params, headers: this.getHeaders() }
-        );
+        return this.http.get<string[]>(`${this.domainBase}/logs/${encodeURIComponent(filename)}`, {
+            params,
+            headers: this.getHeaders(),
+        });
     }
 }
