@@ -1,11 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { MockUser } from '@testing/mocks';
 
+import { AuthState } from '../models';
 import { UserService } from './user.service';
-
-const mockUser = new MockUser();
 
 describe('UserService', () => {
     let userService: UserService;
@@ -17,22 +15,59 @@ describe('UserService', () => {
         userService = TestBed.inject(UserService);
     });
 
-    // The Observable<User> path goes through Angular's toObservable() which emits
-    // asynchronously via the microtask queue. Karma + Jasmine plain `done()` is
-    // racy with that — see the Vitest port for a fakeAsync version.
+    describe('default state', () => {
+        it('starts as a signed-out guest', () => {
+            const user = userService.getCurrentUser();
+            expect(user.authState).toBe(AuthState.SignedOut);
+            expect(user.login).toBe('guest');
+            expect(user.roles).toEqual([]);
+        });
 
-    describe('getCurrentUser', () => {
-        it('should return current user synchronously', () => {
-            userService.user = mockUser;
-            const currentUser = userService.getCurrentUser();
-            expect(currentUser).toEqual(mockUser);
+        it('reports isAdmin() = false when signed out', () => {
+            expect(userService.isAdmin()).toBe(false);
         });
     });
 
-    describe('user signal', () => {
-        it('should update signal when user is set', () => {
-            userService.user = mockUser;
-            expect(userService.user()).toEqual(mockUser);
+    describe('setSignedInUser', () => {
+        it('updates the user signal with the given roles', () => {
+            userService.setSignedInUser('marguerite', ['ADMIN']);
+            const user = userService.getCurrentUser();
+            expect(user.login).toBe('marguerite');
+            expect(user.authState).toBe(AuthState.SignedIn);
+            expect(user.roles).toEqual(['ADMIN']);
+        });
+
+        it('isAdmin() returns true for ADMIN role', () => {
+            userService.setSignedInUser('marguerite', ['ADMIN']);
+            expect(userService.isAdmin()).toBe(true);
+        });
+
+        it('isAdmin() also accepts legacy ROLE_ADMIN spelling', () => {
+            userService.setSignedInUser('marguerite', ['ROLE_ADMIN']);
+            expect(userService.isAdmin()).toBe(true);
+        });
+
+        it('isAdmin() returns false for a USER role', () => {
+            userService.setSignedInUser('alice', ['USER']);
+            expect(userService.isAdmin()).toBe(false);
+        });
+
+        it('isAdmin() returns false when roles are empty', () => {
+            userService.setSignedInUser('alice', []);
+            expect(userService.isAdmin()).toBe(false);
+        });
+    });
+
+    describe('setSignedOutUser', () => {
+        it('resets to the guest default', () => {
+            userService.setSignedInUser('marguerite', ['ADMIN']);
+            userService.setSignedOutUser();
+
+            const user = userService.getCurrentUser();
+            expect(user.authState).toBe(AuthState.SignedOut);
+            expect(user.login).toBe('guest');
+            expect(user.roles).toEqual([]);
+            expect(userService.isAdmin()).toBe(false);
         });
     });
 });
