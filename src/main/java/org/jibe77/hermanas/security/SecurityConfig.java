@@ -101,8 +101,11 @@ public class SecurityConfig
                 .antMatchers("/api/v1/buttons/**").hasRole(ROLE_ADMIN)
                 .antMatchers("/api/v1/email/**").hasRole(ROLE_ADMIN)
 
-                // ─── Camera: authenticated users only (photo archive is private) ─────────────
-                .antMatchers("/api/v1/camera/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                // ─── Camera photo archive: authenticated users only — the historical
+                //     /photos/** tree is private. The live dashboard endpoints
+                //     (takePicture, stream, closingRate) stay public so unauthenticated
+                //     visitors can still see the current chicken-coop view. ───────────────
+                .antMatchers("/api/v1/camera/photos/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
 
                 // ─── Protected: every mutating call ───────────────────────────────────────────
                 // Any state-changing HTTP verb on the API requires authentication.
