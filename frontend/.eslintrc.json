@@ -36,7 +36,7 @@
         ],
         "@angular-eslint/no-conflicting-lifecycle": ["error"],
         "@angular-eslint/no-input-rename": ["error"],
-        "@angular-eslint/prefer-standalone": "off",
+        "@angular-eslint/prefer-standalone": "error",
         "@angular-eslint/prefer-inject": "off",
         "@angular-eslint/no-inputs-metadata-property": ["error"],
         "@angular-eslint/no-output-native": ["error"],

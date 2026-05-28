@@ -1,12 +1,11 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 /**
- * Lazy child routes export a `ROUTES` const since the standalone migration —
- * the wrapping *-routing.module.ts NgModules are now thin shells over that
- * const and exist only to keep the historic import sites working.
+ * Top-level routes. Every feature is lazy-loaded via its `ROUTES` const, which
+ * lives in `<feature>-routing.module.ts` (filename kept from the NgModule era
+ * for stable lazy-import paths, but the file no longer declares a NgModule).
  */
-const routes: Routes = [
+export const APP_ROUTES: Routes = [
     {
         path: '',
         pathMatch: 'full',
@@ -68,9 +67,3 @@ const routes: Routes = [
         loadChildren: () => import('modules/error/error-routing.module').then(m => m.ROUTES),
     },
 ];
-
-@NgModule({
-    imports: [RouterModule.forRoot(routes, {})],
-    exports: [RouterModule],
-})
-export class AppRoutingModule {}

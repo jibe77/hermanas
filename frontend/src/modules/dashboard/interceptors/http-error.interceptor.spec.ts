@@ -2,65 +2,45 @@
 import {
     HttpErrorResponse,
     HttpEvent,
-    HttpHandler,
+    HttpHandlerFn,
     HttpRequest,
     HttpResponse,
 } from '@angular/common/http';
-import { TestBed } from '@angular/core/testing';
-import { firstValueFrom, lastValueFrom, Observable, of, throwError } from 'rxjs';
+import { firstValueFrom, lastValueFrom, of, throwError } from 'rxjs';
 
-import { HttpErrorInterceptor } from './http-error.interceptor';
+import { httpErrorInterceptor } from './http-error.interceptor';
+
+const failTest = (msg: string) => {
+    throw new Error(msg);
+};
 
 /**
- * Helper that wraps the interceptor's Observable<HttpEvent> into a Promise that
- * resolves with the first emitted value or rejects with the error string. This
- * replaces the Jasmine-era `done()` callbacks Vitest 3 has deprecated.
+ * Runs the functional interceptor with a simple {@link HttpHandlerFn} stub.
  */
-function runIntercept(
-    interceptor: HttpErrorInterceptor,
+function intercept(
     req: HttpRequest<unknown>,
-    handler: HttpHandler
-): Promise<HttpEvent<unknown>> {
-    return firstValueFrom(interceptor.intercept(req, handler));
+    next: HttpHandlerFn
+): ReturnType<typeof httpErrorInterceptor> {
+    return httpErrorInterceptor(req, next);
 }
 
-describe('HttpErrorInterceptor', () => {
-    let interceptor: HttpErrorInterceptor;
-    let mockHandler: { handle: ReturnType<typeof vi.fn> };
-    let asHandler: () => HttpHandler;
-
-    beforeEach(() => {
-        TestBed.configureTestingModule({
-            providers: [HttpErrorInterceptor],
-        });
-        interceptor = TestBed.inject(HttpErrorInterceptor);
-        mockHandler = { handle: vi.fn() };
-        asHandler = () => mockHandler as unknown as HttpHandler;
-    });
-
-    it('should be created', () => {
-        expect(interceptor).toBeTruthy();
-    });
-
+describe('httpErrorInterceptor', () => {
     describe('Successful requests', () => {
         it('passes successful responses through unchanged', async () => {
             const request = new HttpRequest('GET', '/api/test');
             const response = new HttpResponse({ status: 200, body: { data: 'test' } });
-            mockHandler.handle.mockReturnValue(of(response));
 
-            await expect(runIntercept(interceptor, request, asHandler())).resolves.toEqual(
-                response
-            );
+            const result = firstValueFrom(intercept(request, () => of(response)));
+            await expect(result).resolves.toEqual(response);
         });
 
         it('does not modify the original request', async () => {
             const request = new HttpRequest('POST', '/api/test', { test: 'data' });
             const response = new HttpResponse({ status: 201 });
-            mockHandler.handle.mockReturnValue(of(response));
+            const next = vi.fn().mockReturnValue(of(response));
 
-            await runIntercept(interceptor, request, asHandler());
-
-            expect(mockHandler.handle).toHaveBeenCalledWith(request);
+            await firstValueFrom(intercept(request, next));
+            expect(next).toHaveBeenCalledWith(request);
         });
     });
 
@@ -73,12 +53,11 @@ describe('HttpErrorInterceptor', () => {
                 status: 0,
                 statusText: 'Unknown Error',
             });
-            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
             const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-            await expect(lastValueFrom(interceptor.intercept(request, asHandler()))).rejects.toBe(
-                'Error: Connection refused'
-            );
+            await expect(
+                lastValueFrom(intercept(request, () => throwError(() => errorResponse)))
+            ).rejects.toBe('Error: Connection refused');
             expect(logSpy).toHaveBeenCalledWith('Error: Connection refused');
         });
 
@@ -86,12 +65,11 @@ describe('HttpErrorInterceptor', () => {
             const request = new HttpRequest('GET', '/api/test');
             const errorEvent = new ErrorEvent('Network error', { message: '' });
             const errorResponse = new HttpErrorResponse({ error: errorEvent, status: 0 });
-            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
             vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
-            await expect(lastValueFrom(interceptor.intercept(request, asHandler()))).rejects.toBe(
-                'Error: '
-            );
+            await expect(
+                lastValueFrom(intercept(request, () => throwError(() => errorResponse)))
+            ).rejects.toBe('Error: ');
         });
     });
 
@@ -108,11 +86,10 @@ describe('HttpErrorInterceptor', () => {
             it(`formats HTTP ${c.status} with the status code`, async () => {
                 const request = new HttpRequest('GET', '/api/test');
                 const errorResponse = new HttpErrorResponse({ ...c });
-                mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
                 vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
                 await expect(
-                    lastValueFrom(interceptor.intercept(request, asHandler()))
+                    lastValueFrom(intercept(request, () => throwError(() => errorResponse)))
                 ).rejects.toContain(`Error Code: ${c.status}`);
             });
         }
@@ -126,11 +103,10 @@ describe('HttpErrorInterceptor', () => {
                 status: 404,
                 statusText: 'Not Found',
             });
-            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
 
             try {
-                await lastValueFrom(interceptor.intercept(request, asHandler()));
-                throw new Error('Expected the interceptor to error.');
+                await lastValueFrom(intercept(request, () => throwError(() => errorResponse)));
+                failTest('Expected the interceptor to error.');
             } catch (raw) {
                 const formatted = raw as string;
                 expect(formatted).toContain('\n');
@@ -143,11 +119,10 @@ describe('HttpErrorInterceptor', () => {
         it('logs the formatted error exactly once', async () => {
             const request = new HttpRequest('GET', '/api/test');
             const errorResponse = new HttpErrorResponse({ error: 'Test error', status: 500 });
-            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
             const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
             await expect(
-                lastValueFrom(interceptor.intercept(request, asHandler()))
+                lastValueFrom(intercept(request, () => throwError(() => errorResponse)))
             ).rejects.toBeDefined();
 
             expect(consoleSpy).toHaveBeenCalledTimes(1);
@@ -160,12 +135,15 @@ describe('HttpErrorInterceptor', () => {
         it('returns an Observable that emits errors', async () => {
             const request = new HttpRequest('GET', '/api/test');
             const errorResponse = new HttpErrorResponse({ error: 'Test error', status: 500 });
-            mockHandler.handle.mockReturnValue(throwError(() => errorResponse));
 
-            const result = interceptor.intercept(request, asHandler());
-            expect(result).toBeInstanceOf(Observable);
+            const result = intercept(request, () => throwError(() => errorResponse)) as ReturnType<
+                typeof intercept
+            >;
+            expect(typeof (result as { subscribe: unknown }).subscribe).toBe('function');
 
-            await expect(lastValueFrom(result)).rejects.toBeDefined();
+            await expect(
+                lastValueFrom(result as never as Promise<HttpEvent<unknown>>)
+            ).rejects.toBeDefined();
         });
     });
 });
