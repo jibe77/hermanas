@@ -27,6 +27,7 @@ import {
     faLaptop,
     faMusic,
     faPlus,
+    faPowerOff,
     faSearch,
     faSun,
     faSync,
@@ -74,6 +75,7 @@ export const fontAwesomeSolidIcons = {
     faMusic,
     faLaptop,
     faPlus,
+    faPowerOff,
     faTimes,
     faTrash,
 };

@@ -97,6 +97,23 @@
                                     <span i18n="@@sendingTestEmail">Sending…</span>
                                 }
                             </a>
+                            <div class="dropdown-divider"></div>
+                            <a
+                                class="dropdown-item"
+                                [class.disabled]="powerActionInFlight"
+                                (click)="rebootMachine()"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'sync']"></fa-icon>
+                                <span i18n="@@systemReboot">Reboot the machine</span>
+                            </a>
+                            <a
+                                class="dropdown-item text-danger"
+                                [class.disabled]="powerActionInFlight"
+                                (click)="shutdownMachine()"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'power-off']"></fa-icon>
+                                <span i18n="@@systemShutdown">Shut down the machine</span>
+                            </a>
                         </div>
                     </div>
                 </div>

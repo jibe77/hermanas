@@ -17,6 +17,7 @@ import {
 } from '@modules/system/services/button-status.service';
 import { DiskUsage, DiskUsageService } from '@modules/system/services/disk-usage.service';
 import { EmailTestService } from '@modules/system/services/email-test.service';
+import { SystemPowerService } from '@modules/system/services/system-power.service';
 import { VersionInfo, VersionService } from '@modules/system/services/version.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -39,6 +40,7 @@ export class SystemComponent implements OnInit, OnDestroy {
     private _buttonStatusService = inject(ButtonStatusService);
     private _emailTestService = inject(EmailTestService);
     private _diskUsageService = inject(DiskUsageService);
+    private _systemPowerService = inject(SystemPowerService);
     private _userService = inject(UserService);
     private _toastService = inject(ToastService);
     private changeDetectorRef = inject(ChangeDetectorRef);
@@ -54,6 +56,7 @@ export class SystemComponent implements OnInit, OnDestroy {
     public isAuthenticated = false;
     public isAdmin = false;
     public emailTestSending = false;
+    public powerActionInFlight = false;
 
     public diskUsage?: DiskUsage;
     public diskUsageError = false;
@@ -189,6 +192,84 @@ export class SystemComponent implements OnInit, OnDestroy {
                     this.changeDetectorRef.detectChanges();
                 },
             });
+    }
+
+    /**
+     * Shuts down the Raspberry Pi via the audit-logged, rate-limited
+     * POST /api/v1/system/shutdown endpoint. Confirms first with a native
+     * dialog — losing the host is destructive enough that the friction is
+     * worth it. The HTTP response often arrives after the OS has already
+     * killed the JVM, so we treat any non-rate-limit error as best-effort.
+     */
+    public shutdownMachine(): void {
+        if (this.powerActionInFlight) {
+            return;
+        }
+        // eslint-disable-next-line max-len -- $localize template literals must keep their @@id and message on one line.
+        const confirmMsg = $localize`:@@systemShutdownConfirm:Shut down the Raspberry Pi now? This will kill the application until the machine is powered back on manually.`;
+        if (!window.confirm(confirmMsg)) {
+            return;
+        }
+        this.powerActionInFlight = true;
+        this.changeDetectorRef.detectChanges();
+        this._systemPowerService.shutdown().subscribe({
+            next: () => {
+                this.powerActionInFlight = false;
+                this._toastService.success(
+                    $localize`:@@systemShutdownInProgress:Shutdown command sent. The machine is going down.`,
+                    'System'
+                );
+                this.changeDetectorRef.detectChanges();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.powerActionInFlight = false;
+                // 429 = too many shutdown attempts → show the backend message verbatim
+                const detail =
+                    err.status === 429
+                        ? err.error?.message ||
+                          $localize`:@@systemRateLimited:Too many attempts. Please wait a few minutes.`
+                        : err.error?.message ||
+                          err.message ||
+                          $localize`:@@systemShutdownFailed:Shutdown failed.`;
+                this._toastService.error(detail, `System — HTTP ${err.status}`);
+                this.changeDetectorRef.detectChanges();
+            },
+        });
+    }
+
+    public rebootMachine(): void {
+        if (this.powerActionInFlight) {
+            return;
+        }
+        // eslint-disable-next-line max-len -- $localize template literal kept on one line on purpose.
+        const confirmMsg = $localize`:@@systemRebootConfirm:Reboot the Raspberry Pi now? The application will be unavailable for ~30 seconds.`;
+        if (!window.confirm(confirmMsg)) {
+            return;
+        }
+        this.powerActionInFlight = true;
+        this.changeDetectorRef.detectChanges();
+        this._systemPowerService.reboot().subscribe({
+            next: () => {
+                this.powerActionInFlight = false;
+                this._toastService.success(
+                    $localize`:@@systemRebootInProgress:Reboot command sent. The machine is restarting.`,
+                    'System'
+                );
+                this.changeDetectorRef.detectChanges();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.powerActionInFlight = false;
+                const detail =
+                    err.status === 429
+                        ? err.error?.message ||
+                          $localize`:@@systemRateLimited:Too many attempts. Please wait a few minutes.`
+                        : err.error?.message ||
+                          err.message ||
+                          $localize`:@@systemRebootFailed:Reboot failed.`;
+                this._toastService.error(detail, `System — HTTP ${err.status}`);
+                this.changeDetectorRef.detectChanges();
+            },
+        });
     }
 
     public sendTestEmail(): void {

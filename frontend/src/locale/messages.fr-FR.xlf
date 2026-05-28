@@ -1049,6 +1049,42 @@
                     <context context-type="linenumber">2</context>
                 </context-group>
             </trans-unit>
+            <trans-unit id="systemReboot" datatype="html">
+                <source>Reboot the machine</source>
+                <target>Redémarrer la machine</target>
+            </trans-unit>
+            <trans-unit id="systemShutdown" datatype="html">
+                <source>Shut down the machine</source>
+                <target>Éteindre la machine</target>
+            </trans-unit>
+            <trans-unit id="systemRebootConfirm" datatype="html">
+                <source>Reboot the Raspberry Pi now? The application will be unavailable for ~30 seconds.</source>
+                <target>Redémarrer le Raspberry Pi maintenant ? L'application sera indisponible pendant environ 30 secondes.</target>
+            </trans-unit>
+            <trans-unit id="systemShutdownConfirm" datatype="html">
+                <source>Shut down the Raspberry Pi now? This will kill the application until the machine is powered back on manually.</source>
+                <target>Éteindre le Raspberry Pi maintenant ? L'application sera coupée jusqu'à ce que la machine soit rallumée manuellement.</target>
+            </trans-unit>
+            <trans-unit id="systemRebootInProgress" datatype="html">
+                <source>Reboot command sent. The machine is restarting.</source>
+                <target>Commande de redémarrage envoyée. La machine redémarre.</target>
+            </trans-unit>
+            <trans-unit id="systemShutdownInProgress" datatype="html">
+                <source>Shutdown command sent. The machine is going down.</source>
+                <target>Commande d'arrêt envoyée. La machine s'éteint.</target>
+            </trans-unit>
+            <trans-unit id="systemRebootFailed" datatype="html">
+                <source>Reboot failed.</source>
+                <target>Échec du redémarrage.</target>
+            </trans-unit>
+            <trans-unit id="systemShutdownFailed" datatype="html">
+                <source>Shutdown failed.</source>
+                <target>Échec de l'arrêt.</target>
+            </trans-unit>
+            <trans-unit id="systemRateLimited" datatype="html">
+                <source>Too many attempts. Please wait a few minutes.</source>
+                <target>Trop de tentatives. Veuillez patienter quelques minutes.</target>
+            </trans-unit>
             <trans-unit id="energy" datatype="html">
                 <source>Energy</source>
                 <target>Énergie</target>
