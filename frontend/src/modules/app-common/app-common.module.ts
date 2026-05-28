@@ -20,7 +20,10 @@ import * as appCommonGuards from './guards';
 
 /* Services */
 import * as appCommonServices from './services';
-import * as authServices from '@modules/auth/services';
+
+// AuthService / LoginService / UserService were previously listed here as
+// providers; they are now providedIn: 'root' so the module no longer needs
+// to declare them.
 
 @NgModule({
     imports: [
@@ -30,7 +33,7 @@ import * as authServices from '@modules/auth/services';
         ...appCommonContainers.containers,
         ...appCommonComponents.components,
     ],
-    providers: [...appCommonServices.services, ...authServices.services, ...appCommonGuards.guards],
+    providers: [...appCommonServices.services, ...appCommonGuards.guards],
     exports: [...appCommonContainers.containers, ...appCommonComponents.components, ...thirdParty],
 })
 export class AppCommonModule {}

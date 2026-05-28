@@ -1,5 +1,2 @@
-import { ChartsService } from './charts.service';
-
-export const services = [ChartsService];
-
-export * from './charts.service';
+// PhotosService is providedIn: 'root' — exposed below.
+export * from './photos.service';

@@ -1,5 +1,2 @@
-import { ErrorService } from './error.service';
-
-export const services = [ErrorService];
-
-export * from './error.service';
+// No live error service — placeholder for future additions.
+export const services = [];

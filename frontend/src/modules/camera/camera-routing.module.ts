@@ -1,18 +1,9 @@
-/* tslint:disable: ordered-imports*/
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Routes } from '@angular/router';
 import { SBRouteData } from '@modules/navigation/models';
-
-/* Module */
-import { CameraModule } from './camera.module';
-
-/* Containers */
-import * as chartsContainers from './containers';
-
-/* Guards */
 import { AuthGuard } from '@modules/auth/guards';
 
-/* Routes */
+import * as chartsContainers from './containers';
+
 export const ROUTES: Routes = [
     {
         path: '',
@@ -33,9 +24,3 @@ export const ROUTES: Routes = [
         } as SBRouteData,
     },
 ];
-
-@NgModule({
-    imports: [CameraModule, RouterModule.forChild(ROUTES)],
-    exports: [RouterModule],
-})
-export class CameraRoutingModule {}
