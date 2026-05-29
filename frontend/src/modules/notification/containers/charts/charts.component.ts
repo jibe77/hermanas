@@ -7,7 +7,7 @@ import {
     inject,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ToastService } from '@common/services';
+import { PushService, ToastService } from '@common/services';
 import {
     ChartsService,
     HermanasUser,
@@ -43,7 +43,12 @@ export class ChartsComponent implements OnInit, OnDestroy {
     private _chartsService = inject(ChartsService);
     private _userService = inject(UserService);
     private _toastService = inject(ToastService);
+    private _pushService = inject(PushService);
     private cdr = inject(ChangeDetectorRef);
+
+    pushSupported = false;
+    pushSubscribed = false;
+    pushBusy = false;
 
     me?: HermanasUser;
     isAdmin = false;
@@ -80,6 +85,46 @@ export class ChartsComponent implements OnInit, OnDestroy {
         this.loadMe();
         if (this.isAdmin) {
             this.loadUsers();
+        }
+        this.refreshPushState();
+    }
+
+    private refreshPushState(): void {
+        this.pushSupported = this._pushService.isEnabled();
+        if (this.pushSupported) {
+            this._pushService.isSubscribed().then(active => {
+                this.pushSubscribed = active;
+                this.cdr.detectChanges();
+            });
+        }
+    }
+
+    async togglePush(): Promise<void> {
+        if (this.pushBusy) {
+            return;
+        }
+        this.pushBusy = true;
+        try {
+            const ok = this.pushSubscribed
+                ? await this._pushService.unsubscribe()
+                : await this._pushService.subscribe();
+            if (!ok) {
+                this._toastService.error(
+                    this.pushSubscribed
+                        ? 'Désabonnement échoué'
+                        : 'Abonnement aux notifications échoué',
+                    'Notifications'
+                );
+            } else {
+                this.pushSubscribed = !this.pushSubscribed;
+                this._toastService.success(
+                    this.pushSubscribed ? 'Notifications activées' : 'Notifications désactivées',
+                    'Notifications'
+                );
+            }
+        } finally {
+            this.pushBusy = false;
+            this.cdr.detectChanges();
         }
     }
 

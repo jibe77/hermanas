@@ -81,7 +81,18 @@
       "Read(//tmp/**)",
       "Bash(curl -sL https://www.hermanas.fr/fr-FR/ -o /tmp/hermanas-index.html)",
       "Bash(curl -sL https://www.hermanas.fr/fr-FR/favicon512.png -o /tmp/hermanas-512.png)",
-      "Bash(curl -sL https://www.hermanas.fr/fr-FR/favicon144.png -o /tmp/hermanas-144.png)"
+      "Bash(curl -sL https://www.hermanas.fr/fr-FR/favicon144.png -o /tmp/hermanas-144.png)",
+      "Bash(curl -s \"https://search.maven.org/solrsearch/select?q=g:%22nl.martijndwars%22+AND+a:%22web-push%22&core=gav&rows=5&wt=json\")",
+      "WebFetch(domain:github.com)",
+      "Bash(mvn help:effective-pom -q)",
+      "Bash(mvn dependency:resolve -P!with-frontend -q)",
+      "Bash(mvn dependency:get -Dartifact=nl.martijndwars:web-push:5.1.2:jar -q)",
+      "Bash(javap -cp /Users/jean-baptisterenaux/.m2/repository/nl/martijndwars/web-push/5.1.2/web-push-5.1.2.jar nl.martijndwars.webpush.Utils)",
+      "Bash(javap -cp /Users/jean-baptisterenaux/.m2/repository/nl/martijndwars/web-push/5.1.2/web-push-5.1.2.jar nl.martijndwars.webpush.PushService)",
+      "Bash(javap -cp /Users/jean-baptisterenaux/.m2/repository/nl/martijndwars/web-push/5.1.2/web-push-5.1.2.jar nl.martijndwars.webpush.Notification)",
+      "Bash(javap -cp /Users/jean-baptisterenaux/.m2/repository/nl/martijndwars/web-push/5.1.2/web-push-5.1.2.jar nl.martijndwars.webpush.AbstractPushService)",
+      "WebFetch(domain:angular.dev)",
+      "Bash(npx prettier *)"
     ],
     "deny": [],
     "ask": []

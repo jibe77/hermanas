@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 import { ChildActivationEnd, Router, RouterOutlet } from '@angular/router';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-import { PwaInstallService, SwUpdateService } from '@common/services';
+import { PwaInstallService, PushService, SwUpdateService } from '@common/services';
 import {
     OfflineBannerComponent,
     PwaInstallBannerComponent,
@@ -27,6 +27,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private ref = inject(ChangeDetectorRef);
     private pwaInstall = inject(PwaInstallService);
     private swUpdate = inject(SwUpdateService);
+    private pushService = inject(PushService);
 
     title = 'hermanas-client';
     private destroy$ = new Subject<void>();
@@ -34,6 +35,7 @@ export class AppComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.pwaInstall.initialize();
         this.swUpdate.initialize();
+        this.pushService.initialize();
         this.router.events
             .pipe(
                 filter(event => event instanceof ChildActivationEnd),

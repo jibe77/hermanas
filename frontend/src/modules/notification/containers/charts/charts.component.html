@@ -74,6 +74,33 @@
                         ><span i18n="@@save">Save</span>
                     </button>
                 </div>
+                @if (pushSupported) {
+                    <hr class="my-3" />
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="fw-semibold" i18n="@@pushBrowserTitle">
+                                Notifications navigateur
+                            </div>
+                            <div class="small text-muted" i18n="@@pushBrowserSubtitle">
+                                Reçois une notification sur cet appareil si la porte ne se ferme
+                                pas, ou en cas d'erreur de capteur.
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            class="btn btn-sm"
+                            [ngClass]="pushSubscribed ? 'btn-success' : 'btn-outline-secondary'"
+                            (click)="togglePush()"
+                            [disabled]="pushBusy"
+                        >
+                            @if (pushSubscribed) {
+                                <span i18n="@@pushBrowserActive">Activé</span>
+                            } @else {
+                                <span i18n="@@pushBrowserInactive">Activer</span>
+                            }
+                        </button>
+                    </div>
+                }
             </div>
         }
     </sb-card>

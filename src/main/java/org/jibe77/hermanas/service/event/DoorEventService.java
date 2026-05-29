@@ -4,8 +4,10 @@ import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
 import org.jibe77.hermanas.service.door.model.DoorStatusEnum;
+import org.jibe77.hermanas.service.push.PushNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -46,8 +48,12 @@ public class DoorEventService {
             EventType.DOOR_POSITION_UNKNOWN
     );
 
-    public DoorEventService(EventRepository eventRepository) {
+    private final PushNotificationService pushService;
+
+    @Autowired
+    public DoorEventService(EventRepository eventRepository, PushNotificationService pushService) {
         this.eventRepository = eventRepository;
+        this.pushService = pushService;
     }
 
     /**
@@ -72,6 +78,7 @@ public class DoorEventService {
     public void recordDoorOpenFailed() {
         recordEvent(EventType.DOOR_OPEN_FAILED);
         logger.warn("Recorded DOOR_OPEN_FAILED event");
+        pushService.broadcast("Hermanas", "L'ouverture de la porte a échoué", "/dashboard");
     }
 
     /**
@@ -80,6 +87,7 @@ public class DoorEventService {
     public void recordDoorCloseFailed() {
         recordEvent(EventType.DOOR_CLOSE_FAILED);
         logger.warn("Recorded DOOR_CLOSE_FAILED event");
+        pushService.broadcast("Hermanas", "La fermeture de la porte a échoué", "/dashboard");
     }
 
     /**
@@ -88,6 +96,7 @@ public class DoorEventService {
     public void recordDoorPositionUnknown() {
         recordEvent(EventType.DOOR_POSITION_UNKNOWN);
         logger.warn("Recorded DOOR_POSITION_UNKNOWN event");
+        pushService.broadcast("Hermanas", "Position de la porte indéterminée", "/dashboard");
     }
 
     /**

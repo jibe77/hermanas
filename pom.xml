@@ -30,6 +30,7 @@
 		<jquery.version>3.7.1</jquery.version>
 
 		<bootstrap.version>5.3.3</bootstrap.version>
+		<web-push.version>5.1.2</web-push.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 
 		<!-- Frontend build (Angular) -->
@@ -208,6 +209,31 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
+		<!-- Web Push (VAPID) for PWA notifications. 5.1.x is Java 8+. The two
+		     deps below are runtime-only in web-push's POM but we touch them at
+		     compile time (BouncyCastleProvider for security setup, HttpResponse
+		     as the return type of PushService.send), so we need them at compile
+		     scope as well. -->
+		<dependency>
+			<groupId>nl.martijndwars</groupId>
+			<artifactId>web-push</artifactId>
+			<version>${web-push.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.70</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.bitbucket.b_c</groupId>
+			<artifactId>jose4j</artifactId>
+			<version>0.7.9</version>
 		</dependency>
 	</dependencies>
 

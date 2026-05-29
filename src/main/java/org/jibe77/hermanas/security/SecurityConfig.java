@@ -87,6 +87,13 @@ public class SecurityConfig
                         "/api/v1/auth/register").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/v1/auth/me").permitAll()
 
+                // ─── Push notifications: VAPID public key is public (the browser needs it before
+                // logging in to set up the SW subscription), but subscribe/unsubscribe/test must
+                // be authenticated so we can associate a row with a user and gate the test
+                // broadcast. ─────────────────────────────────────────────────────────────────
+                .antMatchers(HttpMethod.GET, "/api/v1/push/vapid-public-key").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/push/test").hasRole(ROLE_ADMIN)
+
                 // ─── Actuator: keep /health and /info reachable for external monitoring,
                 // restrict everything else to administrators (env/configprops/heapdump can
                 // leak credentials and memory snapshots) ─────────────────────────────────────
