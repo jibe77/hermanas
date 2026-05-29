@@ -74,7 +74,14 @@
       "Bash(awk '{gsub\\(/intercept\\\\\\(request, mockHandler\\\\\\)/, \"intercept\\(request, asHandler\\(\\)\\)\"\\); print}' src/modules/dashboard/interceptors/http-error.interceptor.spec.ts)",
       "Bash(mv /tmp/spec.tmp src/modules/dashboard/interceptors/http-error.interceptor.spec.ts)",
       "Bash(awk '{gsub\\(/fail\\\\\\(\\([^\\)]*\\)\\\\\\)/, \"\\(\\(\\) => { throw new Error\\(\\\\\\\\1\\); }\\)\\(\\)\"\\); print}' src/modules/dashboard/interceptors/http-error.interceptor.spec.ts)",
-      "Bash(echo \"Exit code: $?\")"
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(sed -i '' 's|^import { Injectable } from .@angular/core.;||' src/modules/dashboard/services/websocket.service.ts)",
+      "Bash(sed -i '' 's|^@Injectable\\({ providedIn: .root. }\\)||' src/modules/dashboard/services/websocket.service.ts)",
+      "Bash(curl -sL https://www.hermanas.fr/fr-FR/favicon.ico -o /tmp/hermanas-favicon.ico)",
+      "Read(//tmp/**)",
+      "Bash(curl -sL https://www.hermanas.fr/fr-FR/ -o /tmp/hermanas-index.html)",
+      "Bash(curl -sL https://www.hermanas.fr/fr-FR/favicon512.png -o /tmp/hermanas-512.png)",
+      "Bash(curl -sL https://www.hermanas.fr/fr-FR/favicon144.png -o /tmp/hermanas-144.png)"
     ],
     "deny": [],
     "ask": []

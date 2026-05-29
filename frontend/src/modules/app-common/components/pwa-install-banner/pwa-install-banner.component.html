@@ -1,0 +1,33 @@
+@if (canInstall$ | async) {
+    <div class="pwa-install-banner" @slideUp role="dialog" aria-labelledby="pwa-install-title">
+        <div class="pwa-install-banner__icon">
+            <fa-icon [icon]="['fas', 'laptop']" size="lg"></fa-icon>
+        </div>
+        <div class="pwa-install-banner__body">
+            <div id="pwa-install-title" class="pwa-install-banner__title" i18n="@@pwaInstallTitle">
+                Installer Hermanas
+            </div>
+            <div class="pwa-install-banner__subtitle" i18n="@@pwaInstallSubtitle">
+                Ajoute l'application à ton écran d'accueil pour un accès rapide.
+            </div>
+        </div>
+        <div class="pwa-install-banner__actions">
+            <button
+                type="button"
+                class="btn btn-link btn-sm pwa-install-banner__dismiss"
+                (click)="dismiss()"
+                i18n="@@pwaInstallNotNow"
+            >
+                Plus tard
+            </button>
+            <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                (click)="install()"
+                i18n="@@pwaInstallNow"
+            >
+                Installer
+            </button>
+        </div>
+    </div>
+}

@@ -3,22 +3,26 @@ import { Title } from '@angular/platform-browser';
 import { ChildActivationEnd, Router, RouterOutlet } from '@angular/router';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
+import { PwaInstallService } from '@common/services';
+import { PwaInstallBannerComponent, ToastContainerComponent } from '@common/components';
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
-    imports: [RouterOutlet],
+    imports: [RouterOutlet, ToastContainerComponent, PwaInstallBannerComponent],
 })
 export class AppComponent implements OnInit, OnDestroy {
     router = inject(Router);
     private titleService = inject(Title);
     private ref = inject(ChangeDetectorRef);
+    private pwaInstall = inject(PwaInstallService);
 
     title = 'hermanas-client';
     private destroy$ = new Subject<void>();
 
     ngOnInit() {
+        this.pwaInstall.initialize();
         this.router.events
             .pipe(
                 filter(event => event instanceof ChildActivationEnd),
