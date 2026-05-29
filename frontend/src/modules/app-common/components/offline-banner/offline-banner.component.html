@@ -1,0 +1,8 @@
+@if (offline$ | async) {
+    <div class="offline-banner" @slideDown role="status" aria-live="polite">
+        <fa-icon [icon]="['fas', 'exclamation-triangle']" class="me-2"></fa-icon>
+        <span i18n="@@offlineBannerMessage">
+            Hors-ligne. Les données affichées peuvent être obsolètes.
+        </span>
+    </div>
+}

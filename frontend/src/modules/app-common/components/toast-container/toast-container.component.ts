@@ -58,15 +58,14 @@ export class ToastContainerComponent implements OnInit, OnDestroy {
     public getIconClass(type: Toast['type']): string {
         switch (type) {
             case 'success':
-                return 'fa-check-circle';
+                return 'check-circle';
             case 'error':
-                return 'fa-exclamation-circle';
+                return 'exclamation-circle';
             case 'warning':
-                return 'fa-exclamation-triangle';
+                return 'exclamation-triangle';
             case 'info':
-                return 'fa-info-circle';
             default:
-                return 'fa-info-circle';
+                return 'info-circle';
         }
     }
 

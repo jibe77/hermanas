@@ -4,6 +4,8 @@ import { ToastService } from './toast/toast.service';
 import { LoggerService } from './logger/logger.service';
 import { LoadingService } from './loading/loading.service';
 import { PwaInstallService } from './pwa-install/pwa-install.service';
+import { NetworkStatusService } from './network-status/network-status.service';
+import { SwUpdateService } from './sw-update/sw-update.service';
 
 export const services = [
     AbstractService,
@@ -12,6 +14,8 @@ export const services = [
     LoggerService,
     LoadingService,
     PwaInstallService,
+    NetworkStatusService,
+    SwUpdateService,
 ];
 
 export * from './app-common.service';
@@ -21,3 +25,5 @@ export * from './error-handler/global-error-handler.service';
 export * from './logger/logger.service';
 export * from './loading/loading.service';
 export * from './pwa-install/pwa-install.service';
+export * from './network-status/network-status.service';
+export * from './sw-update/sw-update.service';
