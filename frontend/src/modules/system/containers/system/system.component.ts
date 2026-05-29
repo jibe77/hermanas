@@ -19,7 +19,9 @@ import { DiskUsage, DiskUsageService } from '@modules/system/services/disk-usage
 import { EmailTestService } from '@modules/system/services/email-test.service';
 import { SystemPowerService } from '@modules/system/services/system-power.service';
 import { VersionInfo, VersionService } from '@modules/system/services/version.service';
+import { ServoCalibrationService } from '@modules/system/services/servo-calibration.service';
 import { ConfigService } from '@modules/energy/services/config.service';
+import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
@@ -51,6 +53,7 @@ interface ButtonState {
         NgbDropdownToggle,
         NgbDropdownMenu,
         DatePipe,
+        FormsModule,
     ],
 })
 export class SystemComponent implements OnInit, OnDestroy {
@@ -60,6 +63,7 @@ export class SystemComponent implements OnInit, OnDestroy {
     private _diskUsageService = inject(DiskUsageService);
     private _systemPowerService = inject(SystemPowerService);
     private _configService = inject(ConfigService);
+    private _servoService = inject(ServoCalibrationService);
     private _userService = inject(UserService);
     private _toastService = inject(ToastService);
     private changeDetectorRef = inject(ChangeDetectorRef);
@@ -77,6 +81,13 @@ export class SystemComponent implements OnInit, OnDestroy {
     public emailTestSending = false;
     public powerActionInFlight = false;
     public configRefreshing = false;
+
+    // Servo calibration state
+    public servoOpeningPosition = 16;
+    public servoClosingPosition = 5;
+    public servoSaving = false;
+    public servoNudgeMs = 100;
+    public servoNudging = false;
 
     public diskUsage?: DiskUsage;
     public diskUsageError = false;
@@ -187,8 +198,112 @@ export class SystemComponent implements OnInit, OnDestroy {
             this.isAdmin = this._userService.isAdmin();
             if (this.isAdmin && !wasAdmin) {
                 this.loadDiskUsage();
+                this.loadServoPositions();
             }
             this.changeDetectorRef.detectChanges();
+        });
+    }
+
+    private loadServoPositions(): void {
+        this._configService
+            .getAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: cfg => {
+                    this.servoOpeningPosition = cfg.servo_positions.door_opening_position;
+                    this.servoClosingPosition = cfg.servo_positions.door_closing_position;
+                    this.changeDetectorRef.detectChanges();
+                },
+                error: () => {
+                    /* keep defaults */
+                },
+            });
+    }
+
+    public saveOpeningPosition(): void {
+        if (this.servoSaving) return;
+        this.servoSaving = true;
+        this._configService
+            .setDoorOpeningPosition(this.servoOpeningPosition)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.servoSaving = false;
+                    this._toastService.success(
+                        `Position ouverte : ${this.servoOpeningPosition}`,
+                        'Servo'
+                    );
+                    this.changeDetectorRef.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.servoSaving = false;
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Save failed',
+                        `Servo — HTTP ${err.status}`
+                    );
+                    this.changeDetectorRef.detectChanges();
+                },
+            });
+    }
+
+    public saveClosingPosition(): void {
+        if (this.servoSaving) return;
+        this.servoSaving = true;
+        this._configService
+            .setDoorClosingPosition(this.servoClosingPosition)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.servoSaving = false;
+                    this._toastService.success(
+                        `Position fermée : ${this.servoClosingPosition}`,
+                        'Servo'
+                    );
+                    this.changeDetectorRef.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.servoSaving = false;
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Save failed',
+                        `Servo — HTTP ${err.status}`
+                    );
+                    this.changeDetectorRef.detectChanges();
+                },
+            });
+    }
+
+    public nudgeClockwise(): void {
+        this.nudge(true);
+    }
+
+    public nudgeCounterClockwise(): void {
+        this.nudge(false);
+    }
+
+    private nudge(clockwise: boolean): void {
+        if (this.servoNudging) return;
+        const ms = Math.max(1, Math.min(30000, this.servoNudgeMs || 100));
+        this.servoNudging = true;
+        const call$ = clockwise
+            ? this._servoService.turnClockwise(ms)
+            : this._servoService.turnCounterClockwise(ms);
+        call$.pipe(takeUntil(this.destroy$)).subscribe({
+            next: () => {
+                this.servoNudging = false;
+                this._toastService.success(
+                    `Servo ${clockwise ? 'clockwise' : 'counter-clockwise'} ${ms} ms`,
+                    'Servo'
+                );
+                this.changeDetectorRef.detectChanges();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.servoNudging = false;
+                this._toastService.error(
+                    err.error?.message || err.message || 'Nudge failed',
+                    `Servo — HTTP ${err.status}`
+                );
+                this.changeDetectorRef.detectChanges();
+            },
         });
     }
 

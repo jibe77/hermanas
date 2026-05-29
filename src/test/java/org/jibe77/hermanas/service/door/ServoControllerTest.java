@@ -6,6 +6,7 @@ import org.jibe77.hermanas.service.door.upbutton.UpButtonService;
 import org.jibe77.hermanas.service.gpio.GpioHermanasService;
 import org.jibe77.hermanas.service.door.servo.ServoMotorService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.websocket.NotificationController;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -41,6 +42,9 @@ class ServoControllerTest {
 
     @MockBean
     NotificationController notificationController;
+
+    @MockBean
+    ConfigService configService;
 
     Logger logger = LoggerFactory.getLogger(ServoControllerTest.class);
 

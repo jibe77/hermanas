@@ -99,6 +99,18 @@ public class ConfigService {
     @Value("${music.volume.regular}")
     private String musicVolumeRegular;
 
+    // ─── Servo motor positions (calibration) ──────────────────────────────────────
+    // These are the duty-cycle "positions" sent to the servo to define what counts
+    // as "fully open" and "fully closed". Each new coop installation drifts by a
+    // few units because of cable tension and the servo's own end-stop tolerance,
+    // so they are persisted in DB to let an admin recalibrate in place.
+
+    @Value("${door.opening.position}")
+    private int doorOpeningPosition;
+
+    @Value("${door.closing.position}")
+    private int doorClosingPosition;
+
     ParameterRepository parameterRepository;
 
     @Autowired(required = false)
@@ -713,5 +725,41 @@ public class ConfigService {
             throw new IllegalArgumentException("Volume must be between 0 and 100, got " + percent);
         }
         setConfigValue("music.volume.regular", percent + "%", null);
+    }
+
+    // ============================================================================
+    // Servo Motor Calibration
+    // ============================================================================
+    //
+    // The two positions below are tuned to the physical chicken-coop install. They
+    // are NOT general-purpose and depend on the cable tension / servo wear. The
+    // setters validate aggressively (1..100, matching the servo's GPIO range) so
+    // a typo can't drive the motor into its end-stop. Setting these is admin-only
+    // at the REST layer.
+
+    @Cacheable(value = "doorOpeningPosition")
+    public int getDoorOpeningPosition() {
+        return getConfigValue("door.opening.position", doorOpeningPosition, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "doorOpeningPosition")
+    public void setDoorOpeningPosition(int position) {
+        if (position < 1 || position > 100) {
+            throw new IllegalArgumentException("Servo position must be 1..100, got " + position);
+        }
+        setConfigValue("door.opening.position", position, null);
+    }
+
+    @Cacheable(value = "doorClosingPosition")
+    public int getDoorClosingPosition() {
+        return getConfigValue("door.closing.position", doorClosingPosition, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "doorClosingPosition")
+    public void setDoorClosingPosition(int position) {
+        if (position < 1 || position > 100) {
+            throw new IllegalArgumentException("Servo position must be 1..100, got " + position);
+        }
+        setConfigValue("door.closing.position", position, null);
     }
 }

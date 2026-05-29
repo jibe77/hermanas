@@ -228,7 +228,106 @@
                         <small class="text-muted ms-2">{{ diskUsage.path }}</small>
                     }
                 </div>
-            </div></sb-card
-        >
+
+                <hr class="my-3" />
+
+                <!-- ─── Servo calibration ────────────────────────────────────────── -->
+                <h6 class="mb-2">
+                    <fa-icon class="me-1" [icon]="['fas', 'door-open']"></fa-icon>
+                    <span i18n="@@servoCalibrationTitle">Réglage du servomoteur</span>
+                </h6>
+                <div class="alert alert-warning small mb-3" role="alert">
+                    <fa-icon class="me-1" [icon]="['fas', 'exclamation-triangle']"></fa-icon>
+                    <span i18n="@@servoCalibrationWarning">
+                        Action sur le matériel. Les valeurs hors plage peuvent forcer mécaniquement
+                        le servo. Modifie par petits incréments.
+                    </span>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small d-flex justify-content-between">
+                            <span i18n="@@servoOpeningPosition">Position ouverte</span>
+                            <span class="text-muted">{{ servoOpeningPosition }}</span>
+                        </label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input
+                                type="range"
+                                class="form-range"
+                                min="1"
+                                max="100"
+                                step="1"
+                                [(ngModel)]="servoOpeningPosition"
+                            />
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm"
+                                (click)="saveOpeningPosition()"
+                                [disabled]="servoSaving"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                                <span i18n="@@save">Save</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small d-flex justify-content-between">
+                            <span i18n="@@servoClosingPosition">Position fermée</span>
+                            <span class="text-muted">{{ servoClosingPosition }}</span>
+                        </label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input
+                                type="range"
+                                class="form-range"
+                                min="1"
+                                max="100"
+                                step="1"
+                                [(ngModel)]="servoClosingPosition"
+                            />
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm"
+                                (click)="saveClosingPosition()"
+                                [disabled]="servoSaving"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                                <span i18n="@@save">Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <label class="form-label small mb-0 me-2" for="servoNudgeMs">
+                        <span i18n="@@servoNudgeMs">Durée nudge (ms)</span>
+                    </label>
+                    <input
+                        id="servoNudgeMs"
+                        type="number"
+                        min="1"
+                        max="30000"
+                        step="10"
+                        class="form-control form-control-sm"
+                        style="width: 100px"
+                        [(ngModel)]="servoNudgeMs"
+                    />
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        (click)="nudgeCounterClockwise()"
+                        [disabled]="servoNudging"
+                    >
+                        <fa-icon class="me-1" [icon]="['fas', 'sync']"></fa-icon>
+                        <span i18n="@@servoCounterClockwise">Counter-clockwise</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        (click)="nudgeClockwise()"
+                        [disabled]="servoNudging"
+                    >
+                        <span i18n="@@servoClockwise">Clockwise</span>
+                        <fa-icon class="ms-1" [icon]="['fas', 'sync']"></fa-icon>
+                    </button>
+                </div></div
+        ></sb-card>
     }
 </sb-layout-dashboard>

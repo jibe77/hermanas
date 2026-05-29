@@ -129,6 +129,12 @@ public class ConfigRestController {
         musicSettings.put("volume_regular_percent", volumeInt);
         config.put("music_settings", musicSettings);
 
+        // Servo calibration positions
+        Map<String, Integer> servo = new LinkedHashMap<>();
+        servo.put("door_opening_position", configService.getDoorOpeningPosition());
+        servo.put("door_closing_position", configService.getDoorClosingPosition());
+        config.put("servo_positions", servo);
+
         return ResponseEntity.ok(config);
     }
 
@@ -321,6 +327,34 @@ public class ConfigRestController {
             @RequestParam int percent) {
         configService.setMusicVolumeRegular(percent);
         return ResponseEntity.ok("Music volume set to " + percent + "%");
+    }
+
+    // ─── Servo positions (calibration) ─────────────────────────────────────────
+
+    @Operation(summary = "Update door opening servo position (1-100)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Position updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Out of range (must be 1-100)")
+    })
+    @PutMapping("/door/opening-position")
+    public ResponseEntity<String> setDoorOpeningPosition(
+            @Parameter(description = "Servo position 1-100", example = "16")
+            @RequestParam int position) {
+        configService.setDoorOpeningPosition(position);
+        return ResponseEntity.ok("Door opening position set to " + position);
+    }
+
+    @Operation(summary = "Update door closing servo position (1-100)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Position updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Out of range (must be 1-100)")
+    })
+    @PutMapping("/door/closing-position")
+    public ResponseEntity<String> setDoorClosingPosition(
+            @Parameter(description = "Servo position 1-100", example = "5")
+            @RequestParam int position) {
+        configService.setDoorClosingPosition(position);
+        return ResponseEntity.ok("Door closing position set to " + position);
     }
 
     // Removed:

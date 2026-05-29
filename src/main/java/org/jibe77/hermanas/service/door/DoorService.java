@@ -8,6 +8,7 @@ import org.jibe77.hermanas.service.door.DoorNotClosedCorrectlyException;
 import org.jibe77.hermanas.service.door.servo.ServoMotorService;
 import org.jibe77.hermanas.service.door.upbutton.UpButtonService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.websocket.Appliance;
 import org.jibe77.hermanas.websocket.CoopStatus;
 import org.jibe77.hermanas.websocket.NotificationController;
@@ -45,14 +46,16 @@ public class DoorService {
     @Value("${door.opening.duration}")
     private int doorOpeningDuration;
 
-    @Value("${door.opening.position}")
-    private int doorOpeningPosition;
-
     @Value("${door.closing.duration}")
     private int doorClosingDuration;
 
-    @Value("${door.closing.position}")
-    private int doorClosingPosition;
+    // Servo positions are now sourced from ConfigService so an admin can recalibrate
+    // them at runtime from the diagnostic UI. The @Value-injected defaults in
+    // ConfigService still come from application.properties.
+    private final ConfigService configService;
+
+    private int doorOpeningPosition() { return configService.getDoorOpeningPosition(); }
+    private int doorClosingPosition() { return configService.getDoorClosingPosition(); }
 
     private LocalDateTime lastClosingTime;
     private LocalDateTime lastOpeningTime;
@@ -61,12 +64,14 @@ public class DoorService {
 
     public DoorService(ServoMotorService servo, BottomButtonService bottomButtonService,
                           UpButtonService upButtonService, SunTimeManager sunTimeManager,
-                          NotificationController notificationController) {
+                          NotificationController notificationController,
+                          ConfigService configService) {
         this.servo = servo;
         this.bottomButtonService = bottomButtonService;
         this.upButtonService = upButtonService;
         this.sunTimeManager = sunTimeManager;
         this.notificationController = notificationController;
+        this.configService = configService;
     }
 
     @PostConstruct
@@ -146,9 +151,9 @@ public class DoorService {
         if (force || !doorIsClosed()) {
             logger.info(
                     "Close the door moving servo clockwise with gear position {} for {} ms ...",
-                    doorClosingPosition * (addTenPercent ? 1.1 : 1),
+                    doorClosingPosition() * (addTenPercent ? 1.1 : 1),
                     doorClosingDuration * (addTenPercent ? 1.1 : 1));
-            servo.setPosition(doorClosingPosition, doorClosingDuration);
+            servo.setPosition(doorClosingPosition(), doorClosingDuration);
             this.lastClosingTime = LocalDateTime.now();
         } else {
             logger.info("Door is already closing, so the door won't be closed.");
@@ -183,10 +188,10 @@ public class DoorService {
     protected synchronized boolean openDoor(boolean force, boolean openingDoorAfterClosingProblem) {
         if (force || openingDoorAfterClosingProblem || !doorIsOpened()) {
             logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
-                    doorOpeningPosition,
+                    doorOpeningPosition(),
                     doorOpeningDuration);
             notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENING));
-            servo.setPosition(doorOpeningPosition, doorOpeningDuration);
+            servo.setPosition(doorOpeningPosition(), doorOpeningDuration);
             if (!openingDoorAfterClosingProblem) {
                 this.lastOpeningTime = LocalDateTime.now();
             }
@@ -253,17 +258,17 @@ public class DoorService {
     public synchronized void turnServoClockwise(Integer duration) {
         logger.info(
                 "Turn the servo clockwise with gear position {} for {} ms ...",
-                doorClosingPosition,
+                doorClosingPosition(),
                 duration);
-        servo.setPosition(doorClosingPosition, duration);
+        servo.setPosition(doorClosingPosition(), duration);
     }
 
     public synchronized void turnServoCounterClockwise(Integer duration) {
         logger.info(
                 "Turn the servo counter-clockwise with gear position {} for {} ms ...",
-                doorOpeningPosition,
+                doorOpeningPosition(),
                 duration);
-        servo.setPosition(doorOpeningPosition, duration);
+        servo.setPosition(doorOpeningPosition(), duration);
     }
 
     public synchronized void turnServo(int dutyCycle, int frequency, int duration) {

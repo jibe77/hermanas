@@ -36,7 +36,8 @@ class DoorControllerTest {
                 bottomButtonService,
                 upButtonService,
                 mock(SunTimeManager.class),
-                mock(NotificationController.class)
+                mock(NotificationController.class),
+                mock(org.jibe77.hermanas.service.config.ConfigService.class)
                 );
         assertEquals(DoorStatusEnum.UNDEFINED, doorService.statusInfo().getStatus());
 

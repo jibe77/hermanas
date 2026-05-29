@@ -17,6 +17,7 @@ export interface AllConfig {
     };
     sun_offsets: SunOffsets;
     music_settings: MusicSettings;
+    servo_positions: ServoPositions;
 }
 
 export interface SunOffsets {
@@ -27,6 +28,11 @@ export interface SunOffsets {
 
 export interface MusicSettings {
     volume_regular_percent: number;
+}
+
+export interface ServoPositions {
+    door_opening_position: number;
+    door_closing_position: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -64,6 +70,22 @@ export class ConfigService extends AbstractService {
     setMusicVolume(percent: number): Observable<string> {
         const params = new HttpParams().set('percent', String(percent));
         return this.http.put(`${this.domainBase}/config/music/volume`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setDoorOpeningPosition(position: number): Observable<string> {
+        const params = new HttpParams().set('position', String(position));
+        return this.http.put(`${this.domainBase}/config/door/opening-position`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setDoorClosingPosition(position: number): Observable<string> {
+        const params = new HttpParams().set('position', String(position));
+        return this.http.put(`${this.domainBase}/config/door/closing-position`, null, {
             params,
             responseType: 'text',
         });
