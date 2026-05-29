@@ -31,10 +31,11 @@
     {
       "name": "api-fresh",
       "urls": [
-        "https://poulailler57.ddns.net:5780/api/v1/door/**",
-        "https://poulailler57.ddns.net:5780/api/v1/light/**",
-        "https://poulailler57.ddns.net:5780/api/v1/music/**",
-        "https://poulailler57.ddns.net:5780/api/v1/fan/**"
+        "/api/v1/door/**",
+        "/api/v1/light/**",
+        "/api/v1/music/**",
+        "/api/v1/fan/**",
+        "/api/v1/sensor/**"
       ],
       "cacheConfig": {
         "maxSize": 20,
@@ -46,9 +47,10 @@
     {
       "name": "api-performance",
       "urls": [
-        "https://poulailler57.ddns.net:5780/api/v1/weather/**",
-        "https://poulailler57.ddns.net:5780/api/v1/energy/**",
-        "https://poulailler57.ddns.net:5780/api/v1/camera/**"
+        "/api/v1/scheduler/**",
+        "/api/v1/info/**",
+        "/api/v1/energy/**",
+        "/api/v1/camera/**"
       ],
       "cacheConfig": {
         "maxSize": 50,

@@ -33,9 +33,11 @@
                         "polyfills": "src/polyfills.ts",
                         "tsConfig": "tsconfig.app.json",
                         "assets": [
-                            "src/favicon.ico",
-                            "src/favicon144.png",
-                            "src/favicon512.png",
+                            {
+                                "glob": "**/*",
+                                "input": "public",
+                                "output": "/"
+                            },
                             "src/assets",
                             {
                                 "glob": "**/*",
