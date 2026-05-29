@@ -12,6 +12,7 @@ import {
     EnergyModeEnum,
     EnergyService,
 } from '@modules/energy/services/energy.service';
+import { ConfigService, SunOffsets } from '@modules/energy/services/config.service';
 import { forkJoin } from 'rxjs';
 import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
 import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
@@ -62,11 +63,19 @@ const MUSIC_MAX_MINUTES = 180;
 })
 export class ChartsComponent implements OnInit {
     private energyService = inject(EnergyService);
+    private configService = inject(ConfigService);
     private toast = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
 
     loading = true;
     saving = false;
+    savingSun = false;
+
+    sunOffsets: SunOffsets = {
+        light_on_minutes_before_sunset: 0,
+        door_close_minutes_after_sunset: 0,
+        door_open_minutes_after_sunrise: 0,
+    };
 
     /** Active mode reported by the backend (read-only display). */
     currentMode: EnergyModeEnum = 'REGULAR';
@@ -106,6 +115,7 @@ export class ChartsComponent implements OnInit {
             eco: this.energyService.getConfig('ECO'),
             regular: this.energyService.getConfig('REGULAR'),
             sunny: this.energyService.getConfig('SUNNY'),
+            config: this.configService.getAll(),
         }).subscribe({
             next: result => {
                 this.currentMode = result.current.currentMode;
@@ -119,6 +129,7 @@ export class ChartsComponent implements OnInit {
                     REGULAR: this.toMinutes(result.regular),
                     SUNNY: this.toMinutes(result.sunny),
                 };
+                this.sunOffsets = result.config.sun_offsets;
                 this.loading = false;
                 this.cdr.markForCheck();
             },
@@ -126,6 +137,38 @@ export class ChartsComponent implements OnInit {
                 this.loading = false;
                 this.toast.error(
                     err.error?.message || err.message || 'Cannot load energy state',
+                    `Energy — HTTP ${err.status}`
+                );
+                this.cdr.markForCheck();
+            },
+        });
+    }
+
+    saveSunOffsets(): void {
+        if (this.savingSun) {
+            return;
+        }
+        this.savingSun = true;
+        forkJoin({
+            lightOn: this.configService.setLightOnBeforeSunset(
+                this.sunOffsets.light_on_minutes_before_sunset
+            ),
+            doorClose: this.configService.setDoorCloseAfterSunset(
+                this.sunOffsets.door_close_minutes_after_sunset
+            ),
+            doorOpen: this.configService.setDoorOpenAfterSunrise(
+                this.sunOffsets.door_open_minutes_after_sunrise
+            ),
+        }).subscribe({
+            next: () => {
+                this.savingSun = false;
+                this.toast.success('Horaires solaires enregistrés', 'Énergie');
+                this.cdr.markForCheck();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.savingSun = false;
+                this.toast.error(
+                    err.error?.message || err.message || 'Save failed',
                     `Energy — HTTP ${err.status}`
                 );
                 this.cdr.markForCheck();

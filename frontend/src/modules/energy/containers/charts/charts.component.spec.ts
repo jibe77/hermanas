@@ -7,6 +7,7 @@ import {
     EnergyModeConfig,
     EnergyService,
 } from '@modules/energy/services/energy.service';
+import { ConfigService } from '@modules/energy/services/config.service';
 
 import { ChartsComponent } from './charts.component';
 
@@ -43,6 +44,12 @@ describe('Energy ChartsComponent', () => {
         setEcoForced: ReturnType<typeof vi.fn>;
     };
     let mockToastService: { success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
+    let mockConfigService: {
+        getAll: ReturnType<typeof vi.fn>;
+        setLightOnBeforeSunset: ReturnType<typeof vi.fn>;
+        setDoorCloseAfterSunset: ReturnType<typeof vi.fn>;
+        setDoorOpenAfterSunrise: ReturnType<typeof vi.fn>;
+    };
 
     beforeEach(() => {
         const currentMode: EnergyMode = {
@@ -65,10 +72,30 @@ describe('Energy ChartsComponent', () => {
 
         mockToastService = { success: vi.fn(), error: vi.fn() };
 
+        mockConfigService = {
+            getAll: vi.fn().mockReturnValue(
+                of({
+                    light_timers: {},
+                    fan_timers: {},
+                    music_timers: {},
+                    consumption_mode: { monthly_mapping: {}, eco_mode_forced: false },
+                    sun_offsets: {
+                        light_on_minutes_before_sunset: 15,
+                        door_close_minutes_after_sunset: 45,
+                        door_open_minutes_after_sunrise: 0,
+                    },
+                })
+            ),
+            setLightOnBeforeSunset: vi.fn().mockReturnValue(of('ok')),
+            setDoorCloseAfterSunset: vi.fn().mockReturnValue(of('ok')),
+            setDoorOpenAfterSunrise: vi.fn().mockReturnValue(of('ok')),
+        };
+
         TestBed.configureTestingModule({
             providers: [
                 ChartsComponent,
                 { provide: EnergyService, useValue: mockEnergyService },
+                { provide: ConfigService, useValue: mockConfigService },
                 { provide: ToastService, useValue: mockToastService },
                 {
                     provide: ChangeDetectorRef,

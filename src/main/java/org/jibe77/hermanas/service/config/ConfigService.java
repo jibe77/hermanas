@@ -80,6 +80,25 @@ public class ConfigService {
     @Value("${music.playlist.selected:}")
     String selectedPlaylist;
 
+    // ─── Sun-time offsets (minutes) ──────────────────────────────────────────────
+    // Three values that drift seasonally: when to open the door after sunrise, when
+    // to close it after sunset, and when to turn the light on before sunset. Stored
+    // in DB so the user can tune them without redeploying when daylight length changes.
+
+    @Value("${suntime.scheduler.light.on.time_before_sunset}")
+    private long lightOnTimeBeforeSunset;
+
+    @Value("${suntime.scheduler.door.close.time_after_sunset}")
+    private long doorCloseTimeAfterSunset;
+
+    @Value("${suntime.scheduler.door.open.time_after_sunrise}")
+    private long doorOpenTimeAfterSunrise;
+
+    // ─── Music volume (regular level, 0-100 percent) ──────────────────────────────
+
+    @Value("${music.volume.regular}")
+    private String musicVolumeRegular;
+
     ParameterRepository parameterRepository;
 
     @Autowired(required = false)
@@ -591,5 +610,108 @@ public class ConfigService {
     @CacheEvict(value = "selectedPlaylist")
     public void setSelectedPlaylist(String playlist) {
         setConfigValue("music.playlist.selected", playlist == null ? "" : playlist, null);
+    }
+
+    // ============================================================================
+    // Sun-time Offset Configuration
+    // ============================================================================
+    //
+    // Each setter evicts BOTH its own cache AND the matching SunTimeManager cache
+    // ("light-on" / "door-opening" / "door-closing") so the next call to
+    // getNextLightOnTime() etc. picks up the new offset on the very next tick.
+
+    /**
+     * Minutes to turn the light on before sunset. 0 means "exactly at sunset".
+     *
+     * @return minutes (database value or default from properties)
+     */
+    @Cacheable(value = "lightOnTimeBeforeSunset")
+    public long getLightOnTimeBeforeSunset() {
+        return getConfigValue("suntime.scheduler.light.on.time_before_sunset",
+                lightOnTimeBeforeSunset, Long::parseLong);
+    }
+
+    /**
+     * Sets the offset (minutes) at which the light is switched on before sunset.
+     *
+     * @param minutes non-negative number of minutes
+     * @throws IllegalArgumentException if minutes is negative
+     */
+    @CacheEvict(value = {"lightOnTimeBeforeSunset", "light-on"}, allEntries = true)
+    public void setLightOnTimeBeforeSunset(long minutes) {
+        setConfigValue("suntime.scheduler.light.on.time_before_sunset", minutes,
+                nonNegativeLongValidator());
+    }
+
+    /**
+     * Minutes after sunset at which the door is closed. Allows giving the chickens a
+     * grace period to wander back in before sealing the coop.
+     *
+     * @return minutes (database value or default from properties)
+     */
+    @Cacheable(value = "doorCloseTimeAfterSunset")
+    public long getDoorCloseTimeAfterSunset() {
+        return getConfigValue("suntime.scheduler.door.close.time_after_sunset",
+                doorCloseTimeAfterSunset, Long::parseLong);
+    }
+
+    /**
+     * Sets the door close offset (minutes) after sunset.
+     */
+    @CacheEvict(value = {"doorCloseTimeAfterSunset", "door-closing"}, allEntries = true)
+    public void setDoorCloseTimeAfterSunset(long minutes) {
+        setConfigValue("suntime.scheduler.door.close.time_after_sunset", minutes,
+                nonNegativeLongValidator());
+    }
+
+    /**
+     * Minutes after sunrise at which the door is opened. Lets the user delay the
+     * opening if the area is colder than expected at first light.
+     *
+     * @return minutes (database value or default from properties)
+     */
+    @Cacheable(value = "doorOpenTimeAfterSunrise")
+    public long getDoorOpenTimeAfterSunrise() {
+        return getConfigValue("suntime.scheduler.door.open.time_after_sunrise",
+                doorOpenTimeAfterSunrise, Long::parseLong);
+    }
+
+    /**
+     * Sets the door open offset (minutes) after sunrise.
+     */
+    @CacheEvict(value = {"doorOpenTimeAfterSunrise", "door-opening"}, allEntries = true)
+    public void setDoorOpenTimeAfterSunrise(long minutes) {
+        setConfigValue("suntime.scheduler.door.open.time_after_sunrise", minutes,
+                nonNegativeLongValidator());
+    }
+
+    // ============================================================================
+    // Music Volume
+    // ============================================================================
+
+    /**
+     * Regular music playback volume as a percent string (e.g. "78%"), the format
+     * {@code amixer} expects. The frontend handles the int ↔ "N%" conversion.
+     *
+     * @return volume string with trailing percent sign
+     */
+    @Cacheable(value = "musicVolumeRegular")
+    public String getMusicVolumeRegular() {
+        return getConfigValue("music.volume.regular", musicVolumeRegular, s -> s);
+    }
+
+    /**
+     * Updates the regular music volume. Accepts an integer percent 0-100 and
+     * persists it as "{n}%" so existing call sites keep working unchanged.
+     *
+     * @param percent 0-100
+     * @throws IllegalArgumentException if percent is out of bounds
+     */
+    @CacheEvict(value = "musicVolumeRegular")
+    public void setMusicVolumeRegular(int percent) {
+        if (percent < 0 || percent > 100) {
+            throw new IllegalArgumentException("Volume must be between 0 and 100, got " + percent);
+        }
+        setConfigValue("music.volume.regular", percent + "%", null);
     }
 }

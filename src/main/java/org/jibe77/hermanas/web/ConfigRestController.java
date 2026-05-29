@@ -108,6 +108,27 @@ public class ConfigRestController {
         // (machine.shutdown.*, wifi.disabled.*) are either unused or hidden safety knobs
         // that should not surface in the admin UI.
 
+        // Sun-time offsets
+        Map<String, Long> sun = new LinkedHashMap<>();
+        sun.put("light_on_minutes_before_sunset", configService.getLightOnTimeBeforeSunset());
+        sun.put("door_close_minutes_after_sunset", configService.getDoorCloseTimeAfterSunset());
+        sun.put("door_open_minutes_after_sunrise", configService.getDoorOpenTimeAfterSunrise());
+        config.put("sun_offsets", sun);
+
+        // Music volume — parse "N%" → int so the UI gets a clean number
+        String volumeRaw = configService.getMusicVolumeRegular();
+        int volumeInt = 0;
+        if (volumeRaw != null) {
+            try {
+                volumeInt = Integer.parseInt(volumeRaw.replace("%", "").trim());
+            } catch (NumberFormatException e) {
+                logger.warn("Cannot parse music volume '{}', returning 0.", volumeRaw);
+            }
+        }
+        Map<String, Object> musicSettings = new LinkedHashMap<>();
+        musicSettings.put("volume_regular_percent", volumeInt);
+        config.put("music_settings", musicSettings);
+
         return ResponseEntity.ok(config);
     }
 
@@ -256,6 +277,50 @@ public class ConfigRestController {
     public ResponseEntity<String> setForceEco(@RequestParam boolean force) {
         configService.setConsumptionModeEcoForce(force);
         return ResponseEntity.ok("Eco mode force set to " + force);
+    }
+
+    // ─── Sun-time offsets ───────────────────────────────────────────────────────
+
+    @Operation(summary = "Minutes the light turns on before sunset")
+    @PutMapping("/sun/light-on-before-sunset")
+    public ResponseEntity<String> setLightOnBeforeSunset(
+            @Parameter(description = "Minutes (0 = exactly at sunset)", example = "15")
+            @RequestParam long minutes) {
+        configService.setLightOnTimeBeforeSunset(minutes);
+        return ResponseEntity.ok("Light-on offset set to " + minutes + " minutes before sunset");
+    }
+
+    @Operation(summary = "Minutes the door closes after sunset")
+    @PutMapping("/sun/door-close-after-sunset")
+    public ResponseEntity<String> setDoorCloseAfterSunset(
+            @Parameter(description = "Minutes (0 = exactly at sunset)", example = "45")
+            @RequestParam long minutes) {
+        configService.setDoorCloseTimeAfterSunset(minutes);
+        return ResponseEntity.ok("Door close offset set to " + minutes + " minutes after sunset");
+    }
+
+    @Operation(summary = "Minutes the door opens after sunrise")
+    @PutMapping("/sun/door-open-after-sunrise")
+    public ResponseEntity<String> setDoorOpenAfterSunrise(
+            @Parameter(description = "Minutes (0 = exactly at sunrise)", example = "0")
+            @RequestParam long minutes) {
+        configService.setDoorOpenTimeAfterSunrise(minutes);
+        return ResponseEntity.ok("Door open offset set to " + minutes + " minutes after sunrise");
+    }
+
+    // ─── Music volume ───────────────────────────────────────────────────────────
+
+    @Operation(summary = "Update music regular volume (0-100)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Volume updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Out of range (must be 0-100)")
+    })
+    @PutMapping("/music/volume")
+    public ResponseEntity<String> setMusicVolume(
+            @Parameter(description = "Volume percent (0-100)", example = "78")
+            @RequestParam int percent) {
+        configService.setMusicVolumeRegular(percent);
+        return ResponseEntity.ok("Music volume set to " + percent + "%");
     }
 
     // Removed:

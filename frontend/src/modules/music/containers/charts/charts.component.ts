@@ -9,6 +9,7 @@ import {
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '@common/services';
 import { ChartsService } from '@modules/music/services/charts.service';
+import { ConfigService } from '@modules/energy/services/config.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
@@ -33,6 +34,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 })
 export class ChartsComponent implements OnInit, OnDestroy {
     private _chartsService = inject(ChartsService);
+    private _configService = inject(ConfigService);
     private _toastService = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
 
@@ -45,10 +47,66 @@ export class ChartsComponent implements OnInit, OnDestroy {
     loadingSongs = false;
     saving = false;
 
+    volumePercent = 78;
+    private persistedVolume = 78;
+    volumeSaving = false;
+
     private destroy$ = new Subject<void>();
 
     ngOnInit(): void {
         this.loadPlaylists();
+        this.loadVolume();
+    }
+
+    private loadVolume(): void {
+        this._configService
+            .getAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: cfg => {
+                    this.volumePercent = cfg.music_settings.volume_regular_percent;
+                    this.persistedVolume = this.volumePercent;
+                    this.cdr.detectChanges();
+                },
+                error: () => {
+                    // Silent: keep the default the input was rendered with.
+                },
+            });
+    }
+
+    onVolumeChange(): void {
+        // Just a hook to make the template binding feel responsive; the actual
+        // dirty check is the getter below.
+    }
+
+    get volumeDirty(): boolean {
+        return this.volumePercent !== this.persistedVolume;
+    }
+
+    saveVolume(): void {
+        if (!this.volumeDirty || this.volumeSaving) {
+            return;
+        }
+        this.volumeSaving = true;
+        this._configService
+            .setMusicVolume(this.volumePercent)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.persistedVolume = this.volumePercent;
+                    this.volumeSaving = false;
+                    this._toastService.success(`Volume réglé à ${this.volumePercent}%`, 'Music');
+                    this.cdr.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.volumeSaving = false;
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Cannot save volume',
+                        `Music — HTTP ${err.status}`
+                    );
+                    this.cdr.detectChanges();
+                },
+            });
     }
 
     ngOnDestroy(): void {

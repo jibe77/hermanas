@@ -106,7 +106,7 @@ public class MusicService {
         }
         try {
             stop();
-            setMusicLevel(volumeLevelRegular);
+            setMusicLevel(configService.getMusicVolumeRegular());
             List<String> listOfFile = getSongFiles(playlist);
             if (listOfFile.isEmpty()) {
                 logger.warn("No song found for playlist '{}', music will not start.", playlist);

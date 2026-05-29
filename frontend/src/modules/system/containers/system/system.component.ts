@@ -19,6 +19,7 @@ import { DiskUsage, DiskUsageService } from '@modules/system/services/disk-usage
 import { EmailTestService } from '@modules/system/services/email-test.service';
 import { SystemPowerService } from '@modules/system/services/system-power.service';
 import { VersionInfo, VersionService } from '@modules/system/services/version.service';
+import { ConfigService } from '@modules/energy/services/config.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
@@ -58,6 +59,7 @@ export class SystemComponent implements OnInit, OnDestroy {
     private _emailTestService = inject(EmailTestService);
     private _diskUsageService = inject(DiskUsageService);
     private _systemPowerService = inject(SystemPowerService);
+    private _configService = inject(ConfigService);
     private _userService = inject(UserService);
     private _toastService = inject(ToastService);
     private changeDetectorRef = inject(ChangeDetectorRef);
@@ -74,6 +76,7 @@ export class SystemComponent implements OnInit, OnDestroy {
     public isAdmin = false;
     public emailTestSending = false;
     public powerActionInFlight = false;
+    public configRefreshing = false;
 
     public diskUsage?: DiskUsage;
     public diskUsageError = false;
@@ -287,6 +290,40 @@ export class SystemComponent implements OnInit, OnDestroy {
                 this.changeDetectorRef.detectChanges();
             },
         });
+    }
+
+    /**
+     * Forces ConfigService to drop every Spring cache so the next read
+     * picks up changes made directly in the DB (e.g. someone edited a row
+     * via mysql cli). Idempotent and very cheap.
+     */
+    public refreshConfigCaches(): void {
+        if (this.configRefreshing) {
+            return;
+        }
+        this.configRefreshing = true;
+        this.changeDetectorRef.detectChanges();
+        this._configService
+            .refresh()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: response => {
+                    this.configRefreshing = false;
+                    this._toastService.success(
+                        $localize`:@@reloadConfigDone:${response.caches_cleared} caches vidés.`,
+                        'Configuration'
+                    );
+                    this.changeDetectorRef.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.configRefreshing = false;
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Refresh failed',
+                        `Configuration — HTTP ${err.status}`
+                    );
+                    this.changeDetectorRef.detectChanges();
+                },
+            });
     }
 
     public sendTestEmail(): void {

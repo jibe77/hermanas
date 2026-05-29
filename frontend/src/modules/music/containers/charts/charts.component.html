@@ -9,6 +9,38 @@
             <span i18n="@@musicInfo">This board allows you to configure the music parameters.</span>
         </div></sb-card
     >
+    <sb-card>
+        <div class="card-header">
+            <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon>
+            <span i18n="@@musicVolumeTitle">Volume</span>
+        </div>
+        <div class="card-body">
+            <label class="form-label small d-flex justify-content-between">
+                <span i18n="@@musicVolumeLabel">Volume habituel</span>
+                <span class="text-muted">{{ volumePercent }}%</span>
+            </label>
+            <div class="d-flex align-items-center gap-2">
+                <input
+                    type="range"
+                    class="form-range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    [(ngModel)]="volumePercent"
+                    (ngModelChange)="onVolumeChange()"
+                />
+                <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    (click)="saveVolume()"
+                    [disabled]="!volumeDirty || volumeSaving"
+                >
+                    <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                    <span i18n="@@save">Save</span>
+                </button>
+            </div>
+        </div>
+    </sb-card>
     <div class="row">
         <div class="col-lg-6">
             <sb-card
