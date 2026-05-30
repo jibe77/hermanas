@@ -70,12 +70,19 @@ export class ChartsComponent implements OnInit {
     loading = true;
     saving = false;
     savingSun = false;
+    savingDoorDurations = false;
 
     sunOffsets: SunOffsets = {
         light_on_minutes_before_sunset: 0,
         door_close_minutes_after_sunset: 0,
         door_open_minutes_after_sunrise: 0,
+        force_at_8: false,
     };
+
+    doorOpeningDuration = 10000;
+    doorClosingDuration = 2350;
+    emailEnabled = false;
+    weatherEnabled = false;
 
     /** Active mode reported by the backend (read-only display). */
     currentMode: EnergyModeEnum = 'REGULAR';
@@ -130,6 +137,10 @@ export class ChartsComponent implements OnInit {
                     SUNNY: this.toMinutes(result.sunny),
                 };
                 this.sunOffsets = result.config.sun_offsets;
+                this.doorOpeningDuration = result.config.servo_positions.door_opening_duration_ms;
+                this.doorClosingDuration = result.config.servo_positions.door_closing_duration_ms;
+                this.emailEnabled = result.config.notifications.email_enabled;
+                this.weatherEnabled = result.config.notifications.weather_enabled;
                 this.loading = false;
                 this.cdr.markForCheck();
             },
@@ -159,6 +170,7 @@ export class ChartsComponent implements OnInit {
             doorOpen: this.configService.setDoorOpenAfterSunrise(
                 this.sunOffsets.door_open_minutes_after_sunrise
             ),
+            forceAt8: this.configService.setSunriseForceAt8(this.sunOffsets.force_at_8),
         }).subscribe({
             next: () => {
                 this.savingSun = false;
@@ -173,6 +185,59 @@ export class ChartsComponent implements OnInit {
                 );
                 this.cdr.markForCheck();
             },
+        });
+    }
+
+    saveDoorDurations(): void {
+        if (this.savingDoorDurations) return;
+        this.savingDoorDurations = true;
+        forkJoin({
+            opening: this.configService.setDoorOpeningDuration(this.doorOpeningDuration),
+            closing: this.configService.setDoorClosingDuration(this.doorClosingDuration),
+        }).subscribe({
+            next: () => {
+                this.savingDoorDurations = false;
+                this.toast.success('Durées porte enregistrées', 'Énergie');
+                this.cdr.markForCheck();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.savingDoorDurations = false;
+                this.toast.error(
+                    err.error?.message || err.message || 'Save failed',
+                    `Energy — HTTP ${err.status}`
+                );
+                this.cdr.markForCheck();
+            },
+        });
+    }
+
+    onEmailToggle(): void {
+        this.configService.setEmailNotifications(this.emailEnabled).subscribe({
+            next: () =>
+                this.toast.success(
+                    this.emailEnabled ? 'Emails activés' : 'Emails désactivés',
+                    'Notifications'
+                ),
+            error: (err: HttpErrorResponse) =>
+                this.toast.error(
+                    err.error?.message || err.message || 'Save failed',
+                    `Notifications — HTTP ${err.status}`
+                ),
+        });
+    }
+
+    onWeatherToggle(): void {
+        this.configService.setWeatherInfo(this.weatherEnabled).subscribe({
+            next: () =>
+                this.toast.success(
+                    this.weatherEnabled ? 'Météo activée' : 'Météo désactivée',
+                    'Notifications'
+                ),
+            error: (err: HttpErrorResponse) =>
+                this.toast.error(
+                    err.error?.message || err.message || 'Save failed',
+                    `Notifications — HTTP ${err.status}`
+                ),
         });
     }
 

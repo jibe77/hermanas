@@ -24,8 +24,7 @@ public class WeatherClient {
     @Value("${weather.info.key}")
     public String weatherInfoKey;
 
-    @Value("${weather.info.enabled}")
-    public boolean weatherInfoEnabled;
+    private final org.jibe77.hermanas.service.config.ConfigService configService;
 
     public static final Double DEFAULT_VALUE_IF_DISABLED = -100d;
 
@@ -33,13 +32,15 @@ public class WeatherClient {
 
     final RestTemplateBuilder builder;
 
-    public WeatherClient(RestTemplateBuilder builder) {
+    public WeatherClient(RestTemplateBuilder builder,
+                         org.jibe77.hermanas.service.config.ConfigService configService) {
         this.builder = builder;
+        this.configService = configService;
     }
 
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getInfoFallback")
     public WeatherInfo getInfo() {
-        if (!weatherInfoEnabled) {
+        if (!configService.isWeatherInfoEnabled()) {
             return getDefaultWeatherInfo();
         }
         WeatherInfo weatherInfo = builder.build().getForObject(
@@ -66,6 +67,8 @@ public class WeatherClient {
     }
 
     void setWeatherInfoEnabled(boolean weatherInfoEnabled) {
-        this.weatherInfoEnabled = weatherInfoEnabled;
+        if (configService != null) {
+            configService.setWeatherInfoEnabled(weatherInfoEnabled);
+        }
     }
 }

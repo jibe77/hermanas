@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.scheduler.sun;
 
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.*;
 
@@ -14,6 +16,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(classes = {SunTimeUtils.class})
 class SunTimeUtilsTest {
+
+    @MockBean
+    ConfigService configService;
 
     @Value("${suntime.latitude}")
     public double latitude;

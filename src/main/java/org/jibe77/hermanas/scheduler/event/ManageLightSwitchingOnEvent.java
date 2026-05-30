@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.scheduler.event;
 
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.service.door.DoorService;
 import org.jibe77.hermanas.service.fan.FanService;
 import org.jibe77.hermanas.service.light.LightService;
@@ -8,7 +9,6 @@ import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.service.music.MusicService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -28,21 +28,22 @@ public class ManageLightSwitchingOnEvent {
 
     MusicService musicService;
 
-    @Value("${play.song.at.sunset}")
-    private boolean playSongAtSunset;
+    ConfigService configService;
 
     private static final Logger logger = LoggerFactory.getLogger(ManageLightSwitchingOnEvent.class);
 
     public ManageLightSwitchingOnEvent(SunTimeManager sunTimeManager, LightService lightService,
                                        DoorService doorService, FanService fanService,
                                        ConsumptionModeController consumptionModeController,
-                                       MusicService musicService) {
+                                       MusicService musicService,
+                                       ConfigService configService) {
         this.sunTimeManager = sunTimeManager;
         this.lightService = lightService;
         this.doorService = doorService;
         this.fanService = fanService;
         this.consumptionModeController = consumptionModeController;
         this.musicService = musicService;
+        this.configService = configService;
     }
 
     public void manageLightSwitchingOnEvent(LocalDateTime currentTime) {
@@ -60,15 +61,11 @@ public class ManageLightSwitchingOnEvent {
             if (!consumptionModeController.isEcoMode(LocalDateTime.now())) {
                 fanService.switchOn();
             }
-            if (playSongAtSunset) {
+            if (configService.isSongAtSunsetEnabled()) {
                 musicService.playMusicRandomly();
             }
             sunTimeManager.reloadLightOnTime();
         }
-    }
-
-    protected void setPlaySongAtSunset(boolean playSongAtSunset) {
-        this.playSongAtSunset = playSongAtSunset;
     }
 
 }

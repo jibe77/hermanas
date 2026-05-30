@@ -51,10 +51,12 @@ class ManageDoorOpeningTest {
         wifiService = mock(WifiService.class);
         notificationService = mock(NotificationService.class);
         consumptionModeController = mock(ConsumptionModeController.class);
+        org.jibe77.hermanas.service.config.ConfigService configService =
+                mock(org.jibe77.hermanas.service.config.ConfigService.class);
 
         manageDoorOpeningEvent = new ManageDoorOpeningEvent(
                 sunTimeManager, cameraService, doorService, musicService, fanService, wifiService,
-                notificationService, consumptionModeController);
+                notificationService, consumptionModeController, configService);
     }
 
     @Test

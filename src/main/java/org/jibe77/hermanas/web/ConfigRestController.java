@@ -108,8 +108,8 @@ public class ConfigRestController {
         // (machine.shutdown.*, wifi.disabled.*) are either unused or hidden safety knobs
         // that should not surface in the admin UI.
 
-        // Sun-time offsets
-        Map<String, Long> sun = new LinkedHashMap<>();
+        // Sun-time offsets + force-at-8
+        Map<String, Object> sun = new LinkedHashMap<>();
         sun.put("light_on_minutes_before_sunset", configService.getLightOnTimeBeforeSunset());
         sun.put("door_close_minutes_after_sunset", configService.getDoorCloseTimeAfterSunset());
         sun.put("door_open_minutes_after_sunrise", configService.getDoorOpenTimeAfterSunrise());
@@ -129,11 +129,34 @@ public class ConfigRestController {
         musicSettings.put("volume_regular_percent", volumeInt);
         config.put("music_settings", musicSettings);
 
-        // Servo calibration positions
+        // Servo calibration positions + durations
         Map<String, Integer> servo = new LinkedHashMap<>();
         servo.put("door_opening_position", configService.getDoorOpeningPosition());
         servo.put("door_closing_position", configService.getDoorClosingPosition());
+        servo.put("door_opening_duration_ms", configService.getDoorOpeningDuration());
+        servo.put("door_closing_duration_ms", configService.getDoorClosingDuration());
         config.put("servo_positions", servo);
+
+        // Audio toggles
+        Map<String, Boolean> audio = new LinkedHashMap<>();
+        audio.put("cocorico_at_sunrise", configService.isCocoricoAtSunriseEnabled());
+        audio.put("song_at_sunset", configService.isSongAtSunsetEnabled());
+        config.put("audio_toggles", audio);
+
+        // Notification toggles
+        Map<String, Boolean> notifications = new LinkedHashMap<>();
+        notifications.put("email_enabled", configService.isEmailNotificationEnabled());
+        notifications.put("weather_enabled", configService.isWeatherInfoEnabled());
+        config.put("notifications", notifications);
+
+        // Sun schedule extras (added to the sun_offsets map declared earlier).
+        sun.put("force_at_8", configService.isSunriseForceAt8());
+
+        // Camera image quality
+        Map<String, Integer> camera = new LinkedHashMap<>();
+        camera.put("brightness", configService.getCameraBrightness());
+        camera.put("rotation", configService.getCameraRotation());
+        config.put("camera_settings", camera);
 
         return ResponseEntity.ok(config);
     }
@@ -355,6 +378,94 @@ public class ConfigRestController {
             @RequestParam int position) {
         configService.setDoorClosingPosition(position);
         return ResponseEntity.ok("Door closing position set to " + position);
+    }
+
+    @Operation(summary = "Update door opening duration (1-30000 ms)")
+    @PutMapping("/door/opening-duration")
+    public ResponseEntity<String> setDoorOpeningDuration(
+            @Parameter(description = "Duration in milliseconds 1-30000", example = "10000")
+            @RequestParam int durationMs) {
+        configService.setDoorOpeningDuration(durationMs);
+        return ResponseEntity.ok("Door opening duration set to " + durationMs + " ms");
+    }
+
+    @Operation(summary = "Update door closing duration (1-30000 ms)")
+    @PutMapping("/door/closing-duration")
+    public ResponseEntity<String> setDoorClosingDuration(
+            @Parameter(description = "Duration in milliseconds 1-30000", example = "2350")
+            @RequestParam int durationMs) {
+        configService.setDoorClosingDuration(durationMs);
+        return ResponseEntity.ok("Door closing duration set to " + durationMs + " ms");
+    }
+
+    // ─── Audio toggles ──────────────────────────────────────────────────────────
+
+    @Operation(summary = "Enable/disable cocorico at sunrise")
+    @PutMapping("/audio/cocorico-at-sunrise")
+    public ResponseEntity<String> setCocoricoAtSunrise(@RequestParam boolean enabled) {
+        configService.setCocoricoAtSunriseEnabled(enabled);
+        return ResponseEntity.ok("Cocorico at sunrise " + (enabled ? "enabled" : "disabled"));
+    }
+
+    @Operation(summary = "Enable/disable song at sunset")
+    @PutMapping("/audio/song-at-sunset")
+    public ResponseEntity<String> setSongAtSunset(@RequestParam boolean enabled) {
+        configService.setSongAtSunsetEnabled(enabled);
+        return ResponseEntity.ok("Song at sunset " + (enabled ? "enabled" : "disabled"));
+    }
+
+    // ─── Notification toggles ───────────────────────────────────────────────────
+
+    @Operation(summary = "Enable/disable email notifications")
+    @PutMapping("/notifications/email")
+    public ResponseEntity<String> setEmailNotifications(@RequestParam boolean enabled) {
+        configService.setEmailNotificationEnabled(enabled);
+        return ResponseEntity.ok("Email notifications " + (enabled ? "enabled" : "disabled"));
+    }
+
+    @Operation(summary = "Enable/disable weather info fetching")
+    @PutMapping("/notifications/weather")
+    public ResponseEntity<String> setWeatherInfo(@RequestParam boolean enabled) {
+        configService.setWeatherInfoEnabled(enabled);
+        return ResponseEntity.ok("Weather info " + (enabled ? "enabled" : "disabled"));
+    }
+
+    // ─── Sun schedule toggle ───────────────────────────────────────────────────
+
+    @Operation(summary = "Force door opening at 8 AM (clamps sunrise)")
+    @PutMapping("/sun/force-at-8")
+    public ResponseEntity<String> setSunriseForceAt8(@RequestParam boolean force) {
+        configService.setSunriseForceAt8(force);
+        return ResponseEntity.ok("Sunrise force-at-8 " + (force ? "enabled" : "disabled"));
+    }
+
+    // ─── Camera (changes take effect after app reboot) ─────────────────────────
+
+    @Operation(
+            summary = "Update camera brightness (0-100)",
+            description = "Takes effect on next app reboot — the picam config bean is "
+                        + "built once at startup."
+    )
+    @PutMapping("/camera/brightness")
+    public ResponseEntity<String> setCameraBrightness(
+            @Parameter(description = "Brightness 0-100", example = "60")
+            @RequestParam int brightness) {
+        configService.setCameraBrightness(brightness);
+        return ResponseEntity.ok("Camera brightness set to " + brightness
+                + " (reboot required to apply)");
+    }
+
+    @Operation(
+            summary = "Update camera rotation (0/90/180/270)",
+            description = "Takes effect on next app reboot."
+    )
+    @PutMapping("/camera/rotation")
+    public ResponseEntity<String> setCameraRotation(
+            @Parameter(description = "Rotation 0/90/180/270", example = "180")
+            @RequestParam int degrees) {
+        configService.setCameraRotation(degrees);
+        return ResponseEntity.ok("Camera rotation set to " + degrees
+                + "° (reboot required to apply)");
     }
 
     // Removed:

@@ -12,6 +12,62 @@
         </div>
     </sb-card>
 
+    @if (isAdmin) {
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'edit']"></fa-icon>
+                <span i18n="@@cameraSettingsTitle">Réglages caméra</span>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted" i18n="@@cameraSettingsHelp">
+                    Les changements prennent effet au prochain redémarrage de l'application.
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <label class="form-label small d-flex justify-content-between">
+                            <span i18n="@@cameraBrightness">Luminosité</span>
+                            <span class="text-muted">{{ cameraBrightness }}</span>
+                        </label>
+                        <input
+                            type="range"
+                            class="form-range"
+                            min="0"
+                            max="100"
+                            step="1"
+                            [(ngModel)]="cameraBrightness"
+                        />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="cameraRotation" class="form-label small" i18n="@@cameraRotation"
+                            >Rotation (°)</label
+                        >
+                        <select
+                            id="cameraRotation"
+                            class="form-select form-select-sm"
+                            [(ngModel)]="cameraRotation"
+                        >
+                            <option [ngValue]="0">0°</option>
+                            <option [ngValue]="90">90°</option>
+                            <option [ngValue]="180">180°</option>
+                            <option [ngValue]="270">270°</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm w-100"
+                            (click)="saveCameraSettings()"
+                            [disabled]="cameraSaving"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                            <span i18n="@@save">Save</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </sb-card>
+    }
+
     <sb-card>
         <div class="card-header">
             <fa-icon class="me-1" [icon]="['fas', 'camera']"></fa-icon>

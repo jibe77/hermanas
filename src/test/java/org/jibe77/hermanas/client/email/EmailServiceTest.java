@@ -24,6 +24,22 @@ class EmailServiceTest {
     @MockBean
     JavaMailSender javaMailSender;
 
+    @MockBean
+    org.jibe77.hermanas.service.config.ConfigService configService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void wireConfigService() {
+        // Make the mock honour setEnabled() so the existing test pattern keeps working:
+        // the test calls emailService.setEnabled(true), which now routes to configService,
+        // and emailService.isEnabled() in turn reads back from configService.
+        Mockito.doAnswer(inv -> {
+                    Mockito.when(configService.isEmailNotificationEnabled())
+                            .thenReturn(inv.getArgument(0, Boolean.class));
+                    return null;
+                })
+                .when(configService).setEmailNotificationEnabled(Mockito.anyBoolean());
+    }
+
     @Test
     void testEmailEnabled() {
         emailService.setEnabled(true);

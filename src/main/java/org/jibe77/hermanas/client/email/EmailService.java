@@ -41,16 +41,22 @@ public class EmailService {
     @Value("${email.notification.from}")
     private String emailNotificationFrom;
 
-    @Value("${email.notification.enabled}")
-    private boolean enabled;
+    private final org.jibe77.hermanas.service.config.ConfigService configService;
+
+    /** Reads through configService so an admin can toggle email notifications at runtime. */
+    private boolean isEnabled() {
+        return configService == null ? false : configService.isEmailNotificationEnabled();
+    }
 
     @Autowired(required = false)
     private HermanasUserRepository userRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender,
+                        org.jibe77.hermanas.service.config.ConfigService configService) {
         this.mailSender = mailSender;
+        this.configService = configService;
     }
 
     public void sendMail(String subject, String body, Optional<File>... filesToAttach)
@@ -66,7 +72,7 @@ public class EmailService {
     @SafeVarargs
     public final void sendMailTo(List<String> recipients, String subject, String body,
                                  Optional<File>... filesToAttach) {
-        if (enabled) {
+        if (isEnabled()) {
             if (recipients == null || recipients.isEmpty()) {
                 logger.info("No recipients for mail '{}' — skipping.", subject);
                 return;
@@ -171,7 +177,7 @@ public class EmailService {
      * @throws MailException if the underlying SMTP send fails.
      */
     public void sendTestMail(Optional<File> picture) {
-        if (!enabled) {
+        if (!isEnabled()) {
             throw new IllegalStateException("Email notifications are disabled (email.notification.enabled=false).");
         }
         MimeMessagePreparator preparator = mimeMessage -> {
@@ -205,7 +211,13 @@ public class EmailService {
         sendingQueue.clear();
     }
 
+    /**
+     * Test-only knob: forwards to ConfigService so existing tests that flip the
+     * flag still work without touching the database directly.
+     */
     void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+        if (configService != null) {
+            configService.setEmailNotificationEnabled(enabled);
+        }
     }
 }

@@ -244,6 +244,22 @@
                             [(ngModel)]="sunOffsets.light_on_minutes_before_sunset"
                         />
                     </div>
+                    <div class="col-md-12">
+                        <div class="form-check form-switch">
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="forceAt8Toggle"
+                                [(ngModel)]="sunOffsets.force_at_8"
+                            />
+                            <label
+                                class="form-check-label"
+                                for="forceAt8Toggle"
+                                i18n="@@sunForceAt8Label"
+                                >Ne pas ouvrir avant 8h du matin (été)</label
+                            >
+                        </div>
+                    </div>
                 </div>
                 <div class="mt-3 text-end">
                     <button
@@ -261,6 +277,107 @@
                         <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
                         <span i18n="@@save">Save</span>
                     </button>
+                </div>
+            </div>
+        </sb-card>
+
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'door-open']"></fa-icon>
+                <span i18n="@@doorDurationsTitle">Durées d'ouverture / fermeture porte</span>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted" i18n="@@doorDurationsHelp">
+                    Durée pendant laquelle le servomoteur tourne. Une valeur trop courte risque de
+                    ne pas atteindre la fin de course; trop longue, elle force la mécanique.
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label
+                            for="doorOpeningDuration"
+                            class="form-label small d-flex justify-content-between"
+                        >
+                            <span i18n="@@doorOpeningDurationLabel">Ouverture (ms)</span>
+                            <span class="text-muted">{{ doorOpeningDuration }}</span>
+                        </label>
+                        <input
+                            id="doorOpeningDuration"
+                            type="number"
+                            min="1"
+                            max="30000"
+                            step="100"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="doorOpeningDuration"
+                        />
+                    </div>
+                    <div class="col-md-5">
+                        <label
+                            for="doorClosingDuration"
+                            class="form-label small d-flex justify-content-between"
+                        >
+                            <span i18n="@@doorClosingDurationLabel">Fermeture (ms)</span>
+                            <span class="text-muted">{{ doorClosingDuration }}</span>
+                        </label>
+                        <input
+                            id="doorClosingDuration"
+                            type="number"
+                            min="1"
+                            max="30000"
+                            step="100"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="doorClosingDuration"
+                        />
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm w-100"
+                            (click)="saveDoorDurations()"
+                            [disabled]="savingDoorDurations"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                            <span i18n="@@save">Save</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </sb-card>
+
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'envelope-open-text']"></fa-icon>
+                <span i18n="@@notificationTogglesTitle">Notifications & services externes</span>
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch">
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="emailToggle"
+                        [(ngModel)]="emailEnabled"
+                        (ngModelChange)="onEmailToggle()"
+                    />
+                    <label
+                        class="form-check-label"
+                        for="emailToggle"
+                        i18n="@@notificationEmailLabel"
+                        >Envoyer les notifications par email</label
+                    >
+                </div>
+                <div class="form-check form-switch mt-2">
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="weatherToggle"
+                        [(ngModel)]="weatherEnabled"
+                        (ngModelChange)="onWeatherToggle()"
+                    />
+                    <label
+                        class="form-check-label"
+                        for="weatherToggle"
+                        i18n="@@notificationWeatherLabel"
+                        >Récupérer les données météo OpenWeather</label
+                    >
                 </div>
             </div>
         </sb-card>

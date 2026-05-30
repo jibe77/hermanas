@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.scheduler.sun;
 
 import ca.rmen.sunrisesunset.SunriseSunset;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,10 +23,13 @@ public class SunTimeUtils {
     @Value("${suntime.longitude}")
     public double longitude;
 
-    @Value("${suntime.sunrise.force_at_8:false}")
-    public boolean forceAt8;
+    private final ConfigService configService;
 
     private static final Logger logger = LoggerFactory.getLogger(SunTimeUtils.class);
+
+    public SunTimeUtils(ConfigService configService) {
+        this.configService = configService;
+    }
 
     @PostConstruct
     private void init() {
@@ -91,7 +95,7 @@ public class SunTimeUtils {
 
     private LocalDateTime computeCurrentDaySunrise(LocalDateTime date) {
         LocalDateTime sunrise = calendarToLocalDateTime(computeCurrentDay(date)[0]);
-        if (forceAt8) {
+        if (configService.isSunriseForceAt8()) {
             return sunrise
                     .withHour(8)
                     .withMinute(0)

@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.scheduler.event;
 
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.service.door.DoorService;
 import org.jibe77.hermanas.service.fan.FanService;
 import org.jibe77.hermanas.service.light.LightService;
@@ -25,6 +26,7 @@ class ManageLightSwitchOnEventTest {
     FanService fanService;
     ConsumptionModeController consumptionMode;
     MusicService musicService;
+    ConfigService configService;
 
 
     @BeforeEach
@@ -38,9 +40,11 @@ class ManageLightSwitchOnEventTest {
         fanService = mock(FanService.class);
         consumptionMode = mock(ConsumptionModeController.class);
         musicService = mock(MusicService.class);
+        configService = mock(ConfigService.class);
 
         manageLightSwitchingOnEvent = new ManageLightSwitchingOnEvent(
-                sunTimeManager, lightService, doorService, fanService, consumptionMode, musicService);
+                sunTimeManager, lightService, doorService, fanService, consumptionMode, musicService,
+                configService);
     }
 
     @Test
@@ -48,7 +52,7 @@ class ManageLightSwitchOnEventTest {
         when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInThePast);
-        manageLightSwitchingOnEvent.setPlaySongAtSunset(true);
+        when(configService.isSongAtSunsetEnabled()).thenReturn(true);
         manageLightSwitchingOnEvent.manageLightSwitchingOnEvent(LocalDateTime.now());
         verify(lightService, times(1)).switchOn();
         verify(musicService, times(1)).playMusicRandomly();

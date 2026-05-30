@@ -1,10 +1,10 @@
 package org.jibe77.hermanas.client.email;
 
 import org.jibe77.hermanas.service.camera.CameraService;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +17,12 @@ import java.util.Optional;
 public class NotificationService {
 
     public static final String RETURN_TO_NEXT_LINE = "\r\n";
-    @Value("${email.notification.enabled}")
-    private boolean enabled;
+
+    private final ConfigService configService;
+
+    private boolean isEnabled() {
+        return configService != null && configService.isEmailNotificationEnabled();
+    }
 
     private CameraService cameraService;
 
@@ -31,15 +35,17 @@ public class NotificationService {
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     public NotificationService(EmailService emailService, CameraService cameraService,
-                               MessageSource messageSource, SunTimeManager sunTimeManager) {
+                               MessageSource messageSource, SunTimeManager sunTimeManager,
+                               ConfigService configService) {
         this.cameraService = cameraService;
         this.emailService = emailService;
         this.messageSource = messageSource;
         this.sunTimeManager = sunTimeManager;
+        this.configService = configService;
     }
 
     public void doorOpeningEvent(boolean isOpenedCorrectly, Optional<File> picBeforeOpening) {
-        if (enabled) {
+        if (isEnabled()) {
             // prepare title and message
             String title = messageSource.getMessage(
                     isOpenedCorrectly ? "event.mail.opening.ok.title" : "event.mail.opening.ko.title",
@@ -84,7 +90,7 @@ public class NotificationService {
     }
 
     public void doorClosingEvent(boolean isClosedCorrectly) {
-        if (enabled) {
+        if (isEnabled()) {
             // prepare title and message
             String title = messageSource.getMessage(
                     isClosedCorrectly ? "event.mail.closing.ok.title" : "event.mail.closing.ko.title",

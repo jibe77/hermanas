@@ -2,6 +2,7 @@ package org.jibe77.hermanas.scheduler.event;
 
 import org.jibe77.hermanas.client.email.NotificationService;
 import org.jibe77.hermanas.service.camera.CameraService;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.service.door.DoorService;
 import org.jibe77.hermanas.service.energy.WifiService;
 import org.jibe77.hermanas.service.fan.FanService;
@@ -36,8 +37,7 @@ public class ManageDoorOpeningEvent {
 
     ConsumptionModeController consumptionModeController;
 
-    @Value("${play.cocorico.at.sunrise.enabled}")
-    private boolean cocoricoAtSunriseEnabled;
+    ConfigService configService;
 
     private static final Logger logger = LoggerFactory.getLogger(ManageDoorOpeningEvent.class);
 
@@ -45,7 +45,8 @@ public class ManageDoorOpeningEvent {
                                   DoorService doorService, MusicService musicService,
                                   FanService fanService, WifiService wifiService,
                                   NotificationService notificationService,
-                                  ConsumptionModeController consumptionModeController) {
+                                  ConsumptionModeController consumptionModeController,
+                                  ConfigService configService) {
         this.sunTimeManager = sunTimeManager;
         this.cameraService = cameraService;
         this.doorService = doorService;
@@ -54,13 +55,14 @@ public class ManageDoorOpeningEvent {
         this.wifiService = wifiService;
         this.notificationService = notificationService;
         this.consumptionModeController = consumptionModeController;
+        this.configService = configService;
     }
 
     public void manageDoorOpeningEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
             if (!doorService.doorIsOpened()) {
                 logger.info("door opening event is starting now.");
-                if (cocoricoAtSunriseEnabled && !consumptionModeController.isEcoMode(LocalDateTime.now())) {
+                if (configService.isCocoricoAtSunriseEnabled() && !consumptionModeController.isEcoMode(LocalDateTime.now())) {
                     musicService.cocorico();
                 }
                 wifiService.turnOn();

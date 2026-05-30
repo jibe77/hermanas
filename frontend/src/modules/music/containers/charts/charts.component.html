@@ -9,6 +9,43 @@
             <span i18n="@@musicInfo">This board allows you to configure the music parameters.</span>
         </div></sb-card
     >
+    @if (isAdmin) {
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon>
+                <span i18n="@@musicAudioToggles">Sons automatiques</span>
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch">
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="cocoricoToggle"
+                        [(ngModel)]="cocoricoEnabled"
+                        (ngModelChange)="onCocoricoToggle()"
+                    />
+                    <label class="form-check-label" for="cocoricoToggle" i18n="@@musicCocoricoLabel"
+                        >Jouer cocorico au lever du soleil</label
+                    >
+                </div>
+                <div class="form-check form-switch mt-2">
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="songAtSunsetToggle"
+                        [(ngModel)]="songAtSunsetEnabled"
+                        (ngModelChange)="onSongAtSunsetToggle()"
+                    />
+                    <label
+                        class="form-check-label"
+                        for="songAtSunsetToggle"
+                        i18n="@@musicSongAtSunsetLabel"
+                        >Jouer une chanson au coucher du soleil</label
+                    >
+                </div>
+            </div>
+        </sb-card>
+    }
     <sb-card>
         <div class="card-header">
             <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon>

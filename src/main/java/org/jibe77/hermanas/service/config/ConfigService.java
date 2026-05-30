@@ -111,6 +111,41 @@ public class ConfigService {
     @Value("${door.closing.position}")
     private int doorClosingPosition;
 
+    @Value("${door.opening.duration}")
+    private int doorOpeningDuration;
+
+    @Value("${door.closing.duration}")
+    private int doorClosingDuration;
+
+    // ─── Audio toggles ────────────────────────────────────────────────────────────
+
+    @Value("${play.cocorico.at.sunrise.enabled}")
+    private boolean cocoricoAtSunriseEnabled;
+
+    @Value("${play.song.at.sunset}")
+    private boolean songAtSunsetEnabled;
+
+    // ─── Notification toggles ────────────────────────────────────────────────────
+
+    @Value("${email.notification.enabled}")
+    private boolean emailNotificationEnabled;
+
+    @Value("${weather.info.enabled}")
+    private boolean weatherInfoEnabled;
+
+    // ─── Sun schedule ────────────────────────────────────────────────────────────
+
+    @Value("${suntime.sunrise.force_at_8}")
+    private boolean sunriseForceAt8;
+
+    // ─── Camera image quality ─────────────────────────────────────────────────────
+
+    @Value("${camera.brightness}")
+    private int cameraBrightness;
+
+    @Value("${camera.rotation}")
+    private int cameraRotation;
+
     ParameterRepository parameterRepository;
 
     @Autowired(required = false)
@@ -761,5 +796,143 @@ public class ConfigService {
             throw new IllegalArgumentException("Servo position must be 1..100, got " + position);
         }
         setConfigValue("door.closing.position", position, null);
+    }
+
+    // ============================================================================
+    // Door Opening/Closing Duration (ms)
+    // ============================================================================
+    //
+    // Wall-clock time the servo is driven for. Tuning higher gives a slower but
+    // gentler movement; tuning lower risks the door not fully reaching its
+    // physical end-stop. 1..30000 ms validation matches the servo controller's
+    // safety guard.
+
+    @Cacheable(value = "doorOpeningDuration")
+    public int getDoorOpeningDuration() {
+        return getConfigValue("door.opening.duration", doorOpeningDuration, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "doorOpeningDuration")
+    public void setDoorOpeningDuration(int durationMs) {
+        if (durationMs < 1 || durationMs > 30000) {
+            throw new IllegalArgumentException("Duration must be 1..30000 ms, got " + durationMs);
+        }
+        setConfigValue("door.opening.duration", durationMs, null);
+    }
+
+    @Cacheable(value = "doorClosingDuration")
+    public int getDoorClosingDuration() {
+        return getConfigValue("door.closing.duration", doorClosingDuration, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "doorClosingDuration")
+    public void setDoorClosingDuration(int durationMs) {
+        if (durationMs < 1 || durationMs > 30000) {
+            throw new IllegalArgumentException("Duration must be 1..30000 ms, got " + durationMs);
+        }
+        setConfigValue("door.closing.duration", durationMs, null);
+    }
+
+    // ============================================================================
+    // Audio Toggles
+    // ============================================================================
+
+    @Cacheable(value = "cocoricoAtSunriseEnabled")
+    public boolean isCocoricoAtSunriseEnabled() {
+        return getConfigValue("play.cocorico.at.sunrise.enabled", cocoricoAtSunriseEnabled,
+                Boolean::valueOf);
+    }
+
+    @CacheEvict(value = "cocoricoAtSunriseEnabled")
+    public void setCocoricoAtSunriseEnabled(boolean enabled) {
+        setConfigValue("play.cocorico.at.sunrise.enabled", enabled, null);
+    }
+
+    @Cacheable(value = "songAtSunsetEnabled")
+    public boolean isSongAtSunsetEnabled() {
+        return getConfigValue("play.song.at.sunset", songAtSunsetEnabled, Boolean::valueOf);
+    }
+
+    @CacheEvict(value = "songAtSunsetEnabled")
+    public void setSongAtSunsetEnabled(boolean enabled) {
+        setConfigValue("play.song.at.sunset", enabled, null);
+    }
+
+    // ============================================================================
+    // Notification Toggles
+    // ============================================================================
+
+    @Cacheable(value = "emailNotificationEnabled")
+    public boolean isEmailNotificationEnabled() {
+        return getConfigValue("email.notification.enabled", emailNotificationEnabled,
+                Boolean::valueOf);
+    }
+
+    @CacheEvict(value = "emailNotificationEnabled")
+    public void setEmailNotificationEnabled(boolean enabled) {
+        setConfigValue("email.notification.enabled", enabled, null);
+    }
+
+    @Cacheable(value = "weatherInfoEnabled")
+    public boolean isWeatherInfoEnabled() {
+        return getConfigValue("weather.info.enabled", weatherInfoEnabled, Boolean::valueOf);
+    }
+
+    @CacheEvict(value = "weatherInfoEnabled")
+    public void setWeatherInfoEnabled(boolean enabled) {
+        setConfigValue("weather.info.enabled", enabled, null);
+    }
+
+    // ============================================================================
+    // Sun Schedule Toggle
+    // ============================================================================
+    //
+    // When true, the door opening time is clamped to 8:00 AM even if the real
+    // sunrise is earlier — handy in summer so the chickens don't wake the
+    // neighbours at 5 AM.
+
+    @Cacheable(value = "sunriseForceAt8")
+    public boolean isSunriseForceAt8() {
+        return getConfigValue("suntime.sunrise.force_at_8", sunriseForceAt8, Boolean::valueOf);
+    }
+
+    @CacheEvict(value = {"sunriseForceAt8", "door-opening", "light-on"}, allEntries = true)
+    public void setSunriseForceAt8(boolean force) {
+        setConfigValue("suntime.sunrise.force_at_8", force, null);
+    }
+
+    // ============================================================================
+    // Camera Image Quality
+    // ============================================================================
+
+    @Cacheable(value = "cameraBrightness")
+    public int getCameraBrightness() {
+        return getConfigValue("camera.brightness", cameraBrightness, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraBrightness")
+    public void setCameraBrightness(int brightness) {
+        if (brightness < 0 || brightness > 100) {
+            throw new IllegalArgumentException("Brightness must be 0..100, got " + brightness);
+        }
+        setConfigValue("camera.brightness", brightness, null);
+    }
+
+    /**
+     * Camera rotation in degrees, restricted to the four right-angle values that
+     * the underlying camera library actually supports.
+     */
+    @Cacheable(value = "cameraRotation")
+    public int getCameraRotation() {
+        return getConfigValue("camera.rotation", cameraRotation, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraRotation")
+    public void setCameraRotation(int degrees) {
+        if (degrees != 0 && degrees != 90 && degrees != 180 && degrees != 270) {
+            throw new IllegalArgumentException(
+                    "Rotation must be one of 0/90/180/270, got " + degrees);
+        }
+        setConfigValue("camera.rotation", degrees, null);
     }
 }

@@ -43,19 +43,15 @@ public class DoorService {
 
     private static final Logger logger = LoggerFactory.getLogger(DoorService.class);
 
-    @Value("${door.opening.duration}")
-    private int doorOpeningDuration;
-
-    @Value("${door.closing.duration}")
-    private int doorClosingDuration;
-
-    // Servo positions are now sourced from ConfigService so an admin can recalibrate
-    // them at runtime from the diagnostic UI. The @Value-injected defaults in
-    // ConfigService still come from application.properties.
+    // Servo positions AND durations are sourced from ConfigService so an admin can
+    // recalibrate them at runtime from the diagnostic UI. The @Value-injected
+    // defaults in ConfigService still come from application.properties.
     private final ConfigService configService;
 
     private int doorOpeningPosition() { return configService.getDoorOpeningPosition(); }
     private int doorClosingPosition() { return configService.getDoorClosingPosition(); }
+    private int doorOpeningDuration() { return configService.getDoorOpeningDuration(); }
+    private int doorClosingDuration() { return configService.getDoorClosingDuration(); }
 
     private LocalDateTime lastClosingTime;
     private LocalDateTime lastOpeningTime;
@@ -152,8 +148,8 @@ public class DoorService {
             logger.info(
                     "Close the door moving servo clockwise with gear position {} for {} ms ...",
                     doorClosingPosition() * (addTenPercent ? 1.1 : 1),
-                    doorClosingDuration * (addTenPercent ? 1.1 : 1));
-            servo.setPosition(doorClosingPosition(), doorClosingDuration);
+                    doorClosingDuration() * (addTenPercent ? 1.1 : 1));
+            servo.setPosition(doorClosingPosition(), doorClosingDuration());
             this.lastClosingTime = LocalDateTime.now();
         } else {
             logger.info("Door is already closing, so the door won't be closed.");
@@ -189,9 +185,9 @@ public class DoorService {
         if (force || openingDoorAfterClosingProblem || !doorIsOpened()) {
             logger.info("Open the door moving servo counterclockwise with gear position {} for {} ms ...",
                     doorOpeningPosition(),
-                    doorOpeningDuration);
+                    doorOpeningDuration());
             notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENING));
-            servo.setPosition(doorOpeningPosition(), doorOpeningDuration);
+            servo.setPosition(doorOpeningPosition(), doorOpeningDuration());
             if (!openingDoorAfterClosingProblem) {
                 this.lastOpeningTime = LocalDateTime.now();
             }
@@ -230,7 +226,7 @@ public class DoorService {
         } else if (openingTimeIsProbablyTheMostRecent()) {
             logger.info("the door is probably opened but not completly, " +
                     "let's turn the servo counter clockwise a little bit.");
-            turnServoCounterClockwise(doorOpeningDuration / 50);
+            turnServoCounterClockwise(doorOpeningDuration() / 50);
             if (doorIsOpened() || (waitALittle() && doorIsOpened())) {
                 logger.info("the door is completly opened now !");
                 return new DoorStatus(DoorStatusEnum.OPENED, lastOpeningTime);

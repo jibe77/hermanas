@@ -33,6 +33,19 @@ class WeatherInfoTest {
     @MockBean
     WifiService wifiService;
 
+    @MockBean
+    org.jibe77.hermanas.service.config.ConfigService configService;
+
+    @org.junit.jupiter.api.BeforeEach
+    void wireConfigService() {
+        Mockito.doAnswer(inv -> {
+                    Mockito.when(configService.isWeatherInfoEnabled())
+                            .thenReturn(inv.getArgument(0, Boolean.class));
+                    return null;
+                })
+                .when(configService).setWeatherInfoEnabled(Mockito.anyBoolean());
+    }
+
     @Test
     void testWeather() {
         WeatherInfo weatherInfo = new WeatherInfo();

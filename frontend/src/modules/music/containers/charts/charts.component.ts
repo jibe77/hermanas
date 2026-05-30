@@ -10,6 +10,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '@common/services';
 import { ChartsService } from '@modules/music/services/charts.service';
 import { ConfigService } from '@modules/energy/services/config.service';
+import { UserService } from '@modules/auth/services';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
@@ -35,8 +36,13 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 export class ChartsComponent implements OnInit, OnDestroy {
     private _chartsService = inject(ChartsService);
     private _configService = inject(ConfigService);
+    private _userService = inject(UserService);
     private _toastService = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
+
+    isAdmin = false;
+    cocoricoEnabled = false;
+    songAtSunsetEnabled = false;
 
     playlists: string[] = [];
     selectedPlaylist = '';
@@ -54,11 +60,12 @@ export class ChartsComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
 
     ngOnInit(): void {
+        this.isAdmin = this._userService.isAdmin();
         this.loadPlaylists();
-        this.loadVolume();
+        this.loadConfig();
     }
 
-    private loadVolume(): void {
+    private loadConfig(): void {
         this._configService
             .getAll()
             .pipe(takeUntil(this.destroy$))
@@ -66,11 +73,51 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 next: cfg => {
                     this.volumePercent = cfg.music_settings.volume_regular_percent;
                     this.persistedVolume = this.volumePercent;
+                    this.cocoricoEnabled = cfg.audio_toggles.cocorico_at_sunrise;
+                    this.songAtSunsetEnabled = cfg.audio_toggles.song_at_sunset;
                     this.cdr.detectChanges();
                 },
                 error: () => {
                     // Silent: keep the default the input was rendered with.
                 },
+            });
+    }
+
+    onCocoricoToggle(): void {
+        this._configService
+            .setCocoricoAtSunrise(this.cocoricoEnabled)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () =>
+                    this._toastService.success(
+                        this.cocoricoEnabled ? 'Cocorico activé' : 'Cocorico désactivé',
+                        'Music'
+                    ),
+                error: (err: HttpErrorResponse) =>
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Save failed',
+                        `Music — HTTP ${err.status}`
+                    ),
+            });
+    }
+
+    onSongAtSunsetToggle(): void {
+        this._configService
+            .setSongAtSunset(this.songAtSunsetEnabled)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () =>
+                    this._toastService.success(
+                        this.songAtSunsetEnabled
+                            ? 'Chanson du soir activée'
+                            : 'Chanson du soir désactivée',
+                        'Music'
+                    ),
+                error: (err: HttpErrorResponse) =>
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Save failed',
+                        `Music — HTTP ${err.status}`
+                    ),
             });
     }
 

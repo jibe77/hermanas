@@ -83,12 +83,28 @@ describe('Energy ChartsComponent', () => {
                         light_on_minutes_before_sunset: 15,
                         door_close_minutes_after_sunset: 45,
                         door_open_minutes_after_sunrise: 0,
+                        force_at_8: false,
                     },
+                    music_settings: { volume_regular_percent: 78 },
+                    servo_positions: {
+                        door_opening_position: 16,
+                        door_closing_position: 5,
+                        door_opening_duration_ms: 10000,
+                        door_closing_duration_ms: 2350,
+                    },
+                    audio_toggles: { cocorico_at_sunrise: true, song_at_sunset: true },
+                    notifications: { email_enabled: false, weather_enabled: false },
+                    camera_settings: { brightness: 60, rotation: 180 },
                 })
             ),
             setLightOnBeforeSunset: vi.fn().mockReturnValue(of('ok')),
             setDoorCloseAfterSunset: vi.fn().mockReturnValue(of('ok')),
             setDoorOpenAfterSunrise: vi.fn().mockReturnValue(of('ok')),
+            setSunriseForceAt8: vi.fn().mockReturnValue(of('ok')),
+            setDoorOpeningDuration: vi.fn().mockReturnValue(of('ok')),
+            setDoorClosingDuration: vi.fn().mockReturnValue(of('ok')),
+            setEmailNotifications: vi.fn().mockReturnValue(of('ok')),
+            setWeatherInfo: vi.fn().mockReturnValue(of('ok')),
         };
 
         TestBed.configureTestingModule({
