@@ -1,6 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, Input, Signal, inject } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    effect,
+    Input,
+    Signal,
+    inject,
+} from '@angular/core';
 import { UserService } from '@modules/auth/services';
 import { AuthState } from '@modules/auth/models';
+import { LoggerService } from '@common/services';
 import { SideNavItems, SideNavSection } from '@modules/navigation/models';
 import { NavigationService } from '@modules/navigation/services';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -16,6 +25,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 export class SideNavComponent {
     navigationService = inject(NavigationService);
     userService = inject(UserService);
+    private logger = inject(LoggerService);
 
     @Input() sideNavItems!: SideNavItems;
     @Input() sideNavSections!: SideNavSection[];
@@ -38,5 +48,23 @@ export class SideNavComponent {
             return roles.some(r => r === 'ADMIN' || r === 'ROLE_ADMIN');
         });
         this.currentLogin = computed(() => this.userService.user().login);
+
+        // Debug helper for the "authenticated-user menu entries don't show up"
+        // bug: logs every time the auth signal changes. Inspect the browser
+        // console after login / reload to confirm whether the signal flips to
+        // SignedIn at all. Remove once the bug is firmly closed.
+        effect(() => {
+            const u = this.userService.user();
+            this.logger.info(
+                'SideNav auth state',
+                {
+                    login: u.login,
+                    authState: u.authState,
+                    roles: u.roles,
+                    isSignedIn: u.authState === AuthState.SignedIn,
+                },
+                'SideNavComponent'
+            );
+        });
     }
 }
