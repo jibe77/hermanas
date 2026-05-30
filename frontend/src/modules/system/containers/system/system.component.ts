@@ -89,6 +89,12 @@ export class SystemComponent implements OnInit, OnDestroy {
     public servoNudgeMs = 100;
     public servoNudging = false;
 
+    // Email config state
+    public emailEnabled = false;
+    public emailTo = '';
+    public emailFrom = '';
+    public emailSaving = false;
+
     public diskUsage?: DiskUsage;
     public diskUsageError = false;
     public diskUsageLoading = false;
@@ -199,6 +205,7 @@ export class SystemComponent implements OnInit, OnDestroy {
             if (this.isAdmin && !wasAdmin) {
                 this.loadDiskUsage();
                 this.loadServoPositions();
+                this.loadEmailSettings();
             }
             this.changeDetectorRef.detectChanges();
         });
@@ -439,6 +446,76 @@ export class SystemComponent implements OnInit, OnDestroy {
                     this.changeDetectorRef.detectChanges();
                 },
             });
+    }
+
+    private loadEmailSettings(): void {
+        this._configService
+            .getAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: cfg => {
+                    this.emailEnabled = cfg.notifications.email_enabled;
+                    this.emailTo = cfg.email_settings.to ?? '';
+                    this.emailFrom = cfg.email_settings.from ?? '';
+                    this.changeDetectorRef.detectChanges();
+                },
+                error: () => {
+                    /* silent — defaults stay */
+                },
+            });
+    }
+
+    public onEmailEnabledToggle(): void {
+        this._configService
+            .setEmailNotifications(this.emailEnabled)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () =>
+                    this._toastService.success(
+                        this.emailEnabled ? 'Emails activés' : 'Emails désactivés',
+                        'Email'
+                    ),
+                error: (err: HttpErrorResponse) =>
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Save failed',
+                        `Email — HTTP ${err.status}`
+                    ),
+            });
+    }
+
+    public saveEmailSettings(): void {
+        if (this.emailSaving) return;
+        this.emailSaving = true;
+        // Save both addresses in sequence so a server-side validation error on one
+        // does not leave the user with a half-applied state.
+        this._configService
+            .setEmailFrom(this.emailFrom)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this._configService
+                        .setEmailTo(this.emailTo)
+                        .pipe(takeUntil(this.destroy$))
+                        .subscribe({
+                            next: () => {
+                                this.emailSaving = false;
+                                this._toastService.success('Adresses email enregistrées', 'Email');
+                                this.changeDetectorRef.detectChanges();
+                            },
+                            error: (err: HttpErrorResponse) => this.onEmailSaveError(err),
+                        });
+                },
+                error: (err: HttpErrorResponse) => this.onEmailSaveError(err),
+            });
+    }
+
+    private onEmailSaveError(err: HttpErrorResponse): void {
+        this.emailSaving = false;
+        this._toastService.error(
+            err.error?.message || err.message || 'Save failed',
+            `Email — HTTP ${err.status}`
+        );
+        this.changeDetectorRef.detectChanges();
     }
 
     public sendTestEmail(): void {

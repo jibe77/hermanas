@@ -35,17 +35,19 @@ public class EmailService {
 
     private List<MimeMessagePreparator> sendingQueue = new ArrayList<>();
 
-    @Value("${email.notification.to}")
-    private String emailNotificationTo;
-
-    @Value("${email.notification.from}")
-    private String emailNotificationFrom;
-
     private final org.jibe77.hermanas.service.config.ConfigService configService;
 
     /** Reads through configService so an admin can toggle email notifications at runtime. */
     private boolean isEnabled() {
         return configService == null ? false : configService.isEmailNotificationEnabled();
+    }
+
+    private String getEmailNotificationTo() {
+        return configService == null ? null : configService.getEmailNotificationTo();
+    }
+
+    private String getEmailNotificationFrom() {
+        return configService == null ? null : configService.getEmailNotificationFrom();
     }
 
     @Autowired(required = false)
@@ -90,7 +92,7 @@ public class EmailService {
                         .filter(a -> a != null)
                         .toArray(InternetAddress[]::new);
                 mimeMessage.setRecipients(Message.RecipientType.TO, to);
-                mimeMessage.setFrom(new InternetAddress(emailNotificationFrom));
+                mimeMessage.setFrom(new InternetAddress(getEmailNotificationFrom()));
                 mimeMessage.setSubject(subject);
                 mimeMessage.setText(body);
 
@@ -131,6 +133,7 @@ public class EmailService {
                 logger.warn("Failed to load opted-in users from database, falling back to configured address.", e);
             }
         }
+        String emailNotificationTo = getEmailNotificationTo();
         if (emailNotificationTo == null || emailNotificationTo.trim().isEmpty()) {
             return Collections.emptyList();
         }
@@ -180,10 +183,11 @@ public class EmailService {
         if (!isEnabled()) {
             throw new IllegalStateException("Email notifications are disabled (email.notification.enabled=false).");
         }
+        String emailNotificationTo = getEmailNotificationTo();
         MimeMessagePreparator preparator = mimeMessage -> {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setTo(emailNotificationTo);
-            helper.setFrom(emailNotificationFrom);
+            helper.setFrom(getEmailNotificationFrom());
             helper.setSubject("Hermanas — test email");
 
             String introText = "This is a test email triggered from the diagnostics panel. "

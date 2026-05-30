@@ -38,6 +38,8 @@ class EmailServiceTest {
                     return null;
                 })
                 .when(configService).setEmailNotificationEnabled(Mockito.anyBoolean());
+        Mockito.when(configService.getEmailNotificationTo()).thenReturn("test-to@example.com");
+        Mockito.when(configService.getEmailNotificationFrom()).thenReturn("test-from@example.com");
     }
 
     @Test

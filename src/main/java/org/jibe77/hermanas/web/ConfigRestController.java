@@ -158,6 +158,23 @@ public class ConfigRestController {
         camera.put("rotation", configService.getCameraRotation());
         config.put("camera_settings", camera);
 
+        // Weather provider — return the URL template but mask the API key. We expose
+        // only "set: true/false" + "length" so the admin can confirm the key is in
+        // place without surfacing the secret to anyone with a session cookie.
+        Map<String, Object> weatherSettings = new LinkedHashMap<>();
+        weatherSettings.put("url", configService.getWeatherInfoUrl());
+        String key = configService.getWeatherInfoKey();
+        weatherSettings.put("key_set", key != null && !key.trim().isEmpty()
+                && !"to-override-in-application-properties-file".equals(key.trim()));
+        weatherSettings.put("key_length", key == null ? 0 : key.trim().length());
+        config.put("weather_settings", weatherSettings);
+
+        // Email addresses
+        Map<String, String> emailSettings = new LinkedHashMap<>();
+        emailSettings.put("to", configService.getEmailNotificationTo());
+        emailSettings.put("from", configService.getEmailNotificationFrom());
+        config.put("email_settings", emailSettings);
+
         return ResponseEntity.ok(config);
     }
 
@@ -466,6 +483,38 @@ public class ConfigRestController {
         configService.setCameraRotation(degrees);
         return ResponseEntity.ok("Camera rotation set to " + degrees
                 + "° (reboot required to apply)");
+    }
+
+    // ─── Weather provider settings ─────────────────────────────────────────────
+
+    @Operation(summary = "Update OpenWeather API URL template")
+    @PutMapping("/weather/url")
+    public ResponseEntity<String> setWeatherUrl(@RequestParam String url) {
+        configService.setWeatherInfoUrl(url);
+        return ResponseEntity.ok("Weather URL updated");
+    }
+
+    @Operation(summary = "Update OpenWeather API key")
+    @PutMapping("/weather/key")
+    public ResponseEntity<String> setWeatherKey(@RequestParam String key) {
+        configService.setWeatherInfoKey(key);
+        return ResponseEntity.ok("Weather API key updated");
+    }
+
+    // ─── Email addresses ───────────────────────────────────────────────────────
+
+    @Operation(summary = "Update email notification recipient")
+    @PutMapping("/email/to")
+    public ResponseEntity<String> setEmailTo(@RequestParam String email) {
+        configService.setEmailNotificationTo(email);
+        return ResponseEntity.ok("Email 'to' updated to " + email);
+    }
+
+    @Operation(summary = "Update email notification sender")
+    @PutMapping("/email/from")
+    public ResponseEntity<String> setEmailFrom(@RequestParam String email) {
+        configService.setEmailNotificationFrom(email);
+        return ResponseEntity.ok("Email 'from' updated to " + email);
     }
 
     // Removed:

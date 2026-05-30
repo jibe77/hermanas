@@ -18,12 +18,6 @@ public class WeatherClient {
     @Value("${suntime.longitude}")
     public double longitude;
 
-    @Value("${weather.info.url}")
-    public String weatherInfoUrl;
-
-    @Value("${weather.info.key}")
-    public String weatherInfoKey;
-
     private final org.jibe77.hermanas.service.config.ConfigService configService;
 
     public static final Double DEFAULT_VALUE_IF_DISABLED = -100d;
@@ -44,11 +38,11 @@ public class WeatherClient {
             return getDefaultWeatherInfo();
         }
         WeatherInfo weatherInfo = builder.build().getForObject(
-                weatherInfoUrl,
+                configService.getWeatherInfoUrl(),
                 WeatherInfo.class,
                 latitude,
                 longitude,
-                weatherInfoKey);
+                configService.getWeatherInfoKey());
         log.info("Weather info content : {}", weatherInfo);
         return weatherInfo;
     }

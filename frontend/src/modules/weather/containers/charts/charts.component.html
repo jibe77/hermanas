@@ -1,51 +1,93 @@
-<sb-layout-dashboard
-    ><sb-dashboard-head
+<sb-layout-dashboard>
+    <sb-dashboard-head
         title="Weather"
         i18n-title="@@weather"
         [hideBreadcrumbs]="true"
-    ></sb-dashboard-head
-    ><sb-common-cards
+    ></sb-dashboard-head>
+    <sb-common-cards
         [notificationEvents]="notificationSubject.asObservable()"
         (serviceRetry)="onServiceRetry($event)"
-    ></sb-common-cards
-    ><sb-card
-        ><div class="card-body">
+    ></sb-common-cards>
+
+    <sb-card>
+        <div class="card-body">
             <span i18n="@@weatherInfo"
                 >This board is displaying the weather fetched from a temperature and humidity probe
                 inside the chicken coop.</span
             >
-        </div></sb-card
-    ><sb-card
-        ><div class="card-header">
-            <fa-icon class="mr-1" [icon]="['fas', 'table']"></fa-icon>Last week
+        </div>
+    </sb-card>
+
+    @if (isAdmin) {
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'cloud-sun']"></fa-icon>
+                <span i18n="@@weatherProviderTitle">Fournisseur météo (OpenWeather)</span>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted" i18n="@@weatherProviderHelp">
+                    L'URL doit contenir les placeholders {{ '{' }}latitude{{ '}' }},
+                    {{ '{' }}longitude{{ '}' }} et {{ '{' }}key{{ '}' }}. La clé d'API n'est jamais
+                    renvoyée par le serveur — saisis-la à nouveau pour la mettre à jour.
+                </p>
+                <div class="mb-3">
+                    <label for="weatherUrl" class="form-label small" i18n="@@weatherUrlLabel"
+                        >URL du fournisseur</label
+                    >
+                    <input
+                        id="weatherUrl"
+                        type="text"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="weatherUrl"
+                    />
+                </div>
+                <div class="mb-3">
+                    <label for="weatherKey" class="form-label small d-flex justify-content-between">
+                        <span i18n="@@weatherKeyLabel">Clé API</span>
+                        @if (weatherKeySet) {
+                            <span class="badge text-bg-success" i18n="@@weatherKeySet"
+                                >Définie ({{ weatherKeyLength }} car.)</span
+                            >
+                        }
+                        @if (!weatherKeySet) {
+                            <span class="badge text-bg-warning" i18n="@@weatherKeyMissing"
+                                >Non définie</span
+                            >
+                        }
+                    </label>
+                    <input
+                        id="weatherKey"
+                        type="password"
+                        class="form-control form-control-sm"
+                        placeholder="(laisser vide pour ne pas modifier)"
+                        i18n-placeholder="@@weatherKeyPlaceholder"
+                        autocomplete="new-password"
+                        [(ngModel)]="weatherKeyInput"
+                    />
+                </div>
+                <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    (click)="saveWeatherSettings()"
+                    [disabled]="weatherSaving"
+                >
+                    <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                    <span i18n="@@save">Save</span>
+                </button>
+            </div>
+        </sb-card>
+    }
+
+    <sb-card>
+        <div class="card-header">
+            <fa-icon class="me-1" [icon]="['fas', 'table']"></fa-icon>
+            <span i18n="@@weatherLastWeek">Last week</span>
         </div>
         <div class="card-body">
-            <!-- put a table here--><hermanas-weather-table-area
+            <hermanas-weather-table-area
                 [retryLauncherEvents]="retrySubject.asObservable()"
                 (serviceCommunicationError)="onServiceCommunicationError($event)"
-            ></hermanas-weather-table-area
-            ><!-- sb-ng-bootstrap-table([pageSize]='6')-->
+            ></hermanas-weather-table-area>
         </div>
-        <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div></sb-card
-    ><sb-card
-        ><div class="card-header">
-            <fa-icon class="mr-1" [icon]="['fas', 'table']"></fa-icon>Last month
-        </div>
-        <div class="card-body">
-            <!-- put a diagram here--><!-- sb-charts-area--><!-- sb-ng-bootstrap-table([pageSize]='6')-->
-        </div>
-        <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div></sb-card
-    ><sb-card
-        ><div class="card-header">
-            <fa-icon class="mr-1" [icon]="['fas', 'chart-bar']"></fa-icon>Temperature history
-        </div>
-        <div class="card-body"><!-- put a chart here--><!-- sb-charts-bar--></div>
-        <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div></sb-card
-    ><sb-card
-        ><div class="card-header">
-            <fa-icon class="mr-1" [icon]="['fas', 'chart-bar']"></fa-icon>Humidity history
-        </div>
-        <div class="card-body"><!-- put a chart here--><!-- sb-charts-bar--></div>
-        <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div></sb-card
-    ></sb-layout-dashboard
->
+    </sb-card>
+</sb-layout-dashboard>

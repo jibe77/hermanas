@@ -146,6 +146,22 @@ public class ConfigService {
     @Value("${camera.rotation}")
     private int cameraRotation;
 
+    // ─── Weather provider settings ────────────────────────────────────────────────
+
+    @Value("${weather.info.url}")
+    private String weatherInfoUrl;
+
+    @Value("${weather.info.key}")
+    private String weatherInfoKey;
+
+    // ─── Email recipient / sender ─────────────────────────────────────────────────
+
+    @Value("${email.notification.to}")
+    private String emailNotificationTo;
+
+    @Value("${email.notification.from}")
+    private String emailNotificationFrom;
+
     ParameterRepository parameterRepository;
 
     @Autowired(required = false)
@@ -934,5 +950,80 @@ public class ConfigService {
                     "Rotation must be one of 0/90/180/270, got " + degrees);
         }
         setConfigValue("camera.rotation", degrees, null);
+    }
+
+    // ============================================================================
+    // Weather Provider Settings
+    // ============================================================================
+
+    @Cacheable(value = "weatherInfoUrl")
+    public String getWeatherInfoUrl() {
+        return getConfigValue("weather.info.url", weatherInfoUrl, s -> s);
+    }
+
+    /**
+     * Sets the weather provider's HTTP URL. The template must keep the {@code {latitude}},
+     * {@code {longitude}}, {@code {key}} placeholders for {@link org.jibe77.hermanas.client.weather.WeatherClient}
+     * to interpolate them — we do not validate that here so a future migration to a
+     * different provider with a different signature stays possible without code change.
+     */
+    @CacheEvict(value = "weatherInfoUrl")
+    public void setWeatherInfoUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            throw new IllegalArgumentException("Weather URL must not be empty");
+        }
+        setConfigValue("weather.info.url", url.trim(), null);
+    }
+
+    @Cacheable(value = "weatherInfoKey")
+    public String getWeatherInfoKey() {
+        return getConfigValue("weather.info.key", weatherInfoKey, s -> s);
+    }
+
+    /**
+     * Sets the weather API key. The empty string is rejected — it would silently make
+     * every weather call fail with 401. To turn the feature off use
+     * {@link #setWeatherInfoEnabled(boolean)} instead.
+     */
+    @CacheEvict(value = "weatherInfoKey")
+    public void setWeatherInfoKey(String key) {
+        if (key == null || key.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "API key must not be empty. To turn weather off, use the enabled flag.");
+        }
+        setConfigValue("weather.info.key", key.trim(), null);
+    }
+
+    // ============================================================================
+    // Email Addresses
+    // ============================================================================
+    //
+    // Light email validation only: the JavaMail provider will raise the real error
+    // upon send anyway, and stricter regex tends to reject perfectly legal addresses.
+
+    @Cacheable(value = "emailNotificationTo")
+    public String getEmailNotificationTo() {
+        return getConfigValue("email.notification.to", emailNotificationTo, s -> s);
+    }
+
+    @CacheEvict(value = "emailNotificationTo")
+    public void setEmailNotificationTo(String to) {
+        if (to == null || !to.contains("@")) {
+            throw new IllegalArgumentException("Invalid 'to' email: " + to);
+        }
+        setConfigValue("email.notification.to", to.trim(), null);
+    }
+
+    @Cacheable(value = "emailNotificationFrom")
+    public String getEmailNotificationFrom() {
+        return getConfigValue("email.notification.from", emailNotificationFrom, s -> s);
+    }
+
+    @CacheEvict(value = "emailNotificationFrom")
+    public void setEmailNotificationFrom(String from) {
+        if (from == null || !from.contains("@")) {
+            throw new IllegalArgumentException("Invalid 'from' email: " + from);
+        }
+        setConfigValue("email.notification.from", from.trim(), null);
     }
 }

@@ -44,6 +44,9 @@ class WeatherInfoTest {
                     return null;
                 })
                 .when(configService).setWeatherInfoEnabled(Mockito.anyBoolean());
+        Mockito.when(configService.getWeatherInfoUrl())
+                .thenReturn("http://example.com/weather?lat={latitude}&lon={longitude}&key={key}");
+        Mockito.when(configService.getWeatherInfoKey()).thenReturn("test-key");
     }
 
     @Test

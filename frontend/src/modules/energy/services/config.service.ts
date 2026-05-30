@@ -21,6 +21,8 @@ export interface AllConfig {
     audio_toggles: AudioToggles;
     notifications: NotificationToggles;
     camera_settings: CameraSettings;
+    weather_settings: WeatherSettings;
+    email_settings: EmailSettings;
 }
 
 export interface SunOffsets {
@@ -54,6 +56,19 @@ export interface NotificationToggles {
 export interface CameraSettings {
     brightness: number;
     rotation: number;
+}
+
+export interface WeatherSettings {
+    url: string;
+    /** true if a non-default API key is set on the server. The key itself is never sent. */
+    key_set: boolean;
+    /** Length of the stored key in characters (0 if unset). Used as a visual sanity check. */
+    key_length: number;
+}
+
+export interface EmailSettings {
+    to: string;
+    from: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -179,6 +194,38 @@ export class ConfigService extends AbstractService {
     setCameraRotation(degrees: number): Observable<string> {
         const params = new HttpParams().set('degrees', String(degrees));
         return this.http.put(`${this.domainBase}/config/camera/rotation`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setWeatherUrl(url: string): Observable<string> {
+        const params = new HttpParams().set('url', url);
+        return this.http.put(`${this.domainBase}/config/weather/url`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setWeatherKey(key: string): Observable<string> {
+        const params = new HttpParams().set('key', key);
+        return this.http.put(`${this.domainBase}/config/weather/key`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setEmailTo(email: string): Observable<string> {
+        const params = new HttpParams().set('email', email);
+        return this.http.put(`${this.domainBase}/config/email/to`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setEmailFrom(email: string): Observable<string> {
+        const params = new HttpParams().set('email', email);
+        return this.http.put(`${this.domainBase}/config/email/from`, null, {
             params,
             responseType: 'text',
         });
