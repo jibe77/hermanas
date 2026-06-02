@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 import { User, AuthState } from '@modules/auth/models';
-import { UserService } from '@modules/auth/services';
+import { UserService, LoginModalService } from '@modules/auth/services';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 
@@ -9,6 +9,7 @@ import { map, take } from 'rxjs/operators';
 export class NavigationGuard {
     private userService = inject(UserService);
     private router = inject(Router);
+    private modal = inject(LoginModalService);
 
     canActivate(): Observable<boolean | UrlTree> {
         return this.userService.user$.pipe(
@@ -17,8 +18,8 @@ export class NavigationGuard {
                 if (user && user.authState === AuthState.SignedIn) {
                     return true;
                 }
-                // Redirect to login page if not authenticated
-                return this.router.createUrlTree(['/auth/login']);
+                this.modal.show();
+                return this.router.createUrlTree(['/dashboard']);
             })
         );
     }

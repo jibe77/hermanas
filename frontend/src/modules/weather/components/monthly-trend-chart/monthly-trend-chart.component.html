@@ -1,0 +1,158 @@
+@if (loading) {
+    <div class="text-muted small">
+        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+        <span i18n="@@weatherChartLoading">Chargement…</span>
+    </div>
+}
+
+@if (!loading && points.length === 0) {
+    <div class="text-muted small" i18n="@@weatherChartNoData">
+        Pas encore assez de données pour afficher la courbe.
+    </div>
+}
+
+@if (!loading && points.length > 0) {
+    <div class="chart-wrapper">
+        <svg
+            #svgEl
+            class="trend-chart"
+            [attr.viewBox]="'0 0 ' + viewBoxWidth + ' ' + viewBoxHeight"
+            preserveAspectRatio="xMidYMid meet"
+            (pointermove)="onPointerMove($event, svgEl)"
+            (pointerleave)="onPointerLeave()"
+            role="img"
+            aria-label="Évolution mensuelle température et humidité"
+        >
+            <defs>
+                <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#dc3545" stop-opacity="0.35" />
+                    <stop offset="100%" stop-color="#dc3545" stop-opacity="0.02" />
+                </linearGradient>
+            </defs>
+
+            <!-- Horizontal grid -->
+            @for (t of tempTicks; track t.value) {
+                <line
+                    [attr.x1]="plotLeft"
+                    [attr.x2]="plotRight"
+                    [attr.y1]="t.y"
+                    [attr.y2]="t.y"
+                    class="grid-line"
+                />
+            }
+
+            <!-- Temperature area + line -->
+            <path [attr.d]="tempAreaPath" fill="url(#tempGradient)" stroke="none" />
+            <path [attr.d]="tempLinePath" class="temp-line" fill="none" />
+
+            <!-- Humidity line (dashed) -->
+            <path [attr.d]="humLinePath" class="hum-line" fill="none" />
+
+            <!-- Points -->
+            @for (p of tempLine; track $index) {
+                <circle [attr.cx]="p.x" [attr.cy]="p.y" r="2.5" class="temp-dot" />
+            }
+            @for (p of humLine; track $index) {
+                <circle [attr.cx]="p.x" [attr.cy]="p.y" r="2" class="hum-dot" />
+            }
+
+            <!-- Left Y axis (temperature) -->
+            @for (t of tempTicks; track t.value) {
+                <text
+                    [attr.x]="plotLeft - 6"
+                    [attr.y]="t.y + 3"
+                    text-anchor="end"
+                    class="axis-label temp-axis"
+                >
+                    {{ t.value | number: '1.0-1' }}°
+                </text>
+            }
+
+            <!-- Right Y axis (humidity) -->
+            @for (h of humTicks; track h.value) {
+                <text
+                    [attr.x]="plotRight + 6"
+                    [attr.y]="h.y + 3"
+                    text-anchor="start"
+                    class="axis-label hum-axis"
+                >
+                    {{ h.value | number: '1.0-0' }}%
+                </text>
+            }
+
+            <!-- X axis -->
+            <line
+                [attr.x1]="plotLeft"
+                [attr.x2]="plotRight"
+                [attr.y1]="plotBottom"
+                [attr.y2]="plotBottom"
+                class="axis-line"
+            />
+            @for (xt of xTicks; track xt.label) {
+                <text
+                    [attr.x]="xt.x"
+                    [attr.y]="plotBottom + 18"
+                    text-anchor="middle"
+                    class="axis-label"
+                >
+                    {{ xt.label }}
+                </text>
+            }
+
+            <!-- Hover guide + tooltip -->
+            @if (hoverPoint) {
+                <line
+                    [attr.x1]="hoverX"
+                    [attr.x2]="hoverX"
+                    [attr.y1]="plotTop"
+                    [attr.y2]="plotBottom"
+                    class="hover-line"
+                />
+            }
+        </svg>
+
+        @if (hoverPoint) {
+            <div class="trend-tooltip">
+                <div class="fw-bold">{{ hoverPoint.date | date: 'EEEE d MMMM' }}</div>
+                <div>
+                    <span class="legend-swatch temp"></span>
+                    <span i18n="@@weatherChartTemp">Temp.</span>
+                    {{ ' ' }}:
+                    {{ ' ' }}
+                    @if (hoverPoint.tempAvg !== null) {
+                        <strong>{{ hoverPoint.tempAvg | number: '1.1-1' }} °C</strong>
+                    }
+                    @if (hoverPoint.tempAvg === null) {
+                        <span class="text-muted">—</span>
+                    }
+                </div>
+                <div>
+                    <span class="legend-swatch hum"></span>
+                    <span i18n="@@weatherChartHum">Humidité</span>
+                    {{ ' ' }}:
+                    {{ ' ' }}
+                    @if (hoverPoint.humAvg !== null) {
+                        <strong>{{ hoverPoint.humAvg | number: '1.0-0' }} %</strong>
+                    }
+                    @if (hoverPoint.humAvg === null) {
+                        <span class="text-muted">—</span>
+                    }
+                </div>
+                <div class="text-muted small" i18n="@@weatherChartSamples">
+                    {{ hoverPoint.samples }} mesures
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="legend">
+        <span class="legend-item"
+            ><span class="legend-swatch temp"></span>
+            <span i18n="@@weatherChartTempLegend">Température moyenne (°C)</span></span
+        >
+        <span class="legend-item"
+            ><span class="legend-swatch hum"></span>
+            <span i18n="@@weatherChartHumLegend">Humidité moyenne (%)</span></span
+        >
+    </div>
+}

@@ -1,124 +1,334 @@
-<sb-layout-dashboard
-    ><sb-dashboard-head
-        title="Logs"
-        i18n-title="@@logs"
+<sb-layout-dashboard>
+    <sb-dashboard-head
+        title="Journalisation"
+        i18n-title="@@journal"
         [hideBreadcrumbs]="true"
-    ></sb-dashboard-head
-    ><sb-card
-        ><div class="card-body">
-            <span i18n="@@logsInfo"
-                >This board allows you to browse through the history of the log file.</span
+    ></sb-dashboard-head>
+
+    <sb-card>
+        <div class="card-body">
+            <span i18n="@@journalInfo"
+                >Suivi des évènements survenus dans le poulailler (porte, lumière, ventilation,
+                musique, pensionnaires, système).</span
             >
-        </div></sb-card
-    ><sb-card
-        ><div class="card-header">
-            <fa-icon class="me-1" [icon]="['fas', 'file-contract']"></fa-icon
-            ><span i18n="@@logsBrowser">Log browser</span>
+        </div>
+    </sb-card>
+
+    <!-- ─────────── Business events (public) ─────────── -->
+    <sb-card>
+        <div class="card-header">
+            <fa-icon class="me-1" [icon]="['fas', 'list']"></fa-icon>
+            <span i18n="@@journalBusinessTitle">Évènements métier</span>
         </div>
         <div class="card-body">
-            @if (listError) {
-                <div class="text-danger" i18n="@@informationNotAvailable">
-                    Information not available
-                </div>
-            }
-            @if (!listError) {
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-4">
-                        <label for="logsFile" class="form-label small" i18n="@@logsFile"
-                            >File</label
-                        >
-                        <select
-                            id="logsFile"
-                            class="form-select form-select-sm"
-                            [ngModel]="selectedFile"
-                            (ngModelChange)="onFileChange($event)"
-                        >
-                            @for (f of files; track f) {
-                                <option [value]="f.name">
-                                    {{ f.name }} ({{ formatSize(f.size) }})
+            <div class="row g-2 align-items-end mb-3">
+                <div class="col-md-4">
+                    <label
+                        for="journalBizCategory"
+                        class="form-label small"
+                        i18n="@@journalCategory"
+                        >Catégorie</label
+                    >
+                    <select
+                        id="journalBizCategory"
+                        class="form-select form-select-sm"
+                        [(ngModel)]="businessCategoryKey"
+                        (ngModelChange)="onBusinessCategoryChange()"
+                    >
+                        @for (c of businessCategories; track c.key) {
+                            @if (c.key === 'all') {
+                                <option value="all" i18n="@@journalCatAll">Toutes</option>
+                            }
+                            @if (c.key === 'door') {
+                                <option value="door" i18n="@@journalCatDoor">Porte</option>
+                            }
+                            @if (c.key === 'light') {
+                                <option value="light" i18n="@@journalCatLight">Lumière</option>
+                            }
+                            @if (c.key === 'fan') {
+                                <option value="fan" i18n="@@journalCatFan">Ventilation</option>
+                            }
+                            @if (c.key === 'music') {
+                                <option value="music" i18n="@@journalCatMusic">Musique</option>
+                            }
+                            @if (c.key === 'resident') {
+                                <option value="resident" i18n="@@journalCatResident">
+                                    Pensionnaires
                                 </option>
                             }
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="logsLevel" class="form-label small" i18n="@@logsLevel"
-                            >Level</label
+                            @if (c.key === 'system') {
+                                <option value="system" i18n="@@journalCatSystem">Système</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="journalBizWindow" class="form-label small" i18n="@@journalWindow"
+                        >Fenêtre</label
+                    >
+                    <select
+                        id="journalBizWindow"
+                        class="form-select form-select-sm"
+                        [(ngModel)]="businessWindow"
+                        (ngModelChange)="onBusinessWindowChange()"
+                    >
+                        <option value="24h" i18n="@@journalWindow24h">24 h</option>
+                        <option value="7d" i18n="@@journalWindow7d">7 jours</option>
+                        <option value="30d" i18n="@@journalWindow30d">30 jours</option>
+                        <option value="all" i18n="@@journalWindowAll">Tout</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm w-100"
+                        (click)="loadBusinessEvents()"
+                        [disabled]="businessLoading"
+                    >
+                        <fa-icon [icon]="['fas', 'sync']"></fa-icon>
+                    </button>
+                </div>
+            </div>
+
+            @if (businessLoading) {
+                <div class="text-muted small">
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <span i18n="@@loading">Loading...</span>
+                </div>
+            }
+            @if (!businessLoading && businessEvents.length === 0) {
+                <div class="text-muted small" i18n="@@journalEmpty">
+                    Aucun évènement sur la période.
+                </div>
+            }
+            @if (!businessLoading && businessEvents.length > 0) {
+                <ul class="event-list">
+                    @for (e of businessEvents; track e.id) {
+                        <li [ngClass]="eventCssClass(e.eventType)">
+                            <fa-icon
+                                class="event-icon"
+                                [icon]="['fas', eventIcon(e.eventType)]"
+                            ></fa-icon>
+                            <span class="event-time small text-muted">
+                                {{ e.dateTime | date: 'yyyy-MM-dd HH:mm:ss' }}
+                            </span>
+                            <span class="event-type">{{ e.eventType }}</span>
+                            @if (e.details) {
+                                <span class="event-details small text-muted">{{ e.details }}</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </sb-card>
+
+    @if (isAdmin) {
+        <!-- ─────────── Auth events (admin only) ─────────── -->
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'user']"></fa-icon>
+                <span i18n="@@journalAuthTitle">Tentatives de connexion</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-2 align-items-end mb-3">
+                    <div class="col-md-3">
+                        <label
+                            for="journalAuthFilter"
+                            class="form-label small"
+                            i18n="@@journalAuthFilter"
+                            >Filtre</label
                         >
                         <select
-                            id="logsLevel"
+                            id="journalAuthFilter"
                             class="form-select form-select-sm"
-                            [(ngModel)]="selectedLevel"
+                            [(ngModel)]="authFilter"
+                            (ngModelChange)="onAuthFilterChange()"
                         >
-                            @for (lvl of levelOptions; track lvl) {
-                                <option [value]="lvl">{{ lvl }}</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="logsLines" class="form-label small" i18n="@@logsLines"
-                            >Lines</label
-                        >
-                        <select
-                            id="logsLines"
-                            class="form-select form-select-sm"
-                            [(ngModel)]="selectedLines"
-                        >
-                            @for (n of lineOptions; track n) {
-                                <option [value]="n">{{ n }}</option>
-                            }
+                            <option value="all" i18n="@@journalAuthAll">Toutes</option>
+                            <option value="success" i18n="@@journalAuthSuccess">Réussies</option>
+                            <option value="failed" i18n="@@journalAuthFailed">Échouées</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="logsSearch" class="form-label small" i18n="@@logsSearch"
-                            >Search</label
+                        <label
+                            for="journalAuthWindow"
+                            class="form-label small"
+                            i18n="@@journalWindow"
+                            >Fenêtre</label
                         >
-                        <input
-                            id="logsSearch"
-                            type="text"
-                            class="form-control form-control-sm"
-                            [(ngModel)]="searchText"
-                            (keyup.enter)="refreshContent()"
-                            placeholder="DoorService, Exception…"
-                        />
+                        <select
+                            id="journalAuthWindow"
+                            class="form-select form-select-sm"
+                            [(ngModel)]="authWindow"
+                            (ngModelChange)="onAuthWindowChange()"
+                        >
+                            <option value="24h" i18n="@@journalWindow24h">24 h</option>
+                            <option value="7d" i18n="@@journalWindow7d">7 jours</option>
+                            <option value="30d" i18n="@@journalWindow30d">30 jours</option>
+                            <option value="all" i18n="@@journalWindowAll">Tout</option>
+                        </select>
                     </div>
-                    <div class="col-md-1">
+                    <div class="col-md-2">
                         <button
                             type="button"
-                            class="btn btn-primary btn-sm w-100"
-                            (click)="refreshContent()"
-                            [disabled]="loading || !selectedFile"
+                            class="btn btn-outline-secondary btn-sm w-100"
+                            (click)="loadAuthEvents()"
+                            [disabled]="authLoading"
                         >
                             <fa-icon [icon]="['fas', 'sync']"></fa-icon>
                         </button>
                     </div>
                 </div>
-            }</div></sb-card
-    ><sb-card
-        ><div class="card-header">
-            <fa-icon class="me-1" [icon]="['fas', 'file-contract']"></fa-icon
-            ><span i18n="@@logsContent">Log content</span>
-            @if (selectedFile) {
-                <span class="text-muted ms-2 small">({{ selectedFile }})</span>
-            }
-        </div>
-        <div class="card-body">
-            @if (loading) {
-                <div class="spinner-border" role="status">
-                    <span class="sr-only" i18n="@@loading">Loading...</span>
-                </div>
-            }
-            @if (contentError && !loading) {
-                <div class="text-danger">{{ contentError }}</div>
-            }
-            @if (!loading && !contentError && lines.length === 0 && selectedFile) {
-                <div class="text-muted" i18n="@@logsNoLines">No lines match your filters.</div>
-            }
-            @if (!loading && lines.length > 0) {
-                <pre class="log-viewer">@for (line of lines; track line) {
-          <span [ngClass]="cssClassForLine(line)">{{line}}
-          </span>
-        }</pre>
-            }
-        </div></sb-card
-    ></sb-layout-dashboard
->
+
+                @if (authLoading) {
+                    <div class="text-muted small">
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        <span i18n="@@loading">Loading...</span>
+                    </div>
+                }
+                @if (!authLoading && authEvents.length === 0) {
+                    <div class="text-muted small" i18n="@@journalEmpty">
+                        Aucun évènement sur la période.
+                    </div>
+                }
+                @if (!authLoading && authEvents.length > 0) {
+                    <ul class="event-list">
+                        @for (e of authEvents; track e.id) {
+                            <li [ngClass]="eventCssClass(e.eventType)">
+                                <fa-icon
+                                    class="event-icon"
+                                    [icon]="['fas', eventIcon(e.eventType)]"
+                                ></fa-icon>
+                                <span class="event-time small text-muted">
+                                    {{ e.dateTime | date: 'yyyy-MM-dd HH:mm:ss' }}
+                                </span>
+                                <span class="event-type">{{ e.eventType }}</span>
+                                @if (e.details) {
+                                    <span class="event-details small text-muted">{{
+                                        e.details
+                                    }}</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </sb-card>
+
+        <!-- ─────────── Log-file viewer (admin only — unchanged) ─────────── -->
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'file-contract']"></fa-icon>
+                <span i18n="@@logsBrowser">Log browser</span>
+            </div>
+            <div class="card-body">
+                @if (listError) {
+                    <div class="text-danger" i18n="@@informationNotAvailable">
+                        Information not available
+                    </div>
+                }
+                @if (!listError) {
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label for="logsFile" class="form-label small" i18n="@@logsFile"
+                                >File</label
+                            >
+                            <select
+                                id="logsFile"
+                                class="form-select form-select-sm"
+                                [ngModel]="selectedFile"
+                                (ngModelChange)="onFileChange($event)"
+                            >
+                                @for (f of files; track f) {
+                                    <option [value]="f.name">
+                                        {{ f.name }} ({{ formatSize(f.size) }})
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="logsLevel" class="form-label small" i18n="@@logsLevel"
+                                >Level</label
+                            >
+                            <select
+                                id="logsLevel"
+                                class="form-select form-select-sm"
+                                [(ngModel)]="selectedLevel"
+                            >
+                                @for (lvl of levelOptions; track lvl) {
+                                    <option [value]="lvl">{{ lvl }}</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="logsLines" class="form-label small" i18n="@@logsLines"
+                                >Lines</label
+                            >
+                            <select
+                                id="logsLines"
+                                class="form-select form-select-sm"
+                                [(ngModel)]="selectedLines"
+                            >
+                                @for (n of lineOptions; track n) {
+                                    <option [value]="n">{{ n }}</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="logsSearch" class="form-label small" i18n="@@logsSearch"
+                                >Search</label
+                            >
+                            <input
+                                id="logsSearch"
+                                type="text"
+                                class="form-control form-control-sm"
+                                [(ngModel)]="searchText"
+                                (keyup.enter)="refreshContent()"
+                                placeholder="DoorService, Exception…"
+                            />
+                        </div>
+                        <div class="col-md-1">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm w-100"
+                                (click)="refreshContent()"
+                                [disabled]="loading || !selectedFile"
+                            >
+                                <fa-icon [icon]="['fas', 'sync']"></fa-icon>
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </sb-card>
+
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'file-contract']"></fa-icon>
+                <span i18n="@@logsContent">Log content</span>
+                @if (selectedFile) {
+                    <span class="text-muted ms-2 small">({{ selectedFile }})</span>
+                }
+            </div>
+            <div class="card-body">
+                @if (loading) {
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only" i18n="@@loading">Loading...</span>
+                    </div>
+                }
+                @if (contentError && !loading) {
+                    <div class="text-danger">{{ contentError }}</div>
+                }
+                @if (!loading && !contentError && lines.length === 0 && selectedFile) {
+                    <div class="text-muted" i18n="@@logsNoLines">No lines match your filters.</div>
+                }
+                @if (!loading && lines.length > 0) {
+                    <pre
+                        class="log-viewer"
+                    >@for (line of lines; track $index) {<span [ngClass]="cssClassForLine(line)">{{ line }}</span>}</pre>
+                }
+            </div>
+        </sb-card>
+    }
+</sb-layout-dashboard>

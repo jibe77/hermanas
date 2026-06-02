@@ -1,5 +1,5 @@
 import { Injectable, signal, WritableSignal, Signal, inject } from '@angular/core';
-import { ActivatedRoute, ChildActivationEnd, Router } from '@angular/router';
+import { ActivatedRoute, ChildActivationEnd, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
@@ -42,6 +42,16 @@ export class NavigationService {
                 this._routeData.set(snapshot.data as SBRouteData);
                 this._currentURL.set(router.url);
             });
+
+        // On mobile (overlay sidenav, < lg breakpoint), close the sidenav after
+        // a successful navigation so the chosen entry doesn't leave the overlay
+        // covering the page. Desktop state is left alone — if the user toggled
+        // it off explicitly, it stays off.
+        this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+            if (typeof window !== 'undefined' && window.innerWidth < 992) {
+                this._sideNavVisible.set(true);
+            }
+        });
     }
 
     // Observable getters for backward compatibility

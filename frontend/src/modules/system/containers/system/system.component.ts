@@ -95,6 +95,13 @@ export class SystemComponent implements OnInit, OnDestroy {
     public emailFrom = '';
     public emailSaving = false;
 
+    // Weather config state
+    public weatherUrl = '';
+    public weatherKeyInput = '';
+    public weatherKeySet = false;
+    public weatherKeyLength = 0;
+    public weatherSaving = false;
+
     public diskUsage?: DiskUsage;
     public diskUsageError = false;
     public diskUsageLoading = false;
@@ -104,8 +111,7 @@ export class SystemComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.createSubscriptionToBackendVersion();
-        this.loadInitialButtonStatus();
-        this.subscribeToButtonUpdates();
+        // Button-status calls /api/v1/buttons (admin-only) — defer until auth state is known.
         this.subscribeToAuthState();
     }
 
@@ -203,9 +209,12 @@ export class SystemComponent implements OnInit, OnDestroy {
             const wasAdmin = this.isAdmin;
             this.isAdmin = this._userService.isAdmin();
             if (this.isAdmin && !wasAdmin) {
+                this.loadInitialButtonStatus();
+                this.subscribeToButtonUpdates();
                 this.loadDiskUsage();
                 this.loadServoPositions();
                 this.loadEmailSettings();
+                this.loadWeatherSettings();
             }
             this.changeDetectorRef.detectChanges();
         });
@@ -514,6 +523,69 @@ export class SystemComponent implements OnInit, OnDestroy {
         this._toastService.error(
             err.error?.message || err.message || 'Save failed',
             `Email — HTTP ${err.status}`
+        );
+        this.changeDetectorRef.detectChanges();
+    }
+
+    private loadWeatherSettings(): void {
+        this._configService
+            .getAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: cfg => {
+                    this.weatherUrl = cfg.weather_settings.url;
+                    this.weatherKeySet = cfg.weather_settings.key_set;
+                    this.weatherKeyLength = cfg.weather_settings.key_length;
+                    this.changeDetectorRef.detectChanges();
+                },
+                error: () => {
+                    /* silent — admin can retry */
+                },
+            });
+    }
+
+    public saveWeatherSettings(): void {
+        if (this.weatherSaving) return;
+        this.weatherSaving = true;
+        this._configService
+            .setWeatherUrl(this.weatherUrl)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    if (this.weatherKeyInput && this.weatherKeyInput.trim().length > 0) {
+                        this._configService
+                            .setWeatherKey(this.weatherKeyInput.trim())
+                            .pipe(takeUntil(this.destroy$))
+                            .subscribe({
+                                next: () => this.onWeatherSaveSuccess(true),
+                                error: (err: HttpErrorResponse) => this.onWeatherSaveError(err),
+                            });
+                    } else {
+                        this.onWeatherSaveSuccess(false);
+                    }
+                },
+                error: (err: HttpErrorResponse) => this.onWeatherSaveError(err),
+            });
+    }
+
+    private onWeatherSaveSuccess(keyUpdated: boolean): void {
+        this.weatherSaving = false;
+        if (keyUpdated) {
+            this.weatherKeyInput = '';
+            this.weatherKeySet = true;
+        }
+        this._toastService.success(
+            keyUpdated ? 'Réglages météo et clé enregistrés' : 'URL météo enregistrée',
+            'Météo'
+        );
+        this.loadWeatherSettings();
+    }
+
+    private onWeatherSaveError(err: HttpErrorResponse): void {
+        this.weatherSaving = false;
+        this._toastService.error(
+            err.error?.message || err.message || 'Save failed',
+            `Météo — HTTP ${err.status}`
         );
         this.changeDetectorRef.detectChanges();
     }

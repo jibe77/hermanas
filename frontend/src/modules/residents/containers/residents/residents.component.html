@@ -1,0 +1,263 @@
+<sb-layout-dashboard>
+    <sb-dashboard-head
+        title="Pensionnaires"
+        i18n-title="@@residents"
+        [hideBreadcrumbs]="true"
+    ></sb-dashboard-head>
+
+    <sb-card>
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <span i18n="@@residentsInfo"
+                >La liste des poules qui vivent (ou ont vécu) dans le poulailler.</span
+            >
+            @if (isAuthenticated) {
+                <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">
+                    <fa-icon class="me-1" [icon]="['fas', 'plus']"></fa-icon>
+                    <span i18n="@@residentsAdd">Ajouter une poule</span>
+                </button>
+            }
+        </div>
+    </sb-card>
+
+    @if (loading) {
+        <sb-card>
+            <div class="card-body">
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+            </div>
+        </sb-card>
+    }
+
+    @if (!loading && residents.length === 0) {
+        <sb-card>
+            <div class="card-body text-muted" i18n="@@residentsEmpty">
+                Aucune poule enregistrée pour le moment.
+            </div>
+        </sb-card>
+    }
+
+    @for (r of residents; track r.id) {
+        <sb-card>
+            <div class="card-body resident-row" [class.deceased]="!isAlive(r)">
+                <div class="row g-3">
+                    <div class="col-md-3 text-center">
+                        @if (photoSrc(r)) {
+                            <img
+                                [src]="photoSrc(r)"
+                                [alt]="r.name"
+                                class="resident-photo img-fluid rounded"
+                            />
+                        }
+                        @if (!photoSrc(r)) {
+                            <div class="resident-photo-placeholder rounded">
+                                <fa-icon [icon]="['fas', 'feather']" size="3x"></fa-icon>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-9">
+                        <h5 class="mb-1">
+                            {{ r.name }}
+                            @if (!isAlive(r)) {
+                                <small class="text-muted ms-2">
+                                    <fa-icon [icon]="['fas', 'skull']"></fa-icon>
+                                    {{ r.deathDate | date: 'yyyy-MM-dd' }}
+                                </small>
+                            }
+                        </h5>
+                        @if (r.breed) {
+                            <div class="small text-muted">
+                                <span i18n="@@residentsBreed">Race</span>
+                                {{ ' ' }}:{{ ' ' }}{{ r.breed }}
+                            </div>
+                        }
+                        @if (r.birthDate) {
+                            <div class="small text-muted">
+                                <span i18n="@@residentsBirthDate">Naissance</span>
+                                {{ ' ' }}:{{ ' ' }}{{ r.birthDate | date: 'yyyy-MM-dd' }}
+                            </div>
+                        }
+                        @if (r.arrivalDate) {
+                            <div class="small text-muted">
+                                <span i18n="@@residentsArrivalDate">Arrivée</span>
+                                {{ ' ' }}:{{ ' ' }}{{ r.arrivalDate | date: 'yyyy-MM-dd' }}
+                            </div>
+                        }
+                        @if (r.comments) {
+                            <p class="mt-2 mb-0">{{ r.comments }}</p>
+                        }
+                        @if (isAuthenticated) {
+                            <div class="mt-3 d-flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    (click)="openEdit(r)"
+                                >
+                                    <fa-icon class="me-1" [icon]="['fas', 'edit']"></fa-icon>
+                                    <span i18n="@@residentsEdit">Modifier</span>
+                                </button>
+                                <label class="btn btn-outline-secondary btn-sm mb-0">
+                                    <fa-icon class="me-1" [icon]="['fas', 'camera']"></fa-icon>
+                                    <span i18n="@@residentsUploadPhoto">Photo</span>
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        hidden
+                                        (change)="onPhotoSelected(r, $event)"
+                                    />
+                                </label>
+                                @if (r.photoUrl) {
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary btn-sm"
+                                        (click)="deletePhoto(r)"
+                                    >
+                                        <fa-icon class="me-1" [icon]="['fas', 'image']"></fa-icon>
+                                        <span i18n="@@residentsDeletePhoto">Suppr. photo</span>
+                                    </button>
+                                }
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-danger btn-sm"
+                                    (click)="remove(r)"
+                                >
+                                    <fa-icon class="me-1" [icon]="['fas', 'trash']"></fa-icon>
+                                    <span i18n="@@residentsDelete">Supprimer</span>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </sb-card>
+    }
+
+    @if (showModal) {
+        <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            @if (form.id === null) {
+                                <span i18n="@@residentsAddTitle">Nouvelle poule</span>
+                            }
+                            @if (form.id !== null) {
+                                <span i18n="@@residentsEditTitle">Modifier la poule</span>
+                            }
+                        </h5>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            aria-label="Close"
+                            (click)="closeModal()"
+                        ></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="resName" class="form-label small" i18n="@@residentsName"
+                                    >Nom</label
+                                >
+                                <input
+                                    id="resName"
+                                    type="text"
+                                    class="form-control form-control-sm"
+                                    [(ngModel)]="form.name"
+                                    required
+                                />
+                            </div>
+                            <div class="col-md-6">
+                                <label
+                                    for="resBreed"
+                                    class="form-label small"
+                                    i18n="@@residentsBreed"
+                                    >Race</label
+                                >
+                                <input
+                                    id="resBreed"
+                                    type="text"
+                                    class="form-control form-control-sm"
+                                    [(ngModel)]="form.breed"
+                                />
+                            </div>
+                            <div class="col-md-4">
+                                <label
+                                    for="resBirth"
+                                    class="form-label small"
+                                    i18n="@@residentsBirthDate"
+                                    >Naissance</label
+                                >
+                                <input
+                                    id="resBirth"
+                                    type="date"
+                                    class="form-control form-control-sm"
+                                    [(ngModel)]="form.birthDate"
+                                />
+                            </div>
+                            <div class="col-md-4">
+                                <label
+                                    for="resArrival"
+                                    class="form-label small"
+                                    i18n="@@residentsArrivalDate"
+                                    >Arrivée</label
+                                >
+                                <input
+                                    id="resArrival"
+                                    type="date"
+                                    class="form-control form-control-sm"
+                                    [(ngModel)]="form.arrivalDate"
+                                />
+                            </div>
+                            <div class="col-md-4">
+                                <label
+                                    for="resDeath"
+                                    class="form-label small"
+                                    i18n="@@residentsDeathDate"
+                                    >Décès</label
+                                >
+                                <input
+                                    id="resDeath"
+                                    type="date"
+                                    class="form-control form-control-sm"
+                                    [(ngModel)]="form.deathDate"
+                                />
+                            </div>
+                            <div class="col-12">
+                                <label
+                                    for="resComments"
+                                    class="form-label small"
+                                    i18n="@@residentsComments"
+                                    >Commentaires</label
+                                >
+                                <textarea
+                                    id="resComments"
+                                    class="form-control form-control-sm"
+                                    rows="3"
+                                    [(ngModel)]="form.comments"
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary btn-sm"
+                            (click)="closeModal()"
+                            [disabled]="saving"
+                        >
+                            <span i18n="@@cancel">Annuler</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            (click)="save()"
+                            [disabled]="saving"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                            <span i18n="@@save">Save</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+</sb-layout-dashboard>

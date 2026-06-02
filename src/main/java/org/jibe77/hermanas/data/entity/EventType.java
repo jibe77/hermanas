@@ -20,14 +20,48 @@ package org.jibe77.hermanas.data.entity;
  */
 public enum EventType {
 
-    // System events
+    // ╔══════════════════════════════════════════════════════════════════════╗
+    // ║ Stored as ORDINAL in the production DB — see Event.eventType.       ║
+    // ║ NEVER reorder existing values; NEVER insert in the middle; ALWAYS   ║
+    // ║ append new types at the bottom.                                     ║
+    // ╚══════════════════════════════════════════════════════════════════════╝
+
+    // System events (legacy positions 0-1)
     STARTUP,
     SHUTDOWN,
 
-    // Door events
+    // Door events (legacy positions 2-6)
     DOOR_OPENED,
     DOOR_CLOSED,
     DOOR_OPEN_FAILED,
     DOOR_CLOSE_FAILED,
-    DOOR_POSITION_UNKNOWN
+    DOOR_POSITION_UNKNOWN,
+
+    // -- New types appended for the "Journalisation" feature --
+
+    // System
+    SHUTDOWN_REQUESTED,
+    REBOOT_REQUESTED,
+
+    // Light
+    LIGHT_ON,
+    LIGHT_OFF,
+
+    // Fan
+    FAN_ON,
+    FAN_OFF,
+
+    // Music
+    MUSIC_STARTED,
+    MUSIC_STOPPED,
+    COCORICO,
+
+    // Resident
+    RESIDENT_CREATED,
+    RESIDENT_DELETED,
+
+    // Auth (admin-only visibility)
+    LOGIN_SUCCESS,
+    LOGIN_FAILED,
+    LOGOUT
 }

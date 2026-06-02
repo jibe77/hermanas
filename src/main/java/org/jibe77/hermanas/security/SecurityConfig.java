@@ -1,5 +1,7 @@
 package org.jibe77.hermanas.security;
 
+import org.jibe77.hermanas.data.entity.EventType;
+import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +22,7 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 
 @Configuration
@@ -71,7 +74,8 @@ public class SecurityConfig
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           PersistentTokenBasedRememberMeServices rememberMeServices)
+                                           PersistentTokenBasedRememberMeServices rememberMeServices,
+                                           EventService eventService)
             throws Exception
     {
         logger.info("Configure authorizations.");
@@ -103,6 +107,11 @@ public class SecurityConfig
 
                 // ─── Logs: admin only — log content may contain sensitive data ────────────────
                 .antMatchers("/api/v1/logs/**").hasRole(ROLE_ADMIN)
+
+                // ─── Journal / auth event feed: admin only. The /business sibling stays
+                //     public (covered by .anyRequest().permitAll() below). Listing failed
+                //     login attempts to anonymous visitors would leak account existence. ───
+                .antMatchers("/api/v1/events/auth/**").hasRole(ROLE_ADMIN)
 
                 // ─── Diagnostics: admin only — exposes hardware state and SMTP test ──────────
                 .antMatchers("/api/v1/buttons/**").hasRole(ROLE_ADMIN)
@@ -155,8 +164,19 @@ public class SecurityConfig
                     .loginProcessingUrl("/api/v1/auth/login")
                     .usernameParameter("username")
                     .passwordParameter("password")
-                    .successHandler((req, res, auth) -> res.setStatus(200))
+                    .successHandler((req, res, auth) -> {
+                        eventService.record(EventType.LOGIN_SUCCESS,
+                                "login=" + auth.getName() + " ip=" + clientIp(req));
+                        res.setStatus(200);
+                    })
                     .failureHandler((req, res, ex) -> {
+                        // Record the failed attempt with the login that was tried, so admins
+                        // can spot brute-force attempts on the Journalisation page.
+                        String attempted = req.getParameter("username");
+                        eventService.record(EventType.LOGIN_FAILED,
+                                "login=" + (attempted == null ? "?" : attempted)
+                                        + " reason=" + ex.getMessage()
+                                        + " ip=" + clientIp(req));
                         // Surface the special "pending validation" case as a small JSON body so the
                         // SPA can render the right error string. Anything else stays a generic 401.
                         res.setStatus(401);
@@ -179,9 +199,28 @@ public class SecurityConfig
                     // Remove the remember-me cookie alongside the session on logout, otherwise
                     // the next request would silently reauthenticate the user.
                     .deleteCookies(REMEMBER_ME_COOKIE_NAME, "JSESSIONID")
-                    .logoutSuccessHandler((req, res, auth) -> res.setStatus(204));
+                    .logoutSuccessHandler((req, res, auth) -> {
+                        if (auth != null) {
+                            eventService.record(EventType.LOGOUT, "login=" + auth.getName());
+                        }
+                        res.setStatus(204);
+                    });
 
         return http.build();
+    }
+
+    /**
+     * Returns the most relevant client IP for journalisation: prefers the
+     * standard {@code X-Forwarded-For} header (we sit behind a Caddy reverse
+     * proxy in production), falls back to the raw socket address.
+     */
+    private static String clientIp(HttpServletRequest req) {
+        String forwarded = req.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isEmpty()) {
+            int comma = forwarded.indexOf(',');
+            return (comma > 0 ? forwarded.substring(0, comma) : forwarded).trim();
+        }
+        return req.getRemoteAddr();
     }
 
     @Bean

@@ -79,7 +79,10 @@
                             }
                         </button>
                         <div class="mt-3 text-center">
-                            <a routerLink="/auth/login" i18n="@@registerAlreadyHaveAccount"
+                            <a
+                                href="javascript:void(0)"
+                                (click)="goToLogin()"
+                                i18n="@@registerAlreadyHaveAccount"
                                 >J'ai déjà un compte</a
                             >
                         </div>

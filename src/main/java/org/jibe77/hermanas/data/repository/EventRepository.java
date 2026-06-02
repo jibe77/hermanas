@@ -2,6 +2,7 @@ package org.jibe77.hermanas.data.repository;
 
 import org.jibe77.hermanas.data.entity.Event;
 import org.jibe77.hermanas.data.entity.EventType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDateTime;
@@ -48,4 +49,16 @@ public interface EventRepository extends CrudRepository<Event, Long> {
      * @return list of matching events in time range, newest first
      */
     List<Event> findByEventTypeInAndDateTimeBetweenOrderByDateTimeDesc(List<EventType> eventTypes, LocalDateTime start, LocalDateTime end);
+
+    /**
+     * Finds events matching the given types within a time range, paginated.
+     * Used by the Journalisation page to cap the number of rows returned per call.
+     *
+     * @param eventTypes types to include
+     * @param start start of time range (inclusive)
+     * @param end end of time range (inclusive)
+     * @param pageable size/sort hint (sort already enforced by method name)
+     * @return page of events, newest first
+     */
+    List<Event> findByEventTypeInAndDateTimeBetweenOrderByDateTimeDesc(List<EventType> eventTypes, LocalDateTime start, LocalDateTime end, Pageable pageable);
 }

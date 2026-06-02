@@ -30,9 +30,9 @@
             </h6>
             <div class="dropdown-divider"></div>
             @if (user.authState !== 'signedIn') {
-                <a class="dropdown-item" routerLink="/auth/login"
-                    ><span i18n="@@signin">Connexion</span></a
-                >
+                <button class="dropdown-item" type="button" (click)="openLogin()">
+                    <span i18n="@@signin">Connexion</span>
+                </button>
             }
             @if (user.authState === 'signedIn') {
                 <button

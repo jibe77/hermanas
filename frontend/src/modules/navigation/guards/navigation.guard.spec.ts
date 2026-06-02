@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthState, User } from '@modules/auth/models';
-import { UserService } from '@modules/auth/services';
+import { LoginModalService, UserService } from '@modules/auth/services';
 
 import { NavigationGuard } from './navigation.guard';
 
@@ -28,6 +28,7 @@ describe('Navigation Guards', () => {
                 NavigationGuard,
                 { provide: UserService, useValue: mockUserService },
                 { provide: Router, useValue: mockRouter },
+                { provide: LoginModalService, useValue: { show: vi.fn(), hide: vi.fn() } },
             ],
         });
         navigationGuard = TestBed.inject(NavigationGuard);

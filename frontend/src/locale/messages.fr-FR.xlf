@@ -1143,4 +1143,201 @@
             </trans-unit>
         </body>
     </file>
+    <file original="src/modules/residents/containers/residents/residents.component.html"
+          datatype="plaintext" source-language="en-US" target-language="fr-FR">
+        <body>
+            <trans-unit id="residents" datatype="html">
+                <source>Pensionnaires</source>
+                <target>Pensionnaires</target>
+            </trans-unit>
+            <trans-unit id="residentsMenu" datatype="html">
+                <source>Pensionnaires</source>
+                <target>Pensionnaires</target>
+            </trans-unit>
+            <trans-unit id="residentsInfo" datatype="html">
+                <source>La liste des poules qui vivent (ou ont vécu) dans le poulailler.</source>
+                <target>La liste des poules qui vivent (ou ont vécu) dans le poulailler.</target>
+            </trans-unit>
+            <trans-unit id="residentsAdd" datatype="html">
+                <source>Ajouter une poule</source>
+                <target>Ajouter une poule</target>
+            </trans-unit>
+            <trans-unit id="residentsEmpty" datatype="html">
+                <source>Aucune poule enregistrée pour le moment.</source>
+                <target>Aucune poule enregistrée pour le moment.</target>
+            </trans-unit>
+            <trans-unit id="residentsBreed" datatype="html">
+                <source>Race</source>
+                <target>Race</target>
+            </trans-unit>
+            <trans-unit id="residentsBirthDate" datatype="html">
+                <source>Naissance</source>
+                <target>Naissance</target>
+            </trans-unit>
+            <trans-unit id="residentsArrivalDate" datatype="html">
+                <source>Arrivée</source>
+                <target>Arrivée</target>
+            </trans-unit>
+            <trans-unit id="residentsDeathDate" datatype="html">
+                <source>Décès</source>
+                <target>Décès</target>
+            </trans-unit>
+            <trans-unit id="residentsName" datatype="html">
+                <source>Nom</source>
+                <target>Nom</target>
+            </trans-unit>
+            <trans-unit id="residentsComments" datatype="html">
+                <source>Commentaires</source>
+                <target>Commentaires</target>
+            </trans-unit>
+            <trans-unit id="residentsEdit" datatype="html">
+                <source>Modifier</source>
+                <target>Modifier</target>
+            </trans-unit>
+            <trans-unit id="residentsDelete" datatype="html">
+                <source>Supprimer</source>
+                <target>Supprimer</target>
+            </trans-unit>
+            <trans-unit id="residentsUploadPhoto" datatype="html">
+                <source>Photo</source>
+                <target>Photo</target>
+            </trans-unit>
+            <trans-unit id="residentsDeletePhoto" datatype="html">
+                <source>Suppr. photo</source>
+                <target>Suppr. photo</target>
+            </trans-unit>
+            <trans-unit id="residentsAddTitle" datatype="html">
+                <source>Nouvelle poule</source>
+                <target>Nouvelle poule</target>
+            </trans-unit>
+            <trans-unit id="residentsEditTitle" datatype="html">
+                <source>Modifier la poule</source>
+                <target>Modifier la poule</target>
+            </trans-unit>
+            <trans-unit id="weatherMonthlyTrend" datatype="html">
+                <source>Tendance sur 30 jours (moyennes journalières)</source>
+                <target>Tendance sur 30 jours (moyennes journalières)</target>
+            </trans-unit>
+            <trans-unit id="weatherChartLoading" datatype="html">
+                <source>Chargement…</source>
+                <target>Chargement…</target>
+            </trans-unit>
+            <trans-unit id="weatherChartNoData" datatype="html">
+                <source>Pas encore assez de données pour afficher la courbe.</source>
+                <target>Pas encore assez de données pour afficher la courbe.</target>
+            </trans-unit>
+            <trans-unit id="weatherChartTempLegend" datatype="html">
+                <source>Température moyenne (°C)</source>
+                <target>Température moyenne (°C)</target>
+            </trans-unit>
+            <trans-unit id="weatherChartHumLegend" datatype="html">
+                <source>Humidité moyenne (%)</source>
+                <target>Humidité moyenne (%)</target>
+            </trans-unit>
+            <trans-unit id="weatherChartTemp" datatype="html">
+                <source>Temp.</source>
+                <target>Temp.</target>
+            </trans-unit>
+            <trans-unit id="weatherChartHum" datatype="html">
+                <source>Humidité</source>
+                <target>Humidité</target>
+            </trans-unit>
+            <trans-unit id="weatherChartSamples" datatype="html">
+                <source><x id="INTERPOLATION" equiv-text="{{ hoverPoint.samples }}"/> mesures</source>
+                <target><x id="INTERPOLATION" equiv-text="{{ hoverPoint.samples }}"/> mesures</target>
+            </trans-unit>
+            <trans-unit id="journal" datatype="html">
+                <source>Journalisation</source>
+                <target>Journalisation</target>
+            </trans-unit>
+            <trans-unit id="journalMenu" datatype="html">
+                <source>Journalisation</source>
+                <target>Journalisation</target>
+            </trans-unit>
+            <trans-unit id="journalInfo" datatype="html">
+                <source>Suivi des évènements survenus dans le poulailler (porte, lumière, ventilation, musique, pensionnaires, système).</source>
+                <target>Suivi des évènements survenus dans le poulailler (porte, lumière, ventilation, musique, pensionnaires, système).</target>
+            </trans-unit>
+            <trans-unit id="journalBusinessTitle" datatype="html">
+                <source>Évènements métier</source>
+                <target>Évènements métier</target>
+            </trans-unit>
+            <trans-unit id="journalAuthTitle" datatype="html">
+                <source>Tentatives de connexion</source>
+                <target>Tentatives de connexion</target>
+            </trans-unit>
+            <trans-unit id="journalCategory" datatype="html">
+                <source>Catégorie</source>
+                <target>Catégorie</target>
+            </trans-unit>
+            <trans-unit id="journalCatAll" datatype="html">
+                <source>Toutes</source>
+                <target>Toutes</target>
+            </trans-unit>
+            <trans-unit id="journalCatDoor" datatype="html">
+                <source>Porte</source>
+                <target>Porte</target>
+            </trans-unit>
+            <trans-unit id="journalCatLight" datatype="html">
+                <source>Lumière</source>
+                <target>Lumière</target>
+            </trans-unit>
+            <trans-unit id="journalCatFan" datatype="html">
+                <source>Ventilation</source>
+                <target>Ventilation</target>
+            </trans-unit>
+            <trans-unit id="journalCatMusic" datatype="html">
+                <source>Musique</source>
+                <target>Musique</target>
+            </trans-unit>
+            <trans-unit id="journalCatResident" datatype="html">
+                <source>Pensionnaires</source>
+                <target>Pensionnaires</target>
+            </trans-unit>
+            <trans-unit id="journalCatSystem" datatype="html">
+                <source>Système</source>
+                <target>Système</target>
+            </trans-unit>
+            <trans-unit id="journalWindow" datatype="html">
+                <source>Fenêtre</source>
+                <target>Fenêtre</target>
+            </trans-unit>
+            <trans-unit id="journalWindow24h" datatype="html">
+                <source>24 h</source>
+                <target>24 h</target>
+            </trans-unit>
+            <trans-unit id="journalWindow7d" datatype="html">
+                <source>7 jours</source>
+                <target>7 jours</target>
+            </trans-unit>
+            <trans-unit id="journalWindow30d" datatype="html">
+                <source>30 jours</source>
+                <target>30 jours</target>
+            </trans-unit>
+            <trans-unit id="journalWindowAll" datatype="html">
+                <source>Tout</source>
+                <target>Tout</target>
+            </trans-unit>
+            <trans-unit id="journalEmpty" datatype="html">
+                <source>Aucun évènement sur la période.</source>
+                <target>Aucun évènement sur la période.</target>
+            </trans-unit>
+            <trans-unit id="journalAuthFilter" datatype="html">
+                <source>Filtre</source>
+                <target>Filtre</target>
+            </trans-unit>
+            <trans-unit id="journalAuthAll" datatype="html">
+                <source>Toutes</source>
+                <target>Toutes</target>
+            </trans-unit>
+            <trans-unit id="journalAuthSuccess" datatype="html">
+                <source>Réussies</source>
+                <target>Réussies</target>
+            </trans-unit>
+            <trans-unit id="journalAuthFailed" datatype="html">
+                <source>Échouées</source>
+                <target>Échouées</target>
+            </trans-unit>
+        </body>
+    </file>
 </xliff>

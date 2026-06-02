@@ -4,7 +4,7 @@ import { firstValueFrom, isObservable, of } from 'rxjs';
 
 import { AuthGuard } from './auth.guard';
 import { AuthState, User } from '../models';
-import { UserService } from '../services';
+import { LoginModalService, UserService } from '../services';
 
 function runGuard(): Promise<boolean | UrlTree> {
     const guardResult = TestBed.runInInjectionContext(() =>
@@ -18,8 +18,10 @@ function runGuard(): Promise<boolean | UrlTree> {
 
 describe('AuthGuard', () => {
     const fakeUrlTree = { __urlTree: true } as unknown as UrlTree;
+    let modalShow: ReturnType<typeof vi.fn>;
 
     function configureWith(user: User) {
+        modalShow = vi.fn();
         TestBed.configureTestingModule({
             providers: [
                 {
@@ -27,6 +29,7 @@ describe('AuthGuard', () => {
                     useValue: { createUrlTree: vi.fn().mockReturnValue(fakeUrlTree) },
                 },
                 { provide: UserService, useValue: { user$: of(user) } },
+                { provide: LoginModalService, useValue: { show: modalShow, hide: vi.fn() } },
             ],
         });
     }
@@ -40,9 +43,10 @@ describe('AuthGuard', () => {
         });
 
         await expect(runGuard()).resolves.toBe(true);
+        expect(modalShow).not.toHaveBeenCalled();
     });
 
-    it('redirects signed-out visitors to /auth/login', async () => {
+    it('redirects signed-out visitors to /dashboard and opens the login modal', async () => {
         configureWith({
             id: undefined,
             login: 'guest',
@@ -51,5 +55,6 @@ describe('AuthGuard', () => {
         });
 
         await expect(runGuard()).resolves.toBe(fakeUrlTree);
+        expect(modalShow).toHaveBeenCalledTimes(1);
     });
 });

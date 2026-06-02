@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.jibe77.hermanas.data.entity.EventType;
+import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.service.system.SystemService;
 import org.jibe77.hermanas.security.audit.AuditLog;
 import org.jibe77.hermanas.security.ratelimit.RateLimited;
@@ -23,9 +25,11 @@ import java.util.Map;
 public class SystemRestController {
 
     SystemService systemService;
+    EventService eventService;
 
-    public SystemRestController(SystemService systemService) {
+    public SystemRestController(SystemService systemService, EventService eventService) {
         this.systemService = systemService;
+        this.eventService = eventService;
     }
 
     @Operation(
@@ -46,6 +50,7 @@ public class SystemRestController {
     @RateLimited(maxRequests = 2, windowSeconds = 300, message = "Too many shutdown attempts. Please wait 5 minutes.")
     @PostMapping(value = "/shutdown")
     public void shutdown() {
+        eventService.record(EventType.SHUTDOWN_REQUESTED);
         systemService.shutdown();
     }
 
@@ -67,6 +72,7 @@ public class SystemRestController {
     @RateLimited(maxRequests = 2, windowSeconds = 300, message = "Too many reboot attempts. Please wait 5 minutes.")
     @PostMapping(value = "/reboot")
     public void reboot() {
+        eventService.record(EventType.REBOOT_REQUESTED);
         systemService.reboot();
     }
 

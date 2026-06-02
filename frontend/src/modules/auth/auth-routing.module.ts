@@ -7,14 +7,7 @@ export const ROUTES: Routes = [
     {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'login',
-    },
-    {
-        path: 'login',
-        component: authContainers.LoginComponent,
-        data: {
-            title: 'Pages Login - Hermanas',
-        } as SBRouteData,
+        redirectTo: 'register',
     },
     {
         path: 'register',

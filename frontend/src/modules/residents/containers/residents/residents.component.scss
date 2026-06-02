@@ -1,0 +1,18 @@
+.resident-photo {
+    max-height: 160px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.resident-photo-placeholder {
+    height: 160px;
+    background-color: #f1f3f5;
+    color: #adb5bd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resident-row.deceased {
+    opacity: 0.55;
+}

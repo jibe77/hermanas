@@ -7,8 +7,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.service.abstract_model.Status;
+import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.service.config.ConfigService;
+import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.service.music.MusicService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +29,15 @@ public class MusicRestController {
 
     MusicService musicService;
     ConfigService configService;
+    EventService eventService;
 
     private static final Logger logger = LoggerFactory.getLogger(MusicRestController.class);
 
-    public MusicRestController(MusicService musicService, ConfigService configService) {
+    public MusicRestController(MusicService musicService, ConfigService configService,
+                               EventService eventService) {
         this.musicService = musicService;
         this.configService = configService;
+        this.eventService = eventService;
     }
 
     @Operation(
@@ -52,7 +58,11 @@ public class MusicRestController {
             boolean param,
             @Parameter(description = "Optional playlist name (sub-directory of music.path.mix)")
             @RequestParam(value = "playlist", required = false) String playlist) {
-        return musicService.switcher(param, playlist);
+        Status status = musicService.switcher(param, playlist);
+        eventService.record(status.getStatusEnum() == StatusEnum.ON
+                ? EventType.MUSIC_STARTED : EventType.MUSIC_STOPPED,
+                playlist != null && !playlist.isEmpty() ? "playlist=" + playlist : null);
+        return status;
     }
 
     @Operation(
@@ -86,7 +96,11 @@ public class MusicRestController {
     @GetMapping(value = "/cocorico")
     public boolean cocorico() {
         logger.info("Cocorico !");
-        return musicService.cocorico();
+        boolean played = musicService.cocorico();
+        if (played) {
+            eventService.record(EventType.COCORICO);
+        }
+        return played;
     }
 
     @Operation(

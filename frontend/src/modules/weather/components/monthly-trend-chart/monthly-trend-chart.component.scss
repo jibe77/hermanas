@@ -1,0 +1,135 @@
+.chart-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.trend-chart {
+    width: 100%;
+    height: auto;
+    display: block;
+    touch-action: none;
+
+    .grid-line {
+        stroke: rgba(0, 0, 0, 0.08);
+        stroke-width: 1;
+    }
+
+    .axis-line {
+        stroke: rgba(0, 0, 0, 0.25);
+        stroke-width: 1;
+    }
+
+    .axis-label {
+        font-size: 11px;
+        fill: #6c757d;
+    }
+
+    .temp-axis {
+        fill: #dc3545;
+    }
+
+    .hum-axis {
+        fill: #0d6efd;
+    }
+
+    .temp-line {
+        stroke: #dc3545;
+        stroke-width: 2;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+    }
+
+    .hum-line {
+        stroke: #0d6efd;
+        stroke-width: 2;
+        stroke-dasharray: 5 4;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+    }
+
+    .temp-dot {
+        fill: #dc3545;
+    }
+
+    .hum-dot {
+        fill: #0d6efd;
+    }
+
+    .hover-line {
+        stroke: rgba(0, 0, 0, 0.45);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+        pointer-events: none;
+    }
+}
+
+.trend-tooltip {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    pointer-events: none;
+    min-width: 170px;
+}
+
+.legend {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #495057;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 3px;
+    border-radius: 2px;
+    vertical-align: middle;
+
+    &.temp {
+        background: #dc3545;
+    }
+
+    &.hum {
+        background: #0d6efd;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .trend-chart {
+        .grid-line {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+        .axis-line {
+            stroke: rgba(255, 255, 255, 0.3);
+        }
+        .axis-label {
+            fill: #adb5bd;
+        }
+        .hover-line {
+            stroke: rgba(255, 255, 255, 0.55);
+        }
+    }
+    .trend-tooltip {
+        background: rgba(33, 37, 41, 0.95);
+        border-color: rgba(255, 255, 255, 0.15);
+        color: #f8f9fa;
+    }
+    .legend {
+        color: #adb5bd;
+    }
+}

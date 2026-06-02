@@ -92,7 +92,12 @@
       "Bash(javap -cp /Users/jean-baptisterenaux/.m2/repository/nl/martijndwars/web-push/5.1.2/web-push-5.1.2.jar nl.martijndwars.webpush.Notification)",
       "Bash(javap -cp /Users/jean-baptisterenaux/.m2/repository/nl/martijndwars/web-push/5.1.2/web-push-5.1.2.jar nl.martijndwars.webpush.AbstractPushService)",
       "WebFetch(domain:angular.dev)",
-      "Bash(npx prettier *)"
+      "Bash(npx prettier *)",
+      "Bash(echo \"---exit: $?\")",
+      "Bash(command -v pandoc)",
+      "Bash(command -v wkhtmltopdf)",
+      "Bash(pandoc docs/security-review-2026-05-30.md --pdf-engine=weasyprint -V geometry:margin=2cm -o docs/security-review-2026-05-30.pdf)",
+      "Bash(npx tsc *)"
     ],
     "deny": [],
     "ask": []

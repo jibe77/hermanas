@@ -14,4 +14,10 @@ export class WeatherService extends AbstractService {
             { headers: this.getHeaders() }
         );
     }
+
+    public getLastMonth(): Observable<MeteoInfo[]> {
+        return this._httpClient.get<MeteoInfo[]>(this.domainBase + '/sensor/history/month', {
+            headers: this.getHeaders(),
+        });
+    }
 }

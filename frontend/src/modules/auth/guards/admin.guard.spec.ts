@@ -4,7 +4,7 @@ import { firstValueFrom, isObservable, of } from 'rxjs';
 
 import { AdminGuard } from './admin.guard';
 import { AuthState, User } from '../models';
-import { UserService } from '../services';
+import { LoginModalService, UserService } from '../services';
 
 /**
  * The guard is a `CanActivateFn`, so it runs inside an injection context. The
@@ -26,6 +26,7 @@ describe('AdminGuard', () => {
     let mockRouter: { createUrlTree: ReturnType<typeof vi.fn> };
     let user$: { next: (u: User) => void };
     let userServiceStub: { user$: any };
+    let modalShow: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
         // Sentinel UrlTree so we can assert the redirect target.
@@ -39,10 +40,13 @@ describe('AdminGuard', () => {
             },
         };
 
+        modalShow = vi.fn();
+
         TestBed.configureTestingModule({
             providers: [
                 { provide: Router, useValue: mockRouter },
                 { provide: UserService, useValue: userServiceStub },
+                { provide: LoginModalService, useValue: { show: modalShow, hide: vi.fn() } },
             ],
         });
     });
@@ -72,7 +76,7 @@ describe('AdminGuard', () => {
         await expect(runGuard()).resolves.toBe(true);
     });
 
-    it('redirects signed-in USERs to /auth/login', async () => {
+    it('redirects signed-in USERs to /dashboard without opening the modal', async () => {
         user$.next({
             id: 'alice',
             login: 'alice',
@@ -82,10 +86,11 @@ describe('AdminGuard', () => {
         });
 
         await expect(runGuard()).resolves.toBe(fakeUrlTree);
-        expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/auth/login']);
+        expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/dashboard']);
+        expect(modalShow).not.toHaveBeenCalled();
     });
 
-    it('redirects signed-out visitors to /auth/login', async () => {
+    it('redirects signed-out visitors to /dashboard and opens the login modal', async () => {
         user$.next({
             id: undefined,
             login: 'guest',
@@ -95,6 +100,7 @@ describe('AdminGuard', () => {
         });
 
         await expect(runGuard()).resolves.toBe(fakeUrlTree);
+        expect(modalShow).toHaveBeenCalledTimes(1);
     });
 
     it('redirects when roles is undefined', async () => {

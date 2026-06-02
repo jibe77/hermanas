@@ -6,8 +6,8 @@ import {
     OnInit,
     inject,
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { LoginService, UserService } from '@modules/auth/services';
+import { Router } from '@angular/router';
+import { LoginModalService, LoginService, UserService } from '@modules/auth/services';
 import { AuthState } from '@modules/auth/models';
 import { NavigationService } from '@modules/navigation/services';
 import { Subscription } from 'rxjs';
@@ -20,19 +20,13 @@ import { AsyncPipe } from '@angular/common';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './top-nav-user.component.html',
     styleUrls: ['top-nav-user.component.scss'],
-    imports: [
-        NgbDropdown,
-        NgbDropdownToggle,
-        FaIconComponent,
-        NgbDropdownMenu,
-        RouterLink,
-        AsyncPipe,
-    ],
+    imports: [NgbDropdown, NgbDropdownToggle, FaIconComponent, NgbDropdownMenu, AsyncPipe],
 })
 export class TopNavUserComponent implements OnInit, OnDestroy {
     navigationService = inject(NavigationService);
     userService = inject(UserService);
     private loginService = inject(LoginService);
+    private loginModal = inject(LoginModalService);
     private changeDetectorRef = inject(ChangeDetectorRef);
     private router = inject(Router);
 
@@ -47,6 +41,10 @@ export class TopNavUserComponent implements OnInit, OnDestroy {
                 this.changeDetectorRef.markForCheck();
             })
         );
+    }
+
+    openLogin(): void {
+        this.loginModal.show();
     }
 
     async logout(): Promise<void> {

@@ -1,23 +1,25 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { LayoutAuthComponent } from '../../../navigation/layouts/layout-auth/layout-auth.component';
+import { LoginModalService } from '../../services/login-modal.service';
 
 @Component({
     selector: 'sb-register',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './register.component.html',
     styleUrls: ['register.component.scss'],
-    imports: [LayoutAuthComponent, ReactiveFormsModule, RouterLink],
+    imports: [LayoutAuthComponent, ReactiveFormsModule],
 })
 export class RegisterComponent {
     private fb = inject(FormBuilder);
     private http = inject(HttpClient);
     private router = inject(Router);
     private cdr = inject(ChangeDetectorRef);
+    private loginModal = inject(LoginModalService);
 
     registerForm: FormGroup;
     errorMessage = '';
@@ -54,7 +56,7 @@ export class RegisterComponent {
     }
 
     goToLogin(): void {
-        this.router.navigateByUrl('/auth/login');
+        this.router.navigateByUrl('/dashboard').then(() => this.loginModal.show());
     }
 
     private translateError(e: unknown): string {

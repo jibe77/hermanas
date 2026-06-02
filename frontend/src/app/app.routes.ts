@@ -46,6 +46,11 @@ export const APP_ROUTES: Routes = [
             import('modules/notification/notification-routing.module').then(m => m.ROUTES),
     },
     {
+        path: 'residents',
+        loadChildren: () =>
+            import('modules/residents/residents-routing.module').then(m => m.ROUTES),
+    },
+    {
         path: 'system',
         loadChildren: () => import('modules/system/system-routing.module').then(m => m.ROUTES),
     },

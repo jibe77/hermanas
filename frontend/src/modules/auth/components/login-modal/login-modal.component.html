@@ -1,14 +1,29 @@
-<sb-layout-auth
-    ><div class="container">
-        <div class="card login-card">
+@if (open()) {
+    <div class="sb-login-modal-backdrop" (click)="close()"></div>
+    <div
+        class="sb-login-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sbLoginModalTitle"
+    >
+        <div class="card login-modal-card" (click)="$event.stopPropagation()">
             <div class="card-body">
-                <h4 class="card-title text-center" i18n="@@signin">Connexion</h4>
+                <button
+                    type="button"
+                    class="btn-close float-end"
+                    (click)="close()"
+                    [disabled]="submitting"
+                    aria-label="Close"
+                ></button>
+                <h4 class="card-title text-center mb-3" id="sbLoginModalTitle" i18n="@@signin">
+                    Connexion
+                </h4>
                 <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
                     <div class="form-group mb-3">
-                        <label for="username" i18n="@@username">Identifiant</label
-                        ><input
+                        <label for="sb-login-modal-username" i18n="@@username">Identifiant</label>
+                        <input
                             class="form-control"
-                            id="username"
+                            id="sb-login-modal-username"
                             type="text"
                             formControlName="username"
                             autocomplete="username"
@@ -17,10 +32,10 @@
                         />
                     </div>
                     <div class="form-group mb-3">
-                        <label for="password" i18n="@@password">Mot de passe</label
-                        ><input
+                        <label for="sb-login-modal-password" i18n="@@password">Mot de passe</label>
+                        <input
                             class="form-control"
-                            id="password"
+                            id="sb-login-modal-password"
                             type="password"
                             formControlName="password"
                             autocomplete="current-password"
@@ -31,11 +46,15 @@
                     <div class="form-check mb-3">
                         <input
                             class="form-check-input"
-                            id="rememberMe"
+                            id="sb-login-modal-rememberme"
                             type="checkbox"
                             formControlName="rememberMe"
                             data-cy="loginRememberMe"
-                        /><label class="form-check-label" for="rememberMe" i18n="@@rememberMe"
+                        />
+                        <label
+                            class="form-check-label"
+                            for="sb-login-modal-rememberme"
+                            i18n="@@rememberMe"
                             >Se souvenir de moi</label
                         >
                     </div>
@@ -58,12 +77,15 @@
                         }
                     </button>
                     <div class="mt-3 text-center">
-                        <a routerLink="/auth/register" i18n="@@loginCreateAccount"
+                        <a
+                            href="javascript:void(0)"
+                            (click)="goToRegister()"
+                            i18n="@@loginCreateAccount"
                             >Pas de compte ? S'inscrire</a
                         >
                     </div>
                 </form>
             </div>
         </div>
-    </div></sb-layout-auth
->
+    </div>
+}

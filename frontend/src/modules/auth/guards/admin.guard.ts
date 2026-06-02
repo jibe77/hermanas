@@ -3,16 +3,17 @@ import { CanActivateFn, Router } from '@angular/router';
 import { map, take } from 'rxjs/operators';
 
 import { AuthState, User } from '../models';
-import { UserService } from '../services';
+import { UserService, LoginModalService } from '../services';
 
 /**
  * Allows navigation only to authenticated administrators. Anonymous or USER
- * sessions get redirected to /auth/login. The check accepts both the canonical
- * `ADMIN` role and Spring's legacy `ROLE_ADMIN` spelling.
+ * sessions are bounced to /dashboard with the login modal opened. The check
+ * accepts both the canonical `ADMIN` role and Spring's legacy `ROLE_ADMIN`.
  */
 export const AdminGuard: CanActivateFn = () => {
     const userService = inject(UserService);
     const router = inject(Router);
+    const modal = inject(LoginModalService);
     return userService.user$.pipe(
         take(1),
         map((user: User) => {
@@ -22,7 +23,10 @@ export const AdminGuard: CanActivateFn = () => {
             if (isSignedIn && isAdmin) {
                 return true;
             }
-            return router.createUrlTree(['/auth/login']);
+            if (!isSignedIn) {
+                modal.show();
+            }
+            return router.createUrlTree(['/dashboard']);
         })
     );
 };
