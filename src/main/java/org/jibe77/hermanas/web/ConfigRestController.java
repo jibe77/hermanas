@@ -30,7 +30,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/config")
 @Tag(name = "Configuration", description = "Admin endpoints for viewing and modifying system configuration")
-@PreAuthorize("hasRole('USER')")  // All endpoints in this controller require authentication
+@PreAuthorize("isAuthenticated()")
 public class ConfigRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigRestController.class);

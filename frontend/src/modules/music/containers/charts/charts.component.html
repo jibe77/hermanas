@@ -22,7 +22,6 @@
                         class="form-check-input"
                         id="cocoricoToggle"
                         [(ngModel)]="cocoricoEnabled"
-                        (ngModelChange)="onCocoricoToggle()"
                     />
                     <label class="form-check-label" for="cocoricoToggle" i18n="@@musicCocoricoLabel"
                         >Jouer cocorico au lever du soleil</label
@@ -34,7 +33,6 @@
                         class="form-check-input"
                         id="songAtSunsetToggle"
                         [(ngModel)]="songAtSunsetEnabled"
-                        (ngModelChange)="onSongAtSunsetToggle()"
                     />
                     <label
                         class="form-check-label"
@@ -43,41 +41,52 @@
                         >Jouer une chanson au coucher du soleil</label
                     >
                 </div>
-            </div>
-        </sb-card>
-    }
-    <sb-card>
-        <div class="card-header">
-            <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon>
-            <span i18n="@@musicVolumeTitle">Volume</span>
-        </div>
-        <div class="card-body">
-            <label class="form-label small d-flex justify-content-between">
-                <span i18n="@@musicVolumeLabel">Volume habituel</span>
-                <span class="text-muted">{{ volumePercent }}%</span>
-            </label>
-            <div class="d-flex align-items-center gap-2">
-                <input
-                    type="range"
-                    class="form-range"
-                    min="0"
-                    max="100"
-                    step="1"
-                    [(ngModel)]="volumePercent"
-                    (ngModelChange)="onVolumeChange()"
-                />
                 <button
                     type="button"
-                    class="btn btn-primary btn-sm"
-                    (click)="saveVolume()"
-                    [disabled]="!volumeDirty || volumeSaving"
+                    class="btn btn-primary btn-sm mt-3"
+                    (click)="saveAudioToggles()"
+                    [disabled]="!audioTogglesDirty || audioTogglesSaving"
                 >
                     <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
                     <span i18n="@@save">Save</span>
                 </button>
             </div>
-        </div>
-    </sb-card>
+        </sb-card>
+    }
+    @if (isAdmin) {
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon>
+                <span i18n="@@musicVolumeTitle">Volume</span>
+            </div>
+            <div class="card-body">
+                <label class="form-label small d-flex justify-content-between">
+                    <span i18n="@@musicVolumeLabel">Volume habituel</span>
+                    <span class="text-muted">{{ volumePercent }}%</span>
+                </label>
+                <div class="d-flex align-items-center gap-2">
+                    <input
+                        type="range"
+                        class="form-range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        [(ngModel)]="volumePercent"
+                        (ngModelChange)="onVolumeChange()"
+                    />
+                    <button
+                        type="button"
+                        class="btn btn-primary btn-sm"
+                        (click)="saveVolume()"
+                        [disabled]="!volumeDirty || volumeSaving"
+                    >
+                        <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                        <span i18n="@@save">Save</span>
+                    </button>
+                </div>
+            </div>
+        </sb-card>
+    }
     <div class="row">
         <div class="col-lg-6">
             <sb-card

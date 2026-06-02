@@ -9,11 +9,6 @@
                             <fa-icon [icon]="['fas', 'tachometer-alt']"></fa-icon>
                         </div>
                         <span i18n="@@dashboard">Dashboard</span></a
-                    ><a class="nav-link" routerLink="/weather" routerLinkActive="active"
-                        ><div class="sb-nav-link-icon">
-                            <fa-icon [icon]="['fas', 'sun']"></fa-icon>
-                        </div>
-                        <span i18n="@@weatherMenu">Weather</span></a
                     >
                     @if (isSignedIn()) {
                         <a class="nav-link" routerLink="/camera" routerLinkActive="active"
@@ -23,16 +18,23 @@
                             <span i18n="@@webcamMenu">Webcam</span></a
                         >
                     }
-                    @if (isSignedIn()) {
-                        <a class="nav-link" routerLink="/logs" routerLinkActive="active"
-                            ><div class="sb-nav-link-icon">
-                                <fa-icon [icon]="['fas', 'file-contract']"></fa-icon>
-                            </div>
-                            <span i18n="@@logsMenu">Logs</span></a
-                        >
-                    }
+                    <a class="nav-link" routerLink="/music" routerLinkActive="active"
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'music']"></fa-icon>
+                        </div>
+                        <span i18n="@@playlistMenu">Music playlist</span></a
+                    ><a class="nav-link" routerLink="/weather" routerLinkActive="active"
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'sun']"></fa-icon>
+                        </div>
+                        <span i18n="@@weatherMenu">Weather</span></a
+                    ><a class="nav-link" routerLink="/residents" routerLinkActive="active"
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'feather']"></fa-icon>
+                        </div>
+                        <span i18n="@@residentsMenu">Pensionnaires</span></a
+                    >
                 </ng-container>
-                <div class="sb-sidenav-menu-heading">Config</div>
                 <ng-container>
                     @if (isAdmin()) {
                         <a class="nav-link" routerLink="/energy" routerLinkActive="active"
@@ -50,11 +52,11 @@
                             <span i18n="@@usersMenu">Users</span></a
                         >
                     }
-                    <a class="nav-link" routerLink="/music" routerLinkActive="active"
+                    <a class="nav-link" routerLink="/logs" routerLinkActive="active"
                         ><div class="sb-nav-link-icon">
-                            <fa-icon [icon]="['fas', 'music']"></fa-icon>
+                            <fa-icon [icon]="['fas', 'file-contract']"></fa-icon>
                         </div>
-                        <span i18n="@@playlistMenu">Music playlist</span></a
+                        <span i18n="@@journalMenu">Journalisation</span></a
                     ><a class="nav-link" routerLink="/system" routerLinkActive="active"
                         ><div class="sb-nav-link-icon">
                             <fa-icon [icon]="['fas', 'laptop']"></fa-icon>

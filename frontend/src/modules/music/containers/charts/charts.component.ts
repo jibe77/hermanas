@@ -11,7 +11,7 @@ import { ToastService } from '@common/services';
 import { ChartsService } from '@modules/music/services/charts.service';
 import { ConfigService } from '@modules/energy/services/config.service';
 import { UserService } from '@modules/auth/services';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
 import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
@@ -43,6 +43,9 @@ export class ChartsComponent implements OnInit, OnDestroy {
     isAdmin = false;
     cocoricoEnabled = false;
     songAtSunsetEnabled = false;
+    private persistedCocoricoEnabled = false;
+    private persistedSongAtSunsetEnabled = false;
+    audioTogglesSaving = false;
 
     playlists: string[] = [];
     selectedPlaylist = '';
@@ -75,6 +78,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
                     this.persistedVolume = this.volumePercent;
                     this.cocoricoEnabled = cfg.audio_toggles.cocorico_at_sunrise;
                     this.songAtSunsetEnabled = cfg.audio_toggles.song_at_sunset;
+                    this.persistedCocoricoEnabled = this.cocoricoEnabled;
+                    this.persistedSongAtSunsetEnabled = this.songAtSunsetEnabled;
                     this.cdr.detectChanges();
                 },
                 error: () => {
@@ -83,41 +88,45 @@ export class ChartsComponent implements OnInit, OnDestroy {
             });
     }
 
-    onCocoricoToggle(): void {
-        this._configService
-            .setCocoricoAtSunrise(this.cocoricoEnabled)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: () =>
-                    this._toastService.success(
-                        this.cocoricoEnabled ? 'Cocorico activé' : 'Cocorico désactivé',
-                        'Music'
-                    ),
-                error: (err: HttpErrorResponse) =>
-                    this._toastService.error(
-                        err.error?.message || err.message || 'Save failed',
-                        `Music — HTTP ${err.status}`
-                    ),
-            });
+    get audioTogglesDirty(): boolean {
+        return (
+            this.cocoricoEnabled !== this.persistedCocoricoEnabled ||
+            this.songAtSunsetEnabled !== this.persistedSongAtSunsetEnabled
+        );
     }
 
-    onSongAtSunsetToggle(): void {
-        this._configService
-            .setSongAtSunset(this.songAtSunsetEnabled)
+    saveAudioToggles(): void {
+        if (!this.audioTogglesDirty || this.audioTogglesSaving) {
+            return;
+        }
+        const cocoricoChanged = this.cocoricoEnabled !== this.persistedCocoricoEnabled;
+        const songChanged = this.songAtSunsetEnabled !== this.persistedSongAtSunsetEnabled;
+        const calls = [];
+        if (cocoricoChanged) {
+            calls.push(this._configService.setCocoricoAtSunrise(this.cocoricoEnabled));
+        }
+        if (songChanged) {
+            calls.push(this._configService.setSongAtSunset(this.songAtSunsetEnabled));
+        }
+        this.audioTogglesSaving = true;
+        forkJoin(calls)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: () =>
-                    this._toastService.success(
-                        this.songAtSunsetEnabled
-                            ? 'Chanson du soir activée'
-                            : 'Chanson du soir désactivée',
-                        'Music'
-                    ),
-                error: (err: HttpErrorResponse) =>
+                next: () => {
+                    this.persistedCocoricoEnabled = this.cocoricoEnabled;
+                    this.persistedSongAtSunsetEnabled = this.songAtSunsetEnabled;
+                    this.audioTogglesSaving = false;
+                    this._toastService.success('Sons automatiques sauvegardés', 'Music');
+                    this.cdr.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.audioTogglesSaving = false;
                     this._toastService.error(
                         err.error?.message || err.message || 'Save failed',
                         `Music — HTTP ${err.status}`
-                    ),
+                    );
+                    this.cdr.detectChanges();
+                },
             });
     }
 
