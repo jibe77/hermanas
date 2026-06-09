@@ -15,25 +15,118 @@
     <sb-card>
         <div class="card-header">
             <fa-icon class="me-1" [icon]="['fas', 'camera']"></fa-icon>
-            <nav aria-label="breadcrumb" class="d-inline-block">
-                <ol class="breadcrumb mb-0">
-                    @for (c of crumbs; track c; let last = $last) {
-                        <li class="breadcrumb-item" [class.active]="last">
-                            @if (!last) {
-                                <a href="javascript:void(0)" (click)="goTo(c.path)">{{
-                                    c.label
-                                }}</a>
-                            }
-                            @if (last) {
-                                <span>{{ c.label }}</span>
-                            }
-                        </li>
-                    }
-                </ol>
-            </nav>
+            <span i18n="@@cameraLivePanelTitle">Live photo</span>
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary float-end"
+                (click)="startCapture()"
+                [disabled]="captureInFlight"
+                i18n-title="@@cameraTakePicture"
+                title="Take a new picture"
+            >
+                <fa-icon [icon]="['fas', 'sync']"></fa-icon>
+            </button>
         </div>
-        <div class="card-body">
-            @if (loading) {
+        <div class="card-body text-center">
+            @if (captureInFlight && !snapshotLoaded && !snapshotFailed) {
+                <div class="text-muted">
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <span i18n="@@cameraSnapshotLoading">Capturing…</span>
+                </div>
+            }
+            @if (snapshotFailed) {
+                <div class="text-muted" i18n="@@informationNotAvailable">
+                    Information not available
+                </div>
+            }
+            @if (snapshotUrl && snapshotLoaded) {
+                <img
+                    [src]="snapshotUrl"
+                    class="img-fluid photo-large"
+                    alt="chicken coop snapshot"
+                    i18n-alt="@@cameraSnapshotAlt"
+                />
+            }
+            <!-- Analysis controls live outside the snapshot @if so they remain
+                 usable even if the picture itself failed to render. Open to all
+                 visitors: POST /api/v1/captures is rate-limited per IP server
+                 side, so spamming it just earns a 429. -->
+            @if (snapshotUrl || captureInFlight) {
+                <div class="mt-3">
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="startCapture()"
+                        [disabled]="captureInFlight"
+                    >
+                        @if (aiAnalysisLoading) {
+                            <span
+                                class="spinner-border spinner-border-sm me-1"
+                                role="status"
+                            ></span>
+                            <span i18n="@@cameraAnalyzeLoading">Analyzing…</span>
+                        }
+                        @if (!aiAnalysisLoading) {
+                            <span i18n="@@cameraAnalyzeButton">AI analysis</span>
+                        }
+                    </button>
+
+                    @if (aiAnalysisLoading) {
+                        <div class="ai-analysis-loader mt-3">
+                            <div class="ai-loader-icons" aria-hidden="true">
+                                <fa-icon [icon]="['fas', 'feather']" class="ai-loader-icon"></fa-icon>
+                                <fa-icon [icon]="['fas', 'door-open']" class="ai-loader-icon"></fa-icon>
+                                <fa-icon [icon]="['fas', 'fan']" class="ai-loader-icon"></fa-icon>
+                                <fa-icon [icon]="['fas', 'search']" class="ai-loader-icon"></fa-icon>
+                                <fa-icon [icon]="['fas', 'check']" class="ai-loader-icon"></fa-icon>
+                            </div>
+                            <div class="ai-loader-progress mt-2">
+                                <div class="ai-loader-bar"></div>
+                            </div>
+                            <div class="small text-muted mt-2">
+                                {{ aiAnalysisStep }}
+                                <span class="ai-loader-dots">
+                                    <span>.</span><span>.</span><span>.</span>
+                                </span>
+                            </div>
+                        </div>
+                    }
+
+                    @if (aiAnalysisResult) {
+                        <div
+                            class="ai-analysis-result text-start mt-3 small"
+                            [innerHTML]="aiAnalysisResultHtml"
+                        ></div>
+                    }
+                </div>
+            }
+        </div>
+    </sb-card>
+
+    @if (isSignedIn) {
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'camera']"></fa-icon>
+                <span class="me-2" i18n="@@cameraArchivesTitle">Archives</span>
+                <nav aria-label="breadcrumb" class="d-inline-block">
+                    <ol class="breadcrumb mb-0">
+                        @for (c of crumbs; track c; let last = $last) {
+                            <li class="breadcrumb-item" [class.active]="last">
+                                @if (!last) {
+                                    <a href="javascript:void(0)" (click)="goTo(c.path)">{{
+                                        c.label
+                                    }}</a>
+                                }
+                                @if (last) {
+                                    <span>{{ c.label }}</span>
+                                }
+                            </li>
+                        }
+                    </ol>
+                </nav>
+            </div>
+            <div class="card-body">
+                @if (loading) {
                 <div class="text-muted">
                     <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                     <span i18n="@@cameraLoading">Loading…</span>
@@ -76,31 +169,32 @@
         </div>
     </sb-card>
 
-    @if (selected) {
-        <sb-card>
-            <div class="card-header">
-                <fa-icon class="me-1" [icon]="['fas', 'image']"></fa-icon>{{ selected.name }}
-                <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary float-end"
-                    (click)="clearSelection()"
-                    i18n-title="@@cameraClose"
-                    title="Close"
-                >
-                    <fa-icon [icon]="['fas', 'times']"></fa-icon>
-                </button>
-            </div>
-            <div class="card-body text-center">
-                <img [src]="selected.url" alt="" class="img-fluid photo-large" />
-            </div>
-        </sb-card>
+        @if (selected) {
+            <sb-card>
+                <div class="card-header">
+                    <fa-icon class="me-1" [icon]="['fas', 'image']"></fa-icon>{{ selected.name }}
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-secondary float-end"
+                        (click)="clearSelection()"
+                        i18n-title="@@cameraClose"
+                        title="Close"
+                    >
+                        <fa-icon [icon]="['fas', 'times']"></fa-icon>
+                    </button>
+                </div>
+                <div class="card-body text-center">
+                    <img [src]="selected.url" alt="" class="img-fluid photo-large" />
+                </div>
+            </sb-card>
+        }
     }
 
     @if (isAdmin) {
         <sb-card>
             <div class="card-header">
                 <fa-icon class="me-1" [icon]="['fas', 'edit']"></fa-icon>
-                <span i18n="@@cameraSettingsTitle">Réglages caméra</span>
+                <span i18n="@@cameraSettingsTitle">Camera settings</span>
             </div>
             <div class="card-body">
                 <p class="small text-muted" i18n="@@cameraSettingsHelp">
@@ -109,7 +203,7 @@
                 <div class="row g-3">
                     <div class="col-md-7">
                         <label class="form-label small d-flex justify-content-between">
-                            <span i18n="@@cameraBrightness">Luminosité</span>
+                            <span i18n="@@cameraBrightness">Brightness</span>
                             <span class="text-muted">{{ cameraBrightness }}</span>
                         </label>
                         <input
@@ -142,6 +236,103 @@
                             class="btn btn-primary btn-sm w-100"
                             (click)="saveCameraSettings()"
                             [disabled]="cameraSaving"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                            <span i18n="@@save">Save</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </sb-card>
+
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'book-open']"></fa-icon>
+                <span i18n="@@aiInferenceTitle">AI inference endpoint</span>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted" i18n="@@aiInferenceHelp">
+                    URL of the local LLM used by the "AI analysis" button. Leave empty to mark the
+                    feature as not configured.
+                </p>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label
+                            for="aiInferenceUrl"
+                            class="form-label small"
+                            i18n="@@aiInferenceUrlLabel"
+                            >Inference URL</label
+                        >
+                        <input
+                            id="aiInferenceUrl"
+                            type="url"
+                            class="form-control form-control-sm"
+                            placeholder="http://alyssa:8080/v1"
+                            [(ngModel)]="aiInferenceUrl"
+                        />
+                    </div>
+                    <div class="col-md-3">
+                        <label
+                            for="aiInferenceModel"
+                            class="form-label small"
+                            i18n="@@aiInferenceModelLabel"
+                            >Model</label
+                        >
+                        <input
+                            id="aiInferenceModel"
+                            type="text"
+                            class="form-control form-control-sm"
+                            placeholder="focus"
+                            [(ngModel)]="aiInferenceModel"
+                        />
+                    </div>
+                    <div class="col-md-3">
+                        <label
+                            for="aiInferenceCacheTtlSec"
+                            class="form-label small"
+                            i18n="@@aiInferenceCacheTtlLabel"
+                            >Cache (s)</label
+                        >
+                        <input
+                            id="aiInferenceCacheTtlSec"
+                            type="number"
+                            min="0"
+                            max="3600"
+                            step="10"
+                            class="form-control form-control-sm"
+                            placeholder="120"
+                            [(ngModel)]="aiInferenceCacheTtlSec"
+                        />
+                    </div>
+                    <div class="col-12">
+                        <label
+                            for="aiInferencePrompt"
+                            class="form-label small d-flex justify-content-between flex-wrap"
+                        >
+                            <span i18n="@@aiInferencePromptLabel">Prompt (English only)</span>
+                            <span class="text-muted small" i18n="@@aiInferencePromptHint"
+                                >Leave empty to use the built-in default. The UI language is
+                                appended automatically.</span
+                            >
+                        </label>
+                        <textarea
+                            id="aiInferencePrompt"
+                            rows="8"
+                            class="form-control form-control-sm font-monospace ai-prompt-textarea"
+                            [(ngModel)]="aiInferencePrompt"
+                        ></textarea>
+                    </div>
+                    <!-- Save commits URL + model + cache TTL + prompt together
+                         (saveAiInferenceUrl does the fan-out). Pulled out into
+                         its own row, right-aligned, so it visually owns the
+                         whole form rather than appearing wedged between the
+                         URL/model inputs and the prompt textarea. -->
+                    <div class="col-12 d-flex justify-content-end">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            (click)="saveAiInferenceUrl()"
+                            [disabled]="aiInferenceSaving"
                         >
                             <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
                             <span i18n="@@save">Save</span>
