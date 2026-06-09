@@ -45,7 +45,7 @@
     "@ng-bootstrap/ng-bootstrap": "^19.0.1",
     "@popperjs/core": "^2.11.8",
     "@stomp/rx-stomp": "~2.4.0",
-    "@stomp/stompjs": "^7.2.1",
+    "@stomp/stompjs": "^7.3.0",
     "flag-icon-css": "^3.5.0",
     "rxjs": "~7.8.1",
     "tslib": "2.2.0",
