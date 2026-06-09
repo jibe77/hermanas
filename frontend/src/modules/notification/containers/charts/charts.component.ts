@@ -15,7 +15,9 @@ import {
     UserUpdate,
 } from '@modules/notification/services/charts.service';
 import { UserService } from '@modules/auth/services';
-import { Subject } from 'rxjs';
+import { ConfigService } from '@modules/energy/services/config.service';
+import { EmailTestService } from '@modules/system/services/email-test.service';
+import { Observable, Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
 import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
@@ -44,6 +46,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
     private _userService = inject(UserService);
     private _toastService = inject(ToastService);
     private _pushService = inject(PushService);
+    private _configService = inject(ConfigService);
+    private _emailTestService = inject(EmailTestService);
     private cdr = inject(ChangeDetectorRef);
 
     pushSupported = false;
@@ -55,7 +59,9 @@ export class ChartsComponent implements OnInit, OnDestroy {
 
     meEmail = '';
     meNotifications = false;
+    meLanguage: 'fr' | 'en' | 'ro' = 'fr';
     mePassword = '';
+    mePasswordConfirm = '';
     meDirty = false;
     meSaving = false;
 
@@ -65,27 +71,57 @@ export class ChartsComponent implements OnInit, OnDestroy {
     showCreate = false;
     newLogin = '';
     newPassword = '';
+    newPasswordConfirm = '';
     newEmail = '';
     newRole = 'USER';
     newNotifications = false;
+    newLanguage: 'fr' | 'en' | 'ro' = 'fr';
     creating = false;
 
     editingLogin?: string;
     editEmail = '';
     editRole = 'USER';
     editNotifications = false;
+    editLanguage: 'fr' | 'en' | 'ro' = 'fr';
     editPassword = '';
+    editPasswordConfirm = '';
     editSaving = false;
+
+    // Email config state (moved from System page)
+    emailFrom = '';
+    emailSaving = false;
+    emailTestSending = false;
+    mailHost = '';
+    mailPort = 25;
+    mailUsername = '';
+    mailPasswordInput = '';
+    mailPasswordSet = false;
+    mailAuth = true;
+    mailStartTls = true;
+    private persistedMailHost = '';
+    private persistedMailPort = 25;
+    private persistedMailUsername = '';
+    private persistedMailAuth = true;
+    private persistedMailStartTls = true;
 
     private destroy$ = new Subject<void>();
 
     ngOnInit(): void {
-        const current = this._userService.getCurrentUser();
-        this.isAdmin = (current.roles ?? []).includes('ROLE_ADMIN');
+        // Route admin detection through UserService.isAdmin() so demo mode
+        // (synthetic ADMIN with roles ['ADMIN'], not 'ROLE_ADMIN') and a real
+        // signed-in admin both unfold the User administration + Email panels.
+        // Subscribe to user$ so the panels appear/disappear on login/logout
+        // without a manual page reload.
+        this._userService.user$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+            const wasAdmin = this.isAdmin;
+            this.isAdmin = this._userService.isAdmin();
+            if (this.isAdmin && !wasAdmin) {
+                this.loadUsers();
+                this.loadEmailSettings();
+            }
+            this.cdr.detectChanges();
+        });
         this.loadMe();
-        if (this.isAdmin) {
-            this.loadUsers();
-        }
         this.refreshPushState();
     }
 
@@ -142,6 +178,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
                     this.me = u;
                     this.meEmail = u.email ?? '';
                     this.meNotifications = u.notificationsEnabled;
+                    this.meLanguage = (u.language ?? 'fr') as 'fr' | 'en' | 'ro';
                     this.mePassword = '';
                     this.meDirty = false;
                     this.cdr.detectChanges();
@@ -157,16 +194,38 @@ export class ChartsComponent implements OnInit, OnDestroy {
         this.meDirty =
             this.meEmail !== (this.me.email ?? '') ||
             this.meNotifications !== this.me.notificationsEnabled ||
-            this.mePassword.length > 0;
+            this.meLanguage !== ((this.me.language ?? 'fr') as 'fr' | 'en' | 'ro') ||
+            this.mePassword.length > 0 ||
+            this.mePasswordConfirm.length > 0;
+    }
+
+    /** True when the user has typed a new password but the confirmation field
+     *  does not match. Used to disable Save buttons and surface inline help. */
+    get mePasswordMismatch(): boolean {
+        return this.mePassword.length > 0 && this.mePassword !== this.mePasswordConfirm;
+    }
+    get newPasswordMismatch(): boolean {
+        return this.newPassword.length > 0 && this.newPassword !== this.newPasswordConfirm;
+    }
+    get editPasswordMismatch(): boolean {
+        return this.editPassword.length > 0 && this.editPassword !== this.editPasswordConfirm;
     }
 
     saveMe(): void {
         if (!this.me || !this.meDirty || this.meSaving) {
             return;
         }
+        if (this.mePasswordMismatch) {
+            this._toastService.error(
+                $localize`:@@passwordMismatch:The two password fields do not match.`,
+                'Users'
+            );
+            return;
+        }
         const payload: UserUpdate = {
             email: this.meEmail,
             notificationsEnabled: this.meNotifications,
+            language: this.meLanguage,
         };
         if (this.mePassword.length > 0) {
             payload.password = this.mePassword;
@@ -179,6 +238,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 next: u => {
                     this.me = u;
                     this.mePassword = '';
+                    this.mePasswordConfirm = '';
                     this.meSaving = false;
                     this.meDirty = false;
                     this._toastService.success('Profil mis à jour', 'Users');
@@ -214,9 +274,11 @@ export class ChartsComponent implements OnInit, OnDestroy {
         if (this.showCreate) {
             this.newLogin = '';
             this.newPassword = '';
+            this.newPasswordConfirm = '';
             this.newEmail = '';
             this.newRole = 'USER';
             this.newNotifications = false;
+            this.newLanguage = 'fr';
         }
     }
 
@@ -226,12 +288,20 @@ export class ChartsComponent implements OnInit, OnDestroy {
             this._toastService.error('Login and password are required', 'Users');
             return;
         }
+        if (this.newPasswordMismatch) {
+            this._toastService.error(
+                $localize`:@@passwordMismatch:The two password fields do not match.`,
+                'Users'
+            );
+            return;
+        }
         const payload: UserCreate = {
             login: this.newLogin.trim(),
             password: this.newPassword,
             email: this.newEmail.trim() || null,
             role: this.newRole,
             notificationsEnabled: this.newNotifications,
+            language: this.newLanguage,
         };
         this.creating = true;
         this._chartsService
@@ -242,6 +312,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
                     this.users = [...this.users, u];
                     this.creating = false;
                     this.showCreate = false;
+                    this.newPassword = '';
+                    this.newPasswordConfirm = '';
                     this._toastService.success(`Utilisateur "${u.login}" créé`, 'Users');
                     this.cdr.detectChanges();
                 },
@@ -257,19 +329,31 @@ export class ChartsComponent implements OnInit, OnDestroy {
         this.editEmail = user.email ?? '';
         this.editRole = user.role;
         this.editNotifications = user.notificationsEnabled;
+        this.editLanguage = (user.language ?? 'fr') as 'fr' | 'en' | 'ro';
         this.editPassword = '';
+        this.editPasswordConfirm = '';
     }
 
     cancelEdit(): void {
         this.editingLogin = undefined;
+        this.editPassword = '';
+        this.editPasswordConfirm = '';
     }
 
     submitEdit(): void {
         if (!this.editingLogin || this.editSaving) return;
+        if (this.editPasswordMismatch) {
+            this._toastService.error(
+                $localize`:@@passwordMismatch:The two password fields do not match.`,
+                'Users'
+            );
+            return;
+        }
         const payload: UserUpdate = {
             email: this.editEmail,
             notificationsEnabled: this.editNotifications,
             role: this.editRole,
+            language: this.editLanguage,
         };
         if (this.editPassword.length > 0) {
             payload.password = this.editPassword;
@@ -283,6 +367,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
                     this.users = this.users.map(x => (x.login === u.login ? u : x));
                     this.editSaving = false;
                     this.editingLogin = undefined;
+                    this.editPassword = '';
+                    this.editPasswordConfirm = '';
                     this._toastService.success(`Utilisateur "${u.login}" mis à jour`, 'Users');
                     this.cdr.detectChanges();
                 },
@@ -339,5 +425,121 @@ export class ChartsComponent implements OnInit, OnDestroy {
         const msg = err.error?.error || err.error?.message || err.message || defaultMessage;
         this._toastService.error(msg, `Users — HTTP ${err.status}`);
         this.cdr.detectChanges();
+    }
+
+    // ─── Email + SMTP config ────────────────────────────────────────────────────
+
+    private loadEmailSettings(): void {
+        this._configService
+            .getAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: cfg => {
+                    this.emailFrom = cfg.email_settings.from ?? '';
+                    const smtp = cfg.email_smtp;
+                    if (smtp) {
+                        this.mailHost = smtp.host ?? '';
+                        this.mailPort = smtp.port ?? 25;
+                        this.mailUsername = smtp.username ?? '';
+                        this.mailPasswordSet = smtp.password_set;
+                        this.mailAuth = smtp.auth;
+                        this.mailStartTls = smtp.starttls;
+                        this.persistedMailHost = this.mailHost;
+                        this.persistedMailPort = this.mailPort;
+                        this.persistedMailUsername = this.mailUsername;
+                        this.persistedMailAuth = this.mailAuth;
+                        this.persistedMailStartTls = this.mailStartTls;
+                    }
+                    this.cdr.detectChanges();
+                },
+                error: () => {
+                    /* silent — defaults stay */
+                },
+            });
+    }
+
+    saveEmailSettings(): void {
+        if (this.emailSaving) return;
+        this.emailSaving = true;
+        this._configService
+            .setEmailFrom(this.emailFrom)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => this.saveSmtpChanges(),
+                error: (err: HttpErrorResponse) => this.onEmailSaveError(err),
+            });
+    }
+
+    private saveSmtpChanges(): void {
+        const tail: Observable<unknown>[] = [];
+        if (this.mailHost !== this.persistedMailHost) {
+            tail.push(this._configService.setMailHost(this.mailHost));
+        }
+        if (this.mailPort !== this.persistedMailPort) {
+            tail.push(this._configService.setMailPort(this.mailPort));
+        }
+        if (this.mailUsername !== this.persistedMailUsername) {
+            tail.push(this._configService.setMailUsername(this.mailUsername));
+        }
+        if (this.mailAuth !== this.persistedMailAuth) {
+            tail.push(this._configService.setMailAuth(this.mailAuth));
+        }
+        if (this.mailStartTls !== this.persistedMailStartTls) {
+            tail.push(this._configService.setMailStartTls(this.mailStartTls));
+        }
+        const pwd = this.mailPasswordInput?.trim();
+        if (pwd && pwd.length > 0) {
+            tail.push(this._configService.setMailPassword(pwd));
+        }
+        if (tail.length === 0) {
+            this.emailSaving = false;
+            this._toastService.success('Adresses email enregistrées', 'Email');
+            this.cdr.detectChanges();
+            return;
+        }
+        forkJoin(tail)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.emailSaving = false;
+                    this.mailPasswordInput = '';
+                    this._toastService.success('Réglages email + SMTP enregistrés', 'Email');
+                    this.loadEmailSettings();
+                },
+                error: (err: HttpErrorResponse) => this.onEmailSaveError(err),
+            });
+    }
+
+    private onEmailSaveError(err: HttpErrorResponse): void {
+        this.emailSaving = false;
+        this._toastService.error(
+            err.error?.message || err.message || 'Save failed',
+            `Email — HTTP ${err.status}`
+        );
+        this.cdr.detectChanges();
+    }
+
+    sendTestEmail(): void {
+        if (this.emailTestSending) {
+            return;
+        }
+        this.emailTestSending = true;
+        this.cdr.detectChanges();
+        this._emailTestService
+            .sendTestEmail()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: response => {
+                    this.emailTestSending = false;
+                    this._toastService.success(response.message || 'Test email sent.', 'Email');
+                    this.cdr.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.emailTestSending = false;
+                    const detail = err.error?.message || err.message || 'Unknown error';
+                    this._toastService.error(detail, `Email — HTTP ${err.status}`);
+                    this.cdr.detectChanges();
+                },
+            });
     }
 }

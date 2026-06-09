@@ -1,6 +1,6 @@
 <sb-layout-dashboard>
     <sb-dashboard-head
-        title="Journalisation"
+        title="Logs"
         i18n-title="@@journal"
         [hideBreadcrumbs]="true"
     ></sb-dashboard-head>
@@ -8,8 +8,8 @@
     <sb-card>
         <div class="card-body">
             <span i18n="@@journalInfo"
-                >Suivi des évènements survenus dans le poulailler (porte, lumière, ventilation,
-                musique, pensionnaires, système).</span
+                >Tracks events that occurred in the chicken coop (door, light, fan, music,
+                residents, system).</span
             >
         </div>
     </sb-card>
@@ -18,7 +18,7 @@
     <sb-card>
         <div class="card-header">
             <fa-icon class="me-1" [icon]="['fas', 'list']"></fa-icon>
-            <span i18n="@@journalBusinessTitle">Évènements métier</span>
+            <span i18n="@@journalBusinessTitle">Business events</span>
         </div>
         <div class="card-body">
             <div class="row g-2 align-items-end mb-3">
@@ -27,7 +27,7 @@
                         for="journalBizCategory"
                         class="form-label small"
                         i18n="@@journalCategory"
-                        >Catégorie</label
+                        >Category</label
                     >
                     <select
                         id="journalBizCategory"
@@ -37,34 +37,34 @@
                     >
                         @for (c of businessCategories; track c.key) {
                             @if (c.key === 'all') {
-                                <option value="all" i18n="@@journalCatAll">Toutes</option>
+                                <option value="all" i18n="@@journalCatAll">All</option>
                             }
                             @if (c.key === 'door') {
-                                <option value="door" i18n="@@journalCatDoor">Porte</option>
+                                <option value="door" i18n="@@journalCatDoor">Door</option>
                             }
                             @if (c.key === 'light') {
-                                <option value="light" i18n="@@journalCatLight">Lumière</option>
+                                <option value="light" i18n="@@journalCatLight">Light</option>
                             }
                             @if (c.key === 'fan') {
-                                <option value="fan" i18n="@@journalCatFan">Ventilation</option>
+                                <option value="fan" i18n="@@journalCatFan">Fan</option>
                             }
                             @if (c.key === 'music') {
-                                <option value="music" i18n="@@journalCatMusic">Musique</option>
+                                <option value="music" i18n="@@journalCatMusic">Music</option>
                             }
                             @if (c.key === 'resident') {
                                 <option value="resident" i18n="@@journalCatResident">
-                                    Pensionnaires
+                                    Residents
                                 </option>
                             }
                             @if (c.key === 'system') {
-                                <option value="system" i18n="@@journalCatSystem">Système</option>
+                                <option value="system" i18n="@@journalCatSystem">System</option>
                             }
                         }
                     </select>
                 </div>
                 <div class="col-md-3">
                     <label for="journalBizWindow" class="form-label small" i18n="@@journalWindow"
-                        >Fenêtre</label
+                        >Window</label
                     >
                     <select
                         id="journalBizWindow"
@@ -73,9 +73,9 @@
                         (ngModelChange)="onBusinessWindowChange()"
                     >
                         <option value="24h" i18n="@@journalWindow24h">24 h</option>
-                        <option value="7d" i18n="@@journalWindow7d">7 jours</option>
-                        <option value="30d" i18n="@@journalWindow30d">30 jours</option>
-                        <option value="all" i18n="@@journalWindowAll">Tout</option>
+                        <option value="7d" i18n="@@journalWindow7d">7 days</option>
+                        <option value="30d" i18n="@@journalWindow30d">30 days</option>
+                        <option value="all" i18n="@@journalWindowAll">All</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -98,7 +98,7 @@
             }
             @if (!businessLoading && businessEvents.length === 0) {
                 <div class="text-muted small" i18n="@@journalEmpty">
-                    Aucun évènement sur la période.
+                    No event in this period.
                 </div>
             }
             @if (!businessLoading && businessEvents.length > 0) {
@@ -112,7 +112,7 @@
                             <span class="event-time small text-muted">
                                 {{ e.dateTime | date: 'yyyy-MM-dd HH:mm:ss' }}
                             </span>
-                            <span class="event-type">{{ e.eventType }}</span>
+                            <span class="event-type">{{ eventLabel(e.eventType) }}</span>
                             @if (e.details) {
                                 <span class="event-details small text-muted">{{ e.details }}</span>
                             }
@@ -128,7 +128,7 @@
         <sb-card>
             <div class="card-header">
                 <fa-icon class="me-1" [icon]="['fas', 'user']"></fa-icon>
-                <span i18n="@@journalAuthTitle">Tentatives de connexion</span>
+                <span i18n="@@journalAuthTitle">Login attempts</span>
             </div>
             <div class="card-body">
                 <div class="row g-2 align-items-end mb-3">
@@ -137,7 +137,7 @@
                             for="journalAuthFilter"
                             class="form-label small"
                             i18n="@@journalAuthFilter"
-                            >Filtre</label
+                            >Filter</label
                         >
                         <select
                             id="journalAuthFilter"
@@ -145,9 +145,9 @@
                             [(ngModel)]="authFilter"
                             (ngModelChange)="onAuthFilterChange()"
                         >
-                            <option value="all" i18n="@@journalAuthAll">Toutes</option>
-                            <option value="success" i18n="@@journalAuthSuccess">Réussies</option>
-                            <option value="failed" i18n="@@journalAuthFailed">Échouées</option>
+                            <option value="all" i18n="@@journalAuthAll">All</option>
+                            <option value="success" i18n="@@journalAuthSuccess">Successful</option>
+                            <option value="failed" i18n="@@journalAuthFailed">Failed</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -155,7 +155,7 @@
                             for="journalAuthWindow"
                             class="form-label small"
                             i18n="@@journalWindow"
-                            >Fenêtre</label
+                            >Window</label
                         >
                         <select
                             id="journalAuthWindow"
@@ -189,7 +189,7 @@
                 }
                 @if (!authLoading && authEvents.length === 0) {
                     <div class="text-muted small" i18n="@@journalEmpty">
-                        Aucun évènement sur la période.
+                        No event in this period.
                     </div>
                 }
                 @if (!authLoading && authEvents.length > 0) {
@@ -203,7 +203,7 @@
                                 <span class="event-time small text-muted">
                                     {{ e.dateTime | date: 'yyyy-MM-dd HH:mm:ss' }}
                                 </span>
-                                <span class="event-type">{{ e.eventType }}</span>
+                                <span class="event-type">{{ eventLabel(e.eventType) }}</span>
                                 @if (e.details) {
                                     <span class="event-details small text-muted">{{
                                         e.details
@@ -223,12 +223,17 @@
                 <span i18n="@@logsBrowser">Log browser</span>
             </div>
             <div class="card-body">
-                @if (listError) {
-                    <div class="text-danger" i18n="@@informationNotAvailable">
+                @if (isDemoMode) {
+                    <div class="text-muted" i18n="@@informationNotAvailable">
                         Information not available
                     </div>
                 }
-                @if (!listError) {
+                @if (!isDemoMode && listError) {
+                    <div class="text-muted" i18n="@@informationNotAvailable">
+                        Information not available
+                    </div>
+                }
+                @if (!isDemoMode && !listError) {
                     <div class="row g-2 align-items-end">
                         <div class="col-md-4">
                             <label for="logsFile" class="form-label small" i18n="@@logsFile"
@@ -285,6 +290,7 @@
                                 class="form-control form-control-sm"
                                 [(ngModel)]="searchText"
                                 (keyup.enter)="refreshContent()"
+                                i18n-placeholder="@@logsSearchPlaceholder"
                                 placeholder="DoorService, Exception…"
                             />
                         </div>
@@ -312,18 +318,23 @@
                 }
             </div>
             <div class="card-body">
-                @if (loading) {
+                @if (isDemoMode) {
+                    <div class="text-muted" i18n="@@informationNotAvailable">
+                        Information not available
+                    </div>
+                }
+                @if (!isDemoMode && loading) {
                     <div class="spinner-border" role="status">
                         <span class="sr-only" i18n="@@loading">Loading...</span>
                     </div>
                 }
-                @if (contentError && !loading) {
+                @if (!isDemoMode && contentError && !loading) {
                     <div class="text-danger">{{ contentError }}</div>
                 }
-                @if (!loading && !contentError && lines.length === 0 && selectedFile) {
+                @if (!isDemoMode && !loading && !contentError && lines.length === 0 && selectedFile) {
                     <div class="text-muted" i18n="@@logsNoLines">No lines match your filters.</div>
                 }
-                @if (!loading && lines.length > 0) {
+                @if (!isDemoMode && !loading && lines.length > 0) {
                     <pre
                         class="log-viewer"
                     >@for (line of lines; track $index) {<span [ngClass]="cssClassForLine(line)">{{ line }}</span>}</pre>

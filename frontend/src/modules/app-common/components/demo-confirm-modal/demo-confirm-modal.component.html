@@ -1,0 +1,64 @@
+@if (open()) {
+    <div class="sb-demo-confirm-backdrop" (click)="cancel()"></div>
+    <div
+        class="sb-demo-confirm-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sbDemoConfirmTitle"
+    >
+        <div class="card demo-confirm-card" (click)="$event.stopPropagation()">
+            <div class="card-header bg-warning-subtle">
+                <fa-icon class="me-2 text-warning" [icon]="['fas', 'exclamation-triangle']"></fa-icon>
+                <strong id="sbDemoConfirmTitle" i18n="@@demoConfirmTitle"
+                    >Demo mode — action will not run</strong
+                >
+            </div>
+            <div class="card-body">
+                <p class="small mb-2" i18n="@@demoConfirmIntro">
+                    You triggered the following action:
+                </p>
+                <div class="alert alert-light border small mb-3" data-cy="demoConfirmMessage">
+                    {{ message() || ('Mutation' | uppercase) }}
+                </div>
+                <p class="small text-muted mb-3" i18n="@@demoConfirmExplanation">
+                    The chicken coop is not affected. The interface will pretend the action
+                    succeeded so you can keep exploring; no data is persisted.
+                </p>
+                <div class="form-check small mb-3">
+                    <input
+                        type="checkbox"
+                        id="demoConfirmSuppress"
+                        class="form-check-input"
+                        [(ngModel)]="suppressFurther"
+                    />
+                    <label
+                        for="demoConfirmSuppress"
+                        class="form-check-label"
+                        i18n="@@demoConfirmSuppress"
+                        >Do not show again for this session</label
+                    >
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        (click)="cancel()"
+                        data-cy="demoConfirmCancel"
+                        i18n="@@cancel"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-warning btn-sm"
+                        (click)="accept()"
+                        data-cy="demoConfirmAccept"
+                        i18n="@@demoConfirmAccept"
+                    >
+                        Simulate anyway
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

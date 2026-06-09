@@ -14,10 +14,67 @@
                 >This board allows you to configure the system parameters.</span
             >
         </div></sb-card
-    ><sb-card
+    >
+    <sb-card
         ><div class="card-header">
             <fa-icon class="me-1" [icon]="['fas', 'laptop']"></fa-icon
-            ><span i18n="@@about">About</span>
+            ><span i18n="@@systemState">System state</span>
+            @if (isAdmin) {
+                <div class="float-end">
+                    <div
+                        ngbDropdown
+                        placement="bottom-right"
+                        display="dynamic"
+                        class="d-inline-block"
+                    >
+                        <a
+                            class="nav-link p-0"
+                            id="diagnosticActionMenu"
+                            ngbDropdownToggle
+                            role="button"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                        >
+                            <fa-icon [icon]="['fas', 'ellipsis-v']"></fa-icon>
+                        </a>
+                        <div
+                            class="dropdown-menu dropdown-menu-end"
+                            ngbDropdownMenu
+                            aria-labelledby="diagnosticActionMenu"
+                        >
+                            <a
+                                class="dropdown-item"
+                                [class.disabled]="configRefreshing"
+                                (click)="refreshConfigCaches()"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'sync']"></fa-icon>
+                                @if (!configRefreshing) {
+                                    <span i18n="@@reloadConfig">Reload configuration</span>
+                                }
+                                @if (configRefreshing) {
+                                    <span i18n="@@reloadingConfig">Reloading…</span>
+                                }
+                            </a>
+                            <a
+                                class="dropdown-item"
+                                [class.disabled]="powerActionInFlight"
+                                (click)="rebootMachine()"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'sync']"></fa-icon>
+                                <span i18n="@@systemReboot">Reboot the machine</span>
+                            </a>
+                            <a
+                                class="dropdown-item text-danger"
+                                [class.disabled]="powerActionInFlight"
+                                (click)="shutdownMachine()"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'power-off']"></fa-icon>
+                                <span i18n="@@systemShutdown">Shut down the machine</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
         <div class="card-body">
             @if (backEndVersion === undefined && backEndVersionOnError === false) {
@@ -46,175 +103,16 @@
                     }
                 </div>
             }
-            <div class="mt-2">
-                <span i18n="@@producedBy">Brought to you by</span>{{ ' '
-                }}<a href="https://twitter.com/jibe77">&#64;jibe77</a>
-            </div>
-            <div class="mt-1">
-                <span i18n="@@sourceCode">Source code</span>{{ ' ' }}:{{ ' '
-                }}<a href="https://github.com/jibe77/hermanas"
-                    >https://github.com/jibe77/hermanas</a
-                >
-            </div>
-        </div></sb-card
-    >
-    @if (isAdmin) {
-        <sb-card
-            ><div class="card-header">
-                <fa-icon class="me-1" [icon]="['fas', 'laptop']"></fa-icon
-                ><span i18n="@@diagnostic">Diagnostic</span>
-                <div class="float-end">
-                    <div
-                        ngbDropdown
-                        placement="bottom-right"
-                        display="dynamic"
-                        class="d-inline-block"
-                    >
-                        <a
-                            class="nav-link p-0"
-                            id="diagnosticActionMenu"
-                            ngbDropdownToggle
-                            role="button"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                        >
-                            <fa-icon [icon]="['fas', 'ellipsis-v']"></fa-icon>
-                        </a>
-                        <div
-                            class="dropdown-menu dropdown-menu-end"
-                            ngbDropdownMenu
-                            aria-labelledby="diagnosticActionMenu"
-                        >
-                            <a
-                                class="dropdown-item"
-                                [class.disabled]="emailTestSending"
-                                (click)="sendTestEmail()"
-                            >
-                                @if (!emailTestSending) {
-                                    <span i18n="@@sendTestEmail">Send test email</span>
-                                }
-                                @if (emailTestSending) {
-                                    <span i18n="@@sendingTestEmail">Sending…</span>
-                                }
-                            </a>
-                            <a
-                                class="dropdown-item"
-                                [class.disabled]="configRefreshing"
-                                (click)="refreshConfigCaches()"
-                            >
-                                <fa-icon class="me-1" [icon]="['fas', 'sync']"></fa-icon>
-                                @if (!configRefreshing) {
-                                    <span i18n="@@reloadConfig">Recharger la configuration</span>
-                                }
-                                @if (configRefreshing) {
-                                    <span i18n="@@reloadingConfig">Rechargement…</span>
-                                }
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a
-                                class="dropdown-item"
-                                [class.disabled]="powerActionInFlight"
-                                (click)="rebootMachine()"
-                            >
-                                <fa-icon class="me-1" [icon]="['fas', 'sync']"></fa-icon>
-                                <span i18n="@@systemReboot">Reboot the machine</span>
-                            </a>
-                            <a
-                                class="dropdown-item text-danger"
-                                [class.disabled]="powerActionInFlight"
-                                (click)="shutdownMachine()"
-                            >
-                                <fa-icon class="me-1" [icon]="['fas', 'power-off']"></fa-icon>
-                                <span i18n="@@systemShutdown">Shut down the machine</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div>
-                    <span i18n="@@upperButtonStatus">Upper end-stop button</span>{{ ' ' }}:{{ ' ' }}
-                    @if (upButton.error) {
-                        <span i18n="@@informationNotAvailable">Information not available</span>
-                    }
-                    @if (!upButton.error) {
-                        @if (upButton.pressed === undefined) {
-                            <span i18n="@@loading">Loading...</span>
-                        }
-                        @if (upButton.pressed === true) {
-                            <span class="badge text-bg-danger" i18n="@@buttonPressed">Pressed</span>
-                        }
-                        @if (upButton.pressed === false) {
-                            <span class="badge text-bg-success" i18n="@@buttonReleased"
-                                >Released</span
-                            >
-                        }
-                        @if (upButton.timestamp) {
-                            <small class="text-muted ms-2"
-                                >({{ upButton.timestamp | date: 'HH:mm:ss' }})</small
-                            >
-                        }
-                    }
-                </div>
+            @if (isAdmin) {
                 <div class="mt-2">
-                    <span i18n="@@bottomButtonStatus">Bottom end-stop button</span>{{ ' ' }}:{{
-                        ' '
-                    }}
-                    @if (bottomButton.error) {
-                        <span i18n="@@informationNotAvailable">Information not available</span>
-                    }
-                    @if (!bottomButton.error) {
-                        @if (bottomButton.pressed === undefined) {
-                            <span i18n="@@loading">Loading...</span>
-                        }
-                        @if (bottomButton.pressed === true) {
-                            <span class="badge text-bg-danger" i18n="@@buttonPressed">Pressed</span>
-                        }
-                        @if (bottomButton.pressed === false) {
-                            <span class="badge text-bg-success" i18n="@@buttonReleased"
-                                >Released</span
-                            >
-                        }
-                        @if (bottomButton.timestamp) {
-                            <small class="text-muted ms-2"
-                                >({{ bottomButton.timestamp | date: 'HH:mm:ss' }})</small
-                            >
-                        }
-                    }
-                </div>
-                <div class="mt-2">
-                    <span i18n="@@birdhouseButtonStatus">Birdhouse button</span>{{ ' ' }}:{{ ' ' }}
-                    @if (birdhouseButton.error) {
-                        <span i18n="@@informationNotAvailable">Information not available</span>
-                    }
-                    @if (!birdhouseButton.error) {
-                        @if (birdhouseButton.pressed === undefined) {
-                            <span i18n="@@loading">Loading...</span>
-                        }
-                        <!-- Birdhouse switch closes when released, so we flip the label
-                             vs the other two end-stops to keep "pressed" intuitive. -->
-                        @if (birdhouseButton.pressed === false) {
-                            <span class="badge text-bg-danger" i18n="@@buttonPressed">Pressed</span>
-                        }
-                        @if (birdhouseButton.pressed === true) {
-                            <span class="badge text-bg-success" i18n="@@buttonReleased"
-                                >Released</span
-                            >
-                        }
-                        @if (birdhouseButton.timestamp) {
-                            <small class="text-muted ms-2"
-                                >({{ birdhouseButton.timestamp | date: 'HH:mm:ss' }})</small
-                            >
-                        }
-                    }
-                </div>
-                <div class="mt-3">
                     <span i18n="@@diskUsage">Disk usage</span>{{ ' ' }}:{{ ' ' }}
                     @if (diskUsageLoading) {
                         <span i18n="@@loading">Loading...</span>
                     }
                     @if (diskUsageError && !diskUsageLoading) {
-                        <span i18n="@@diskUsageError">Disk usage unavailable</span>
+                        <span class="text-muted" i18n="@@informationNotAvailable"
+                            >Information not available</span
+                        >
                     }
                     @if (diskUsage && !diskUsageLoading && !diskUsageError) {
                         <span
@@ -230,243 +128,259 @@
                         <small class="text-muted ms-2">{{ diskUsage.path }}</small>
                     }
                 </div>
-
-                <hr class="my-3" />
-
-                <!-- ─── Servo calibration ────────────────────────────────────────── -->
-                <h6 class="mb-2">
-                    <fa-icon class="me-1" [icon]="['fas', 'door-open']"></fa-icon>
-                    <span i18n="@@servoCalibrationTitle">Réglage du servomoteur</span>
-                </h6>
-                <div class="alert alert-warning small mb-3" role="alert">
-                    <fa-icon class="me-1" [icon]="['fas', 'exclamation-triangle']"></fa-icon>
-                    <span i18n="@@servoCalibrationWarning">
-                        Action sur le matériel. Les valeurs hors plage peuvent forcer mécaniquement
-                        le servo. Modifie par petits incréments.
-                    </span>
-                </div>
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label small d-flex justify-content-between">
-                            <span i18n="@@servoOpeningPosition">Position ouverte</span>
-                            <span class="text-muted">{{ servoOpeningPosition }}</span>
-                        </label>
-                        <div class="d-flex align-items-center gap-2">
-                            <input
-                                type="range"
-                                class="form-range"
-                                min="1"
-                                max="100"
-                                step="1"
-                                [(ngModel)]="servoOpeningPosition"
-                            />
-                            <button
-                                type="button"
-                                class="btn btn-primary btn-sm"
-                                (click)="saveOpeningPosition()"
-                                [disabled]="servoSaving"
+                <div class="mt-2">
+                    <span i18n="@@systemMemory">RAM</span>{{ ' ' }}:{{ ' ' }}
+                    @if (memoryUsageLoading) {
+                        <span i18n="@@loading">Loading...</span>
+                    }
+                    @if (memoryUsageError && !memoryUsageLoading) {
+                        <span class="text-muted" i18n="@@informationNotAvailable"
+                            >Information not available</span
+                        >
+                    }
+                    @if (memoryUsage && !memoryUsageLoading && !memoryUsageError) {
+                        @if (memoryUsage.readable) {
+                            <span
+                                class="badge"
+                                [class.text-bg-success]="memoryUsage.usedPercent < 70"
+                                [class.text-bg-warning]="
+                                    memoryUsage.usedPercent >= 70 &&
+                                    memoryUsage.usedPercent < 90
+                                "
+                                [class.text-bg-danger]="memoryUsage.usedPercent >= 90"
                             >
-                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                                <span i18n="@@save">Save</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small d-flex justify-content-between">
-                            <span i18n="@@servoClosingPosition">Position fermée</span>
-                            <span class="text-muted">{{ servoClosingPosition }}</span>
-                        </label>
-                        <div class="d-flex align-items-center gap-2">
-                            <input
-                                type="range"
-                                class="form-range"
-                                min="1"
-                                max="100"
-                                step="1"
-                                [(ngModel)]="servoClosingPosition"
-                            />
-                            <button
-                                type="button"
-                                class="btn btn-primary btn-sm"
-                                (click)="saveClosingPosition()"
-                                [disabled]="servoSaving"
+                                {{ memoryUsage.usedPercent }}%
+                            </span>
+                            <small class="text-muted ms-2">
+                                {{ formatBytes(memoryUsage.usedBytes) }} /
+                                {{ formatBytes(memoryUsage.totalBytes) }}
+                            </small>
+                        }
+                        @if (!memoryUsage.readable) {
+                            <span class="text-muted" i18n="@@informationNotAvailable"
+                                >Information not available</span
                             >
-                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                                <span i18n="@@save">Save</span>
-                            </button>
-                        </div>
-                    </div>
+                        }
+                    }
                 </div>
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <label class="form-label small mb-0 me-2" for="servoNudgeMs">
-                        <span i18n="@@servoNudgeMs">Durée nudge (ms)</span>
-                    </label>
-                    <input
-                        id="servoNudgeMs"
-                        type="number"
-                        min="1"
-                        max="30000"
-                        step="10"
-                        class="form-control form-control-sm"
-                        style="width: 100px"
-                        [(ngModel)]="servoNudgeMs"
-                    />
-                    <button
-                        type="button"
-                        class="btn btn-outline-secondary btn-sm"
-                        (click)="nudgeCounterClockwise()"
-                        [disabled]="servoNudging"
-                    >
-                        <fa-icon class="me-1" [icon]="['fas', 'sync']"></fa-icon>
-                        <span i18n="@@servoCounterClockwise">Counter-clockwise</span>
-                    </button>
-                    <button
-                        type="button"
-                        class="btn btn-outline-secondary btn-sm"
-                        (click)="nudgeClockwise()"
-                        [disabled]="servoNudging"
-                    >
-                        <span i18n="@@servoClockwise">Clockwise</span>
-                        <fa-icon class="ms-1" [icon]="['fas', 'sync']"></fa-icon>
-                    </button>
-                </div></div
-        ></sb-card>
+                @if (memoryUsage && memoryUsage.readable && memoryUsage.swapTotalBytes > 0) {
+                    <div class="mt-2">
+                        <span i18n="@@systemSwap">Swap</span>{{ ' ' }}:{{ ' ' }}
+                        <span
+                            class="badge"
+                            [class.text-bg-success]="memoryUsage.swapUsedPercent < 30"
+                            [class.text-bg-warning]="
+                                memoryUsage.swapUsedPercent >= 30 &&
+                                memoryUsage.swapUsedPercent < 70
+                            "
+                            [class.text-bg-danger]="memoryUsage.swapUsedPercent >= 70"
+                        >
+                            {{ memoryUsage.swapUsedPercent }}%
+                        </span>
+                        <small class="text-muted ms-2">
+                            {{ formatBytes(memoryUsage.swapUsedBytes) }} /
+                            {{ formatBytes(memoryUsage.swapTotalBytes) }}
+                        </small>
+                    </div>
+                }
+                <div class="mt-2">
+                    <span i18n="@@systemCpu">CPU</span>{{ ' ' }}:{{ ' ' }}
+                    @if (cpuUsageError && !cpuUsage) {
+                        <span class="text-muted" i18n="@@informationNotAvailable"
+                            >Information not available</span
+                        >
+                    }
+                    @if (cpuUsage && cpuUsage.readable) {
+                        <span
+                            class="badge"
+                            [class.text-bg-success]="cpuUsage.usedPercent < 50"
+                            [class.text-bg-warning]="
+                                cpuUsage.usedPercent >= 50 && cpuUsage.usedPercent < 85
+                            "
+                            [class.text-bg-danger]="cpuUsage.usedPercent >= 85"
+                        >
+                            {{ cpuUsage.usedPercent }}%
+                        </span>
+                        <small class="text-muted ms-2">
+                            <span i18n="@@systemCpuCores">{{ cpuUsage.coreCount }} cores</span>
+                            @if (cpuUsage.loadAverage1m !== null) {
+                                <span>{{ ' ' }}—{{ ' ' }}</span>
+                                <span i18n="@@systemCpuLoad"
+                                    >load {{ cpuUsage.loadAverage1m }}</span
+                                >
+                            }
+                        </small>
+                    }
+                </div>
+                @if (cpuUsage && cpuUsage.uptimeSeconds !== null) {
+                    <div class="mt-2">
+                        <span i18n="@@systemUptime">Uptime</span>{{ ' ' }}:{{ ' ' }}
+                        {{ formatUptime(cpuUsage.uptimeSeconds) }}
+                    </div>
+                }
+            }
+        </div></sb-card
+    >
 
+    @if (isAdmin) {
         <sb-card>
             <div class="card-header">
-                <fa-icon class="me-1" [icon]="['fas', 'envelope-open-text']"></fa-icon>
-                <span i18n="@@emailPanelTitle">Email — notifications & test</span>
+                <fa-icon class="me-1" [icon]="['fas', 'layer-group']"></fa-icon>
+                <span i18n="@@softwareStackTitle">Software stack</span>
             </div>
             <div class="card-body">
-                <p class="small text-muted" i18n="@@emailPanelHelp">
-                    Activer/désactiver l'envoi global et configurer les adresses expéditeur /
-                    destinataire. La configuration SMTP elle-même (host, port, auth) reste dans
-                    <code>application.properties</code> car elle nécessite un redémarrage de la JVM
-                    Spring Mail.
-                </p>
-                <div class="form-check form-switch mb-3">
-                    <input
-                        type="checkbox"
-                        class="form-check-input"
-                        id="emailEnabledToggleSystem"
-                        [(ngModel)]="emailEnabled"
-                        (ngModelChange)="onEmailEnabledToggle()"
-                    />
-                    <label
-                        class="form-check-label"
-                        for="emailEnabledToggleSystem"
-                        i18n="@@emailEnabledLabel"
-                        >Envoyer les notifications par email</label
-                    >
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="emailFromInput" class="form-label small" i18n="@@emailFromLabel"
-                            >Expéditeur</label
-                        >
-                        <input
-                            id="emailFromInput"
-                            type="email"
-                            class="form-control form-control-sm"
-                            [(ngModel)]="emailFrom"
-                        />
+                @if (stackLoading) {
+                    <div class="text-muted">
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        <span i18n="@@softwareStackLoading">Loading…</span>
                     </div>
-                    <div class="col-md-6">
-                        <label for="emailToInput" class="form-label small" i18n="@@emailToLabel"
-                            >Destinataire</label
-                        >
-                        <input
-                            id="emailToInput"
-                            type="email"
-                            class="form-control form-control-sm"
-                            [(ngModel)]="emailTo"
-                        />
+                }
+                @if (stackError && !stackLoading) {
+                    <div class="text-muted" i18n="@@informationNotAvailable">
+                        Information not available
                     </div>
-                </div>
-                <div class="mt-3 d-flex gap-2">
-                    <button
-                        type="button"
-                        class="btn btn-primary btn-sm"
-                        (click)="saveEmailSettings()"
-                        [disabled]="emailSaving"
-                    >
-                        <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                        <span i18n="@@save">Save</span>
-                    </button>
-                    <button
-                        type="button"
-                        class="btn btn-outline-secondary btn-sm"
-                        [disabled]="emailTestSending || !emailEnabled"
-                        (click)="sendTestEmail()"
-                    >
-                        <fa-icon class="me-1" [icon]="['fas', 'envelope-open-text']"></fa-icon>
-                        @if (!emailTestSending) {
-                            <span i18n="@@emailSendTestButton">Envoyer un email de test</span>
-                        }
-                        @if (emailTestSending) {
-                            <span i18n="@@sendingTestEmail">Sending…</span>
-                        }
-                    </button>
-                </div>
-            </div>
-        </sb-card>
-
-        <sb-card>
-            <div class="card-header">
-                <fa-icon class="me-1" [icon]="['fas', 'cloud-sun']"></fa-icon>
-                <span i18n="@@weatherProviderTitle">Fournisseur météo (OpenWeather)</span>
-            </div>
-            <div class="card-body">
-                <p class="small text-muted" i18n="@@weatherProviderHelp">
-                    L'URL doit contenir les placeholders {{ '{' }}latitude{{ '}' }},
-                    {{ '{' }}longitude{{ '}' }} et {{ '{' }}key{{ '}' }}. La clé d'API n'est jamais
-                    renvoyée par le serveur — saisis-la à nouveau pour la mettre à jour.
-                </p>
-                <div class="mb-3">
-                    <label for="weatherUrl" class="form-label small" i18n="@@weatherUrlLabel"
-                        >URL du fournisseur</label
-                    >
-                    <input
-                        id="weatherUrl"
-                        type="text"
-                        class="form-control form-control-sm"
-                        [(ngModel)]="weatherUrl"
-                    />
-                </div>
-                <div class="mb-3">
-                    <label for="weatherKey" class="form-label small d-flex justify-content-between">
-                        <span i18n="@@weatherKeyLabel">Clé API</span>
-                        @if (weatherKeySet) {
-                            <span class="badge text-bg-success" i18n="@@weatherKeySet"
-                                >Définie ({{ weatherKeyLength }} car.)</span
-                            >
-                        }
-                        @if (!weatherKeySet) {
-                            <span class="badge text-bg-warning" i18n="@@weatherKeyMissing"
-                                >Non définie</span
-                            >
-                        }
-                    </label>
-                    <input
-                        id="weatherKey"
-                        type="password"
-                        class="form-control form-control-sm"
-                        placeholder="(laisser vide pour ne pas modifier)"
-                        i18n-placeholder="@@weatherKeyPlaceholder"
-                        autocomplete="new-password"
-                        [(ngModel)]="weatherKeyInput"
-                    />
-                </div>
-                <button
-                    type="button"
-                    class="btn btn-primary btn-sm"
-                    (click)="saveWeatherSettings()"
-                    [disabled]="weatherSaving"
-                >
-                    <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                    <span i18n="@@save">Save</span>
-                </button>
+                }
+                @if (stackInfo && !stackLoading && !stackError) {
+                    @if (stackInfo.appName) {
+                        <div>
+                            <span i18n="@@softwareStackApp">Application</span>{{ ' ' }}:{{ ' ' }}
+                            {{ stackInfo.appName }}
+                            @if (stackInfo.appDescription) {
+                                <small class="text-muted ms-2"
+                                    >— {{ stackInfo.appDescription }}</small
+                                >
+                            }
+                        </div>
+                    }
+                    @if (stackInfo.javaRuntimeVersion) {
+                        <div class="mt-2">
+                            <span i18n="@@softwareStackJavaRuntime">Java runtime (JVM)</span>{{ ' '
+                            }}:{{ ' ' }}
+                            {{ stackInfo.javaRuntimeVersion }}
+                            @if (stackInfo.javaRuntimeVendor) {
+                                <small class="text-muted ms-2"
+                                    >— {{ stackInfo.javaRuntimeVendor }}</small
+                                >
+                            }
+                            @if (stackInfo.javaRuntimeName) {
+                                <small class="text-muted ms-1"
+                                    >({{ stackInfo.javaRuntimeName }})</small
+                                >
+                            }
+                        </div>
+                    }
+                    @if (stackInfo.javaSource) {
+                        <div class="mt-2">
+                            <span i18n="@@softwareStackJavaBuild">Java build-time JVM</span>{{ ' '
+                            }}:{{ ' ' }}
+                            {{ stackInfo.javaSource }}
+                            @if (stackInfo.javaVendor) {
+                                <small class="text-muted ms-2"
+                                    >— {{ stackInfo.javaVendor }}</small
+                                >
+                            }
+                        </div>
+                    }
+                    @if (stackInfo.javaTarget) {
+                        <div class="mt-2">
+                            <span i18n="@@softwareStackBytecode">Bytecode target</span>{{ ' '
+                            }}:{{ ' ' }}
+                            Java {{ stackInfo.javaTarget }}
+                        </div>
+                    }
+                    @if (stackInfo.appEncoding) {
+                        <div class="mt-2">
+                            <span i18n="@@softwareStackEncoding">Encoding</span>{{ ' ' }}:{{ ' ' }}
+                            {{ stackInfo.appEncoding }}
+                        </div>
+                    }
+                    <!-- Runtime metrics from /actuator/metrics — appear only
+                         when the JVM exposes them (process.cpu.usage is
+                         missing on some JREs, for example). -->
+                    @if (stackInfo.uptimeSeconds !== undefined) {
+                        <div class="mt-2">
+                            <span i18n="@@softwareStackUptime">Uptime</span>{{ ' ' }}:{{ ' ' }}
+                            {{ formatUptime(stackInfo.uptimeSeconds) }}
+                        </div>
+                    }
+                    @if (stackInfo.jvmHeapUsed !== undefined) {
+                        <div class="mt-2">
+                            <span i18n="@@softwareStackHeap">JVM heap</span>{{ ' ' }}:{{ ' ' }}
+                            {{ formatBytes(stackInfo.jvmHeapUsed) }}
+                            @if (stackInfo.jvmHeapMax !== undefined && stackInfo.jvmHeapMax > 0) {
+                                <small class="text-muted ms-2"
+                                    >/ {{ formatBytes(stackInfo.jvmHeapMax) }}</small
+                                >
+                            }
+                        </div>
+                    }
+                    @if (stackInfo.jvmThreads !== undefined) {
+                        <div class="mt-2">
+                            <span i18n="@@softwareStackThreads">JVM threads</span>{{ ' ' }}:{{ ' ' }}
+                            {{ stackInfo.jvmThreads }}
+                        </div>
+                    }
+                    @if (stackInfo.processCpu !== undefined && stackInfo.processCpu >= 0) {
+                        <div class="mt-2">
+                            <span i18n="@@softwareStackProcessCpu">Process CPU</span>{{ ' '
+                            }}:{{ ' ' }}
+                            {{ formatPercent(stackInfo.processCpu) }}
+                        </div>
+                    }
+                    @if (stackInfo.httpRequests !== undefined) {
+                        <div class="mt-2">
+                            <span i18n="@@softwareStackHttpRequests">HTTP requests</span>{{ ' '
+                            }}:{{ ' ' }}
+                            {{ stackInfo.httpRequests }}
+                        </div>
+                    }
+                }
             </div>
         </sb-card>
     }
+
+    <sb-card
+        ><div class="card-header">
+            <fa-icon class="me-1" [icon]="['fas', 'laptop']"></fa-icon
+            ><span i18n="@@about">About</span>
+        </div>
+        <div class="card-body">
+            <div>
+                <span i18n="@@producedBy">Brought to you by</span>{{ ' '
+                }}<a href="https://twitter.com/jibe77">&#64;jibe77</a>
+            </div>
+            <div class="mt-1">
+                <span i18n="@@sourceCode">Source code</span>{{ ' ' }}:{{ ' '
+                }}<a href="https://github.com/jibe77/hermanas"
+                    >https://github.com/jibe77/hermanas</a
+                >
+            </div>
+            <div class="mt-1">
+                <span i18n="@@systemOpenApiDocsLabel">API documentation</span>{{ ' ' }}:{{ ' '
+                }}<a
+                    href="/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <fa-icon class="me-1" [icon]="['fas', 'book-open']"></fa-icon
+                    ><span i18n="@@systemOpenApiDocsLink">Swagger</span></a
+                >
+            </div>
+            <div class="mt-1">
+                <!-- Placeholder for an eventual local-only DB admin UI (e.g.
+                     Adminer or phpMyAdmin proxied behind nginx on the Pi).
+                     Kept here so the link's UX/i18n are in place before the
+                     backend route exists. -->
+                <span i18n="@@systemDbAdminLabel">Database (local only)</span>{{ ' ' }}:{{ ' '
+                }}<span class="text-muted" i18n="@@systemDbAdminTodo">TODO</span>
+            </div>
+            <div class="mt-1">
+                <!-- Placeholder for a future monitoring dashboard (Grafana /
+                     Prometheus / actuator-driven UI). Same intent as the DB
+                     entry above: keep the i18n key + layout slot in place. -->
+                <span i18n="@@systemMonitoringLabel">Monitoring</span>{{ ' ' }}:{{ ' '
+                }}<span class="text-muted" i18n="@@systemMonitoringTodo">TODO</span>
+            </div>
+        </div></sb-card
+    >
 </sb-layout-dashboard>

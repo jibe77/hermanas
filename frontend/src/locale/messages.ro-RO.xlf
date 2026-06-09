@@ -1,0 +1,1594 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2"
+       xmlns:trolltech="urn:trolltech:names:ts:document:1.0">
+    <file original="node_modules/@ng-bootstrap/ng-bootstrap/alert/alert.d.ts" datatype="plaintext"
+          source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="ngb.alert.close">
+                <source xml:space="preserve">Close</source>
+                <target xml:space="preserve" state="needs-review-translation">Fermer</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">3</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="node_modules/@ng-bootstrap/ng-bootstrap/carousel/carousel.d.ts" datatype="plaintext"
+          source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="ngb.carousel.slide-number">
+                <source xml:space="preserve">
+        </source>
+                <target xml:space="preserve" state="needs-review-translation">
+        </target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">10</context>
+                </context-group>
+                <note from="translator">Currently selected slide number read by screen reader</note>
+            </trans-unit>
+            <trans-unit id="ngb.carousel.previous">
+                <source xml:space="preserve">Previous</source>
+                <target xml:space="preserve" state="needs-review-translation">Précédent</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">18</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.carousel.next">
+                <source xml:space="preserve">Next</source>
+                <target xml:space="preserve" state="needs-review-translation">Suivant</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">22</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="node_modules/@ng-bootstrap/ng-bootstrap/datepicker/datepicker-navigation.d.ts" datatype="plaintext"
+          source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="ngb.datepicker.previous-month">
+                <source xml:space="preserve">Previous month</source>
+                <target xml:space="preserve" state="needs-review-translation">Mois précédent</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">4</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">5</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.datepicker.next-month">
+                <source xml:space="preserve">Next month</source>
+                <target xml:space="preserve" state="needs-review-translation">Mois suivant</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">26</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">27</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="node_modules/@ng-bootstrap/ng-bootstrap/datepicker/datepicker-navigation-select.d.ts"
+          datatype="plaintext" source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="ngb.datepicker.select-month">
+                <source xml:space="preserve">Select month</source>
+                <target xml:space="preserve" state="needs-review-translation">Mois suivant</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">5</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">6</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.datepicker.select-year">
+                <source xml:space="preserve">Select year</source>
+                <target xml:space="preserve" state="needs-review-translation">Année suivante</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">13</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">14</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="node_modules/@ng-bootstrap/ng-bootstrap/pagination/pagination.d.ts" datatype="plaintext"
+          source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="ngb.pagination.first">
+                <source xml:space="preserve">««</source>
+                <target xml:space="preserve" state="needs-review-translation">««</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">2</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.pagination.previous">
+                <source xml:space="preserve">«</source>
+                <target xml:space="preserve" state="needs-review-translation">«</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">3</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.pagination.next">
+                <source xml:space="preserve">»</source>
+                <target xml:space="preserve" state="needs-review-translation">»</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.pagination.last">
+                <source xml:space="preserve">»»</source>
+                <target xml:space="preserve" state="needs-review-translation">»»</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">5</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.pagination.first-aria">
+                <source xml:space="preserve">First</source>
+                <target xml:space="preserve" state="needs-review-translation">Premier</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">14</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.pagination.previous-aria">
+                <source xml:space="preserve">Previous</source>
+                <target xml:space="preserve" state="needs-review-translation">Précédent</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">24</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.pagination.next-aria">
+                <source xml:space="preserve">Next</source>
+                <target xml:space="preserve" state="needs-review-translation">Suivant</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">44</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.pagination.last-aria">
+                <source xml:space="preserve">Last</source>
+                <target xml:space="preserve" state="needs-review-translation">Précédent</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">53</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="node_modules/@ng-bootstrap/ng-bootstrap/progressbar/progressbar.d.ts" datatype="plaintext"
+          source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="ngb.progressbar.value">
+                <source xml:space="preserve"></source>
+                <target xml:space="preserve"></target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">6</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="node_modules/@ng-bootstrap/ng-bootstrap/timepicker/timepicker.d.ts" datatype="plaintext"
+          source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="ngb.timepicker.increment-hours">
+                <source xml:space="preserve">Increment hours</source>
+                <target xml:space="preserve" state="needs-review-translation">incrémentation des heures</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">9</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.HH">
+                <source xml:space="preserve">HH</source>
+                <target xml:space="preserve" state="needs-review-translation">HH</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">13</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.hours">
+                <source xml:space="preserve">Hours</source>
+                <target xml:space="preserve" state="needs-review-translation">Heures</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">15</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.decrement-hours">
+                <source xml:space="preserve">Decrement hours</source>
+                <target xml:space="preserve" state="needs-review-translation">Décrémente les heures</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">23</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.increment-minutes">
+                <source xml:space="preserve">Increment minutes</source>
+                <target xml:space="preserve" state="needs-review-translation">Incrémente les heures</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">32</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.MM">
+                <source xml:space="preserve">MM</source>
+                <target xml:space="preserve" state="needs-review-translation">MM</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">35</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.minutes">
+                <source xml:space="preserve">Minutes</source>
+                <target xml:space="preserve" state="needs-review-translation">Minutes</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">37</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.decrement-minutes">
+                <source xml:space="preserve">Decrement minutes</source>
+                <target xml:space="preserve" state="needs-review-translation">Décrémente les minutes</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">45</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.increment-seconds">
+                <source xml:space="preserve">Increment seconds</source>
+                <target xml:space="preserve" state="needs-review-translation">Incrémente les secondes</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">54</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.SS">
+                <source xml:space="preserve">SS</source>
+                <target xml:space="preserve" state="needs-review-translation">SS</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">57</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.seconds">
+                <source xml:space="preserve">Seconds</source>
+                <target xml:space="preserve" state="needs-review-translation">Secondes</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">59</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.decrement-seconds">
+                <source xml:space="preserve">Decrement seconds</source>
+                <target xml:space="preserve" state="needs-review-translation">Décrémente les secondes</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">67</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.PM">
+                <source xml:space="preserve"></source>
+                <target xml:space="preserve"></target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">76</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="ngb.timepicker.AM">
+                <source xml:space="preserve"></source>
+                <target xml:space="preserve"></target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">77</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="node_modules/@ng-bootstrap/ng-bootstrap/toast/toast.d.ts" datatype="plaintext"
+          source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="ngb.toast.close-aria">
+                <source xml:space="preserve">Close</source>
+                <target xml:space="preserve" state="needs-review-translation">Fermer</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">8</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html"
+          datatype="plaintext" source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="door">
+                <source xml:space="preserve">Door</source>
+                <target xml:space="preserve" state="needs-review-translation">Porte</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">5</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="
+                        src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html
+                    " datatype="plaintext" source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="loading">
+                <source xml:space="preserve">Loading...</source>
+                <target xml:space="preserve" state="needs-review-translation">Chargement...</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">9</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">30</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">43</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">59</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="state" datatype="html">
+                <source xml:space="preserve">State</source>
+                <target xml:space="preserve" state="needs-review-translation">État</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+                    <context context-type="linenumber">10</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="stateOpened">
+                <source xml:space="preserve">Opened</source>
+                <target xml:space="preserve" state="needs-review-translation">Ouvert</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">10</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="stateOpening">
+                <source xml:space="preserve">Opening ...</source>
+                <target xml:space="preserve" state="needs-review-translation">Ouverture en cours ...</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">11</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="stateClosing">
+                <source xml:space="preserve">Closing ...</source>
+                <target xml:space="preserve" state="needs-review-translation">Fermeture en cours ...</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">12</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="stateClosed">
+                <source xml:space="preserve">Closed</source>
+                <target xml:space="preserve" state="needs-review-translation">Fermé</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">13</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="stateSeemsOpened">
+                <source xml:space="preserve">Seems opened</source>
+                <target xml:space="preserve" state="needs-review-translation">Semble être ouverte</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">14</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="stateSeemsClosed">
+                <source xml:space="preserve">Seems closed</source>
+                <target xml:space="preserve" state="needs-review-translation">Semble être fermée</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">15</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="stateOpenedIncorrectly">
+                <source xml:space="preserve">Opened incorrectly</source>
+                <target xml:space="preserve" state="needs-review-translation">Incorrectement ouverte</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">16</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="stateClosedIncorrectly">
+                <source xml:space="preserve">Closed incorrectly</source>
+                <target xml:space="preserve" state="needs-review-translation">Incorrectement fermée</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">17</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="nextOpeningTime" datatype="html">
+                <source>Next opening time</source>
+                <target>Prochaine heure d'ouverture</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+                    <context context-type="linenumber">19</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="nextClosingTime" datatype="html">
+                <source>Next closing time</source>
+                <target>Prochaine heure de fermeture</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+                    <context context-type="linenumber">20</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="weather">
+                <source xml:space="preserve">Weather</source>
+                <target xml:space="preserve" state="needs-review-translation">Météo</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">26</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="weatherTemp" datatype="html">
+                <source><x id="INTERPOLATION" equiv-text="{{temperature}}"/>° (<x id="INTERPOLATION_1" equiv-text="{{temperatureExternal}}"/>° exterior)
+                </source>
+                <target><x id="INTERPOLATION" equiv-text="{{temperature}}"/>° (<x id="INTERPOLATION_1" equiv-text="{{temperatureExternal}}"/>° à l'extérieur)
+                </target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">
+                        src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html
+                    </context>
+                    <context context-type="linenumber">31</context>
+                </context-group>
+                <note priority="1" from="description">temperature: temperature in the chichen cooop</note>
+            </trans-unit>
+            <trans-unit id="weatherHumidity" datatype="html">
+                <source><x id="INTERPOLATION" equiv-text="{{humidity}}"/>% (
+                    <x id="INTERPOLATION_1" equiv-text="{{humidityExternal}}"/>% exterior)
+                </source>
+                <target><x id="INTERPOLATION" equiv-text="{{humidity}}"/>% (<x id="INTERPOLATION_1" equiv-text="{{humidityExternal}}"/>% à l'extérieur)
+                </target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">
+                        src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html
+                    </context>
+                    <context context-type="linenumber">32</context>
+                </context-group>
+                <note priority="1" from="description">humidity: humidity in the chicken coop</note>
+            </trans-unit>
+            <trans-unit id="temperature" datatype="html">
+                <source>Temperature</source>
+                <target>Température</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+                    <context context-type="linenumber">33</context>
+                </context-group>
+                <note priority="1" from="description">temperature: temperature in the chichen cooop unavailable</note>
+            </trans-unit>
+            <trans-unit id="humidity" datatype="html">
+                <source>Humidity</source>
+                <target>Humidité</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+                    <context context-type="linenumber">34</context>
+                </context-group>
+                <note priority="1" from="description">humidity: humidity in the chicken coop unavailable</note>
+            </trans-unit>
+            <trans-unit id="accessories">
+                <source xml:space="preserve">Accessories</source>
+                <target xml:space="preserve" state="needs-review-translation">Accessoires</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">39</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="light">
+                <source xml:space="preserve">Light</source>
+                <target xml:space="preserve" state="needs-review-translation">Lumière</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">44</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="on">
+                <source xml:space="preserve">On</source>
+                <target xml:space="preserve" state="needs-review-translation">Allumé</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">44</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">45</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">46</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="off">
+                <source xml:space="preserve">Off</source>
+                <target xml:space="preserve" state="needs-review-translation">Éteint</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">44</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">45</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">46</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="music">
+                <source xml:space="preserve">Music</source>
+                <target xml:space="preserve" state="needs-review-translation">Musique</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">45</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="fan">
+                <source xml:space="preserve">Fan</source>
+                <target xml:space="preserve" state="needs-review-translation">Ventilateur</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">46</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="webcam">
+                <source xml:space="preserve">Webcam</source>
+                <target xml:space="preserve" state="needs-review-translation">Caméra</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">53</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="chicken coop picture">
+                <source xml:space="preserve">chicken coop picture</source>
+                <target xml:space="preserve" state="needs-review-translation">Photo dans le poulailler</target>
+                <context-group purpose="location">
+                    <context context-type="linenumber">57</context>
+                </context-group>
+                <context-group purpose="location">
+                    <context context-type="linenumber">59</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="dashboard" datatype="html"><source>Dashboard</source><target>Tablou de bord</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">
+                        src/modules/dashboard/containers/dashboard/dashboard.component.html
+                    </context>
+                    <context context-type="linenumber">1</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="english" datatype="html">
+                <source>English</source>
+                <target>Engleză</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/components/top-nav-lang/top-nav-lang.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="french" datatype="html">
+                <source>French</source>
+                <target>Franceză</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/components/top-nav-lang/top-nav-lang.component.html</context>
+                    <context context-type="linenumber">5</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="romanian" datatype="html">
+                <source>Romanian</source>
+                <target>Română</target>
+            </trans-unit>
+            <trans-unit id="logged_in_as" datatype="html">
+                <source>Logged in as:</source>
+                <target>Connecté sous le compte:</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">11</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="guest" datatype="html"><source>Guest</source><target>Vizitator</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/components/top-nav-user/top-nav-user.component.html</context>
+                    <context context-type="linenumber">8</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="signin" datatype="html"><source>Login / Sign up</source><target>Autentificare / Înregistrare</target>
+            </trans-unit>
+            <trans-unit id="signinButton" datatype="html"><source>Sign in</source><target>Autentificare</target>
+            </trans-unit>
+            <trans-unit id="rememberMe" datatype="html"><source>Remember me</source><target>Ține-mă minte</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/auth/containers/login/login.component.html</context>
+                    <context context-type="linenumber">9</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="loginCreateAccount" datatype="html"><source>No account yet? Sign up</source><target>Nu ai cont? Înregistrează-te</target>
+            </trans-unit>
+            <trans-unit id="signinSubmit" datatype="html"><source>Sign in</source><target>Conectare</target>
+            </trans-unit>
+            <trans-unit id="signinInProgress" datatype="html">
+                <source>Signing in…</source>
+                <target>Connexion…</target>
+            </trans-unit>
+            <trans-unit id="username" datatype="html"><source>Login</source><target>Utilizator</target>
+            </trans-unit>
+            <trans-unit id="password" datatype="html"><source>Password</source><target>Parolă</target>
+            </trans-unit>
+            <trans-unit id="close" datatype="html">
+                <source>Close</source>
+                <target>Fermer</target>
+            </trans-unit>
+            <trans-unit id="signinPendingValidation" datatype="html">
+                <source>Your account is pending validation by an administrator.</source>
+                <target>Votre compte est en attente de validation par un administrateur.</target>
+            </trans-unit>
+            <trans-unit id="register" datatype="html"><source>Sign up</source><target>Înregistrare</target>
+            </trans-unit>
+            <trans-unit id="registerSubmit" datatype="html"><source>Create my account</source><target>Creează contul</target>
+            </trans-unit>
+            <trans-unit id="registerInProgress" datatype="html">
+                <source>Creating…</source>
+                <target>Création…</target>
+            </trans-unit>
+            <trans-unit id="registerSuccessMessage" datatype="html">
+                <source>Your account has been created. An administrator must validate your registration before you can sign in. You will receive a confirmation email.</source>
+                <target>Votre compte a été créé. Un administrateur doit valider votre inscription avant que vous puissiez vous connecter. Vous recevrez un email de confirmation.</target>
+            </trans-unit>
+            <trans-unit id="registerBackToLogin" datatype="html">
+                <source>Back to sign-in</source>
+                <target>Retour à la connexion</target>
+            </trans-unit>
+            <trans-unit id="registerAlreadyHaveAccount" datatype="html">
+                <source>I already have an account</source>
+                <target>J'ai déjà un compte</target>
+            </trans-unit>
+            <trans-unit id="registerErrorLoginTaken" datatype="html">
+                <source>This login is already in use.</source>
+                <target>Cet identifiant est déjà utilisé.</target>
+            </trans-unit>
+            <trans-unit id="registerErrorInvalidLogin" datatype="html">
+                <source>Invalid login (2-64 characters, letters/digits/._-).</source>
+                <target>Identifiant invalide (2-64 caractères, lettres/chiffres/._-).</target>
+            </trans-unit>
+            <trans-unit id="registerErrorInvalidPassword" datatype="html">
+                <source>Password too short (minimum 6 characters).</source>
+                <target>Mot de passe trop court (6 caractères minimum).</target>
+            </trans-unit>
+            <trans-unit id="registerErrorInvalidEmail" datatype="html">
+                <source>Invalid email address.</source>
+                <target>Adresse email invalide.</target>
+            </trans-unit>
+            <trans-unit id="registerErrorGeneric" datatype="html">
+                <source>Sign-up failed. Please try again.</source>
+                <target>Inscription impossible. Veuillez réessayer.</target>
+            </trans-unit>
+            <trans-unit id="weatherMonthlyChartAria" datatype="html">
+                <source>Monthly temperature and humidity trend</source>
+                <target>Évolution mensuelle température et humidité</target>
+            </trans-unit>
+            <trans-unit id="weatherTablePagerAria" datatype="html">
+                <source>Select page of weather entries</source>
+                <target>Sélectionner la page</target>
+            </trans-unit>
+            <trans-unit id="mailHostPlaceholder" datatype="html">
+                <source>smtp.gmail.com</source>
+                <target>smtp.gmail.com</target>
+            </trans-unit>
+            <trans-unit id="locationWriteOnlyPlaceholder" datatype="html">
+                <source>(leave empty to keep the current value)</source>
+                <target>(laisser vide pour ne pas modifier)</target>
+            </trans-unit>
+            <trans-unit id="logsSearchPlaceholder" datatype="html">
+                <source>DoorService, Exception…</source>
+                <target>DoorService, Exception…</target>
+            </trans-unit>
+            <trans-unit id="error401Title" datatype="html">
+                <source>Unauthorized</source>
+                <target>Non autorisé</target>
+            </trans-unit>
+            <trans-unit id="error401Body" datatype="html">
+                <source>Access to this resource is denied.</source>
+                <target>L'accès à cette ressource est refusé.</target>
+            </trans-unit>
+            <trans-unit id="error404Body" datatype="html">
+                <source>This requested URL was not found on this server.</source>
+                <target>L'URL demandée est introuvable sur ce serveur.</target>
+            </trans-unit>
+            <trans-unit id="error500Title" datatype="html">
+                <source>Internal Server Error</source>
+                <target>Erreur interne du serveur</target>
+            </trans-unit>
+            <trans-unit id="errorBackToDashboard" datatype="html">
+                <source>Return to Dashboard</source>
+                <target>Retour au tableau de bord</target>
+            </trans-unit>
+            <trans-unit id="usersRolePending" datatype="html">
+                <source>Pending</source>
+                <target>En attente</target>
+            </trans-unit>
+            <trans-unit id="usersApproveTitle" datatype="html">
+                <source>Approve this account (promote to USER)</source>
+                <target>Valider ce compte (passe à USER)</target>
+            </trans-unit>
+            <trans-unit id="users" datatype="html">
+                <source>Users</source>
+                <target>Utilisateurs</target>
+            </trans-unit>
+            <trans-unit id="usersInfo" datatype="html">
+                <source>Manage your profile and configure email notifications. Administrators can also manage other users from this page.</source>
+                <target>Gérez votre profil et configurez les notifications par email. Les administrateurs peuvent aussi gérer les autres utilisateurs depuis cette page.</target>
+            </trans-unit>
+            <trans-unit id="usersMyProfile" datatype="html">
+                <source>My profile</source>
+                <target>Mon profil</target>
+            </trans-unit>
+            <trans-unit id="usersLogin" datatype="html">
+                <source>Login</source>
+                <target>Identifiant</target>
+            </trans-unit>
+            <trans-unit id="usersEmail" datatype="html">
+                <source>Email</source>
+                <target>Email</target>
+            </trans-unit>
+            <trans-unit id="usersNewPassword" datatype="html">
+                <source>New password (optional)</source>
+                <target>Nouveau mot de passe (optionnel)</target>
+            </trans-unit>
+            <trans-unit id="usersPassword" datatype="html">
+                <source>Password</source>
+                <target>Mot de passe</target>
+            </trans-unit>
+            <trans-unit id="usersReceiveNotifs" datatype="html">
+                <source>Receive notifications</source>
+                <target>Recevoir les notifications</target>
+            </trans-unit>
+            <trans-unit id="usersAdminPanel" datatype="html">
+                <source>User administration</source>
+                <target>Administration des utilisateurs</target>
+            </trans-unit>
+            <trans-unit id="usersAddUser" datatype="html">
+                <source>Add user</source>
+                <target>Ajouter un utilisateur</target>
+            </trans-unit>
+            <trans-unit id="usersRole" datatype="html">
+                <source>Role</source>
+                <target>Rôle</target>
+            </trans-unit>
+            <trans-unit id="usersNotifyShort" datatype="html">
+                <source>Notify</source>
+                <target>Notif.</target>
+            </trans-unit>
+            <trans-unit id="usersCreate" datatype="html">
+                <source>Create</source>
+                <target>Créer</target>
+            </trans-unit>
+            <trans-unit id="usersNotifications" datatype="html">
+                <source>Notifications</source>
+                <target>Notifications</target>
+            </trans-unit>
+            <trans-unit id="usersEdit" datatype="html">
+                <source>Edit</source>
+                <target>Modifier</target>
+            </trans-unit>
+            <trans-unit id="usersDelete" datatype="html">
+                <source>Delete</source>
+                <target>Supprimer</target>
+            </trans-unit>
+            <trans-unit id="usersEditTitle" datatype="html">
+                <source>Edit this user</source>
+                <target>Modifier cet utilisateur</target>
+            </trans-unit>
+            <trans-unit id="usersDeleteTitle" datatype="html">
+                <source>Delete this user</source>
+                <target>Supprimer cet utilisateur</target>
+            </trans-unit>
+            <trans-unit id="usersEditPasswordPlaceholder" datatype="html">
+                <source>New password (optional)</source>
+                <target>Nouveau mot de passe (optionnel)</target>
+            </trans-unit>
+            <trans-unit id="save" datatype="html"><source>Save</source><target>Salvează</target>
+            </trans-unit>
+            <trans-unit id="cancel" datatype="html"><source>Cancel</source><target>Anulează</target>
+            </trans-unit>
+            <trans-unit id="producedBy" datatype="html">
+                <source>Brought to you by</source>
+                <target>Développé par</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="underGpl3" datatype="html">
+                <source>under GNU GPL version 3.</source>
+                <target>sous licence GNU GPL version 3.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="sourceCode" datatype="html">
+                <source>Source code</source>
+                <target>Code source</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/footer/footer.component.html</context>
+                    <context context-type="linenumber">5</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="weatherMenu" datatype="html"><source>Weather</source><target>Meteo</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">12</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="webcamMenu" datatype="html"><source>Webcam</source><target>Cameră web</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">15</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="logsMenu" datatype="html">
+                <source>Logs</source>
+                <target>Logs</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">18</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="energySavingMenu" datatype="html"><source>Energy saving</source><target>Economie de energie</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">21</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="notificationMenu" datatype="html">
+                <source>Notification</source>
+                <target>Notification</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">24</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="usersMenu" datatype="html"><source>Users</source><target>Utilizatori</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">28</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="playlistMenu" datatype="html"><source>Music playlist</source><target>Listă muzică</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">27</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="systemMenu" datatype="html"><source>System</source><target>Sistem</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
+                    <context context-type="linenumber">30</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="switchLightOn" datatype="html">
+                <source>Switch light on</source>
+                <target>Allumer la lumière</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+                    <context context-type="linenumber">5</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="switchLightOff" datatype="html">
+                <source>Switch light off</source>
+                <target>Éteindre la lumière</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+                    <context context-type="linenumber">7</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="switchMusicOn" datatype="html">
+                <source>Switch music on</source>
+                <target>Allumer la musique</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+                    <context context-type="linenumber">9</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="switchMusicOff" datatype="html">
+                <source>Switch music off</source>
+                <target>Éteindre la musique</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+                    <context context-type="linenumber">11</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="switchFanOn" datatype="html">
+                <source>Switch fan on</source>
+                <target>Allumer le ventilateur</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+                    <context context-type="linenumber">13</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="switchFanOff" datatype="html">
+                <source>Switch fan off</source>
+                <target>Éteindre le ventilateur</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-accessories-action/dashboard-accessories-action.component.html</context>
+                    <context context-type="linenumber">15</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="openDoor" datatype="html">
+                <source>Open door</source>
+                <target>Ouvrir la porte</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-door-action/dashboard-door-action.component.html</context>
+                    <context context-type="linenumber">5</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="closeDoor" datatype="html">
+                <source>Close door</source>
+                <target>Fermer la porte</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-door-action/dashboard-door-action.component.html</context>
+                    <context context-type="linenumber">7</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="refreshMeteoInfo" datatype="html">
+                <source>refresh meteo info</source>
+                <target>rafraichir la météo</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-weather-action/dashboard-weather-action.component.html</context>
+                    <context context-type="linenumber">2</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="refreshPicture" datatype="html">
+                <source>refresh picture</source>
+                <target>rafraichir la photo</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-webcam-action/dashboard-webcam-action.component.html</context>
+                    <context context-type="linenumber">2</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="connectionFailed" datatype="html">
+                <source>Connection with chicken coop failed</source>
+                <target>La connexion avec le poulailler a échoué</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-cards/dashboard-cards.component.html</context>
+                    <context context-type="linenumber">19</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="retry" datatype="html">
+                <source>Retry</source>
+                <target>Essayer à nouveau</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/app-common/components/card-view-details/card-view-details.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="viewDetails" datatype="html">
+                <source>View Details</source>
+                <target>Voir les détails</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/app-common/components/card-view-details/card-view-details.component.html</context>
+                    <context context-type="linenumber">5</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="informationNotAvailable" datatype="html">
+                <source>Information not available</source>
+                <target>Information non disponible</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+                    <context context-type="linenumber">45</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="dashboardInfo" datatype="html">
+                <source>This board displays info about the chicken coop.</source>
+                <target>Cet écran affiche les informations du poulailler.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/containers/dashboard/dashboard.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="weatherInfo" datatype="html">
+                <source>This board is displaying the weather fetched from a temperature and humidity probe inside the chicken coop.</source>
+                <target>Cet écran affiche les informations météo récupérées depuis une sonde située dans le poulailler.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/weather/containers/charts/charts.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="cameraInfo" datatype="html">
+                <source>This board allows you to browse through the history of the pictures.</source>
+                <target>Cet écran permet de naviguer à travers l'historique des photos du poulailler.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="camera" datatype="html">
+                <source>Camera</source>
+                <target>Caméra</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+                    <context context-type="linenumber">2</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="cameraLoading" datatype="html">
+                <source>Loading…</source>
+                <target>Chargement…</target>
+            </trans-unit>
+            <trans-unit id="cameraEmpty" datatype="html">
+                <source>This folder is empty.</source>
+                <target>Ce dossier est vide.</target>
+            </trans-unit>
+            <trans-unit id="cameraClose" datatype="html">
+                <source>Close</source>
+                <target>Fermer</target>
+            </trans-unit>
+            <trans-unit id="cameraLivePanelTitle" datatype="html">
+                <source>Latest snapshot</source>
+                <target>Dernière photo</target>
+            </trans-unit>
+            <trans-unit id="cameraTakePicture" datatype="html">
+                <source>Take a new picture</source>
+                <target>Prendre une nouvelle photo</target>
+            </trans-unit>
+            <trans-unit id="cameraSnapshotLoading" datatype="html">
+                <source>Capturing…</source>
+                <target>Capture en cours…</target>
+            </trans-unit>
+            <trans-unit id="cameraSnapshotAlt" datatype="html">
+                <source>chicken coop snapshot</source>
+                <target>photo du poulailler</target>
+            </trans-unit>
+            <trans-unit id="cameraAnalyzeButton" datatype="html">
+                <source>AI analysis</source>
+                <target>Analyse IA</target>
+            </trans-unit>
+            <trans-unit id="cameraAnalyzeLoading" datatype="html">
+                <source>Analyzing…</source>
+                <target>Analyse en cours…</target>
+            </trans-unit>
+            <trans-unit id="diagnostic" datatype="html">
+                <source>Diagnostic</source>
+                <target>Diagnostic</target>
+            </trans-unit>
+            <trans-unit id="systemState" datatype="html">
+                <source>System state</source>
+                <target>État du système</target>
+            </trans-unit>
+            <trans-unit id="about" datatype="html">
+                <source>About</source>
+                <target>À propos</target>
+            </trans-unit>
+            <trans-unit id="upperButtonStatus" datatype="html">
+                <source>Upper end-stop button</source>
+                <target>Bouton de fin de course haut</target>
+            </trans-unit>
+            <trans-unit id="bottomButtonStatus" datatype="html">
+                <source>Bottom end-stop button</source>
+                <target>Bouton de fin de course bas</target>
+            </trans-unit>
+            <trans-unit id="birdhouseButtonStatus" datatype="html">
+                <source>Birdhouse button</source>
+                <target>Bouton du nichoir</target>
+            </trans-unit>
+            <trans-unit id="buttonPressed" datatype="html">
+                <source>Pressed</source>
+                <target>Pressé</target>
+            </trans-unit>
+            <trans-unit id="buttonReleased" datatype="html">
+                <source>Released</source>
+                <target>Relâché</target>
+            </trans-unit>
+            <trans-unit id="sendTestEmail" datatype="html">
+                <source>Send test email</source>
+                <target>Envoyer un email de test</target>
+            </trans-unit>
+            <trans-unit id="sendingTestEmail" datatype="html">
+                <source>Sending…</source>
+                <target>Envoi en cours…</target>
+            </trans-unit>
+            <trans-unit id="diskUsage" datatype="html">
+                <source>Disk usage</source>
+                <target>Occupation disque</target>
+            </trans-unit>
+            <trans-unit id="diskUsageError" datatype="html">
+                <source>Disk usage unavailable</source>
+                <target>Occupation disque indisponible</target>
+            </trans-unit>
+            <trans-unit id="energyInfo" datatype="html">
+                <source>This board allows you to configure the energy saving parameters.</source>
+                <target>Cet écran permet de configurer les paramètres de la consommation énergétique.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/energy/containers/charts/charts.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="notificationInfo" datatype="html">
+                <source>This board allows you to configure the notification parameters.</source>
+                <target>Cet écran permet de configurer les paramètres de notification.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="musicInfo" datatype="html">
+                <source>This board allows you to configure the music parameters.</source>
+                <target>Cet écran permet de configurer les paramètres musicaux.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/music/containers/charts/charts.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="musicAudioToggles" datatype="html">
+                <source>Automatic sounds</source>
+                <target>Sons automatiques</target>
+            </trans-unit>
+            <trans-unit id="musicCocoricoLabel" datatype="html">
+                <source>Play cock-a-doodle-doo at sunrise</source>
+                <target>Jouer cocorico au lever du soleil</target>
+            </trans-unit>
+            <trans-unit id="musicSongAtSunsetLabel" datatype="html">
+                <source>Play a song at sunset</source>
+                <target>Jouer une chanson au coucher du soleil</target>
+            </trans-unit>
+            <trans-unit id="musicVolumeLabel" datatype="html">
+                <source>Default volume</source>
+                <target>Volume habituel</target>
+            </trans-unit>
+            <trans-unit id="systemInfo" datatype="html">
+                <source>This board allows you to configure the system parameters.</source>
+                <target>Cet écran permet d'accéder aux paramètres système.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/system/containers/tables/tables.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="music" datatype="html">
+                <source>Music</source>
+                <target>Musique</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/dashboard/components/dashboard-widgets/dashboard-widgets.component.html</context>
+                    <context context-type="linenumber">45</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="system" datatype="html">
+                <source>System</source>
+                <target>Système</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/system/containers/tables/tables.component.html</context>
+                    <context context-type="linenumber">2</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="systemReboot" datatype="html">
+                <source>Reboot the machine</source>
+                <target>Redémarrer la machine</target>
+            </trans-unit>
+            <trans-unit id="systemOpenApiDocsLabel" datatype="html">
+                <source>API documentation</source>
+                <target>Documentation API</target>
+            </trans-unit>
+            <trans-unit id="systemOpenApiDocsLink" datatype="html">
+                <source>Swagger</source>
+                <target>Swagger</target>
+            </trans-unit>
+            <trans-unit id="systemShutdown" datatype="html">
+                <source>Shut down the machine</source>
+                <target>Éteindre la machine</target>
+            </trans-unit>
+            <trans-unit id="systemRebootConfirm" datatype="html">
+                <source>Reboot the Raspberry Pi now? The application will be unavailable for ~30 seconds.</source>
+                <target>Redémarrer le Raspberry Pi maintenant ? L'application sera indisponible pendant environ 30 secondes.</target>
+            </trans-unit>
+            <trans-unit id="systemShutdownConfirm" datatype="html">
+                <source>Shut down the Raspberry Pi now? This will kill the application until the machine is powered back on manually.</source>
+                <target>Éteindre le Raspberry Pi maintenant ? L'application sera coupée jusqu'à ce que la machine soit rallumée manuellement.</target>
+            </trans-unit>
+            <trans-unit id="systemRebootInProgress" datatype="html">
+                <source>Reboot command sent. The machine is restarting.</source>
+                <target>Commande de redémarrage envoyée. La machine redémarre.</target>
+            </trans-unit>
+            <trans-unit id="systemShutdownInProgress" datatype="html">
+                <source>Shutdown command sent. The machine is going down.</source>
+                <target>Commande d'arrêt envoyée. La machine s'éteint.</target>
+            </trans-unit>
+            <trans-unit id="systemRebootFailed" datatype="html">
+                <source>Reboot failed.</source>
+                <target>Échec du redémarrage.</target>
+            </trans-unit>
+            <trans-unit id="systemShutdownFailed" datatype="html">
+                <source>Shutdown failed.</source>
+                <target>Échec de l'arrêt.</target>
+            </trans-unit>
+            <trans-unit id="systemRateLimited" datatype="html">
+                <source>Too many attempts. Please wait a few minutes.</source>
+                <target>Trop de tentatives. Veuillez patienter quelques minutes.</target>
+            </trans-unit>
+            <trans-unit id="energy" datatype="html">
+                <source>Energy</source>
+                <target>Énergie</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/energy/containers/charts/charts.component.html</context>
+                    <context context-type="linenumber">2</context>
+                </context-group>
+            </trans-unit>
+            <trans-unit id="energyConfigTitle" datatype="html">
+                <source>Energy configuration</source>
+                <target>Configuration énergétique</target>
+            </trans-unit>
+            <trans-unit id="energyCurrentMode" datatype="html">
+                <source>Active mode today</source>
+                <target>Mode actif aujourd'hui</target>
+            </trans-unit>
+            <trans-unit id="energyAuto" datatype="html">
+                <source>Automatic mode (follow the calendar)</source>
+                <target>Mode automatique (selon le calendrier)</target>
+            </trans-unit>
+            <trans-unit id="energyForceEco" datatype="html">
+                <source>Force ECO mode</source>
+                <target>Forcer le mode ECO</target>
+            </trans-unit>
+            <trans-unit id="energyMonthlySchedule" datatype="html">
+                <source>Annual schedule</source>
+                <target>Calendrier annuel</target>
+            </trans-unit>
+            <trans-unit id="energyPerModeConfig" datatype="html">
+                <source>Configuration per mode</source>
+                <target>Configuration par mode</target>
+            </trans-unit>
+            <trans-unit id="energyFanDuration" datatype="html">
+                <source>Fan duration</source>
+                <target>Durée du ventilateur</target>
+            </trans-unit>
+            <trans-unit id="energyLightDuration" datatype="html">
+                <source>Light duration</source>
+                <target>Durée de l'éclairage</target>
+            </trans-unit>
+            <trans-unit id="energyMusicDuration" datatype="html">
+                <source>Music duration</source>
+                <target>Durée de la musique</target>
+            </trans-unit>
+            <trans-unit id="minutesShort" datatype="html">
+                <source>min</source>
+                <target>min</target>
+            </trans-unit>
+            <trans-unit id="logsInfo" datatype="html">
+                <source>This board allows you to browse through the history of the log file.</source>
+                <target>Cet écran permet de naviguer à travers l'historique des fichiers de log.</target>
+                <context-group purpose="location">
+                    <context context-type="sourcefile">src/modules/logs/containers/charts/charts.component.html</context>
+                    <context context-type="linenumber">4</context>
+                </context-group>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="src/modules/electronics/containers/electronics/electronics.component.html"
+          datatype="plaintext" source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="electronics" datatype="html">
+                <source>Electronics</source>
+                <target>Électronique</target>
+            </trans-unit>
+            <trans-unit id="electronicsMenu" datatype="html"><source>Electronics</source><target>Electronică</target>
+            </trans-unit>
+            <trans-unit id="electronicsInfo" datatype="html">
+                <source>Read-only view of the GPIO wiring of the chicken coop, plus the live status of the end-stop / birdhouse buttons. Calibration controls for the door servomotor are at the bottom of the page.</source>
+                <target>Vue en lecture seule du câblage GPIO du poulailler, ainsi que l'état en direct des boutons fin de course / pondoir. Les réglages de calibration du servomoteur de porte sont en bas de la page.</target>
+            </trans-unit>
+            <trans-unit id="electronicsGpioTitle" datatype="html">
+                <source>GPIO wiring (BCM numbering)</source>
+                <target>Câblage GPIO (numérotation BCM)</target>
+            </trans-unit>
+            <trans-unit id="electronicsGpioCol" datatype="html">
+                <source>GPIO</source>
+                <target>GPIO</target>
+            </trans-unit>
+            <trans-unit id="electronicsBoardCol" datatype="html">
+                <source>Pin (board)</source>
+                <target>Broche (carte)</target>
+            </trans-unit>
+            <trans-unit id="electronicsComponentCol" datatype="html">
+                <source>Component</source>
+                <target>Composant</target>
+            </trans-unit>
+            <trans-unit id="electronicsDirectionCol" datatype="html">
+                <source>Direction</source>
+                <target>Direction</target>
+            </trans-unit>
+            <trans-unit id="electronicsStateCol" datatype="html">
+                <source>State</source>
+                <target>État</target>
+            </trans-unit>
+            <trans-unit id="authRequired" datatype="html">
+                <source>Sign in required</source>
+                <target>Authentification requise</target>
+            </trans-unit>
+            <trans-unit id="relayOn" datatype="html">
+                <source>On</source>
+                <target>Allumé</target>
+            </trans-unit>
+            <trans-unit id="relayOff" datatype="html">
+                <source>Off</source>
+                <target>Éteint</target>
+            </trans-unit>
+            <trans-unit id="electronicsButtonsTitle" datatype="html">
+                <source>Buttons live status</source>
+                <target>État des boutons en direct</target>
+            </trans-unit>
+            <trans-unit id="electronicsBoardTitle" datatype="html">
+                <source>Raspberry Pi Zero pinout</source>
+                <target>Schéma des broches du Raspberry Pi Zero</target>
+            </trans-unit>
+            <trans-unit id="electronicsBoardAlt" datatype="html">
+                <source>Raspberry Pi Zero board</source>
+                <target>Carte Raspberry Pi Zero</target>
+            </trans-unit>
+        </body>
+    </file>
+    <file original="src/modules/residents/containers/residents/residents.component.html"
+          datatype="plaintext" source-language="en-US" target-language="ro-RO">
+        <body>
+            <trans-unit id="residents" datatype="html">
+                <source>Residents</source>
+                <target>Pensionnaires</target>
+            </trans-unit>
+            <trans-unit id="residentsMenu" datatype="html"><source>Residents</source><target>Locuitoare</target>
+            </trans-unit>
+            <trans-unit id="residentsInfo" datatype="html">
+                <source>The list of hens that live (or have lived) in the chicken coop.</source>
+                <target>La liste des poules qui vivent (ou ont vécu) dans le poulailler.</target>
+            </trans-unit>
+            <trans-unit id="residentsAdd" datatype="html">
+                <source>Add a hen</source>
+                <target>Ajouter une poule</target>
+            </trans-unit>
+            <trans-unit id="residentsEmpty" datatype="html">
+                <source>No hen recorded yet.</source>
+                <target>Aucune poule enregistrée pour le moment.</target>
+            </trans-unit>
+            <trans-unit id="residentsBreed" datatype="html">
+                <source>Breed</source>
+                <target>Race</target>
+            </trans-unit>
+            <trans-unit id="residentsBirthDate" datatype="html">
+                <source>Birth</source>
+                <target>Naissance</target>
+            </trans-unit>
+            <trans-unit id="residentsArrivalDate" datatype="html">
+                <source>Arrival</source>
+                <target>Arrivée</target>
+            </trans-unit>
+            <trans-unit id="residentsDeathDate" datatype="html">
+                <source>Death</source>
+                <target>Décès</target>
+            </trans-unit>
+            <trans-unit id="residentsName" datatype="html">
+                <source>Name</source>
+                <target>Nom</target>
+            </trans-unit>
+            <trans-unit id="residentsComments" datatype="html">
+                <source>Comments</source>
+                <target>Commentaires</target>
+            </trans-unit>
+            <trans-unit id="residentsEdit" datatype="html">
+                <source>Edit</source>
+                <target>Modifier</target>
+            </trans-unit>
+            <trans-unit id="residentsDelete" datatype="html">
+                <source>Delete</source>
+                <target>Supprimer</target>
+            </trans-unit>
+            <trans-unit id="residentsUploadPhoto" datatype="html">
+                <source>Photo</source>
+                <target>Photo</target>
+            </trans-unit>
+            <trans-unit id="residentsDeletePhoto" datatype="html">
+                <source>Delete photo</source>
+                <target>Suppr. photo</target>
+            </trans-unit>
+            <trans-unit id="residentsAddTitle" datatype="html">
+                <source>New hen</source>
+                <target>Nouvelle poule</target>
+            </trans-unit>
+            <trans-unit id="residentsEditTitle" datatype="html">
+                <source>Edit hen</source>
+                <target>Modifier la poule</target>
+            </trans-unit>
+            <trans-unit id="weatherMonthlyTrend" datatype="html">
+                <source>30-day trend (daily averages)</source>
+                <target>Tendance sur 30 jours (moyennes journalières)</target>
+            </trans-unit>
+            <trans-unit id="weatherChartLoading" datatype="html">
+                <source>Loading…</source>
+                <target>Chargement…</target>
+            </trans-unit>
+            <trans-unit id="weatherChartNoData" datatype="html">
+                <source>Not enough data yet to display the chart.</source>
+                <target>Pas encore assez de données pour afficher la courbe.</target>
+            </trans-unit>
+            <trans-unit id="weatherChartTempLegend" datatype="html">
+                <source>Average temperature (°C)</source>
+                <target>Température moyenne (°C)</target>
+            </trans-unit>
+            <trans-unit id="weatherChartHumLegend" datatype="html">
+                <source>Average humidity (%)</source>
+                <target>Humidité moyenne (%)</target>
+            </trans-unit>
+            <trans-unit id="weatherChartTemp" datatype="html">
+                <source>Temp.</source>
+                <target>Temp.</target>
+            </trans-unit>
+            <trans-unit id="weatherChartHum" datatype="html">
+                <source>Humidity</source>
+                <target>Humidité</target>
+            </trans-unit>
+            <trans-unit id="weatherChartSamples" datatype="html">
+                <source><x id="INTERPOLATION" equiv-text="{{ hoverPoint.samples }}"/> samples</source>
+                <target><x id="INTERPOLATION" equiv-text="{{ hoverPoint.samples }}"/> mesures</target>
+            </trans-unit>
+            <trans-unit id="journal" datatype="html">
+                <source>Logs</source>
+                <target>Journalisation</target>
+            </trans-unit>
+            <trans-unit id="journalMenu" datatype="html"><source>Logs</source><target>Jurnal</target>
+            </trans-unit>
+            <trans-unit id="journalInfo" datatype="html">
+                <source>Tracks events that occurred in the chicken coop (door, light, fan, music, residents, system).</source>
+                <target>Suivi des évènements survenus dans le poulailler (porte, lumière, ventilation, musique, pensionnaires, système).</target>
+            </trans-unit>
+            <trans-unit id="journalBusinessTitle" datatype="html">
+                <source>Business events</source>
+                <target>Évènements métier</target>
+            </trans-unit>
+            <trans-unit id="journalAuthTitle" datatype="html">
+                <source>Login attempts</source>
+                <target>Tentatives de connexion</target>
+            </trans-unit>
+            <trans-unit id="journalCategory" datatype="html">
+                <source>Category</source>
+                <target>Catégorie</target>
+            </trans-unit>
+            <trans-unit id="journalCatAll" datatype="html">
+                <source>All</source>
+                <target>Toutes</target>
+            </trans-unit>
+            <trans-unit id="journalCatDoor" datatype="html">
+                <source>Door</source>
+                <target>Porte</target>
+            </trans-unit>
+            <trans-unit id="journalCatLight" datatype="html">
+                <source>Light</source>
+                <target>Lumière</target>
+            </trans-unit>
+            <trans-unit id="journalCatFan" datatype="html">
+                <source>Fan</source>
+                <target>Ventilation</target>
+            </trans-unit>
+            <trans-unit id="journalCatMusic" datatype="html">
+                <source>Music</source>
+                <target>Musique</target>
+            </trans-unit>
+            <trans-unit id="journalCatResident" datatype="html">
+                <source>Residents</source>
+                <target>Pensionnaires</target>
+            </trans-unit>
+            <trans-unit id="journalCatSystem" datatype="html">
+                <source>System</source>
+                <target>Système</target>
+            </trans-unit>
+            <trans-unit id="journalWindow" datatype="html">
+                <source>Window</source>
+                <target>Fenêtre</target>
+            </trans-unit>
+            <trans-unit id="journalWindow24h" datatype="html">
+                <source>24 h</source>
+                <target>24 h</target>
+            </trans-unit>
+            <trans-unit id="journalWindow7d" datatype="html">
+                <source>7 days</source>
+                <target>7 jours</target>
+            </trans-unit>
+            <trans-unit id="journalWindow30d" datatype="html">
+                <source>30 days</source>
+                <target>30 jours</target>
+            </trans-unit>
+            <trans-unit id="journalWindowAll" datatype="html">
+                <source>All</source>
+                <target>Tout</target>
+            </trans-unit>
+            <trans-unit id="journalEmpty" datatype="html">
+                <source>No event in this period.</source>
+                <target>Aucun évènement sur la période.</target>
+            </trans-unit>
+            <trans-unit id="journalAuthFilter" datatype="html">
+                <source>Filter</source>
+                <target>Filtre</target>
+            </trans-unit>
+            <trans-unit id="journalAuthAll" datatype="html">
+                <source>All</source>
+                <target>Toutes</target>
+            </trans-unit>
+            <trans-unit id="journalAuthSuccess" datatype="html">
+                <source>Successful</source>
+                <target>Réussies</target>
+            </trans-unit>
+            <trans-unit id="journalAuthFailed" datatype="html">
+                <source>Failed</source>
+                <target>Échouées</target>
+            </trans-unit>
+            <trans-unit id="eventStartup" datatype="html">
+                <source>Application started</source>
+                <target>Application démarrée</target>
+            </trans-unit>
+            <trans-unit id="eventShutdown" datatype="html">
+                <source>Application stopped</source>
+                <target>Application arrêtée</target>
+            </trans-unit>
+            <trans-unit id="eventShutdownRequested" datatype="html">
+                <source>Shutdown requested</source>
+                <target>Arrêt demandé</target>
+            </trans-unit>
+            <trans-unit id="eventRebootRequested" datatype="html">
+                <source>Reboot requested</source>
+                <target>Redémarrage demandé</target>
+            </trans-unit>
+            <trans-unit id="eventDoorOpened" datatype="html">
+                <source>Door opened</source>
+                <target>Porte ouverte</target>
+            </trans-unit>
+            <trans-unit id="eventDoorClosed" datatype="html">
+                <source>Door closed</source>
+                <target>Porte fermée</target>
+            </trans-unit>
+            <trans-unit id="eventDoorOpenFailed" datatype="html">
+                <source>Door failed to open</source>
+                <target>Échec à l'ouverture de la porte</target>
+            </trans-unit>
+            <trans-unit id="eventDoorCloseFailed" datatype="html">
+                <source>Door failed to close</source>
+                <target>Échec à la fermeture de la porte</target>
+            </trans-unit>
+            <trans-unit id="eventDoorPositionUnknown" datatype="html">
+                <source>Door position unknown</source>
+                <target>Position de la porte inconnue</target>
+            </trans-unit>
+            <trans-unit id="eventLightOn" datatype="html">
+                <source>Light switched on</source>
+                <target>Éclairage allumé</target>
+            </trans-unit>
+            <trans-unit id="eventLightOff" datatype="html">
+                <source>Light switched off</source>
+                <target>Éclairage éteint</target>
+            </trans-unit>
+            <trans-unit id="eventFanOn" datatype="html">
+                <source>Fan switched on</source>
+                <target>Ventilateur allumé</target>
+            </trans-unit>
+            <trans-unit id="eventFanOff" datatype="html">
+                <source>Fan switched off</source>
+                <target>Ventilateur éteint</target>
+            </trans-unit>
+            <trans-unit id="eventMusicStarted" datatype="html">
+                <source>Music started</source>
+                <target>Musique lancée</target>
+            </trans-unit>
+            <trans-unit id="eventMusicStopped" datatype="html">
+                <source>Music stopped</source>
+                <target>Musique arrêtée</target>
+            </trans-unit>
+            <trans-unit id="eventCocorico" datatype="html">
+                <source>Cocorico played</source>
+                <target>Cocorico joué</target>
+            </trans-unit>
+            <trans-unit id="eventResidentCreated" datatype="html">
+                <source>Resident added</source>
+                <target>Résidente ajoutée</target>
+            </trans-unit>
+            <trans-unit id="eventResidentDeleted" datatype="html">
+                <source>Resident removed</source>
+                <target>Résidente retirée</target>
+            </trans-unit>
+            <trans-unit id="eventLoginSuccess" datatype="html">
+                <source>Successful login</source>
+                <target>Connexion réussie</target>
+            </trans-unit>
+            <trans-unit id="eventLoginFailed" datatype="html">
+                <source>Failed login</source>
+                <target>Échec de connexion</target>
+            </trans-unit>
+            <trans-unit id="eventLogout" datatype="html">
+                <source>Logout</source>
+                <target>Déconnexion</target>
+            </trans-unit>
+            <trans-unit id="demoModeEnable" datatype="html"><source>Enable demo mode</source><target>Activează modul demo</target>
+            </trans-unit>
+            <trans-unit id="demoModeDisable" datatype="html"><source>Leave demo mode</source><target>Ieși din modul demo</target>
+            </trans-unit>
+            <trans-unit id="demoUserLabel" datatype="html">
+                <source>Demo (simulated admin)</source>
+                <target>Démo (admin simulé)</target>
+            </trans-unit>
+            <trans-unit id="demoActionBlockedTitle" datatype="html">
+                <source>Demo mode</source>
+                <target>Mode démo</target>
+            </trans-unit>
+            <trans-unit id="demoActionBlockedMessage" datatype="html">
+                <source>This action is disabled in demo mode. Sign in to change the chicken coop configuration.</source>
+                <target>Cette action est désactivée en mode démo. Connectez-vous pour modifier la configuration du poulailler.</target>
+            </trans-unit>
+            <trans-unit id="preferredLanguage" datatype="html"><source>Preferred language</source><target>Limbă preferată</target>
+            </trans-unit>
+            <trans-unit id="languageFrench" datatype="html"><source>French</source><target>Franceză</target>
+            </trans-unit>
+            <trans-unit id="languageEnglish" datatype="html"><source>English</source><target>Engleză</target>
+            </trans-unit>
+            <trans-unit id="languageRomanian" datatype="html">
+                <source>Romanian</source>
+                <target>Română</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

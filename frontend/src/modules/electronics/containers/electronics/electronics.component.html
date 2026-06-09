@@ -1,0 +1,395 @@
+<sb-layout-dashboard>
+    <sb-dashboard-head
+        title="Electronics"
+        i18n-title="@@electronics"
+        [hideBreadcrumbs]="true"
+    ></sb-dashboard-head>
+
+    <sb-card>
+        <div class="card-body">
+            <span i18n="@@electronicsInfo"
+                >Read-only view of the GPIO wiring of the chicken coop, plus the live status of the
+                end-stop / birdhouse buttons. Calibration controls for the door servomotor are at
+                the bottom of the page.</span
+            >
+        </div>
+    </sb-card>
+
+    <sb-card>
+        <div class="card-header">
+            <fa-icon class="me-1" [icon]="['fas', 'plug']"></fa-icon>
+            <span i18n="@@electronicsGpioTitle">GPIO wiring (BCM numbering)</span>
+        </div>
+        <div class="card-body">
+            @if (pinsLoading) {
+                <div class="text-muted small">
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <span i18n="@@loading">Loading...</span>
+                </div>
+            }
+            @if (pinsError) {
+                <div class="text-danger small" i18n="@@informationNotAvailable">
+                    Information not available
+                </div>
+            }
+            @if (!pinsLoading && !pinsError && pins.length > 0) {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th i18n="@@electronicsGpioCol">GPIO</th>
+                                <th i18n="@@electronicsBoardCol">Pin (board)</th>
+                                <th i18n="@@electronicsComponentCol">Component</th>
+                                <th i18n="@@electronicsDirectionCol">Direction</th>
+                                <th i18n="@@electronicsStateCol">State</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (p of pins; track p.key) {
+                                <tr>
+                                    <td>
+                                        <span class="badge text-bg-primary">{{ p.pin }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge text-bg-secondary">{{ p.boardPin }}</span>
+                                    </td>
+                                    <td>{{ pinDisplayName(p) }}</td>
+                                    <td>
+                                        <small class="text-muted">{{ p.direction }}</small>
+                                    </td>
+                                    <td>
+                                        @if (isButton(p)) {
+                                            @let bs = asButtonState(pinState(p));
+                                            @if (bs?.error) {
+                                                <small
+                                                    class="text-muted"
+                                                    i18n="@@informationNotAvailable"
+                                                    >Information not available</small
+                                                >
+                                            }
+                                            @if (!bs?.error) {
+                                                @let pressed = bs ? isButtonPressed(p, bs) : undefined;
+                                                @if (pressed === undefined) {
+                                                    <small class="text-muted" i18n="@@loading"
+                                                        >Loading...</small
+                                                    >
+                                                }
+                                                @if (pressed === true) {
+                                                    <span
+                                                        class="badge text-bg-danger"
+                                                        i18n="@@buttonPressed"
+                                                        >Pressed</span
+                                                    >
+                                                }
+                                                @if (pressed === false) {
+                                                    <span
+                                                        class="badge text-bg-success"
+                                                        i18n="@@buttonReleased"
+                                                        >Released</span
+                                                    >
+                                                }
+                                                @if (bs?.timestamp) {
+                                                    <small class="text-muted ms-2"
+                                                        >({{
+                                                            bs!.timestamp | date: 'HH:mm:ss'
+                                                        }})</small
+                                                    >
+                                                }
+                                            }
+                                        }
+                                        @if (isRelay(p)) {
+                                            @let rs = asRelayState(pinState(p));
+                                            @if (rs?.error) {
+                                                <small
+                                                    class="text-muted"
+                                                    i18n="@@informationNotAvailable"
+                                                    >Information not available</small
+                                                >
+                                            }
+                                            @if (!rs?.error) {
+                                                @if (rs?.on === undefined) {
+                                                    <small class="text-muted" i18n="@@loading"
+                                                        >Loading...</small
+                                                    >
+                                                }
+                                                @if (rs?.on === true) {
+                                                    <span
+                                                        class="badge text-bg-success"
+                                                        i18n="@@relayOn"
+                                                        >On</span
+                                                    >
+                                                }
+                                                @if (rs?.on === false) {
+                                                    <span
+                                                        class="badge text-bg-secondary"
+                                                        i18n="@@relayOff"
+                                                        >Off</span
+                                                    >
+                                                }
+                                            }
+                                        }
+                                        @if (isServo(p)) {
+                                            @let ss = asServoState(pinState(p));
+                                            @if (ss?.error) {
+                                                <small
+                                                    class="text-muted"
+                                                    i18n="@@informationNotAvailable"
+                                                    >Information not available</small
+                                                >
+                                            }
+                                            @if (!ss?.error) {
+                                                @if (!ss?.reading) {
+                                                    <small class="text-muted" i18n="@@loading"
+                                                        >Loading...</small
+                                                    >
+                                                }
+                                                @if (ss?.reading) {
+                                                    <span
+                                                        class="badge"
+                                                        [class]="
+                                                            'badge ' +
+                                                            doorStateBadge(ss!.reading!.state)
+                                                        "
+                                                        >{{
+                                                            doorStateLabel(ss!.reading!.state)
+                                                        }}</span
+                                                    >
+                                                    <small class="text-muted ms-2"
+                                                        >({{
+                                                            ss!.reading!.timestamp
+                                                                | date: 'HH:mm:ss'
+                                                        }})</small
+                                                    >
+                                                }
+                                            }
+                                        }
+                                        @if (isSensor(p)) {
+                                            @let ns = asSensorState(pinState(p));
+                                            @if (ns?.error) {
+                                                <small
+                                                    class="text-muted"
+                                                    i18n="@@informationNotAvailable"
+                                                    >Information not available</small
+                                                >
+                                            }
+                                            @if (!ns?.error) {
+                                                @if (!ns?.reading) {
+                                                    <small class="text-muted" i18n="@@loading"
+                                                        >Loading...</small
+                                                    >
+                                                }
+                                                @if (ns?.reading) {
+                                                    @if (ns!.reading!.temperature !== null) {
+                                                        <span class="badge text-bg-warning"
+                                                            >{{
+                                                                ns!.reading!.temperature
+                                                                    | number: '1.1-1'
+                                                            }}
+                                                            °C</span
+                                                        >
+                                                    }
+                                                    @if (ns!.reading!.humidity !== null) {
+                                                        <span class="badge text-bg-info ms-1"
+                                                            >{{
+                                                                ns!.reading!.humidity
+                                                                    | number: '1.1-1'
+                                                            }}
+                                                            %</span
+                                                        >
+                                                    }
+                                                    @if (ns!.reading!.timestamp) {
+                                                        <small class="text-muted ms-2"
+                                                            >({{
+                                                                ns!.reading!.timestamp
+                                                                    | date: 'HH:mm:ss'
+                                                            }})</small
+                                                        >
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        @if (!isLive(p)) {
+                                            <small class="text-muted">—</small>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </sb-card>
+
+    <sb-card>
+        <div class="card-header">
+            <fa-icon class="me-1" [icon]="['fas', 'image']"></fa-icon>
+            <span i18n="@@electronicsBoardTitle">Raspberry Pi Zero pinout</span>
+        </div>
+        <div class="card-body text-center">
+            <img
+                src="https://othermod.com/wp-content/uploads/Raspberry-Pi-Model-Zero-Mini-PC.jpg"
+                alt="Raspberry Pi Zero board"
+                i18n-alt="@@electronicsBoardAlt"
+                class="img-fluid"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+            />
+        </div>
+    </sb-card>
+
+    @if (isAdmin) {
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'door-open']"></fa-icon>
+                <span i18n="@@servoCalibrationTitle">Réglage du servomoteur</span>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning small mb-3" role="alert">
+                    <fa-icon class="me-1" [icon]="['fas', 'exclamation-triangle']"></fa-icon>
+                    <span i18n="@@servoCalibrationWarning">
+                        Action sur le matériel. Les valeurs hors plage peuvent forcer mécaniquement
+                        le servo. Modifie par petits incréments.
+                    </span>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small d-flex justify-content-between">
+                            <span i18n="@@servoOpeningPosition">Position ouverte</span>
+                            <span class="text-muted">{{ servoOpeningPosition }}</span>
+                        </label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input
+                                type="range"
+                                class="form-range"
+                                min="1"
+                                max="100"
+                                step="1"
+                                [(ngModel)]="servoOpeningPosition"
+                            />
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm"
+                                (click)="saveOpeningPosition()"
+                                [disabled]="servoSaving"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                                <span i18n="@@save">Save</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small d-flex justify-content-between">
+                            <span i18n="@@servoClosingPosition">Position fermée</span>
+                            <span class="text-muted">{{ servoClosingPosition }}</span>
+                        </label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input
+                                type="range"
+                                class="form-range"
+                                min="1"
+                                max="100"
+                                step="1"
+                                [(ngModel)]="servoClosingPosition"
+                            />
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm"
+                                (click)="saveClosingPosition()"
+                                [disabled]="servoSaving"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                                <span i18n="@@save">Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small" for="servoOpeningDuration">
+                            <span i18n="@@servoOpeningDuration">Durée d'ouverture (ms)</span>
+                        </label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input
+                                id="servoOpeningDuration"
+                                type="number"
+                                min="1"
+                                max="60000"
+                                step="100"
+                                class="form-control form-control-sm"
+                                [(ngModel)]="servoOpeningDurationMs"
+                            />
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm"
+                                (click)="saveOpeningDuration()"
+                                [disabled]="servoSaving"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                                <span i18n="@@save">Save</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small" for="servoClosingDuration">
+                            <span i18n="@@servoClosingDuration">Durée de fermeture (ms)</span>
+                        </label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input
+                                id="servoClosingDuration"
+                                type="number"
+                                min="1"
+                                max="60000"
+                                step="100"
+                                class="form-control form-control-sm"
+                                [(ngModel)]="servoClosingDurationMs"
+                            />
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm"
+                                (click)="saveClosingDuration()"
+                                [disabled]="servoSaving"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                                <span i18n="@@save">Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <label class="form-label small mb-0 me-2" for="servoNudgeMs">
+                        <span i18n="@@servoNudgeMs">Durée nudge (ms)</span>
+                    </label>
+                    <input
+                        id="servoNudgeMs"
+                        type="number"
+                        min="1"
+                        max="30000"
+                        step="10"
+                        class="form-control form-control-sm"
+                        style="width: 100px"
+                        [(ngModel)]="servoNudgeMs"
+                    />
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        (click)="nudgeCounterClockwise()"
+                        [disabled]="servoNudging"
+                    >
+                        <fa-icon class="me-1" [icon]="['fas', 'sync']"></fa-icon>
+                        <span i18n="@@servoCounterClockwise">Counter-clockwise</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        (click)="nudgeClockwise()"
+                        [disabled]="servoNudging"
+                    >
+                        <span i18n="@@servoClockwise">Clockwise</span>
+                        <fa-icon class="ms-1" [icon]="['fas', 'sync']"></fa-icon>
+                    </button>
+                </div>
+            </div>
+        </sb-card>
+    }
+</sb-layout-dashboard>

@@ -54,6 +54,11 @@ export class LogsComponent implements OnInit, OnDestroy {
 
     // ───────── Auth-derived flags ─────────
     isAdmin = false;
+    /** True when the visitor is faking an admin session via the demo button.
+     *  The log files + content are physical artefacts on the Pi that have no
+     *  meaningful synthetic equivalent, so the two log-viewer cards collapse
+     *  to a neutral "information not available" placeholder. */
+    isDemoMode = false;
 
     // ───────── Business-event panel ─────────
     businessEvents: EventEntry[] = [];
@@ -120,8 +125,9 @@ export class LogsComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.isAdmin = this._userService.isAdmin();
+        this.isDemoMode = this._userService.isDemoMode();
         this.loadBusinessEvents();
-        if (this.isAdmin) {
+        if (this.isAdmin && !this.isDemoMode) {
             this.loadAuthEvents();
             this.refreshFiles();
         }
@@ -129,11 +135,12 @@ export class LogsComponent implements OnInit, OnDestroy {
         this._userService.user$.pipe(takeUntil(this.destroy$)).subscribe(() => {
             const wasAdmin = this.isAdmin;
             this.isAdmin = this._userService.isAdmin();
-            if (this.isAdmin && !wasAdmin) {
+            this.isDemoMode = this._userService.isDemoMode();
+            if (this.isAdmin && !wasAdmin && !this.isDemoMode) {
                 this.loadAuthEvents();
                 this.refreshFiles();
-                this.cdr.detectChanges();
             }
+            this.cdr.detectChanges();
         });
     }
 
@@ -263,6 +270,46 @@ export class LogsComponent implements OnInit, OnDestroy {
                 offsetMs = 5 * 365 * 24 * 3600 * 1000;
         }
         return new Date(now.getTime() - offsetMs).toISOString().split('.')[0];
+    }
+
+    /**
+     * Human-readable, localized label for an event type. Built lazily and cached
+     * because $localize strings are resolved at runtime. Falls back to the raw
+     * enum value when a new backend type is not yet known to the frontend.
+     */
+    eventLabel(type: string): string {
+        return this.localizedLabels()[type] ?? type;
+    }
+
+    private _labelsCache?: Record<string, string>;
+
+    private localizedLabels(): Record<string, string> {
+        if (!this._labelsCache) {
+            this._labelsCache = {
+                STARTUP: $localize`:@@eventStartup:Application started`,
+                SHUTDOWN: $localize`:@@eventShutdown:Application stopped`,
+                SHUTDOWN_REQUESTED: $localize`:@@eventShutdownRequested:Shutdown requested`,
+                REBOOT_REQUESTED: $localize`:@@eventRebootRequested:Reboot requested`,
+                DOOR_OPENED: $localize`:@@eventDoorOpened:Door opened`,
+                DOOR_CLOSED: $localize`:@@eventDoorClosed:Door closed`,
+                DOOR_OPEN_FAILED: $localize`:@@eventDoorOpenFailed:Door failed to open`,
+                DOOR_CLOSE_FAILED: $localize`:@@eventDoorCloseFailed:Door failed to close`,
+                DOOR_POSITION_UNKNOWN: $localize`:@@eventDoorPositionUnknown:Door position unknown`,
+                LIGHT_ON: $localize`:@@eventLightOn:Light switched on`,
+                LIGHT_OFF: $localize`:@@eventLightOff:Light switched off`,
+                FAN_ON: $localize`:@@eventFanOn:Fan switched on`,
+                FAN_OFF: $localize`:@@eventFanOff:Fan switched off`,
+                MUSIC_STARTED: $localize`:@@eventMusicStarted:Music started`,
+                MUSIC_STOPPED: $localize`:@@eventMusicStopped:Music stopped`,
+                COCORICO: $localize`:@@eventCocorico:Cocorico played`,
+                RESIDENT_CREATED: $localize`:@@eventResidentCreated:Resident added`,
+                RESIDENT_DELETED: $localize`:@@eventResidentDeleted:Resident removed`,
+                LOGIN_SUCCESS: $localize`:@@eventLoginSuccess:Successful login`,
+                LOGIN_FAILED: $localize`:@@eventLoginFailed:Failed login`,
+                LOGOUT: $localize`:@@eventLogout:Logout`,
+            };
+        }
+        return this._labelsCache;
     }
 
     eventIcon(type: string): string {
