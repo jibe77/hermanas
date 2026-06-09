@@ -29,7 +29,7 @@
 		<stomp-websocket.version>2.3.4</stomp-websocket.version>
 		<jquery.version>3.7.1</jquery.version>
 
-		<bootstrap.version>5.3.3</bootstrap.version>
+		<bootstrap.version>5.3.8</bootstrap.version>
 		<web-push.version>5.1.2</web-push.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
 
