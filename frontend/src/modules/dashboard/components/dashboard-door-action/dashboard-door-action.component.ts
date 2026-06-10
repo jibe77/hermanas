@@ -48,22 +48,16 @@ export class DashboardDoorActionComponent implements OnInit, OnDestroy {
     }
 
     public openDoor() {
+        // Switch the webcam panel to the live MJPEG stream so the operator can
+        // watch the door move. We deliberately do NOT refresh to a still image
+        // afterwards: that would tear down the stream right when it's most
+        // useful, and mjpg_streamer can't coexist with a takePicture call.
         this.dashboardWidgetsComponent.displayWebcam();
-        this._doorService
-            .openDoor(this.user)
-            .pipe(take(1))
-            .subscribe(() => {
-                this.dashboardWidgetsComponent.refreshPicture();
-            });
+        this._doorService.openDoor(this.user).pipe(take(1)).subscribe();
     }
 
     public closeDoor() {
         this.dashboardWidgetsComponent.displayWebcam();
-        this._doorService
-            .closeDoor(this.user)
-            .pipe(take(1))
-            .subscribe(() => {
-                this.dashboardWidgetsComponent.refreshPicture();
-            });
+        this._doorService.closeDoor(this.user).pipe(take(1)).subscribe();
     }
 }

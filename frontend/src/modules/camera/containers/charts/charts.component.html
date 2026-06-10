@@ -28,12 +28,10 @@
             </button>
         </div>
         <div class="card-body text-center">
-            @if (captureInFlight && !snapshotLoaded && !snapshotFailed) {
-                <div class="text-muted">
-                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                    <span i18n="@@cameraSnapshotLoading">Capturing…</span>
-                </div>
-            }
+            <!-- Capturing/Analyzing spinners were intentionally removed — the
+                 big AI loader below (icons + progress bar + rotating step
+                 text) covers the whole pipeline in a single, more polished
+                 animation. -->
             @if (snapshotFailed) {
                 <div class="text-muted" i18n="@@informationNotAvailable">
                     Information not available
@@ -59,16 +57,7 @@
                         (click)="startCapture()"
                         [disabled]="captureInFlight"
                     >
-                        @if (aiAnalysisLoading) {
-                            <span
-                                class="spinner-border spinner-border-sm me-1"
-                                role="status"
-                            ></span>
-                            <span i18n="@@cameraAnalyzeLoading">Analyzing…</span>
-                        }
-                        @if (!aiAnalysisLoading) {
-                            <span i18n="@@cameraAnalyzeButton">AI analysis</span>
-                        }
+                        <span i18n="@@cameraAnalyzeButton">AI analysis</span>
                     </button>
 
                     @if (aiAnalysisLoading) {

@@ -16,7 +16,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -60,8 +63,9 @@ public class ApplicationStatusListener implements ApplicationListener<ContextClo
     @PostConstruct
     public void init() {
         preloadShutdownCriticalClasses();
-        if (applicationHasShutdownIncorrecly()) {
-            sendShutdownErrorNotification();
+        Event lastEvent = findLastStartupOrShutdown();
+        if (lastEvent != null && lastEvent.getEventType() == EventType.STARTUP) {
+            sendShutdownErrorNotification(lastEvent.getDateTime());
         }
         logger.info("Save startup time in Event Table.");
         Event event = new Event();
@@ -81,7 +85,7 @@ public class ApplicationStatusListener implements ApplicationListener<ContextClo
         }
     }
 
-    private boolean applicationHasShutdownIncorrecly() {
+    private Event findLastStartupOrShutdown() {
         logger.info("Verify if the application has shutdown incorrectly.");
         EventType[] eventTypes = new EventType[] {EventType.STARTUP, EventType.SHUTDOWN};
         Event event = eventRepository.findTopByEventTypeInOrderByDateTimeDesc(eventTypes);
@@ -89,12 +93,11 @@ public class ApplicationStatusListener implements ApplicationListener<ContextClo
             logger.info(
                     "The last event is a startup (expected the fetch a shutdown event) on {}.",
                     event.getDateTime());
-            return true;
         }
-        return false;
+        return event;
     }
 
-    private void sendShutdownErrorNotification() {
+    private void sendShutdownErrorNotification(LocalDateTime lastStartupAt) {
         logger.info("Sending a shutdown error notification by email.");
         boolean initialWifiStatus = wifiService.wifiCardIsEnabled();
         if (!initialWifiStatus) {
@@ -102,17 +105,49 @@ public class ApplicationStatusListener implements ApplicationListener<ContextClo
             wifiService.turnOn();
         }
         Optional<File> pic = cameraService.takePictureNoException(true);
+        Locale locale = Locale.getDefault();
+        Object[] args = restartArgs(lastStartupAt);
+        // Body = generic intro + path-specific suffix. Both share the same
+        // placeholder tuple so adding context anywhere stays consistent.
+        String body = messageSource.getMessage("restarted.incorrectly.message", args, locale)
+                + messageSource.getMessage(pic.isPresent()
+                        ? "restarted.incorrectly.message_with_picture"
+                        : "restarted.incorrectly.message_without_picture", args, locale);
         emailService.sendMail(
-            messageSource.getMessage("restarted.incorrectly.title", null, Locale.getDefault()),
-            messageSource.getMessage("restarted.incorrectly.message", null, Locale.getDefault()) +
-                    messageSource.getMessage(pic.isPresent() ?
-                            "restarted.incorrectly.message_with_picture" :
-                            "restarted.incorrectly.message_without_picture", null, Locale.getDefault()),
+                messageSource.getMessage("restarted.incorrectly.title", args, locale),
+                body,
                 pic);
         if (!initialWifiStatus) {
             logger.info("application status listener is disabling the wifi card for sending an email.");
             wifiService.turnOff();
         }
+    }
+
+    /**
+     * Returns the placeholder tuple consumed by the i18n bundle:
+     * {@code {0}=host, {1}=detected-at, {2}=last-startup, {3}=outage-duration}.
+     * Falls back to {@code "?"} for fields we cannot resolve so the email is
+     * still readable on a partial environment.
+     */
+    private Object[] restartArgs(LocalDateTime lastStartupAt) {
+        LocalDateTime now = LocalDateTime.now();
+        String host;
+        try {
+            host = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            host = "?";
+        }
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String detectedAt = now.format(f);
+        String lastStartup = lastStartupAt != null ? lastStartupAt.format(f) : "?";
+        String duration;
+        if (lastStartupAt != null) {
+            long minutes = java.time.Duration.between(lastStartupAt, now).toMinutes();
+            duration = minutes < 60 ? minutes + " min" : (minutes / 60) + " h " + (minutes % 60) + " min";
+        } else {
+            duration = "?";
+        }
+        return new Object[]{host, detectedAt, lastStartup, duration};
     }
 
     /**

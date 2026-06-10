@@ -126,9 +126,8 @@ public class ConfigService {
     private boolean songAtSunsetEnabled;
 
     // ─── Notification toggles ────────────────────────────────────────────────────
-
-    @Value("${email.notification.enabled}")
-    private boolean emailNotificationEnabled;
+    // Email recipients are per-user (HermanasUser.notificationsEnabled). There is no
+    // global "email enabled" flag — opting everyone out individually is the kill switch.
 
     @Value("${weather.info.enabled}")
     private boolean weatherInfoEnabled;
@@ -137,6 +136,12 @@ public class ConfigService {
 
     @Value("${suntime.sunrise.force_at_8}")
     private boolean sunriseForceAt8;
+
+    @Value("${suntime.latitude}")
+    private double latitude;
+
+    @Value("${suntime.longitude}")
+    private double longitude;
 
     // ─── Camera image quality ─────────────────────────────────────────────────────
 
@@ -154,13 +159,47 @@ public class ConfigService {
     @Value("${weather.info.key}")
     private String weatherInfoKey;
 
-    // ─── Email recipient / sender ─────────────────────────────────────────────────
+    // ─── AI inference endpoint ────────────────────────────────────────────────────
 
-    @Value("${email.notification.to}")
-    private String emailNotificationTo;
+    @Value("${ai.inference.url:}")
+    private String aiInferenceUrl;
+
+    @Value("${ai.inference.model:focus}")
+    private String aiInferenceModel;
+
+    @Value("${ai.inference.cache.ttl-ms:120000}")
+    private long aiInferenceCacheTtlMs;
+
+    @Value("${ai.inference.prompt:}")
+    private String aiInferencePrompt;
+
+    // ─── Email sender ─────────────────────────────────────────────────────────────
 
     @Value("${email.notification.from}")
     private String emailNotificationFrom;
+
+    // ─── SMTP transport settings ──────────────────────────────────────────────────
+    // Mirrors spring.mail.* in application.properties. The values stored here win
+    // over the @Value defaults at send time (see EmailService.resolveSender).
+    // Empty/blank => keep the application.properties fallback.
+
+    @Value("${spring.mail.host:}")
+    private String mailHost;
+
+    @Value("${spring.mail.port:25}")
+    private int mailPort;
+
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
+
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
+
+    @Value("${spring.mail.properties.mail.smtp.auth:true}")
+    private boolean mailSmtpAuth;
+
+    @Value("${spring.mail.properties.mail.smtp.starttls.enable:true}")
+    private boolean mailStartTlsEnable;
 
     ParameterRepository parameterRepository;
 
@@ -246,8 +285,17 @@ public class ConfigService {
             }
         }
 
-        Parameter parameter = new Parameter();
-        parameter.setEntryKey(key);
+        // The parameter.entry_key column has a UNIQUE constraint, so a plain
+        // `save(new Parameter(key, value))` blows up with a
+        // DataIntegrityViolationException on the second write of the same key.
+        // Upsert by looking the row up first, mutating its value if it exists,
+        // creating it otherwise. findByEntryKey is the only method on the
+        // repository besides the standard CrudRepository ones.
+        Parameter parameter = parameterRepository.findByEntryKey(key);
+        if (parameter == null) {
+            parameter = new Parameter();
+            parameter.setEntryKey(key);
+        }
         parameter.setEntryValue(String.valueOf(value));
 
         logger.info("Saving config to database: {} = {}", key, value);
@@ -878,17 +926,6 @@ public class ConfigService {
     // Notification Toggles
     // ============================================================================
 
-    @Cacheable(value = "emailNotificationEnabled")
-    public boolean isEmailNotificationEnabled() {
-        return getConfigValue("email.notification.enabled", emailNotificationEnabled,
-                Boolean::valueOf);
-    }
-
-    @CacheEvict(value = "emailNotificationEnabled")
-    public void setEmailNotificationEnabled(boolean enabled) {
-        setConfigValue("email.notification.enabled", enabled, null);
-    }
-
     @Cacheable(value = "weatherInfoEnabled")
     public boolean isWeatherInfoEnabled() {
         return getConfigValue("weather.info.enabled", weatherInfoEnabled, Boolean::valueOf);
@@ -995,24 +1032,114 @@ public class ConfigService {
     }
 
     // ============================================================================
-    // Email Addresses
+    // AI inference endpoint
+    // ============================================================================
+    // URL of the local LLM service used by the WIP /camera/analyze endpoint. The
+    // value is intentionally lax — anything from "http://localhost:11434/api/chat"
+    // to a custom REST adapter is valid. Empty string means "not configured yet".
+
+    @Cacheable(value = "aiInferenceUrl")
+    public String getAiInferenceUrl() {
+        return getConfigValue("ai.inference.url", aiInferenceUrl, s -> s);
+    }
+
+    @CacheEvict(value = "aiInferenceUrl")
+    public void setAiInferenceUrl(String url) {
+        // Allow clearing the URL by passing an empty string — that effectively
+        // marks the AI integration as "not configured", which is a legitimate state.
+        setConfigValue("ai.inference.url", url == null ? "" : url.trim(), null);
+    }
+
+    /**
+     * Name of the multimodal model exposed by the inference server. Matches the
+     * {@code "model"} field of an OpenAI-compatible /v1/chat/completions request.
+     * Defaults to {@code "focus"} (the qwen2.5-vl mapping used by our llama.cpp).
+     */
+    @Cacheable(value = "aiInferenceModel")
+    public String getAiInferenceModel() {
+        String configured = getConfigValue("ai.inference.model", aiInferenceModel, s -> s);
+        return configured == null || configured.trim().isEmpty() ? "focus" : configured.trim();
+    }
+
+    @CacheEvict(value = "aiInferenceModel")
+    public void setAiInferenceModel(String model) {
+        setConfigValue("ai.inference.model", model == null ? "" : model.trim(), null);
+    }
+
+    /**
+     * Cache TTL (in milliseconds) for {@link org.jibe77.hermanas.client.ai.AiVisionCache}.
+     * A non-positive value disables caching. Defaults to 120 000 ms (2 minutes).
+     */
+    @Cacheable(value = "aiInferenceCacheTtlMs")
+    public long getAiInferenceCacheTtlMs() {
+        return getConfigValue("ai.inference.cache.ttl-ms", aiInferenceCacheTtlMs, Long::parseLong);
+    }
+
+    @CacheEvict(value = "aiInferenceCacheTtlMs")
+    public void setAiInferenceCacheTtlMs(long ttlMs) {
+        setConfigValue("ai.inference.cache.ttl-ms", ttlMs, null);
+    }
+
+    /**
+     * Custom prompt sent to the multimodal model. English-only — the SPA tells
+     * the model in which language to answer via an instruction appended at
+     * runtime. Empty string means "use the built-in chicken-coop prompt"
+     * (see {@code CameraPromptBuilder#BASE_PROMPT}).
+     */
+    @Cacheable(value = "aiInferencePrompt")
+    public String getAiInferencePrompt() {
+        return getConfigValue("ai.inference.prompt", aiInferencePrompt, s -> s);
+    }
+
+    @CacheEvict(value = "aiInferencePrompt")
+    public void setAiInferencePrompt(String prompt) {
+        setConfigValue("ai.inference.prompt", prompt == null ? "" : prompt.trim(), null);
+    }
+
+    // ============================================================================
+    // GPS coordinates (used by both SunTimeUtils and WeatherClient)
     // ============================================================================
     //
+    // These coordinates feed two independent subsystems — sun-time calculations
+    // (door opening / closing schedule) and the weather lookup. A bad value here
+    // silently shifts the entire daily schedule, so reject values outside the
+    // standard WGS84 ranges.
+
+    @Cacheable(value = "latitude")
+    public double getLatitude() {
+        return getConfigValue("suntime.latitude", latitude, Double::parseDouble);
+    }
+
+    @CacheEvict(value = "latitude")
+    public void setLatitude(double value) {
+        if (value < -90.0 || value > 90.0) {
+            throw new IllegalArgumentException("Latitude must be between -90 and 90: " + value);
+        }
+        setConfigValue("suntime.latitude", value, null);
+    }
+
+    @Cacheable(value = "longitude")
+    public double getLongitude() {
+        return getConfigValue("suntime.longitude", longitude, Double::parseDouble);
+    }
+
+    @CacheEvict(value = "longitude")
+    public void setLongitude(double value) {
+        if (value < -180.0 || value > 180.0) {
+            throw new IllegalArgumentException("Longitude must be between -180 and 180: " + value);
+        }
+        setConfigValue("suntime.longitude", value, null);
+    }
+
+    // ============================================================================
+    // Email "From" Address
+    // ============================================================================
+    //
+    // Recipients are no longer configured here — automated notifications go to every
+    // user with notificationsEnabled=true (see EmailService.resolveRecipients) and
+    // diagnostic test emails go to the authenticated user's own address.
     // Light email validation only: the JavaMail provider will raise the real error
     // upon send anyway, and stricter regex tends to reject perfectly legal addresses.
-
-    @Cacheable(value = "emailNotificationTo")
-    public String getEmailNotificationTo() {
-        return getConfigValue("email.notification.to", emailNotificationTo, s -> s);
-    }
-
-    @CacheEvict(value = "emailNotificationTo")
-    public void setEmailNotificationTo(String to) {
-        if (to == null || !to.contains("@")) {
-            throw new IllegalArgumentException("Invalid 'to' email: " + to);
-        }
-        setConfigValue("email.notification.to", to.trim(), null);
-    }
 
     @Cacheable(value = "emailNotificationFrom")
     public String getEmailNotificationFrom() {
@@ -1025,5 +1152,100 @@ public class ConfigService {
             throw new IllegalArgumentException("Invalid 'from' email: " + from);
         }
         setConfigValue("email.notification.from", from.trim(), null);
+    }
+
+    // ============================================================================
+    // SMTP transport (host / port / auth / TLS / credentials)
+    // ============================================================================
+    //
+    // EmailService reads these every send and builds a JavaMailSenderImpl on the fly,
+    // so a change takes effect on the *next* email — no restart needed.
+    // The password is never returned in GET /api/v1/config (only a "set" flag is).
+
+    @Cacheable(value = "mailHost")
+    public String getMailHost() {
+        return getConfigValue("spring.mail.host", mailHost, s -> s);
+    }
+
+    @CacheEvict(value = "mailHost")
+    public void setMailHost(String host) {
+        if (host == null || host.trim().isEmpty()) {
+            throw new IllegalArgumentException("SMTP host must not be empty");
+        }
+        setConfigValue("spring.mail.host", host.trim(), null);
+    }
+
+    @Cacheable(value = "mailPort")
+    public int getMailPort() {
+        return getConfigValue("spring.mail.port", mailPort, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "mailPort")
+    public void setMailPort(int port) {
+        if (port < 1 || port > 65535) {
+            throw new IllegalArgumentException("SMTP port must be 1..65535: " + port);
+        }
+        setConfigValue("spring.mail.port", port, null);
+    }
+
+    @Cacheable(value = "mailUsername")
+    public String getMailUsername() {
+        return getConfigValue("spring.mail.username", mailUsername, s -> s);
+    }
+
+    @CacheEvict(value = "mailUsername")
+    public void setMailUsername(String username) {
+        if (username == null) {
+            throw new IllegalArgumentException("SMTP username must not be null");
+        }
+        setConfigValue("spring.mail.username", username.trim(), null);
+    }
+
+    /**
+     * Returns the stored SMTP password. Never surface this in an API response — use
+     * {@link #isMailPasswordSet()} for UI display instead.
+     */
+    @Cacheable(value = "mailPassword")
+    public String getMailPassword() {
+        return getConfigValue("spring.mail.password", mailPassword, s -> s);
+    }
+
+    /**
+     * Empty string is rejected: silently writing an empty password would break sends
+     * with an opaque auth error. To disable auth, set the auth flag instead.
+     */
+    @CacheEvict(value = "mailPassword")
+    public void setMailPassword(String password) {
+        if (password == null || password.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "SMTP password must not be empty. To disable auth, turn off the auth flag.");
+        }
+        setConfigValue("spring.mail.password", password, null);
+    }
+
+    public boolean isMailPasswordSet() {
+        String pwd = getMailPassword();
+        return pwd != null && !pwd.isEmpty()
+                && !"to-override-in-application-properties-file".equals(pwd);
+    }
+
+    @Cacheable(value = "mailSmtpAuth")
+    public boolean isMailSmtpAuth() {
+        return getConfigValue("spring.mail.properties.mail.smtp.auth", mailSmtpAuth, Boolean::parseBoolean);
+    }
+
+    @CacheEvict(value = "mailSmtpAuth")
+    public void setMailSmtpAuth(boolean value) {
+        setConfigValue("spring.mail.properties.mail.smtp.auth", value, null);
+    }
+
+    @Cacheable(value = "mailStartTlsEnable")
+    public boolean isMailStartTlsEnable() {
+        return getConfigValue("spring.mail.properties.mail.smtp.starttls.enable", mailStartTlsEnable, Boolean::parseBoolean);
+    }
+
+    @CacheEvict(value = "mailStartTlsEnable")
+    public void setMailStartTlsEnable(boolean value) {
+        setConfigValue("spring.mail.properties.mail.smtp.starttls.enable", value, null);
     }
 }

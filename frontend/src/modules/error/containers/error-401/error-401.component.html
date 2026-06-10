@@ -4,12 +4,12 @@
             <div class="col-lg-6">
                 <div class="text-center mt-4">
                     <h1 class="display-1">401</h1>
-                    <p class="lead">Unauthorized</p>
-                    <p>Access to this resource is denied.</p>
-                    <a routerLink="/dashboard"
-                        ><fa-icon class="mr-1" [icon]="['fas', 'arrow-left']"></fa-icon>Return to
-                        Dashboard</a
-                    >
+                    <p class="lead" i18n="@@error401Title">Unauthorized</p>
+                    <p i18n="@@error401Body">Access to this resource is denied.</p>
+                    <a routerLink="/dashboard">
+                        <fa-icon class="mr-1" [icon]="['fas', 'arrow-left']"></fa-icon>
+                        <span i18n="@@errorBackToDashboard">Return to Dashboard</span>
+                    </a>
                 </div>
             </div>
         </div>

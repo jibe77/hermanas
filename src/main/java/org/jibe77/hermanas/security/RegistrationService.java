@@ -6,11 +6,13 @@ import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.dto.RegisterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -31,13 +33,16 @@ public class RegistrationService {
     private final HermanasUserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final MessageSource messageSource;
 
     public RegistrationService(HermanasUserRepository repository,
                                PasswordEncoder passwordEncoder,
-                               EmailService emailService) {
+                               EmailService emailService,
+                               MessageSource messageSource) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.messageSource = messageSource;
     }
 
     /**
@@ -67,14 +72,16 @@ public class RegistrationService {
             throw new RegistrationException("LOGIN_TAKEN", "This login is already taken");
         }
 
+        String language = normalizeLanguage(body.getLanguage());
         HermanasUser user = new HermanasUser(
                 login,
                 passwordEncoder.encode(password),
                 email,
                 SecurityConfig.ROLE_NOT_VALIDATED_YET,
-                false);
+                false,
+                language);
         repository.save(user);
-        logger.info("New registration: '{}' (pending validation).", login);
+        logger.info("New registration: '{}' (pending validation, lang={}).", login, language);
 
         sendConfirmationToUser(user);
         sendNotificationToAdmins(user);
@@ -82,14 +89,32 @@ public class RegistrationService {
         return user;
     }
 
+    /**
+     * Normalises the requested language to one of the supported codes ("fr", "en", "ro").
+     * Falls back to {@code "fr"} when the value is missing or unrecognised — keeps the
+     * field forgiving on the API while ensuring we never persist garbage.
+     */
+    private static String normalizeLanguage(String raw) {
+        if (raw == null) {
+            return "fr";
+        }
+        String code = raw.trim().toLowerCase();
+        if (code.startsWith("en")) {
+            return "en";
+        }
+        if (code.startsWith("ro")) {
+            return "ro";
+        }
+        return "fr";
+    }
+
     private void sendConfirmationToUser(HermanasUser user) {
-        String subject = "Hermanas — confirmation d'inscription";
-        String body = "<p>Bonjour " + escapeHtml(user.getLogin()) + ",</p>"
-                + "<p>Votre compte a bien été créé sur Hermanas. Il est actuellement <strong>en attente "
-                + "de validation</strong> par un administrateur.</p>"
-                + "<p>Vous recevrez une confirmation par email dès que votre compte sera activé. "
-                + "En attendant, vous ne pouvez pas encore vous connecter.</p>"
-                + "<p>— L'équipe Hermanas</p>";
+        Locale locale = Locale.forLanguageTag(user.getLanguage());
+        String subject = messageSource.getMessage("register.user.subject", null, locale);
+        String body = messageSource.getMessage(
+                "register.user.body",
+                new Object[]{escapeHtml(user.getLogin())},
+                locale);
         try {
             emailService.sendMailTo(Collections.singletonList(user.getEmail()), subject, body);
         } catch (Exception e) {
@@ -99,27 +124,51 @@ public class RegistrationService {
     }
 
     private void sendNotificationToAdmins(HermanasUser pendingUser) {
-        List<String> adminEmails = repository.findByRole(SecurityConfig.ROLE_ADMIN).stream()
-                .map(HermanasUser::getEmail)
-                .filter(e -> e != null && !e.trim().isEmpty())
+        // Group admins by their preferred language so we render the template once per
+        // language and not once per recipient. Admins without an email are filtered
+        // out — the registration is still persisted, the admin will discover it via UI.
+        List<HermanasUser> admins = repository.findByRole(SecurityConfig.ROLE_ADMIN).stream()
+                .filter(u -> u.getEmail() != null && !u.getEmail().trim().isEmpty())
                 .collect(Collectors.toList());
-        if (adminEmails.isEmpty()) {
+        if (admins.isEmpty()) {
             logger.warn("No administrator email available — pending account '{}' will need manual "
                     + "discovery by an admin.", pendingUser.getLogin());
             return;
         }
-        String subject = "Hermanas — nouvelle inscription en attente : " + pendingUser.getLogin();
-        String body = "<p>Une nouvelle inscription est en attente de validation :</p>"
-                + "<ul>"
-                + "<li><strong>Login :</strong> " + escapeHtml(pendingUser.getLogin()) + "</li>"
-                + "<li><strong>Email :</strong> " + escapeHtml(pendingUser.getEmail()) + "</li>"
-                + "</ul>"
-                + "<p>Connectez-vous à l'écran <em>Users</em> pour promouvoir ce compte en "
-                + "<code>USER</code> ou <code>ADMIN</code>, ou supprimez-le s'il est illégitime.</p>";
+        // Bucket each admin into one of the three supported languages — everything
+        // unrecognised lands in the French bucket (historical default).
+        java.util.Map<String, java.util.List<String>> byLang = new java.util.LinkedHashMap<>();
+        byLang.put("fr", new java.util.ArrayList<>());
+        byLang.put("en", new java.util.ArrayList<>());
+        byLang.put("ro", new java.util.ArrayList<>());
+        for (HermanasUser admin : admins) {
+            String lang = admin.getLanguage();
+            if (!byLang.containsKey(lang)) {
+                lang = "fr";
+            }
+            byLang.get(lang).add(admin.getEmail());
+        }
+        byLang.forEach((lang, recipients) ->
+                sendPendingNotification(recipients, pendingUser, Locale.forLanguageTag(lang)));
+    }
+
+    private void sendPendingNotification(List<String> recipients, HermanasUser pendingUser, Locale locale) {
+        if (recipients.isEmpty()) {
+            return;
+        }
+        String subject = messageSource.getMessage(
+                "register.admin.subject",
+                new Object[]{pendingUser.getLogin()},
+                locale);
+        String body = messageSource.getMessage(
+                "register.admin.body",
+                new Object[]{escapeHtml(pendingUser.getLogin()), escapeHtml(pendingUser.getEmail())},
+                locale);
         try {
-            emailService.sendMailTo(adminEmails, subject, body);
+            emailService.sendMailTo(recipients, subject, body);
         } catch (Exception e) {
-            logger.warn("Failed to notify admins about pending account '{}'.", pendingUser.getLogin(), e);
+            logger.warn("Failed to notify admins about pending account '{}' (locale={}).",
+                    pendingUser.getLogin(), locale, e);
         }
     }
 

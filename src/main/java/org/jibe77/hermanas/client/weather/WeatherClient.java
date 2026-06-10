@@ -3,7 +3,6 @@ package org.jibe77.hermanas.client.weather;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 
@@ -11,12 +10,6 @@ import org.springframework.stereotype.Component;
 public class WeatherClient {
 
     public static final String CIRCUIT_BREAKER_NAME = "weatherApi";
-
-    @Value("${suntime.latitude}")
-    public double latitude;
-
-    @Value("${suntime.longitude}")
-    public double longitude;
 
     private final org.jibe77.hermanas.service.config.ConfigService configService;
 
@@ -40,8 +33,8 @@ public class WeatherClient {
         WeatherInfo weatherInfo = builder.build().getForObject(
                 configService.getWeatherInfoUrl(),
                 WeatherInfo.class,
-                latitude,
-                longitude,
+                configService.getLatitude(),
+                configService.getLongitude(),
                 configService.getWeatherInfoKey());
         log.info("Weather info content : {}", weatherInfo);
         return weatherInfo;

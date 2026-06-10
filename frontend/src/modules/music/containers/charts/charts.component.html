@@ -10,82 +10,124 @@
         </div></sb-card
     >
     @if (isAdmin) {
-        <sb-card>
-            <div class="card-header">
-                <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon>
-                <span i18n="@@musicAudioToggles">Sons automatiques</span>
+        <div class="row">
+            <div class="col-lg-6">
+                <sb-card>
+                    <div class="card-header d-flex align-items-center">
+                        <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon>
+                        <span i18n="@@musicAudioToggles">Automatic sounds</span>
+                        <!-- Action dropdown — same pattern as the dashboard's
+                             door / accessories controls. The trigger is a tiny
+                             ellipsis on the right of the header so the panel
+                             title stays clean. -->
+                        @if (isSignedIn) {
+                            <span
+                                class="ms-auto"
+                                ngbDropdown
+                                placement="bottom-right"
+                                display="dynamic"
+                            >
+                                <a
+                                    class="text-secondary"
+                                    role="button"
+                                    ngbDropdownToggle
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                    title="Actions"
+                                    i18n-title="@@audioActionsMenu"
+                                >
+                                    <fa-icon [icon]="['fas', 'ellipsis-v']"></fa-icon>
+                                </a>
+                                <div ngbDropdownMenu class="dropdown-menu dropdown-menu-end">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript:void(0)"
+                                        (click)="playCocorico()"
+                                        [class.disabled]="playerBusy"
+                                    >
+                                        <fa-icon class="me-1" [icon]="['fas', 'feather']"></fa-icon>
+                                        <span i18n="@@musicCocorico">Cocorico</span>
+                                    </a>
+                                </div>
+                            </span>
+                        }
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch">
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="cocoricoToggle"
+                                [(ngModel)]="cocoricoEnabled"
+                            />
+                            <label
+                                class="form-check-label"
+                                for="cocoricoToggle"
+                                i18n="@@musicCocoricoLabel"
+                                >Play cock-a-doodle-doo at sunrise</label
+                            >
+                        </div>
+                        <div class="form-check form-switch mt-2">
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="songAtSunsetToggle"
+                                [(ngModel)]="songAtSunsetEnabled"
+                            />
+                            <label
+                                class="form-check-label"
+                                for="songAtSunsetToggle"
+                                i18n="@@musicSongAtSunsetLabel"
+                                >Play a song at sunset</label
+                            >
+                        </div>
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm mt-3"
+                            (click)="saveAudioToggles()"
+                            [disabled]="!audioTogglesDirty || audioTogglesSaving"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                            <span i18n="@@save">Save</span>
+                        </button>
+                    </div>
+                </sb-card>
             </div>
-            <div class="card-body">
-                <div class="form-check form-switch">
-                    <input
-                        type="checkbox"
-                        class="form-check-input"
-                        id="cocoricoToggle"
-                        [(ngModel)]="cocoricoEnabled"
-                    />
-                    <label class="form-check-label" for="cocoricoToggle" i18n="@@musicCocoricoLabel"
-                        >Jouer cocorico au lever du soleil</label
-                    >
-                </div>
-                <div class="form-check form-switch mt-2">
-                    <input
-                        type="checkbox"
-                        class="form-check-input"
-                        id="songAtSunsetToggle"
-                        [(ngModel)]="songAtSunsetEnabled"
-                    />
-                    <label
-                        class="form-check-label"
-                        for="songAtSunsetToggle"
-                        i18n="@@musicSongAtSunsetLabel"
-                        >Jouer une chanson au coucher du soleil</label
-                    >
-                </div>
-                <button
-                    type="button"
-                    class="btn btn-primary btn-sm mt-3"
-                    (click)="saveAudioToggles()"
-                    [disabled]="!audioTogglesDirty || audioTogglesSaving"
-                >
-                    <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                    <span i18n="@@save">Save</span>
-                </button>
+            <div class="col-lg-6">
+                <sb-card>
+                    <div class="card-header">
+                        <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon>
+                        <span i18n="@@musicVolumeTitle">Volume</span>
+                    </div>
+                    <div class="card-body">
+                        <label class="form-label small d-flex justify-content-between">
+                            <span i18n="@@musicVolumeLabel">Default volume</span>
+                            <span class="text-muted">{{ volumePercent }}%</span>
+                        </label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input
+                                type="range"
+                                class="form-range"
+                                min="0"
+                                max="100"
+                                step="1"
+                                [(ngModel)]="volumePercent"
+                                (ngModelChange)="onVolumeChange()"
+                            />
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm"
+                                (click)="saveVolume()"
+                                [disabled]="!volumeDirty || volumeSaving"
+                            >
+                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                                <span i18n="@@save">Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </sb-card>
             </div>
-        </sb-card>
-    }
-    @if (isAdmin) {
-        <sb-card>
-            <div class="card-header">
-                <fa-icon class="me-1" [icon]="['fas', 'music']"></fa-icon>
-                <span i18n="@@musicVolumeTitle">Volume</span>
-            </div>
-            <div class="card-body">
-                <label class="form-label small d-flex justify-content-between">
-                    <span i18n="@@musicVolumeLabel">Volume habituel</span>
-                    <span class="text-muted">{{ volumePercent }}%</span>
-                </label>
-                <div class="d-flex align-items-center gap-2">
-                    <input
-                        type="range"
-                        class="form-range"
-                        min="0"
-                        max="100"
-                        step="1"
-                        [(ngModel)]="volumePercent"
-                        (ngModelChange)="onVolumeChange()"
-                    />
-                    <button
-                        type="button"
-                        class="btn btn-primary btn-sm"
-                        (click)="saveVolume()"
-                        [disabled]="!volumeDirty || volumeSaving"
-                    >
-                        <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                        <span i18n="@@save">Save</span>
-                    </button>
-                </div>
-            </div>
-        </sb-card>
+        </div>
     }
     <div class="row">
         <div class="col-lg-6">
@@ -129,15 +171,43 @@
                                     <strong>{{ persistedPlaylist }}</strong>
                                 </div>
                             }
-                            <button
-                                type="button"
-                                class="btn btn-primary btn-sm"
-                                (click)="validate()"
-                                [disabled]="!selectedPlaylist || saving || !isDirty"
-                            >
-                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon
-                                ><span i18n="@@validate">Validate</span>
-                            </button>
+                            @if (isSignedIn) {
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        class="btn btn-primary btn-sm"
+                                        (click)="validate()"
+                                        [disabled]="!selectedPlaylist || saving || !isDirty"
+                                    >
+                                        <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon
+                                        ><span i18n="@@validate">Validate</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-success btn-sm"
+                                        (click)="playSelected()"
+                                        [disabled]="!selectedPlaylist || playerBusy"
+                                    >
+                                        <fa-icon class="me-1" [icon]="['fas', 'play']"></fa-icon>
+                                        @if (playDurationMinutes !== null) {
+                                            <span i18n="@@musicPlayForDuration"
+                                                >Play for {{ playDurationMinutes }} minutes</span
+                                            >
+                                        } @else {
+                                            <span i18n="@@musicPlay">Play</span>
+                                        }
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary btn-sm"
+                                        (click)="stopPlayback()"
+                                        [disabled]="playerBusy"
+                                    >
+                                        <fa-icon class="me-1" [icon]="['fas', 'stop']"></fa-icon
+                                        ><span i18n="@@musicStop">Stop</span>
+                                    </button>
+                                </div>
+                            }
                         </div>
                     }
                 </div></sb-card

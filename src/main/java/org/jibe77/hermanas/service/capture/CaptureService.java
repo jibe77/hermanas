@@ -87,6 +87,8 @@ public class CaptureService {
             byte[] image = Files.readAllBytes(picture.toPath());
             state.setImage(image);
             state.setStatus(CaptureStatus.ANALYZING);
+            logger.info("Capture {} transition CAPTURING -> ANALYZING after {} ms.",
+                    id, System.currentTimeMillis() - state.getCreatedAt());
         } catch (IOException | InterruptedException e) {
             logger.warn("Capture {} failed to take picture.", id, e);
             if (e instanceof InterruptedException) {

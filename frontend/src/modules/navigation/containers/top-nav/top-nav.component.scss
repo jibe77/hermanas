@@ -1,1 +1,62 @@
 @import 'styles/variables.scss';
+
+// Icon buttons in the topnav (sidebar toggle, language flag, user menu) used
+// to inherit Bootstrap's link-color which is now wood-brown — too dark
+// against the walnut $dark navbar background, reading as grey-ish. Align
+// them with the sidenav dark palette: cream at rest, egg-yolk on hover, so
+// the navbar feels visually continuous with the side menu below it.
+.sb-topnav {
+    // #sidebarToggle is btn-link; the lang/user dropdowns are <a class="nav-link
+    // dropdown-toggle">. Both end up here.
+    #sidebarToggle,
+    .nav-link {
+        color: rgba(#fff8e2, 0.70);
+        transition: color 0.15s ease-in-out;
+        &:hover,
+        &:focus,
+        &.show {
+            color: $primary;
+        }
+    }
+}
+
+// Inline hen + brand name in the topnav. Same visual language as the 404
+// page (head wobble, warm palette) but at logo scale (28 px). The wobble
+// runs forever; we respect prefers-reduced-motion below.
+.brand-hen {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.brand-hen-svg {
+    width: 32px;
+    height: auto;
+    flex-shrink: 0;
+}
+
+.brand-hen-head {
+    transform-origin: 22px 24px;
+    animation: brand-hen-head-wobble 3.5s ease-in-out infinite;
+}
+
+.brand-hen-text {
+    color: #fff8e2;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+@keyframes brand-hen-head-wobble {
+    0%, 60%, 100% { transform: rotate(0); }
+    65%           { transform: rotate(-12deg); }
+    75%           { transform: rotate(12deg); }
+    85%           { transform: rotate(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brand-hen-head {
+        animation: none;
+    }
+}

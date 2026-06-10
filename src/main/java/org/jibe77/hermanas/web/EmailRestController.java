@@ -5,12 +5,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.client.email.EmailService;
+import org.jibe77.hermanas.data.entity.HermanasUser;
+import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.service.camera.CameraService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,30 +32,39 @@ public class EmailRestController {
 
     private final EmailService emailService;
     private final CameraService cameraService;
+    private final HermanasUserRepository userRepository;
 
-    public EmailRestController(EmailService emailService, CameraService cameraService) {
+    public EmailRestController(EmailService emailService, CameraService cameraService,
+                               HermanasUserRepository userRepository) {
         this.emailService = emailService;
         this.cameraService = cameraService;
+        this.userRepository = userRepository;
     }
 
     @Operation(
             summary = "Send a test email",
-            description = "Sends a synchronous test email to the configured notification address. " +
-                    "Used to verify SMTP configuration from the diagnostics panel. Requires authentication."
+            description = "Sends a synchronous test email to the email address of the authenticated " +
+                    "user. Used to verify SMTP configuration from the diagnostics panel."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Test email sent successfully"),
-            @ApiResponse(responseCode = "409", description = "Email notifications are disabled"),
+            @ApiResponse(responseCode = "409", description = "Email notifications are disabled or user has no email"),
             @ApiResponse(responseCode = "502", description = "SMTP send failed")
     })
     @PostMapping("/test")
-    public ResponseEntity<Map<String, String>> sendTestEmail() {
+    public ResponseEntity<Map<String, String>> sendTestEmail(Authentication authentication) {
+        String recipient = resolveAuthenticatedUserEmail(authentication);
+        if (recipient == null || recipient.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Collections.singletonMap(
+                    "message",
+                    "No email address on your user account. Set one in your profile before testing."));
+        }
         try {
             Optional<File> picture = cameraService.takePictureNoException(true);
-            emailService.sendTestMail(picture);
+            emailService.sendTestMail(picture, recipient);
             String detail = picture.isPresent()
-                    ? "Test email sent with picture."
-                    : "Test email sent (no picture available).";
+                    ? "Test email sent with picture to " + recipient + "."
+                    : "Test email sent to " + recipient + " (no picture available).";
             return ResponseEntity.ok(Collections.singletonMap("message", detail));
         } catch (IllegalStateException ex) {
             logger.warn("Test email rejected: {}", ex.getMessage());
@@ -63,5 +75,14 @@ public class EmailRestController {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                     .body(Collections.singletonMap("message", "SMTP send failed: " + ex.getMessage()));
         }
+    }
+
+    private String resolveAuthenticatedUserEmail(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return null;
+        }
+        return userRepository.findByLogin(authentication.getName())
+                .map(HermanasUser::getEmail)
+                .orElse(null);
     }
 }

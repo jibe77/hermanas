@@ -4,7 +4,6 @@ import ca.rmen.sunrisesunset.SunriseSunset;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -17,12 +16,6 @@ import java.util.TimeZone;
 @Component
 public class SunTimeUtils {
 
-    @Value("${suntime.latitude}")
-    public double latitude;
-
-    @Value("${suntime.longitude}")
-    public double longitude;
-
     private final ConfigService configService;
 
     private static final Logger logger = LoggerFactory.getLogger(SunTimeUtils.class);
@@ -33,11 +26,12 @@ public class SunTimeUtils {
 
     @PostConstruct
     private void init() {
-        logger.info("Sun time utils configured with latitude {} and longitude {}.", latitude, longitude);
+        logger.info("Sun time utils configured with latitude {} and longitude {}.",
+                configService.getLatitude(), configService.getLongitude());
     }
 
     public boolean isDay() {
-        return SunriseSunset.isDay(latitude, longitude);
+        return SunriseSunset.isDay(configService.getLatitude(), configService.getLongitude());
     }
 
     /**
@@ -117,8 +111,8 @@ public class SunTimeUtils {
     private Calendar[] computeCurrentDay(LocalDateTime date) {
         return ca.rmen.sunrisesunset.SunriseSunset.getSunriseSunset(
                 localDateTimeToCalendar(date),
-                latitude,
-                longitude);
+                configService.getLatitude(),
+                configService.getLongitude());
     }
 
     private Calendar localDateTimeToCalendar(LocalDateTime localDateTime) {

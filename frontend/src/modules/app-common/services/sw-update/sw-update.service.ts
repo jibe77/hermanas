@@ -28,8 +28,8 @@ export class SwUpdateService {
                     'SwUpdateService'
                 );
                 this.toasts.info(
-                    $localize`:@@swUpdateAvailableBody:Une nouvelle version d'Hermanas est prête. Recharger ?`,
-                    $localize`:@@swUpdateAvailableTitle:Mise à jour disponible`,
+                    $localize`:@@swUpdateAvailableBody:A new version of Hermanas is ready. Reload?`,
+                    $localize`:@@swUpdateAvailableTitle:Update available`,
                     0 // sticky — only dismissed by user
                 );
             });

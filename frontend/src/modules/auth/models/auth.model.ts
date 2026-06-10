@@ -4,4 +4,6 @@ export interface User {
     email: string;
     authState: string;
     roles?: string[];
+    /** Preferred language ("fr" | "en"). Undefined for anonymous visitors. */
+    language?: string;
 }

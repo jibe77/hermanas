@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.jibe77.hermanas.security.ratelimit.RateLimited;
 import org.jibe77.hermanas.service.capture.CaptureService;
 import org.jibe77.hermanas.service.capture.CaptureStateDto;
 import org.slf4j.Logger;
@@ -61,11 +62,14 @@ public class CaptureRestController {
             @ApiResponse(responseCode = "202", description = "Capture job accepted, polling URLs returned")
     })
     @PostMapping
+    @RateLimited(maxRequests = 5, windowSeconds = 60,
+            message = "Too many capture requests. Please wait a minute before trying again.")
     public ResponseEntity<Map<String, String>> start(
             @Parameter(description = "Output language for the AI analysis (fr / en / ro)", example = "fr")
             @RequestParam(defaultValue = "en") String lang) {
+        // CaptureService.startAsync() already logs the captureId at INFO with the lang;
+        // no need to duplicate here.
         String id = captureService.startAsync(lang);
-        logger.info("Capture {} accepted (lang={}).", id, lang);
         return ResponseEntity.accepted()
                 .body(Collections.singletonMap("captureId", id));
     }
@@ -81,10 +85,20 @@ public class CaptureRestController {
     @GetMapping(value = "/{id}/image", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> image(@PathVariable String id) {
         return captureService.getImage(id)
-                .map(bytes -> ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_JPEG)
-                        .body(bytes))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .map(bytes -> {
+                    // DEBUG: the SPA may hit this multiple times (cache busting on the img tag)
+                    // and we don't want one INFO line per poll cluttering the journal.
+                    logger.debug("Capture {} image served ({} bytes).", id, bytes.length);
+                    return ResponseEntity.ok()
+                            .contentType(MediaType.IMAGE_JPEG)
+                            .body(bytes);
+                })
+                .orElseGet(() -> {
+                    // Polling clients hit this every 500 ms while the camera is still
+                    // capturing, so we keep it at DEBUG to avoid flooding the log.
+                    logger.debug("Capture {} image not ready yet (404).", id);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                });
     }
 
     @Operation(
@@ -98,7 +112,14 @@ public class CaptureRestController {
     @GetMapping(value = "/{id}/status", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CaptureStateDto> status(@PathVariable String id) {
         return captureService.getStatus(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .map(dto -> {
+                    logger.debug("Capture {} status poll: status={} imageAvailable={}.",
+                            id, dto.getStatus(), dto.isImageAvailable());
+                    return ResponseEntity.ok(dto);
+                })
+                .orElseGet(() -> {
+                    logger.debug("Capture {} status: not found (expired or unknown id).", id);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                });
     }
 }

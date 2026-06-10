@@ -13,6 +13,12 @@ public class Parameter {
     @Column(unique = true)
     private String entryKey;
 
+    // TEXT instead of the default VARCHAR(255). The AI prompt alone is ~1.6 kB
+    // and previously triggered MariaDB "Data too long for column 'entry_value'"
+    // (SQL state 22001) on save. TEXT gives us 64 kB which covers the prompt
+    // plus any other multi-paragraph config we might want to persist later.
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String entryValue;
 
     public Parameter() {

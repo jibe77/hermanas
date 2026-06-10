@@ -1,11 +1,16 @@
-import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { tap } from 'rxjs/operators';
 import { LoggerService } from '../services';
 
 /**
- * Logging interceptor that logs HTTP requests and responses for debugging.
- * Only logs in development mode to avoid console noise in production.
+ * Logging interceptor for HTTP errors.
+ *
+ * <p>Successful responses are intentionally not logged: with the capture
+ * polling loop firing one /status request per second the console used to
+ * fill up faster than anyone could read it. The previous DEBUG line per
+ * 2xx is gone — failures are the only case where the HTTP layer carries
+ * non-redundant information for debugging.</p>
  */
 export const loggingInterceptor: HttpInterceptorFn = (req, next) => {
     const logger = inject(LoggerService);
@@ -13,22 +18,6 @@ export const loggingInterceptor: HttpInterceptorFn = (req, next) => {
 
     return next(req).pipe(
         tap({
-            next: event => {
-                // Only log final HTTP response
-                if (event instanceof HttpResponse) {
-                    const elapsed = Date.now() - started;
-                    logger.debug(
-                        `${req.method} ${req.urlWithParams} - ${event.status}`,
-                        {
-                            elapsed: `${elapsed}ms`,
-                            status: event.status,
-                            method: req.method,
-                            url: req.urlWithParams,
-                        },
-                        'LoggingInterceptor'
-                    );
-                }
-            },
             error: error => {
                 const elapsed = Date.now() - started;
                 logger.error(

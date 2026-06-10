@@ -242,7 +242,7 @@
         <sb-card>
             <div class="card-header">
                 <fa-icon class="me-1" [icon]="['fas', 'door-open']"></fa-icon>
-                <span i18n="@@servoCalibrationTitle">Réglage du servomoteur</span>
+                <span i18n="@@servoCalibrationTitle">Servomotor calibration</span>
             </div>
             <div class="card-body">
                 <div class="alert alert-warning small mb-3" role="alert">
@@ -255,110 +255,83 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="form-label small d-flex justify-content-between">
-                            <span i18n="@@servoOpeningPosition">Position ouverte</span>
+                            <span i18n="@@servoOpeningPosition">Open position</span>
                             <span class="text-muted">{{ servoOpeningPosition }}</span>
                         </label>
-                        <div class="d-flex align-items-center gap-2">
-                            <input
-                                type="range"
-                                class="form-range"
-                                min="1"
-                                max="100"
-                                step="1"
-                                [(ngModel)]="servoOpeningPosition"
-                            />
-                            <button
-                                type="button"
-                                class="btn btn-primary btn-sm"
-                                (click)="saveOpeningPosition()"
-                                [disabled]="servoSaving"
-                            >
-                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                                <span i18n="@@save">Save</span>
-                            </button>
-                        </div>
+                        <input
+                            type="range"
+                            class="form-range"
+                            min="1"
+                            max="100"
+                            step="1"
+                            [(ngModel)]="servoOpeningPosition"
+                        />
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small d-flex justify-content-between">
-                            <span i18n="@@servoClosingPosition">Position fermée</span>
+                            <span i18n="@@servoClosingPosition">Closed position</span>
                             <span class="text-muted">{{ servoClosingPosition }}</span>
                         </label>
-                        <div class="d-flex align-items-center gap-2">
-                            <input
-                                type="range"
-                                class="form-range"
-                                min="1"
-                                max="100"
-                                step="1"
-                                [(ngModel)]="servoClosingPosition"
-                            />
-                            <button
-                                type="button"
-                                class="btn btn-primary btn-sm"
-                                (click)="saveClosingPosition()"
-                                [disabled]="servoSaving"
-                            >
-                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                                <span i18n="@@save">Save</span>
-                            </button>
-                        </div>
+                        <input
+                            type="range"
+                            class="form-range"
+                            min="1"
+                            max="100"
+                            step="1"
+                            [(ngModel)]="servoClosingPosition"
+                        />
                     </div>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="form-label small" for="servoOpeningDuration">
-                            <span i18n="@@servoOpeningDuration">Durée d'ouverture (ms)</span>
+                            <span i18n="@@servoOpeningDuration">Opening duration (ms)</span>
                         </label>
-                        <div class="d-flex align-items-center gap-2">
-                            <input
-                                id="servoOpeningDuration"
-                                type="number"
-                                min="1"
-                                max="60000"
-                                step="100"
-                                class="form-control form-control-sm"
-                                [(ngModel)]="servoOpeningDurationMs"
-                            />
-                            <button
-                                type="button"
-                                class="btn btn-primary btn-sm"
-                                (click)="saveOpeningDuration()"
-                                [disabled]="servoSaving"
-                            >
-                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                                <span i18n="@@save">Save</span>
-                            </button>
-                        </div>
+                        <input
+                            id="servoOpeningDuration"
+                            type="number"
+                            min="1"
+                            max="60000"
+                            step="100"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="servoOpeningDurationMs"
+                        />
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small" for="servoClosingDuration">
-                            <span i18n="@@servoClosingDuration">Durée de fermeture (ms)</span>
+                            <span i18n="@@servoClosingDuration">Closing duration (ms)</span>
                         </label>
-                        <div class="d-flex align-items-center gap-2">
-                            <input
-                                id="servoClosingDuration"
-                                type="number"
-                                min="1"
-                                max="60000"
-                                step="100"
-                                class="form-control form-control-sm"
-                                [(ngModel)]="servoClosingDurationMs"
-                            />
-                            <button
-                                type="button"
-                                class="btn btn-primary btn-sm"
-                                (click)="saveClosingDuration()"
-                                [disabled]="servoSaving"
-                            >
-                                <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
-                                <span i18n="@@save">Save</span>
-                            </button>
-                        </div>
+                        <input
+                            id="servoClosingDuration"
+                            type="number"
+                            min="1"
+                            max="60000"
+                            step="100"
+                            class="form-control form-control-sm"
+                            [(ngModel)]="servoClosingDurationMs"
+                        />
                     </div>
                 </div>
+                <div class="d-flex justify-content-end">
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        (click)="saveServoSettings()"
+                        [disabled]="servoSaving"
+                    >
+                        <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                        <span i18n="@@servoSaveAll">Save configuration</span>
+                    </button>
+                </div>
+                <hr class="my-4" />
+                <h6 class="mb-2" i18n="@@servoManualTestTitle">Manual servomotor test</h6>
+                <p class="text-muted small mb-3" i18n="@@servoManualTestHelp">
+                    Tool to find the right values above experimentally. Each click moves the servo
+                    immediately by the chosen number of milliseconds — nothing is saved.
+                </p>
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <label class="form-label small mb-0 me-2" for="servoNudgeMs">
-                        <span i18n="@@servoNudgeMs">Durée nudge (ms)</span>
+                        <span i18n="@@servoNudgeMs">Nudge duration (ms)</span>
                     </label>
                     <input
                         id="servoNudgeMs"
@@ -373,20 +346,20 @@
                     <button
                         type="button"
                         class="btn btn-outline-secondary btn-sm"
-                        (click)="nudgeCounterClockwise()"
+                        (click)="nudgeClose()"
                         [disabled]="servoNudging"
                     >
-                        <fa-icon class="me-1" [icon]="['fas', 'sync']"></fa-icon>
-                        <span i18n="@@servoCounterClockwise">Counter-clockwise</span>
+                        <fa-icon class="me-1" [icon]="['fas', 'arrow-down']"></fa-icon>
+                        <span i18n="@@servoNudgeCloseBtn">Close a bit</span>
                     </button>
                     <button
                         type="button"
                         class="btn btn-outline-secondary btn-sm"
-                        (click)="nudgeClockwise()"
+                        (click)="nudgeOpen()"
                         [disabled]="servoNudging"
                     >
-                        <span i18n="@@servoClockwise">Clockwise</span>
-                        <fa-icon class="ms-1" [icon]="['fas', 'sync']"></fa-icon>
+                        <fa-icon class="me-1" [icon]="['fas', 'arrow-up']"></fa-icon>
+                        <span i18n="@@servoNudgeOpenBtn">Open a bit</span>
                     </button>
                 </div>
             </div>

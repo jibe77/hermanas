@@ -1,1 +1,221 @@
 @import 'styles/variables.scss';
+
+// All animation is CSS-only so the page stays static-asset-free and the SVG
+// inside the template stays the single source of truth.
+
+.error-404-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2rem 0 1rem;
+    user-select: none;
+}
+
+.big-digit {
+    font-size: 8rem;
+    font-weight: 700;
+    color: #f0c419; // egg yolk
+    line-height: 1;
+    text-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
+
+    &-left {
+        animation: digit-tilt-left 3s ease-in-out infinite;
+    }
+    &-right {
+        animation: digit-tilt-right 3s ease-in-out infinite;
+    }
+}
+
+.hen {
+    width: 180px;
+    height: 180px;
+    animation: hen-hop 1.2s ease-in-out infinite;
+    transform-origin: 100px 195px;
+}
+
+// Body / wing / tail colours
+.hen-body {
+    fill: #f5d49b;
+    stroke: #6b4226;
+    stroke-width: 2;
+}
+.hen-wing {
+    fill: #e0a96d;
+    stroke: #6b4226;
+    stroke-width: 2;
+    transform-origin: 90px 125px;
+    animation: wing-flap 0.6s ease-in-out infinite;
+}
+.hen-tail {
+    fill: #c08552;
+    stroke: #6b4226;
+    stroke-width: 2;
+}
+.hen-comb {
+    fill: #d93030;
+    stroke: #6b4226;
+    stroke-width: 1.5;
+}
+.hen-beak {
+    fill: #f0a830;
+    stroke: #6b4226;
+    stroke-width: 1.5;
+}
+
+.hen-head {
+    transform-origin: 70px 95px;
+    animation: head-wobble 2.2s ease-in-out infinite;
+}
+
+.hen-eye {
+    transform-origin: 58px 75px;
+    // scaleY toggle = blink
+    animation: eye-blink 4s ease-in-out infinite;
+}
+
+.hen-leg {
+    stroke: #6b4226;
+    stroke-width: 3;
+    stroke-linecap: round;
+    fill: none;
+}
+.hen-leg-left {
+    transform-origin: 85px 170px;
+    animation: leg-step-left 0.6s ease-in-out infinite;
+}
+.hen-leg-right {
+    transform-origin: 115px 170px;
+    animation: leg-step-right 0.6s ease-in-out infinite;
+}
+
+.hen-feather {
+    fill: #f5d49b;
+    stroke: #6b4226;
+    stroke-width: 1.5;
+    transform-origin: 170px 85px;
+    animation: feather-float 4s ease-in-out infinite;
+}
+
+// Speech bubble — three lines that fade in/out in sequence (10s loop).
+.hen-bubble {
+    display: block;
+    position: relative;
+    margin: 1rem auto 0;
+    padding: 1rem 1.5rem;
+    // The longest FR/RO punchline ("La poule a perdu votre URL dans la paille.")
+    // overflows a 18rem bubble. Let it grow to the column width but cap it so
+    // it does not stretch all the way to the screen edges on desktop.
+    min-height: 3.5rem;
+    width: 100%;
+    max-width: 32rem;
+    background: #fffdf6;
+    color: #5a3a1b;
+    font-style: italic;
+    border: 2px solid #f0c419;
+    border-radius: 18px;
+    box-shadow: 0 6px 0 rgba(240, 196, 25, 0.15);
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: -14px;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 7px solid transparent;
+        border-bottom-color: #f0c419;
+    }
+}
+
+.hen-bubble-line {
+    position: absolute;
+    top: 1rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 0 1.5rem;
+    opacity: 0;
+    animation: bubble-cycle 12s linear infinite;
+}
+// Stagger the three lines across the 12s cycle.
+.hen-bubble-line-2 {
+    animation-delay: 4s;
+}
+.hen-bubble-line-3 {
+    animation-delay: 8s;
+}
+
+// Respect reduced-motion settings — keep the static drawing but stop hopping.
+@media (prefers-reduced-motion: reduce) {
+    .hen,
+    .hen-wing,
+    .hen-head,
+    .hen-eye,
+    .hen-leg-left,
+    .hen-leg-right,
+    .hen-feather,
+    .big-digit-left,
+    .big-digit-right,
+    .hen-bubble-line {
+        animation: none;
+    }
+    .hen-bubble-line-1 {
+        opacity: 1;
+    }
+}
+
+// ─── Keyframes ─────────────────────────────────────────────────────────────
+
+@keyframes hen-hop {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
+}
+
+@keyframes wing-flap {
+    0%, 100% { transform: rotate(0); }
+    50%      { transform: rotate(-25deg); }
+}
+
+@keyframes head-wobble {
+    0%, 100% { transform: rotate(0); }
+    25%      { transform: rotate(-8deg); }
+    75%      { transform: rotate(8deg); }
+}
+
+@keyframes eye-blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    95%, 97%      { transform: scaleY(0.1); }
+}
+
+@keyframes leg-step-left {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+}
+@keyframes leg-step-right {
+    0%, 100% { transform: translateY(-6px); }
+    50%      { transform: translateY(0); }
+}
+
+@keyframes feather-float {
+    0%   { transform: translate(0, 0) rotate(0); opacity: 1; }
+    50%  { transform: translate(15px, -20px) rotate(45deg); opacity: 0.7; }
+    100% { transform: translate(30px, -40px) rotate(90deg); opacity: 0; }
+}
+
+@keyframes digit-tilt-left {
+    0%, 100% { transform: rotate(-6deg); }
+    50%      { transform: rotate(-12deg); }
+}
+@keyframes digit-tilt-right {
+    0%, 100% { transform: rotate(6deg); }
+    50%      { transform: rotate(12deg); }
+}
+
+// 12s cycle, each line visible ~4s with 0.3s cross-fade.
+@keyframes bubble-cycle {
+    0%   { opacity: 0; }
+    2%   { opacity: 1; }
+    30%  { opacity: 1; }
+    33%  { opacity: 0; }
+    100% { opacity: 0; }
+}

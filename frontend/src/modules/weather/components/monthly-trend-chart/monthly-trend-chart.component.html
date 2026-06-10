@@ -1,13 +1,13 @@
 @if (loading) {
     <div class="text-muted small">
         <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-        <span i18n="@@weatherChartLoading">Chargement…</span>
+        <span i18n="@@weatherChartLoading">Loading…</span>
     </div>
 }
 
 @if (!loading && points.length === 0) {
     <div class="text-muted small" i18n="@@weatherChartNoData">
-        Pas encore assez de données pour afficher la courbe.
+        Not enough data yet to display the chart.
     </div>
 }
 
@@ -21,7 +21,8 @@
             (pointermove)="onPointerMove($event, svgEl)"
             (pointerleave)="onPointerLeave()"
             role="img"
-            aria-label="Évolution mensuelle température et humidité"
+            i18n-aria-label="@@weatherMonthlyChartAria"
+            aria-label="Monthly temperature and humidity trend"
         >
             <defs>
                 <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
@@ -128,7 +129,7 @@
                 </div>
                 <div>
                     <span class="legend-swatch hum"></span>
-                    <span i18n="@@weatherChartHum">Humidité</span>
+                    <span i18n="@@weatherChartHum">Humidity</span>
                     {{ ' ' }}:
                     {{ ' ' }}
                     @if (hoverPoint.humAvg !== null) {
@@ -139,7 +140,7 @@
                     }
                 </div>
                 <div class="text-muted small" i18n="@@weatherChartSamples">
-                    {{ hoverPoint.samples }} mesures
+                    {{ hoverPoint.samples }} samples
                 </div>
             </div>
         }
@@ -148,11 +149,11 @@
     <div class="legend">
         <span class="legend-item"
             ><span class="legend-swatch temp"></span>
-            <span i18n="@@weatherChartTempLegend">Température moyenne (°C)</span></span
+            <span i18n="@@weatherChartTempLegend">Average temperature (°C)</span></span
         >
         <span class="legend-item"
             ><span class="legend-swatch hum"></span>
-            <span i18n="@@weatherChartHumLegend">Humidité moyenne (%)</span></span
+            <span i18n="@@weatherChartHumLegend">Average humidity (%)</span></span
         >
     </div>
 }

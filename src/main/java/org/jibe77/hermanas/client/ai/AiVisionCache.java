@@ -1,8 +1,8 @@
 package org.jibe77.hermanas.client.ai;
 
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -17,27 +17,31 @@ import java.util.concurrent.ConcurrentHashMap;
  * the LLM is hit at most once per language per window, and re-renders are
  * instant.</p>
  *
- * <p>Failures are intentionally <strong>not</strong> cached: if the inference
- * server is down or the configuration is missing, we want the next user click
- * to retry. Only successful responses live in the map.</p>
+ * <p>The TTL is read from {@link ConfigService} on every call so the admin UI
+ * can adjust it at runtime without restarting the app. Failures are
+ * intentionally <strong>not</strong> cached: if the inference server is down
+ * or the configuration is missing, we want the next user click to retry. Only
+ * successful responses live in the map.</p>
  */
 @Component
 public class AiVisionCache {
 
     private static final Logger logger = LoggerFactory.getLogger(AiVisionCache.class);
 
-    /** Cache TTL, in milliseconds. Two minutes by default — see application.properties. */
-    @Value("${ai.inference.cache.ttl-ms:120000}")
-    private long ttlMs;
-
+    private final ConfigService configService;
     private final Map<String, Entry> store = new ConcurrentHashMap<>();
+
+    public AiVisionCache(ConfigService configService) {
+        this.configService = configService;
+    }
 
     /**
      * Returns the cached analysis text for the given language, or {@code null}
      * when nothing is cached, the cached entry has expired, or the call has
-     * been disabled by setting {@code ttlMs} to a non-positive value.
+     * been disabled by setting the TTL to a non-positive value.
      */
     public String get(String lang) {
+        long ttlMs = configService.getAiInferenceCacheTtlMs();
         if (ttlMs <= 0) {
             return null;
         }
@@ -55,7 +59,7 @@ public class AiVisionCache {
 
     /** Records a successful analysis. Overwrites any previous entry for the language. */
     public void put(String lang, String body) {
-        if (ttlMs <= 0 || body == null) {
+        if (configService.getAiInferenceCacheTtlMs() <= 0 || body == null) {
             return;
         }
         store.put(lang, new Entry(body, System.currentTimeMillis()));

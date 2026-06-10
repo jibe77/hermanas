@@ -20,6 +20,9 @@ public class UserCreateRequest {
     @Schema(description = "Whether the user should receive coop notifications")
     private boolean notificationsEnabled;
 
+    @Schema(description = "Preferred UI / notification language (\"fr\" or \"en\")", example = "fr")
+    private String language;
+
     public String getLogin() { return login; }
     public void setLogin(String login) { this.login = login; }
 
@@ -34,4 +37,7 @@ public class UserCreateRequest {
 
     public boolean isNotificationsEnabled() { return notificationsEnabled; }
     public void setNotificationsEnabled(boolean notificationsEnabled) { this.notificationsEnabled = notificationsEnabled; }
+
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
 }

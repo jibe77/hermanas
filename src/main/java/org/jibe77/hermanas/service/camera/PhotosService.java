@@ -62,11 +62,9 @@ public class PhotosService {
                 }
             }
         }
-        // Both sorted by name descending so newest (year/month/day or YYYY-MM-DD-HHMMSS pictures)
-        // appear first — matches user expectation when browsing the chicken-coop archive.
-        Comparator<Entry> byNameDesc = Comparator.comparing(Entry::getName).reversed();
-        directories.sort(byNameDesc);
-        files.sort(byNameDesc);
+        Comparator<Entry> byNameAsc = Comparator.comparing(Entry::getName);
+        directories.sort(byNameAsc);
+        files.sort(byNameAsc);
         return new ListingResult(normaliseForClient(dir), directories, files);
     }
 

@@ -8,12 +8,13 @@ import {
     inject,
 } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 
 import { GlobalErrorHandler } from '@common/services';
 import {
     authInterceptor,
+    demoModeInterceptor,
     loadingInterceptor,
     loggingInterceptor,
     retryInterceptor,
@@ -35,10 +36,21 @@ import { APP_ROUTES } from './app.routes';
 export const appConfig: ApplicationConfig = {
     providers: [
         provideZoneChangeDetection({ eventCoalescing: true }),
-        provideRouter(APP_ROUTES, withComponentInputBinding()),
+        // `onSameUrlNavigation: 'reload'` lets us re-trigger the current route after
+        // login/logout so components that read `isAdmin` / `isAuthenticated` once in
+        // `ngOnInit` get re-created with the new session state instead of staying
+        // stale until the user manually reloads the page.
+        provideRouter(
+            APP_ROUTES,
+            withComponentInputBinding(),
+            withRouterConfig({ onSameUrlNavigation: 'reload' })
+        ),
         provideAnimations(),
         provideHttpClient(
             withInterceptors([
+                // Demo-mode safeguard must run first so blocked mutations never
+                // reach the loading spinner / retry / logging stack.
+                demoModeInterceptor,
                 loadingInterceptor,
                 loggingInterceptor,
                 authInterceptor,

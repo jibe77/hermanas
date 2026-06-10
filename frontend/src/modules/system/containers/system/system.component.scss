@@ -1,1 +1,12 @@
 @import 'styles/variables.scss';
+
+// Software stack panel: each row uses .mt-2 to space siblings vertically.
+// When the first visible row happens to be one that carries .mt-2 (e.g.
+// info.app.name is missing and "Uptime" lands first), it leaves a stray gap
+// above. Strip the top margin on whichever element is actually the first
+// child of the card body. ::ng-deep is required because <sb-card> is a
+// separate component — Angular's view encapsulation would otherwise scope
+// the selector to this component's own elements only.
+:host ::ng-deep sb-card .card-body > .mt-2:first-child {
+    margin-top: 0 !important;
+}

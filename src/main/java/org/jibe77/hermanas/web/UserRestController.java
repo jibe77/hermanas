@@ -114,7 +114,8 @@ public class UserRestController {
                 passwordEncoder.encode(body.getPassword()),
                 emptyToNull(body.getEmail()),
                 role,
-                body.isNotificationsEnabled());
+                body.isNotificationsEnabled(),
+                normalizeLanguage(body.getLanguage()));
         repository.save(user);
         logger.info("Admin created user '{}' (role={})", user.getLogin(), user.getRole());
         return ResponseEntity.ok(toDto(user));
@@ -182,8 +183,30 @@ public class UserRestController {
         if (body.getRole() != null) {
             user.setRole(normalizeRole(body.getRole()));
         }
+        if (body.getLanguage() != null) {
+            user.setLanguage(normalizeLanguage(body.getLanguage()));
+        }
         repository.save(user);
         return ResponseEntity.ok(toDto(user));
+    }
+
+    /**
+     * Same normalisation rules as {@code RegistrationService#normalizeLanguage} — kept
+     * private here to avoid coupling the web layer to security/. Accepts the three
+     * supported codes ("fr", "en", "ro"); anything else falls back to {@code "fr"}.
+     */
+    private static String normalizeLanguage(String input) {
+        if (input == null) {
+            return "fr";
+        }
+        String code = input.trim().toLowerCase();
+        if (code.startsWith("en")) {
+            return "en";
+        }
+        if (code.startsWith("ro")) {
+            return "ro";
+        }
+        return "fr";
     }
 
     private static String normalizeRole(String input) {
@@ -205,7 +228,8 @@ public class UserRestController {
     }
 
     private static UserDTO toDto(HermanasUser u) {
-        return new UserDTO(u.getLogin(), u.getEmail(), u.getRole(), u.isNotificationsEnabled());
+        return new UserDTO(u.getLogin(), u.getEmail(), u.getRole(), u.isNotificationsEnabled(),
+                u.getLanguage());
     }
 
     private static ResponseEntity<java.util.Map<String, String>> badRequest(String message) {

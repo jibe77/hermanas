@@ -1,16 +1,101 @@
-<sb-layout-error
-    ><div class="container">
+<sb-layout-error>
+    <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-6">
-                <div class="text-center mt-4">
-                    <img class="mb-4 img-error" src="assets/img/error-404-monochrome.svg" />
-                    <p class="lead">This requested URL was not found on this server.</p>
-                    <a routerLink="/dashboard"
-                        ><fa-icon class="mr-1" [icon]="['fas', 'arrow-left']"></fa-icon>Return to
-                        Dashboard</a
+            <div class="col-lg-10 col-xl-9 text-center">
+                <!-- The "404" is built around the hen so the two zeros frame
+                     her like a coop window. -->
+                <div class="error-404-stage">
+                    <span class="big-digit big-digit-left" aria-hidden="true">4</span>
+
+                    <!-- Bouncy hen. The SVG is intentionally inline so the
+                         animations can target individual parts (head, eye,
+                         legs) and so deploys stay self-contained. -->
+                    <svg
+                        class="hen"
+                        viewBox="0 0 200 200"
+                        role="img"
+                        aria-label="A confused-looking chicken"
+                        i18n-aria-label="@@error404HenAriaLabel"
+                    >
+                        <!-- Body -->
+                        <ellipse cx="100" cy="130" rx="55" ry="45" class="hen-body" />
+                        <!-- Wing -->
+                        <path
+                            d="M 70 125 Q 60 100 95 105 Q 110 130 75 145 Z"
+                            class="hen-wing"
+                        />
+                        <!-- Tail feathers -->
+                        <path
+                            d="M 155 115 Q 185 100 180 130 Q 175 145 155 135 Z"
+                            class="hen-tail"
+                        />
+                        <!-- Head (group so we can wobble it) -->
+                        <g class="hen-head">
+                            <circle cx="70" cy="80" r="30" class="hen-body" />
+                            <!-- Comb -->
+                            <path
+                                d="M 55 55 Q 60 40 67 52 Q 72 38 78 52 Q 84 42 88 56 Z"
+                                class="hen-comb"
+                            />
+                            <!-- Beak -->
+                            <polygon points="42,82 28,86 42,92" class="hen-beak" />
+                            <!-- Eye (with blink) -->
+                            <g class="hen-eye">
+                                <circle cx="58" cy="75" r="5" fill="#fff" />
+                                <circle cx="58" cy="76" r="2.5" fill="#222" />
+                            </g>
+                            <!-- Wattle -->
+                            <path
+                                d="M 45 92 Q 40 102 50 105 Q 52 100 50 92 Z"
+                                class="hen-comb"
+                            />
+                        </g>
+                        <!-- Legs -->
+                        <g class="hen-leg hen-leg-left">
+                            <line x1="85" y1="170" x2="85" y2="190" />
+                            <line x1="85" y1="190" x2="78" y2="195" />
+                            <line x1="85" y1="190" x2="92" y2="195" />
+                        </g>
+                        <g class="hen-leg hen-leg-right">
+                            <line x1="115" y1="170" x2="115" y2="190" />
+                            <line x1="115" y1="190" x2="108" y2="195" />
+                            <line x1="115" y1="190" x2="122" y2="195" />
+                        </g>
+                        <!-- Stray feather floating away -->
+                        <path
+                            class="hen-feather"
+                            d="M 165 80 Q 175 75 172 90 Q 168 95 162 88 Z"
+                        />
+                    </svg>
+
+                    <span class="big-digit big-digit-right" aria-hidden="true">4</span>
+                </div>
+
+                <!-- Speech bubble cycles through a few lines. The visible
+                     <span> is swapped by CSS via opacity keyframes so the i18n
+                     keys remain untouched. -->
+                <div class="hen-bubble" aria-live="polite">
+                    <span class="hen-bubble-line hen-bubble-line-1" i18n="@@error404Punch1"
+                        >Cot cot ? Cette page s'est fait la malle…</span
+                    >
+                    <span class="hen-bubble-line hen-bubble-line-2" i18n="@@error404Punch2"
+                        >Pas de page ici, mais j'ai pondu un œuf !</span
+                    >
+                    <span class="hen-bubble-line hen-bubble-line-3" i18n="@@error404Punch3"
+                        >La poule a perdu votre URL dans la paille.</span
                     >
                 </div>
+
+                <h2 class="mt-4" i18n="@@error404Title">404 — Page introuvable</h2>
+                <p class="lead text-muted" i18n="@@error404Body">
+                    This requested URL was not found on this server.
+                </p>
+
+                <a routerLink="/dashboard" class="btn btn-primary mt-2">
+                    <fa-icon class="me-1" [icon]="['fas', 'arrow-left']"></fa-icon>
+                    <span i18n="@@errorBackToDashboard">Return to Dashboard</span>
+                </a>
             </div>
         </div>
-    </div></sb-layout-error
->
+    </div>
+</sb-layout-error>

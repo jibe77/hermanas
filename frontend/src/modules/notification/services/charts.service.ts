@@ -3,11 +3,15 @@ import { Injectable, inject } from '@angular/core';
 import { AbstractService } from '@common/services';
 import { Observable } from 'rxjs';
 
+/** ISO 639-1 codes accepted by the backend for user-level preferences. */
+export type UserLanguage = 'fr' | 'en' | 'ro';
+
 export interface HermanasUser {
     login: string;
     email: string | null;
     role: string;
     notificationsEnabled: boolean;
+    language: UserLanguage;
 }
 
 export interface UserUpdate {
@@ -15,6 +19,7 @@ export interface UserUpdate {
     notificationsEnabled?: boolean;
     password?: string;
     role?: string;
+    language?: UserLanguage;
 }
 
 export interface UserCreate {
@@ -23,6 +28,7 @@ export interface UserCreate {
     email?: string | null;
     role?: string;
     notificationsEnabled?: boolean;
+    language?: UserLanguage;
 }
 
 @Injectable({ providedIn: 'root' })

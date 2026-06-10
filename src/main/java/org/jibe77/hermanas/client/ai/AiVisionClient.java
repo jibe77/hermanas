@@ -40,10 +40,14 @@ public class AiVisionClient {
     private static final Logger logger = LoggerFactory.getLogger(AiVisionClient.class);
 
     private final ConfigService configService;
+    private final CameraPromptBuilder promptBuilder;
     private final RestTemplate restTemplate;
 
-    public AiVisionClient(ConfigService configService, RestTemplateBuilder builder) {
+    public AiVisionClient(ConfigService configService,
+                          CameraPromptBuilder promptBuilder,
+                          RestTemplateBuilder builder) {
         this.configService = configService;
+        this.promptBuilder = promptBuilder;
         // Vision calls on a Pi-class CPU can legitimately take 30+ seconds; give
         // the request a generous window before timing out.
         this.restTemplate = builder
@@ -59,20 +63,30 @@ public class AiVisionClient {
      */
     public String analyze(File image, String lang) throws AiVisionException {
         String baseUrl = configService.getAiInferenceUrl();
+        String model = configService.getAiInferenceModel();
+        // INFO-level so the operator can read the current configuration straight from
+        // the log when something fails — particularly useful when ai.inference.url
+        // looks empty even though it was set, which usually means the cached value
+        // has not been refreshed yet.
+        logger.info("AI vision request: baseUrl='{}' (length={}), model='{}', lang='{}', image={} ({} bytes).",
+                baseUrl, baseUrl == null ? 0 : baseUrl.length(),
+                model, lang, image.getAbsolutePath(), image.length());
+
         if (baseUrl == null || baseUrl.trim().isEmpty()) {
             throw new AiVisionException("NOT_CONFIGURED",
                     "AI inference URL is not configured.");
         }
-        String model = configService.getAiInferenceModel();
         String url = chatCompletionsUrl(baseUrl.trim());
 
         String base64;
         try {
             base64 = Base64.getEncoder().encodeToString(Files.readAllBytes(image.toPath()));
         } catch (IOException e) {
+            logger.warn("AI vision: failed to read snapshot file {}.", image.getAbsolutePath(), e);
             throw new AiVisionException("IMAGE_READ_FAILED",
                     "Could not read the snapshot file: " + e.getMessage());
         }
+        logger.debug("AI vision: encoded image to base64, payload size ~{} chars.", base64.length());
 
         Map<String, Object> payload = buildChatPayload(model, lang, base64);
         HttpHeaders headers = new HttpHeaders();
@@ -84,11 +98,11 @@ public class AiVisionClient {
             @SuppressWarnings("unchecked")
             Map<String, Object> response = restTemplate.postForObject(url, entity, Map.class);
             long elapsed = System.currentTimeMillis() - start;
-            logger.info("AI vision call to {} returned in {} ms (model={}, lang={}).",
+            logger.info("AI vision: POST {} returned in {} ms (model={}, lang={}).",
                     url, elapsed, model, lang);
             return extractContent(response);
         } catch (RestClientException e) {
-            logger.warn("AI vision call to {} failed: {}", url, e.getMessage());
+            logger.warn("AI vision: POST {} failed (model={}): {}", url, model, e.toString());
             throw new AiVisionException("UPSTREAM_ERROR",
                     "Inference server unreachable or returned an error: " + e.getMessage());
         }
@@ -114,7 +128,7 @@ public class AiVisionClient {
     private Map<String, Object> buildChatPayload(String model, String lang, String base64Image) {
         Map<String, Object> textPart = new LinkedHashMap<>();
         textPart.put("type", "text");
-        textPart.put("text", CameraPromptBuilder.buildPrompt(lang));
+        textPart.put("text", promptBuilder.buildPrompt(lang));
 
         Map<String, Object> imageUrl = new HashMap<>();
         imageUrl.put("url", "data:image/jpeg;base64," + base64Image);
@@ -126,13 +140,21 @@ public class AiVisionClient {
         content.add(textPart);
         content.add(imagePart);
 
-        Map<String, Object> message = new LinkedHashMap<>();
-        message.put("role", "user");
-        message.put("content", content);
+        // System message constrains the answer language. Vision models give system
+        // messages significantly more steering weight than user-level hints, which
+        // is what we need: a single language directive in the user prompt was
+        // ignored about a third of the time on qwen2.5-vl.
+        Map<String, Object> systemMessage = new LinkedHashMap<>();
+        systemMessage.put("role", "system");
+        systemMessage.put("content", promptBuilder.buildSystemInstruction(lang));
+
+        Map<String, Object> userMessage = new LinkedHashMap<>();
+        userMessage.put("role", "user");
+        userMessage.put("content", content);
 
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("model", model);
-        payload.put("messages", List.of(message));
+        payload.put("messages", List.of(systemMessage, userMessage));
         payload.put("temperature", 0.2);
         payload.put("stream", false);
         return payload;

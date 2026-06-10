@@ -541,6 +541,10 @@
                     <context context-type="linenumber">5</context>
                 </context-group>
             </trans-unit>
+            <trans-unit id="romanian" datatype="html">
+                <source>Romanian</source>
+                <target>Roumain</target>
+            </trans-unit>
             <trans-unit id="logged_in_as" datatype="html">
                 <source>Logged in as:</source>
                 <target>Connecté sous le compte:</target>
@@ -559,11 +563,11 @@
             </trans-unit>
             <trans-unit id="signin" datatype="html">
                 <source>Login / Sign up</source>
+                <target>Connexion / inscription</target>
+            </trans-unit>
+            <trans-unit id="signinButton" datatype="html">
+                <source>Sign in</source>
                 <target>Connexion</target>
-                <context-group purpose="location">
-                    <context context-type="sourcefile">src/modules/navigation/components/top-nav-user/top-nav-user.component.html</context>
-                    <context context-type="linenumber">12</context>
-                </context-group>
             </trans-unit>
             <trans-unit id="rememberMe" datatype="html">
                 <source>Remember me</source>
@@ -574,56 +578,116 @@
                 </context-group>
             </trans-unit>
             <trans-unit id="loginCreateAccount" datatype="html">
-                <source>Pas de compte ? S'inscrire</source>
+                <source>No account yet? Sign up</source>
                 <target>Pas de compte ? S'inscrire</target>
             </trans-unit>
+            <trans-unit id="signinSubmit" datatype="html">
+                <source>Sign in</source>
+                <target>Se connecter</target>
+            </trans-unit>
+            <trans-unit id="signinInProgress" datatype="html">
+                <source>Signing in…</source>
+                <target>Connexion…</target>
+            </trans-unit>
+            <trans-unit id="username" datatype="html">
+                <source>Login</source>
+                <target>Identifiant</target>
+            </trans-unit>
+            <trans-unit id="password" datatype="html">
+                <source>Password</source>
+                <target>Mot de passe</target>
+            </trans-unit>
+            <trans-unit id="close" datatype="html">
+                <source>Close</source>
+                <target>Fermer</target>
+            </trans-unit>
             <trans-unit id="signinPendingValidation" datatype="html">
-                <source>Votre compte est en attente de validation par un administrateur.</source>
+                <source>Your account is pending validation by an administrator.</source>
                 <target>Votre compte est en attente de validation par un administrateur.</target>
             </trans-unit>
             <trans-unit id="register" datatype="html">
-                <source>Inscription</source>
+                <source>Sign up</source>
                 <target>Inscription</target>
             </trans-unit>
             <trans-unit id="registerSubmit" datatype="html">
-                <source>Créer mon compte</source>
+                <source>Create my account</source>
                 <target>Créer mon compte</target>
             </trans-unit>
             <trans-unit id="registerInProgress" datatype="html">
-                <source>Création…</source>
+                <source>Creating…</source>
                 <target>Création…</target>
             </trans-unit>
             <trans-unit id="registerSuccessMessage" datatype="html">
-                <source>Votre compte a été créé. Un administrateur doit valider votre inscription avant que vous puissiez vous connecter. Vous recevrez un email de confirmation.</source>
+                <source>Your account has been created. An administrator must validate your registration before you can sign in. You will receive a confirmation email.</source>
                 <target>Votre compte a été créé. Un administrateur doit valider votre inscription avant que vous puissiez vous connecter. Vous recevrez un email de confirmation.</target>
             </trans-unit>
             <trans-unit id="registerBackToLogin" datatype="html">
-                <source>Retour à la connexion</source>
+                <source>Back to sign-in</source>
                 <target>Retour à la connexion</target>
             </trans-unit>
             <trans-unit id="registerAlreadyHaveAccount" datatype="html">
-                <source>J'ai déjà un compte</source>
+                <source>I already have an account</source>
                 <target>J'ai déjà un compte</target>
             </trans-unit>
             <trans-unit id="registerErrorLoginTaken" datatype="html">
-                <source>Cet identifiant est déjà utilisé.</source>
+                <source>This login is already in use.</source>
                 <target>Cet identifiant est déjà utilisé.</target>
             </trans-unit>
             <trans-unit id="registerErrorInvalidLogin" datatype="html">
-                <source>Identifiant invalide (2-64 caractères, lettres/chiffres/._-).</source>
+                <source>Invalid login (2-64 characters, letters/digits/._-).</source>
                 <target>Identifiant invalide (2-64 caractères, lettres/chiffres/._-).</target>
             </trans-unit>
             <trans-unit id="registerErrorInvalidPassword" datatype="html">
-                <source>Mot de passe trop court (6 caractères minimum).</source>
+                <source>Password too short (minimum 6 characters).</source>
                 <target>Mot de passe trop court (6 caractères minimum).</target>
             </trans-unit>
             <trans-unit id="registerErrorInvalidEmail" datatype="html">
-                <source>Adresse email invalide.</source>
+                <source>Invalid email address.</source>
                 <target>Adresse email invalide.</target>
             </trans-unit>
             <trans-unit id="registerErrorGeneric" datatype="html">
-                <source>Inscription impossible. Veuillez réessayer.</source>
+                <source>Sign-up failed. Please try again.</source>
                 <target>Inscription impossible. Veuillez réessayer.</target>
+            </trans-unit>
+            <trans-unit id="weatherMonthlyChartAria" datatype="html">
+                <source>Monthly temperature and humidity trend</source>
+                <target>Évolution mensuelle température et humidité</target>
+            </trans-unit>
+            <trans-unit id="weatherTablePagerAria" datatype="html">
+                <source>Select page of weather entries</source>
+                <target>Sélectionner la page</target>
+            </trans-unit>
+            <trans-unit id="mailHostPlaceholder" datatype="html">
+                <source>smtp.gmail.com</source>
+                <target>smtp.gmail.com</target>
+            </trans-unit>
+            <trans-unit id="locationWriteOnlyPlaceholder" datatype="html">
+                <source>(leave empty to keep the current value)</source>
+                <target>(laisser vide pour ne pas modifier)</target>
+            </trans-unit>
+            <trans-unit id="logsSearchPlaceholder" datatype="html">
+                <source>DoorService, Exception…</source>
+                <target>DoorService, Exception…</target>
+            </trans-unit>
+            <trans-unit id="error401Title" datatype="html">
+                <source>Unauthorized</source>
+                <target>Non autorisé</target>
+            </trans-unit>
+            <trans-unit id="error401Body" datatype="html">
+                <source>Access to this resource is denied.</source>
+                <target>L'accès à cette ressource est refusé.</target>
+            </trans-unit>
+            <trans-unit id="error404Body" datatype="html">
+                <source>This requested URL was not found on this server.</source>
+                <target>L'URL demandée est introuvable sur ce serveur.</target>
+            </trans-unit>
+            <trans-unit id="error500Title" datatype="html">
+                <source>Internal Server Error</source>
+                <target>Erreur interne du serveur</target>
+            </trans-unit>
+            <trans-unit id="errorBackToDashboard" datatype="html">
+                <source>Return to Dashboard</source>
+                <target>Retour au tableau de bord</target>
             </trans-unit>
             <trans-unit id="usersRolePending" datatype="html">
                 <source>Pending</source>
@@ -961,9 +1025,45 @@
                 <source>Close</source>
                 <target>Fermer</target>
             </trans-unit>
+            <trans-unit id="cameraLivePanelTitle" datatype="html">
+                <source>Live photo</source>
+                <target>Photo en direct</target>
+            </trans-unit>
+            <trans-unit id="cameraArchivesTitle" datatype="html">
+                <source>Archives</source>
+                <target>Archives</target>
+            </trans-unit>
+            <trans-unit id="cameraTakePicture" datatype="html">
+                <source>Take a new picture</source>
+                <target>Prendre une nouvelle photo</target>
+            </trans-unit>
+            <trans-unit id="cameraSnapshotLoading" datatype="html">
+                <source>Capturing…</source>
+                <target>Capture en cours…</target>
+            </trans-unit>
+            <trans-unit id="cameraSnapshotAlt" datatype="html">
+                <source>chicken coop snapshot</source>
+                <target>photo du poulailler</target>
+            </trans-unit>
+            <trans-unit id="cameraAnalyzeButton" datatype="html">
+                <source>AI analysis</source>
+                <target>Analyse IA</target>
+            </trans-unit>
+            <trans-unit id="cameraAnalyzeLoading" datatype="html">
+                <source>Analyzing…</source>
+                <target>Analyse en cours…</target>
+            </trans-unit>
             <trans-unit id="diagnostic" datatype="html">
                 <source>Diagnostic</source>
                 <target>Diagnostic</target>
+            </trans-unit>
+            <trans-unit id="systemState" datatype="html">
+                <source>System state</source>
+                <target>État du système</target>
+            </trans-unit>
+            <trans-unit id="about" datatype="html">
+                <source>About</source>
+                <target>À propos</target>
             </trans-unit>
             <trans-unit id="upperButtonStatus" datatype="html">
                 <source>Upper end-stop button</source>
@@ -1025,6 +1125,22 @@
                     <context context-type="linenumber">4</context>
                 </context-group>
             </trans-unit>
+            <trans-unit id="musicAudioToggles" datatype="html">
+                <source>Automatic sounds</source>
+                <target>Sons automatiques</target>
+            </trans-unit>
+            <trans-unit id="musicCocoricoLabel" datatype="html">
+                <source>Play cock-a-doodle-doo at sunrise</source>
+                <target>Jouer cocorico au lever du soleil</target>
+            </trans-unit>
+            <trans-unit id="musicSongAtSunsetLabel" datatype="html">
+                <source>Play a song at sunset</source>
+                <target>Jouer une chanson au coucher du soleil</target>
+            </trans-unit>
+            <trans-unit id="musicVolumeLabel" datatype="html">
+                <source>Default volume</source>
+                <target>Volume habituel</target>
+            </trans-unit>
             <trans-unit id="systemInfo" datatype="html">
                 <source>This board allows you to configure the system parameters.</source>
                 <target>Cet écran permet d'accéder aux paramètres système.</target>
@@ -1053,13 +1169,21 @@
                 <source>Reboot the machine</source>
                 <target>Redémarrer la machine</target>
             </trans-unit>
+            <trans-unit id="systemOpenApiDocsLabel" datatype="html">
+                <source>API documentation</source>
+                <target>Documentation API</target>
+            </trans-unit>
+            <trans-unit id="systemOpenApiDocsLink" datatype="html">
+                <source>Swagger</source>
+                <target>Swagger</target>
+            </trans-unit>
             <trans-unit id="systemShutdown" datatype="html">
                 <source>Shut down the machine</source>
                 <target>Éteindre la machine</target>
             </trans-unit>
             <trans-unit id="systemRebootConfirm" datatype="html">
-                <source>Reboot the Raspberry Pi now? The application will be unavailable for ~30 seconds.</source>
-                <target>Redémarrer le Raspberry Pi maintenant ? L'application sera indisponible pendant environ 30 secondes.</target>
+                <source>Reboot the Raspberry Pi now? The application will be unavailable for up to 10 minutes.</source>
+                <target>Redémarrer le Raspberry Pi maintenant ? L'application sera indisponible jusqu'à 10 minutes.</target>
             </trans-unit>
             <trans-unit id="systemShutdownConfirm" datatype="html">
                 <source>Shut down the Raspberry Pi now? This will kill the application until the machine is powered back on manually.</source>
@@ -1143,59 +1267,124 @@
             </trans-unit>
         </body>
     </file>
+    <file original="src/modules/electronics/containers/electronics/electronics.component.html"
+          datatype="plaintext" source-language="en-US" target-language="fr-FR">
+        <body>
+            <trans-unit id="electronics" datatype="html">
+                <source>Electronics</source>
+                <target>Électronique</target>
+            </trans-unit>
+            <trans-unit id="electronicsMenu" datatype="html">
+                <source>Electronics</source>
+                <target>Électronique</target>
+            </trans-unit>
+            <trans-unit id="electronicsInfo" datatype="html">
+                <source>Read-only view of the GPIO wiring of the chicken coop, plus the live status of the end-stop / birdhouse buttons. Calibration controls for the door servomotor are at the bottom of the page.</source>
+                <target>Vue en lecture seule du câblage GPIO du poulailler, ainsi que l'état en direct des boutons fin de course / pondoir. Les réglages de calibration du servomoteur de porte sont en bas de la page.</target>
+            </trans-unit>
+            <trans-unit id="electronicsGpioTitle" datatype="html">
+                <source>GPIO wiring (BCM numbering)</source>
+                <target>Câblage GPIO (numérotation BCM)</target>
+            </trans-unit>
+            <trans-unit id="electronicsGpioCol" datatype="html">
+                <source>GPIO</source>
+                <target>GPIO</target>
+            </trans-unit>
+            <trans-unit id="electronicsBoardCol" datatype="html">
+                <source>Pin (board)</source>
+                <target>Broche (carte)</target>
+            </trans-unit>
+            <trans-unit id="electronicsComponentCol" datatype="html">
+                <source>Component</source>
+                <target>Composant</target>
+            </trans-unit>
+            <trans-unit id="electronicsDirectionCol" datatype="html">
+                <source>Direction</source>
+                <target>Direction</target>
+            </trans-unit>
+            <trans-unit id="electronicsStateCol" datatype="html">
+                <source>State</source>
+                <target>État</target>
+            </trans-unit>
+            <trans-unit id="authRequired" datatype="html">
+                <source>Sign in required</source>
+                <target>Authentification requise</target>
+            </trans-unit>
+            <trans-unit id="relayOn" datatype="html">
+                <source>On</source>
+                <target>Allumé</target>
+            </trans-unit>
+            <trans-unit id="relayOff" datatype="html">
+                <source>Off</source>
+                <target>Éteint</target>
+            </trans-unit>
+            <trans-unit id="electronicsButtonsTitle" datatype="html">
+                <source>Buttons live status</source>
+                <target>État des boutons en direct</target>
+            </trans-unit>
+            <trans-unit id="electronicsBoardTitle" datatype="html">
+                <source>Raspberry Pi Zero pinout</source>
+                <target>Schéma des broches du Raspberry Pi Zero</target>
+            </trans-unit>
+            <trans-unit id="electronicsBoardAlt" datatype="html">
+                <source>Raspberry Pi Zero board</source>
+                <target>Carte Raspberry Pi Zero</target>
+            </trans-unit>
+        </body>
+    </file>
     <file original="src/modules/residents/containers/residents/residents.component.html"
           datatype="plaintext" source-language="en-US" target-language="fr-FR">
         <body>
             <trans-unit id="residents" datatype="html">
-                <source>Pensionnaires</source>
+                <source>Residents</source>
                 <target>Pensionnaires</target>
             </trans-unit>
             <trans-unit id="residentsMenu" datatype="html">
-                <source>Pensionnaires</source>
+                <source>Residents</source>
                 <target>Pensionnaires</target>
             </trans-unit>
             <trans-unit id="residentsInfo" datatype="html">
-                <source>La liste des poules qui vivent (ou ont vécu) dans le poulailler.</source>
+                <source>The list of hens that live (or have lived) in the chicken coop.</source>
                 <target>La liste des poules qui vivent (ou ont vécu) dans le poulailler.</target>
             </trans-unit>
             <trans-unit id="residentsAdd" datatype="html">
-                <source>Ajouter une poule</source>
+                <source>Add a hen</source>
                 <target>Ajouter une poule</target>
             </trans-unit>
             <trans-unit id="residentsEmpty" datatype="html">
-                <source>Aucune poule enregistrée pour le moment.</source>
+                <source>No hen recorded yet.</source>
                 <target>Aucune poule enregistrée pour le moment.</target>
             </trans-unit>
             <trans-unit id="residentsBreed" datatype="html">
-                <source>Race</source>
+                <source>Breed</source>
                 <target>Race</target>
             </trans-unit>
             <trans-unit id="residentsBirthDate" datatype="html">
-                <source>Naissance</source>
+                <source>Birth</source>
                 <target>Naissance</target>
             </trans-unit>
             <trans-unit id="residentsArrivalDate" datatype="html">
-                <source>Arrivée</source>
+                <source>Arrival</source>
                 <target>Arrivée</target>
             </trans-unit>
             <trans-unit id="residentsDeathDate" datatype="html">
-                <source>Décès</source>
+                <source>Death</source>
                 <target>Décès</target>
             </trans-unit>
             <trans-unit id="residentsName" datatype="html">
-                <source>Nom</source>
+                <source>Name</source>
                 <target>Nom</target>
             </trans-unit>
             <trans-unit id="residentsComments" datatype="html">
-                <source>Commentaires</source>
+                <source>Comments</source>
                 <target>Commentaires</target>
             </trans-unit>
             <trans-unit id="residentsEdit" datatype="html">
-                <source>Modifier</source>
+                <source>Edit</source>
                 <target>Modifier</target>
             </trans-unit>
             <trans-unit id="residentsDelete" datatype="html">
-                <source>Supprimer</source>
+                <source>Delete</source>
                 <target>Supprimer</target>
             </trans-unit>
             <trans-unit id="residentsUploadPhoto" datatype="html">
@@ -1203,35 +1392,35 @@
                 <target>Photo</target>
             </trans-unit>
             <trans-unit id="residentsDeletePhoto" datatype="html">
-                <source>Suppr. photo</source>
+                <source>Delete photo</source>
                 <target>Suppr. photo</target>
             </trans-unit>
             <trans-unit id="residentsAddTitle" datatype="html">
-                <source>Nouvelle poule</source>
+                <source>New hen</source>
                 <target>Nouvelle poule</target>
             </trans-unit>
             <trans-unit id="residentsEditTitle" datatype="html">
-                <source>Modifier la poule</source>
+                <source>Edit hen</source>
                 <target>Modifier la poule</target>
             </trans-unit>
             <trans-unit id="weatherMonthlyTrend" datatype="html">
-                <source>Tendance sur 30 jours (moyennes journalières)</source>
+                <source>30-day trend (daily averages)</source>
                 <target>Tendance sur 30 jours (moyennes journalières)</target>
             </trans-unit>
             <trans-unit id="weatherChartLoading" datatype="html">
-                <source>Chargement…</source>
+                <source>Loading…</source>
                 <target>Chargement…</target>
             </trans-unit>
             <trans-unit id="weatherChartNoData" datatype="html">
-                <source>Pas encore assez de données pour afficher la courbe.</source>
+                <source>Not enough data yet to display the chart.</source>
                 <target>Pas encore assez de données pour afficher la courbe.</target>
             </trans-unit>
             <trans-unit id="weatherChartTempLegend" datatype="html">
-                <source>Température moyenne (°C)</source>
+                <source>Average temperature (°C)</source>
                 <target>Température moyenne (°C)</target>
             </trans-unit>
             <trans-unit id="weatherChartHumLegend" datatype="html">
-                <source>Humidité moyenne (%)</source>
+                <source>Average humidity (%)</source>
                 <target>Humidité moyenne (%)</target>
             </trans-unit>
             <trans-unit id="weatherChartTemp" datatype="html">
@@ -1239,67 +1428,67 @@
                 <target>Temp.</target>
             </trans-unit>
             <trans-unit id="weatherChartHum" datatype="html">
-                <source>Humidité</source>
+                <source>Humidity</source>
                 <target>Humidité</target>
             </trans-unit>
             <trans-unit id="weatherChartSamples" datatype="html">
-                <source><x id="INTERPOLATION" equiv-text="{{ hoverPoint.samples }}"/> mesures</source>
+                <source><x id="INTERPOLATION" equiv-text="{{ hoverPoint.samples }}"/> samples</source>
                 <target><x id="INTERPOLATION" equiv-text="{{ hoverPoint.samples }}"/> mesures</target>
             </trans-unit>
             <trans-unit id="journal" datatype="html">
-                <source>Journalisation</source>
+                <source>Logs</source>
                 <target>Journalisation</target>
             </trans-unit>
             <trans-unit id="journalMenu" datatype="html">
-                <source>Journalisation</source>
+                <source>Logs</source>
                 <target>Journalisation</target>
             </trans-unit>
             <trans-unit id="journalInfo" datatype="html">
-                <source>Suivi des évènements survenus dans le poulailler (porte, lumière, ventilation, musique, pensionnaires, système).</source>
+                <source>Tracks events that occurred in the chicken coop (door, light, fan, music, residents, system).</source>
                 <target>Suivi des évènements survenus dans le poulailler (porte, lumière, ventilation, musique, pensionnaires, système).</target>
             </trans-unit>
             <trans-unit id="journalBusinessTitle" datatype="html">
-                <source>Évènements métier</source>
+                <source>Business events</source>
                 <target>Évènements métier</target>
             </trans-unit>
             <trans-unit id="journalAuthTitle" datatype="html">
-                <source>Tentatives de connexion</source>
+                <source>Login attempts</source>
                 <target>Tentatives de connexion</target>
             </trans-unit>
             <trans-unit id="journalCategory" datatype="html">
-                <source>Catégorie</source>
+                <source>Category</source>
                 <target>Catégorie</target>
             </trans-unit>
             <trans-unit id="journalCatAll" datatype="html">
-                <source>Toutes</source>
+                <source>All</source>
                 <target>Toutes</target>
             </trans-unit>
             <trans-unit id="journalCatDoor" datatype="html">
-                <source>Porte</source>
+                <source>Door</source>
                 <target>Porte</target>
             </trans-unit>
             <trans-unit id="journalCatLight" datatype="html">
-                <source>Lumière</source>
+                <source>Light</source>
                 <target>Lumière</target>
             </trans-unit>
             <trans-unit id="journalCatFan" datatype="html">
-                <source>Ventilation</source>
+                <source>Fan</source>
                 <target>Ventilation</target>
             </trans-unit>
             <trans-unit id="journalCatMusic" datatype="html">
-                <source>Musique</source>
+                <source>Music</source>
                 <target>Musique</target>
             </trans-unit>
             <trans-unit id="journalCatResident" datatype="html">
-                <source>Pensionnaires</source>
+                <source>Residents</source>
                 <target>Pensionnaires</target>
             </trans-unit>
             <trans-unit id="journalCatSystem" datatype="html">
-                <source>Système</source>
+                <source>System</source>
                 <target>Système</target>
             </trans-unit>
             <trans-unit id="journalWindow" datatype="html">
-                <source>Fenêtre</source>
+                <source>Window</source>
                 <target>Fenêtre</target>
             </trans-unit>
             <trans-unit id="journalWindow24h" datatype="html">
@@ -1307,36 +1496,839 @@
                 <target>24 h</target>
             </trans-unit>
             <trans-unit id="journalWindow7d" datatype="html">
-                <source>7 jours</source>
+                <source>7 days</source>
                 <target>7 jours</target>
             </trans-unit>
             <trans-unit id="journalWindow30d" datatype="html">
-                <source>30 jours</source>
+                <source>30 days</source>
                 <target>30 jours</target>
             </trans-unit>
             <trans-unit id="journalWindowAll" datatype="html">
-                <source>Tout</source>
+                <source>All</source>
                 <target>Tout</target>
             </trans-unit>
             <trans-unit id="journalEmpty" datatype="html">
-                <source>Aucun évènement sur la période.</source>
+                <source>No event in this period.</source>
                 <target>Aucun évènement sur la période.</target>
             </trans-unit>
             <trans-unit id="journalAuthFilter" datatype="html">
-                <source>Filtre</source>
+                <source>Filter</source>
                 <target>Filtre</target>
             </trans-unit>
             <trans-unit id="journalAuthAll" datatype="html">
-                <source>Toutes</source>
+                <source>All</source>
                 <target>Toutes</target>
             </trans-unit>
             <trans-unit id="journalAuthSuccess" datatype="html">
-                <source>Réussies</source>
+                <source>Successful</source>
                 <target>Réussies</target>
             </trans-unit>
             <trans-unit id="journalAuthFailed" datatype="html">
-                <source>Échouées</source>
+                <source>Failed</source>
                 <target>Échouées</target>
+            </trans-unit>
+            <trans-unit id="eventStartup" datatype="html">
+                <source>Application started</source>
+                <target>Application démarrée</target>
+            </trans-unit>
+            <trans-unit id="eventShutdown" datatype="html">
+                <source>Application stopped</source>
+                <target>Application arrêtée</target>
+            </trans-unit>
+            <trans-unit id="eventShutdownRequested" datatype="html">
+                <source>Shutdown requested</source>
+                <target>Arrêt demandé</target>
+            </trans-unit>
+            <trans-unit id="eventRebootRequested" datatype="html">
+                <source>Reboot requested</source>
+                <target>Redémarrage demandé</target>
+            </trans-unit>
+            <trans-unit id="eventDoorOpened" datatype="html">
+                <source>Door opened</source>
+                <target>Porte ouverte</target>
+            </trans-unit>
+            <trans-unit id="eventDoorClosed" datatype="html">
+                <source>Door closed</source>
+                <target>Porte fermée</target>
+            </trans-unit>
+            <trans-unit id="eventDoorOpenFailed" datatype="html">
+                <source>Door failed to open</source>
+                <target>Échec à l'ouverture de la porte</target>
+            </trans-unit>
+            <trans-unit id="eventDoorCloseFailed" datatype="html">
+                <source>Door failed to close</source>
+                <target>Échec à la fermeture de la porte</target>
+            </trans-unit>
+            <trans-unit id="eventDoorPositionUnknown" datatype="html">
+                <source>Door position unknown</source>
+                <target>Position de la porte inconnue</target>
+            </trans-unit>
+            <trans-unit id="eventLightOn" datatype="html">
+                <source>Light switched on</source>
+                <target>Éclairage allumé</target>
+            </trans-unit>
+            <trans-unit id="eventLightOff" datatype="html">
+                <source>Light switched off</source>
+                <target>Éclairage éteint</target>
+            </trans-unit>
+            <trans-unit id="eventFanOn" datatype="html">
+                <source>Fan switched on</source>
+                <target>Ventilateur allumé</target>
+            </trans-unit>
+            <trans-unit id="eventFanOff" datatype="html">
+                <source>Fan switched off</source>
+                <target>Ventilateur éteint</target>
+            </trans-unit>
+            <trans-unit id="eventMusicStarted" datatype="html">
+                <source>Music started</source>
+                <target>Musique lancée</target>
+            </trans-unit>
+            <trans-unit id="eventMusicStopped" datatype="html">
+                <source>Music stopped</source>
+                <target>Musique arrêtée</target>
+            </trans-unit>
+            <trans-unit id="eventCocorico" datatype="html">
+                <source>Cocorico played</source>
+                <target>Cocorico joué</target>
+            </trans-unit>
+            <trans-unit id="eventResidentCreated" datatype="html">
+                <source>Resident added</source>
+                <target>Résidente ajoutée</target>
+            </trans-unit>
+            <trans-unit id="eventResidentDeleted" datatype="html">
+                <source>Resident removed</source>
+                <target>Résidente retirée</target>
+            </trans-unit>
+            <trans-unit id="eventLoginSuccess" datatype="html">
+                <source>Successful login</source>
+                <target>Connexion réussie</target>
+            </trans-unit>
+            <trans-unit id="eventLoginFailed" datatype="html">
+                <source>Failed login</source>
+                <target>Échec de connexion</target>
+            </trans-unit>
+            <trans-unit id="eventLogout" datatype="html">
+                <source>Logout</source>
+                <target>Déconnexion</target>
+            </trans-unit>
+            <trans-unit id="demoModeEnable" datatype="html">
+                <source>Enable demo mode</source>
+                <target>Activer le mode démo</target>
+            </trans-unit>
+            <trans-unit id="demoModeDisable" datatype="html">
+                <source>Leave demo mode</source>
+                <target>Quitter le mode démo</target>
+            </trans-unit>
+            <trans-unit id="demoUserLabel" datatype="html">
+                <source>Demo (simulated admin)</source>
+                <target>Démo (admin simulé)</target>
+            </trans-unit>
+            <trans-unit id="demoActionBlockedTitle" datatype="html">
+                <source>Demo mode</source>
+                <target>Mode démo</target>
+            </trans-unit>
+            <trans-unit id="demoActionBlockedMessage" datatype="html">
+                <source>This action is disabled in demo mode. Sign in to change the chicken coop configuration.</source>
+                <target>Cette action est désactivée en mode démo. Connectez-vous pour modifier la configuration du poulailler.</target>
+            </trans-unit>
+            <trans-unit id="preferredLanguage" datatype="html">
+                <source>Preferred language</source>
+                <target>Langue préférée</target>
+            </trans-unit>
+            <trans-unit id="languageFrench" datatype="html">
+                <source>French</source>
+                <target>Français</target>
+            </trans-unit>
+            <trans-unit id="languageEnglish" datatype="html">
+                <source>English</source>
+                <target>Anglais</target>
+            </trans-unit>
+            <trans-unit id="languageRomanian" datatype="html">
+                <source>Romanian</source>
+                <target>Roumain</target>
+            </trans-unit>
+            <trans-unit id="pushBrowserTitle" datatype="html">
+                <source>Browser notifications</source>
+                <target>Notifications navigateur</target>
+            </trans-unit>
+            <trans-unit id="pushBrowserSubtitle" datatype="html">
+                <source>Get a notification on this device when the door fails to close, or on a sensor error.</source>
+                <target>Reçois une notification sur cet appareil si la porte ne se ferme pas, ou en cas d'erreur de capteur.</target>
+            </trans-unit>
+            <trans-unit id="pushBrowserActive" datatype="html">
+                <source>Active</source>
+                <target>Activé</target>
+            </trans-unit>
+            <trans-unit id="pushBrowserInactive" datatype="html">
+                <source>Enable</source>
+                <target>Activer</target>
+            </trans-unit>
+            <trans-unit id="emailPanelTitle" datatype="html">
+                <source>Email — notifications &amp; test</source>
+                <target>Email — notifications et test</target>
+            </trans-unit>
+            <trans-unit id="emailPanelHelp" datatype="html">
+                <source>Sender address and SMTP transport (host, port, auth, TLS, credentials). Each user individually opts in or out of notifications via the "Receive notifications" checkbox on their profile. Changes take effect on the next send, without restart.</source>
+                <target>Adresse expéditeur et transport SMTP (host, port, auth, TLS, identifiants). Chaque utilisateur choisit individuellement s'il reçoit les notifications via la case « Recevoir les notifications » de son profil. Les changements prennent effet au prochain envoi, sans redémarrage.</target>
+            </trans-unit>
+            <trans-unit id="emailFromLabel" datatype="html">
+                <source>Sender</source>
+                <target>Expéditeur</target>
+            </trans-unit>
+            <trans-unit id="smtpHeader" datatype="html">
+                <source>SMTP transport</source>
+                <target>Transport SMTP</target>
+            </trans-unit>
+            <trans-unit id="mailHostLabel" datatype="html">
+                <source>SMTP host</source>
+                <target>Hôte SMTP</target>
+            </trans-unit>
+            <trans-unit id="mailHostPlaceholder" datatype="html">
+                <source>smtp.gmail.com</source>
+                <target>smtp.gmail.com</target>
+            </trans-unit>
+            <trans-unit id="mailPortLabel" datatype="html">
+                <source>Port</source>
+                <target>Port</target>
+            </trans-unit>
+            <trans-unit id="mailUsernameLabel" datatype="html">
+                <source>SMTP username</source>
+                <target>Identifiant SMTP</target>
+            </trans-unit>
+            <trans-unit id="mailPasswordLabel" datatype="html">
+                <source>SMTP password</source>
+                <target>Mot de passe SMTP</target>
+            </trans-unit>
+            <trans-unit id="mailPasswordSet" datatype="html">
+                <source>Set</source>
+                <target>Défini</target>
+            </trans-unit>
+            <trans-unit id="mailPasswordMissing" datatype="html">
+                <source>Not set</source>
+                <target>Non défini</target>
+            </trans-unit>
+            <trans-unit id="mailPasswordPlaceholder" datatype="html">
+                <source>(leave empty to keep current value)</source>
+                <target>(laisser vide pour ne pas modifier)</target>
+            </trans-unit>
+            <trans-unit id="mailAuthLabel" datatype="html">
+                <source>Authentication (auth)</source>
+                <target>Authentification (auth)</target>
+            </trans-unit>
+            <trans-unit id="mailStartTlsLabel" datatype="html">
+                <source>STARTTLS</source>
+                <target>STARTTLS</target>
+            </trans-unit>
+            <trans-unit id="emailSendTestButton" datatype="html">
+                <source>Send a test email</source>
+                <target>Envoyer un email de test</target>
+            </trans-unit>
+            <trans-unit id="sendingTestEmail" datatype="html">
+                <source>Sending…</source>
+                <target>Envoi…</target>
+            </trans-unit>
+            <trans-unit id="weatherLastWeek" datatype="html">
+                <source>Last week</source>
+                <target>La semaine dernière</target>
+            </trans-unit>
+            <trans-unit id="weatherProviderTitle" datatype="html">
+                <source>Weather provider (OpenWeather)</source>
+                <target>Fournisseur météo (OpenWeather)</target>
+            </trans-unit>
+            <trans-unit id="weatherProviderHelp" datatype="html">
+                <source> The URL must contain the <x id="INTERPOLATION" equiv-text="{{ '{' }}"/>latitude<x id="INTERPOLATION_1" equiv-text="{{ '}' }}"/>, <x id="INTERPOLATION" equiv-text="{{ '{' }}"/>longitude<x id="INTERPOLATION_1" equiv-text="{{ '}' }}"/> and <x id="INTERPOLATION" equiv-text="{{ '{' }}"/>key<x id="INTERPOLATION_1" equiv-text="{{ '}' }}"/> placeholders. The API key is never sent back by the server — re-enter it to update it. </source>
+                <target>L'URL doit contenir les placeholders <x id="INTERPOLATION" equiv-text="{{ '{' }}"/>latitude<x id="INTERPOLATION_1" equiv-text="{{ '}' }}"/>, <x id="INTERPOLATION" equiv-text="{{ '{' }}"/>longitude<x id="INTERPOLATION_1" equiv-text="{{ '}' }}"/> et <x id="INTERPOLATION" equiv-text="{{ '{' }}"/>key<x id="INTERPOLATION_1" equiv-text="{{ '}' }}"/>. La clé d'API n'est jamais renvoyée par le serveur — saisis-la à nouveau pour la mettre à jour.</target>
+            </trans-unit>
+            <trans-unit id="weatherUrlLabel" datatype="html">
+                <source>Provider URL</source>
+                <target>URL du fournisseur</target>
+            </trans-unit>
+            <trans-unit id="weatherKeyLabel" datatype="html">
+                <source>API key</source>
+                <target>Clé API</target>
+            </trans-unit>
+            <trans-unit id="weatherKeySet" datatype="html">
+                <source>Set (<x id="INTERPOLATION" equiv-text="{{ weatherKeyLength }}"/> chars)</source>
+                <target>Définie (<x id="INTERPOLATION" equiv-text="{{ weatherKeyLength }}"/> car.)</target>
+            </trans-unit>
+            <trans-unit id="weatherKeyMissing" datatype="html">
+                <source>Not set</source>
+                <target>Non définie</target>
+            </trans-unit>
+            <trans-unit id="weatherKeyPlaceholder" datatype="html">
+                <source>(leave empty to keep current value)</source>
+                <target>(laisser vide pour ne pas modifier)</target>
+            </trans-unit>
+            <trans-unit id="weatherColDate" datatype="html">
+                <source>Date</source>
+                <target>Date</target>
+            </trans-unit>
+            <trans-unit id="weatherColTemp" datatype="html">
+                <source>Temperature</source>
+                <target>Température</target>
+            </trans-unit>
+            <trans-unit id="weatherColExtTemp" datatype="html">
+                <source>External temperature</source>
+                <target>Température extérieure</target>
+            </trans-unit>
+            <trans-unit id="weatherColHum" datatype="html">
+                <source>Humidity</source>
+                <target>Humidité</target>
+            </trans-unit>
+            <trans-unit id="weatherColExtHum" datatype="html">
+                <source>External humidity</source>
+                <target>Humidité extérieure</target>
+            </trans-unit>
+            <trans-unit id="signinFailed" datatype="html">
+                <source>Invalid username or password.</source>
+                <target>Identifiant ou mot de passe invalide.</target>
+            </trans-unit>
+            <trans-unit id="signinPendingValidation" datatype="html">
+                <source>Your account is awaiting validation by an administrator.</source>
+                <target>Votre compte est en attente de validation par un administrateur.</target>
+            </trans-unit>
+            <!-- AI inference -->
+            <trans-unit id="aiInferenceTitle" datatype="html">
+                <source>AI inference endpoint</source>
+                <target>Endpoint d'inférence IA</target>
+            </trans-unit>
+            <trans-unit id="aiInferenceHelp" datatype="html">
+                <source> URL of the local LLM used by the "AI analysis" button. Leave empty to mark the feature as not configured. </source>
+                <target>URL du LLM local utilisé par le bouton « Analyse IA ». Laisser vide pour marquer la fonctionnalité comme non configurée.</target>
+            </trans-unit>
+            <trans-unit id="aiInferenceUrlLabel" datatype="html">
+                <source>Inference URL</source>
+                <target>URL d'inférence</target>
+            </trans-unit>
+            <!-- Build time -->
+            <trans-unit id="buildTime" datatype="html">
+                <source>built</source>
+                <target>compilé</target>
+            </trans-unit>
+            <!-- Camera settings panel — sources kept in French to match the HTML hashes
+                 until those templates are migrated to English source strings. -->
+            <trans-unit id="cameraSettingsTitle" datatype="html">
+                <source>Camera settings</source>
+                <target>Réglages caméra</target>
+            </trans-unit>
+            <trans-unit id="cameraSettingsHelp" datatype="html">
+                <source>Changes take effect on the next application restart.</source>
+                <target>Les changements prennent effet au prochain redémarrage de l'application.</target>
+            </trans-unit>
+            <trans-unit id="cameraBrightness" datatype="html">
+                <source>Brightness</source>
+                <target>Luminosité</target>
+            </trans-unit>
+            <trans-unit id="cameraRotation" datatype="html">
+                <source>Rotation (°)</source>
+                <target>Rotation (°)</target>
+            </trans-unit>
+            <!-- Generic email label (form) -->
+            <trans-unit id="email" datatype="html">
+                <source>Email</source>
+                <target>Email</target>
+            </trans-unit>
+            <!-- Lat/long -->
+            <trans-unit id="latitudeLabel" datatype="html">
+                <source>Latitude (-90..90)</source>
+                <target>Latitude (-90..90)</target>
+            </trans-unit>
+            <trans-unit id="longitudeLabel" datatype="html">
+                <source>Longitude (-180..180)</source>
+                <target>Longitude (-180..180)</target>
+            </trans-unit>
+            <!-- Logs viewer -->
+            <trans-unit id="logsBrowser" datatype="html">
+                <source>Log browser</source>
+                <target>Navigateur de logs</target>
+            </trans-unit>
+            <trans-unit id="logsContent" datatype="html">
+                <source>Log content</source>
+                <target>Contenu du log</target>
+            </trans-unit>
+            <trans-unit id="logsFile" datatype="html">
+                <source>File</source>
+                <target>Fichier</target>
+            </trans-unit>
+            <trans-unit id="logsLevel" datatype="html">
+                <source>Level</source>
+                <target>Niveau</target>
+            </trans-unit>
+            <trans-unit id="logsLines" datatype="html">
+                <source>Lines</source>
+                <target>Lignes</target>
+            </trans-unit>
+            <trans-unit id="logsNoLines" datatype="html">
+                <source>No lines match your filters.</source>
+                <target>Aucune ligne ne correspond aux filtres.</target>
+            </trans-unit>
+            <trans-unit id="logsSearch" datatype="html">
+                <source>Search</source>
+                <target>Rechercher</target>
+            </trans-unit>
+            <!-- Music page -->
+            <trans-unit id="musicPlaylistSelection" datatype="html">
+                <source>Playlist selection</source>
+                <target>Sélection de playlist</target>
+            </trans-unit>
+            <trans-unit id="musicPlaylistContent" datatype="html">
+                <source>Playlist content</source>
+                <target>Contenu de la playlist</target>
+            </trans-unit>
+            <trans-unit id="musicVolumeTitle" datatype="html">
+                <source>Volume</source>
+                <target>Volume</target>
+            </trans-unit>
+            <trans-unit id="musicNoPlaylist" datatype="html">
+                <source> No playlist available on the device. </source>
+                <target>Aucune playlist disponible sur l'appareil.</target>
+            </trans-unit>
+            <trans-unit id="musicNoSong" datatype="html">
+                <source>No song in this playlist.</source>
+                <target>Aucune chanson dans cette playlist.</target>
+            </trans-unit>
+            <trans-unit id="musicPlaylistLabel" datatype="html">
+                <source>Playlist</source>
+                <target>Playlist</target>
+            </trans-unit>
+            <trans-unit id="musicPersistedSelection" datatype="html">
+                <source>Currently saved selection:</source>
+                <target>Sélection actuellement enregistrée :</target>
+            </trans-unit>
+            <trans-unit id="musicPlay" datatype="html">
+                <source>Play</source>
+                <target>Lire</target>
+            </trans-unit>
+            <trans-unit id="musicPlayForDuration" datatype="html">
+                <source>Play for <x id="INTERPOLATION" equiv-text="{{ playDurationMinutes }}"/> minutes</source>
+                <target>Lire pendant <x id="INTERPOLATION" equiv-text="{{ playDurationMinutes }}"/> minutes</target>
+            </trans-unit>
+            <trans-unit id="musicStop" datatype="html">
+                <source>Stop</source>
+                <target>Arrêter</target>
+            </trans-unit>
+            <trans-unit id="validate" datatype="html">
+                <source>Validate</source>
+                <target>Valider</target>
+            </trans-unit>
+            <!-- Offline / PWA — sources still in French in the HTML -->
+            <trans-unit id="offlineBannerMessage" datatype="html">
+                <source>Offline. Displayed data may be stale.</source>
+                <target>Hors-ligne. Les données affichées peuvent être obsolètes.</target>
+            </trans-unit>
+            <trans-unit id="pwaInstallTitle" datatype="html">
+                <source>Install Hermanas</source>
+                <target>Installer Hermanas</target>
+            </trans-unit>
+            <trans-unit id="pwaInstallSubtitle" datatype="html">
+                <source>Add the application to your home screen for quick access.</source>
+                <target>Ajoute l'application à ton écran d'accueil pour un accès rapide.</target>
+            </trans-unit>
+            <trans-unit id="pwaInstallNow" datatype="html">
+                <source>Install</source>
+                <target>Installer</target>
+            </trans-unit>
+            <trans-unit id="pwaInstallNotNow" datatype="html">
+                <source>Later</source>
+                <target>Plus tard</target>
+            </trans-unit>
+            <!-- Config refresh -->
+            <trans-unit id="reloadConfig" datatype="html">
+                <source>Reload configuration</source>
+                <target>Recharger la configuration</target>
+            </trans-unit>
+            <trans-unit id="reloadingConfig" datatype="html">
+                <source>Reloading…</source>
+                <target>Rechargement…</target>
+            </trans-unit>
+            <trans-unit id="reloadConfigDone" datatype="html">
+                <source><x id="PH"/> caches vidés.</source>
+                <target><x id="PH"/> caches vidés.</target>
+            </trans-unit>
+            <!-- Servo calibration — sources still in French -->
+            <trans-unit id="servoCalibrationTitle" datatype="html">
+                <source>Servomotor calibration</source>
+                <target>Réglage du servomoteur</target>
+            </trans-unit>
+            <trans-unit id="servoCalibrationWarning" datatype="html">
+                <source>Hardware action. Out-of-range values can mechanically force the servo. Adjust in small increments.</source>
+                <target>Action sur le matériel. Les valeurs hors plage peuvent forcer mécaniquement le servo. Modifie par petits incréments.</target>
+            </trans-unit>
+            <trans-unit id="servoOpeningPosition" datatype="html">
+                <source>Open position</source>
+                <target>Position ouverte</target>
+            </trans-unit>
+            <trans-unit id="servoClosingPosition" datatype="html">
+                <source>Closed position</source>
+                <target>Position fermée</target>
+            </trans-unit>
+            <trans-unit id="servoOpeningDuration" datatype="html">
+                <source>Opening duration (ms)</source>
+                <target>Durée d'ouverture (ms)</target>
+            </trans-unit>
+            <trans-unit id="servoClosingDuration" datatype="html">
+                <source>Closing duration (ms)</source>
+                <target>Durée de fermeture (ms)</target>
+            </trans-unit>
+            <trans-unit id="servoNudgeMs" datatype="html">
+                <source>Nudge duration (ms)</source>
+                <target>Durée nudge (ms)</target>
+            </trans-unit>
+            <trans-unit id="servoNudgeOpenBtn" datatype="html">
+                <source>Open a bit</source>
+                <target>Ouvrir un peu</target>
+            </trans-unit>
+            <trans-unit id="servoNudgeCloseBtn" datatype="html">
+                <source>Close a bit</source>
+                <target>Fermer un peu</target>
+            </trans-unit>
+            <trans-unit id="servoSaveAll" datatype="html">
+                <source>Save configuration</source>
+                <target>Enregistrer la configuration</target>
+            </trans-unit>
+            <trans-unit id="servoManualTestTitle" datatype="html">
+                <source>Manual servomotor test</source>
+                <target>Test manuel du servomoteur</target>
+            </trans-unit>
+            <trans-unit id="servoManualTestHelp" datatype="html">
+                <source>Tool to find the right values above experimentally. Each click moves the servo immediately by the chosen number of milliseconds — nothing is saved.</source>
+                <target>Outil pour trouver les bonnes valeurs ci-dessus en testant. Chaque clic fait bouger le servomoteur immédiatement du nombre de millisecondes choisi — rien n'est enregistré.</target>
+            </trans-unit>
+            <!-- Sign out -->
+            <trans-unit id="signout" datatype="html">
+                <source>Sign out</source>
+                <target>Déconnexion</target>
+            </trans-unit>
+            <!-- Sun offsets — sources still in French -->
+            <trans-unit id="sunOffsetsTitle" datatype="html">
+                <source>Sun-related time offsets</source>
+                <target>Décalages horaires (soleil)</target>
+            </trans-unit>
+            <trans-unit id="sunOffsetsHelp" datatype="html">
+                <source>Adjust the exact moment (in minutes) at which the door opens, closes and the light switches on, relative to sunrise and sunset. Useful for shifting a few minutes depending on the season.</source>
+                <target>Ajuste le moment précis (en minutes) où la porte s'ouvre, se ferme et où la lumière s'allume, relativement au lever et coucher du soleil. Utile pour décaler de quelques minutes selon la saison.</target>
+            </trans-unit>
+            <trans-unit id="sunDoorOpenLabel" datatype="html">
+                <source>Door opening (min after sunrise)</source>
+                <target>Ouverture porte (min après lever)</target>
+            </trans-unit>
+            <trans-unit id="sunDoorCloseLabel" datatype="html">
+                <source>Door closing (min after sunset)</source>
+                <target>Fermeture porte (min après coucher)</target>
+            </trans-unit>
+            <trans-unit id="sunLightOnLabel" datatype="html">
+                <source>Light on (min before sunset)</source>
+                <target>Allumage lumière (min avant coucher)</target>
+            </trans-unit>
+            <trans-unit id="sunForceAt8Label" datatype="html">
+                <source>Do not open before 8 AM (summer)</source>
+                <target>Ne pas ouvrir avant 8h du matin (été)</target>
+            </trans-unit>
+            <!-- Service worker update -->
+            <trans-unit id="swUpdateAvailableTitle" datatype="html">
+                <source>Update available</source>
+                <target>Mise à jour disponible</target>
+            </trans-unit>
+            <trans-unit id="swUpdateAvailableBody" datatype="html">
+                <source>A new version of Hermanas is ready. Reload?</source>
+                <target>Une nouvelle version d'Hermanas est prête. Recharger ?</target>
+            </trans-unit>
+            <trans-unit id="energyModeEco" datatype="html">
+                <source>Economy</source>
+                <target>Économie</target>
+            </trans-unit>
+            <trans-unit id="energyModeRegular" datatype="html">
+                <source>Normal</source>
+                <target>Normal</target>
+            </trans-unit>
+            <trans-unit id="energyModeSunny" datatype="html">
+                <source>Sunny</source>
+                <target>Ensoleillé</target>
+            </trans-unit>
+            <!-- Residents toasts -->
+            <trans-unit id="residentsToastTitle" datatype="html">
+                <source>Residents</source>
+                <target>Pensionnaires</target>
+            </trans-unit>
+            <trans-unit id="residentsNameRequired" datatype="html">
+                <source>Name is required</source>
+                <target>Le nom est requis</target>
+            </trans-unit>
+            <trans-unit id="residentsCreated" datatype="html">
+                <source>Resident added</source>
+                <target>Pensionnaire ajouté</target>
+            </trans-unit>
+            <trans-unit id="residentsUpdated" datatype="html">
+                <source>Resident updated</source>
+                <target>Pensionnaire mis à jour</target>
+            </trans-unit>
+            <trans-unit id="residentsDeleteConfirm" datatype="html">
+                <source>Permanently delete <x id="name"/>? This action cannot be undone.</source>
+                <target>Supprimer définitivement <x id="name"/> ? Cette action est irréversible.</target>
+            </trans-unit>
+            <trans-unit id="residentsDeleted" datatype="html">
+                <source><x id="name"/> deleted</source>
+                <target><x id="name"/> supprimé</target>
+            </trans-unit>
+            <trans-unit id="residentsPhotoUpdated" datatype="html">
+                <source>Photo updated for <x id="name"/></source>
+                <target>Photo mise à jour pour <x id="name"/></target>
+            </trans-unit>
+            <trans-unit id="residentsDeletePhotoConfirm" datatype="html">
+                <source>Delete the photo of <x id="name"/>?</source>
+                <target>Supprimer la photo de <x id="name"/> ?</target>
+            </trans-unit>
+            <trans-unit id="residentsPhotoDeleted" datatype="html">
+                <source>Photo of <x id="name"/> deleted</source>
+                <target>Photo de <x id="name"/> supprimée</target>
+            </trans-unit>
+            <!-- Energy toasts -->
+            <trans-unit id="energyToastTitle" datatype="html">
+                <source>Energy</source>
+                <target>Énergie</target>
+            </trans-unit>
+            <trans-unit id="energySunOffsetsSaved" datatype="html">
+                <source>Sun-related offsets saved</source>
+                <target>Horaires solaires enregistrés</target>
+            </trans-unit>
+            <trans-unit id="energyConfigSaved" datatype="html">
+                <source>Configuration saved</source>
+                <target>Configuration enregistrée</target>
+            </trans-unit>
+            <!-- Camera toasts -->
+            <trans-unit id="cameraToastTitle" datatype="html">
+                <source>Camera</source>
+                <target>Caméra</target>
+            </trans-unit>
+            <trans-unit id="cameraSettingsSaved" datatype="html">
+                <source>Settings saved (effective on next reboot).</source>
+                <target>Réglages enregistrés (effet au prochain reboot).</target>
+            </trans-unit>
+            <trans-unit id="cameraAiUrlSaved" datatype="html">
+                <source>AI inference URL saved.</source>
+                <target>URL d'inférence enregistrée.</target>
+            </trans-unit>
+            <!-- Servo toasts -->
+            <trans-unit id="servoToastTitle" datatype="html">
+                <source>Servo</source>
+                <target>Servo</target>
+            </trans-unit>
+            <trans-unit id="servoSettingsSaved" datatype="html">
+                <source>Servomotor settings saved.</source>
+                <target>Configuration du servomoteur enregistrée.</target>
+            </trans-unit>
+            <trans-unit id="servoNudgeOpen" datatype="html">
+                <source>Open by <x id="ms"/> ms</source>
+                <target>Ouverture de <x id="ms"/> ms</target>
+            </trans-unit>
+            <trans-unit id="servoNudgeClose" datatype="html">
+                <source>Close by <x id="ms"/> ms</source>
+                <target>Fermeture de <x id="ms"/> ms</target>
+            </trans-unit>
+            <!-- Demo-mode confirmation modal -->
+            <trans-unit id="demoConfirmTitle" datatype="html">
+                <source>Demo mode — action will not run</source>
+                <target>Mode démo — l'action ne sera pas exécutée</target>
+            </trans-unit>
+            <trans-unit id="demoConfirmIntro" datatype="html">
+                <source>You triggered the following action:</source>
+                <target>Tu as déclenché l'action suivante :</target>
+            </trans-unit>
+            <trans-unit id="demoConfirmExplanation" datatype="html">
+                <source>The chicken coop is not affected. The interface will pretend the action succeeded so you can keep exploring; no data is persisted.</source>
+                <target>Le poulailler n'est pas affecté. L'interface fera comme si l'action avait réussi pour que tu puisses continuer à explorer ; aucune donnée n'est sauvegardée.</target>
+            </trans-unit>
+            <trans-unit id="demoConfirmSuppress" datatype="html">
+                <source>Do not show again for this session</source>
+                <target>Ne plus afficher pour cette session</target>
+            </trans-unit>
+            <trans-unit id="demoConfirmAccept" datatype="html">
+                <source>Simulate anyway</source>
+                <target>Simuler quand même</target>
+            </trans-unit>
+            <!-- Demo-mode mutation labels -->
+            <trans-unit id="demoMutReboot" datatype="html">
+                <source>Reboot the Raspberry Pi</source>
+                <target>Redémarrer le Raspberry Pi</target>
+            </trans-unit>
+            <trans-unit id="demoMutShutdown" datatype="html">
+                <source>Shut down the Raspberry Pi</source>
+                <target>Éteindre le Raspberry Pi</target>
+            </trans-unit>
+            <trans-unit id="demoMutDoorOpen" datatype="html">
+                <source>Open the chicken coop door</source>
+                <target>Ouvrir la porte du poulailler</target>
+            </trans-unit>
+            <trans-unit id="demoMutDoorClose" datatype="html">
+                <source>Close the chicken coop door</source>
+                <target>Fermer la porte du poulailler</target>
+            </trans-unit>
+            <trans-unit id="demoMutLightSwitch" datatype="html">
+                <source>Switch the light</source>
+                <target>Commuter la lumière</target>
+            </trans-unit>
+            <trans-unit id="demoMutFanSwitch" datatype="html">
+                <source>Switch the fan</source>
+                <target>Commuter le ventilateur</target>
+            </trans-unit>
+            <trans-unit id="demoMutMusicSwitch" datatype="html">
+                <source>Switch the music</source>
+                <target>Commuter la musique</target>
+            </trans-unit>
+            <trans-unit id="demoMutConfigRefresh" datatype="html">
+                <source>Refresh the runtime configuration</source>
+                <target>Recharger la configuration runtime</target>
+            </trans-unit>
+            <trans-unit id="demoMutConfigSave" datatype="html">
+                <source>Save a configuration change</source>
+                <target>Enregistrer une modification de configuration</target>
+            </trans-unit>
+            <trans-unit id="demoMutUserDelete" datatype="html">
+                <source>Delete a user account</source>
+                <target>Supprimer un compte utilisateur</target>
+            </trans-unit>
+            <trans-unit id="demoMutUserCreate" datatype="html">
+                <source>Create a user account</source>
+                <target>Créer un compte utilisateur</target>
+            </trans-unit>
+            <trans-unit id="demoMutUserUpdate" datatype="html">
+                <source>Update a user account</source>
+                <target>Modifier un compte utilisateur</target>
+            </trans-unit>
+            <trans-unit id="demoMutResidentDelete" datatype="html">
+                <source>Delete a resident</source>
+                <target>Supprimer une pensionnaire</target>
+            </trans-unit>
+            <trans-unit id="demoMutResidentSave" datatype="html">
+                <source>Save a resident change</source>
+                <target>Enregistrer une pensionnaire</target>
+            </trans-unit>
+            <trans-unit id="demoMutEmailTest" datatype="html">
+                <source>Send a test email</source>
+                <target>Envoyer un email de test</target>
+            </trans-unit>
+            <!-- Smoke tests (System page) -->
+            <trans-unit id="smokeTestsTitle" datatype="html">
+                <source>Smoke tests</source>
+                <target>Tests de bon fonctionnement</target>
+            </trans-unit>
+            <trans-unit id="smokeTestDb" datatype="html">
+                <source>Database</source>
+                <target>Base de données</target>
+            </trans-unit>
+            <trans-unit id="smokeTestWeather" datatype="html">
+                <source>Weather provider</source>
+                <target>Fournisseur météo</target>
+            </trans-unit>
+            <trans-unit id="smokeTestsRefresh" datatype="html">
+                <source>Refresh smoke tests</source>
+                <target>Rafraîchir les tests</target>
+            </trans-unit>
+            <!-- Weather "test config" button -->
+            <trans-unit id="weatherToastTitle" datatype="html">
+                <source>Weather</source>
+                <target>Météo</target>
+            </trans-unit>
+            <trans-unit id="weatherTestButton" datatype="html">
+                <source>Test configuration</source>
+                <target>Tester la configuration</target>
+            </trans-unit>
+            <trans-unit id="weatherTesting" datatype="html">
+                <source>Testing…</source>
+                <target>Test en cours…</target>
+            </trans-unit>
+            <trans-unit id="weatherTestOk" datatype="html">
+                <source>Connection successful (<x id="ms"/> ms)</source>
+                <target>Connexion réussie (<x id="ms"/> ms)</target>
+            </trans-unit>
+            <trans-unit id="weatherTestKo" datatype="html">
+                <source>Connection failed.</source>
+                <target>Échec de connexion.</target>
+            </trans-unit>
+            <!-- Electronics component labels (GPIO table) -->
+            <trans-unit id="electronicsCompDoorServo" datatype="html">
+                <source>Door servomotor</source>
+                <target>Servomoteur de la porte</target>
+            </trans-unit>
+            <trans-unit id="electronicsCompDoorBtnUp" datatype="html">
+                <source>Door upper end-stop button</source>
+                <target>Bouton de fin de course haut de la porte</target>
+            </trans-unit>
+            <trans-unit id="electronicsCompDoorBtnBottom" datatype="html">
+                <source>Door bottom end-stop button</source>
+                <target>Bouton de fin de course bas de la porte</target>
+            </trans-unit>
+            <trans-unit id="electronicsCompBirdhouseBtn" datatype="html">
+                <source>Birdhouse button</source>
+                <target>Bouton poussoir inversé de la lumière du nichoir</target>
+            </trans-unit>
+            <trans-unit id="electronicsCompLightRelay" datatype="html">
+                <source>Light relay</source>
+                <target>Relais de l'éclairage</target>
+            </trans-unit>
+            <trans-unit id="electronicsCompFanRelay" datatype="html">
+                <source>Fan relay</source>
+                <target>Relais du ventilateur</target>
+            </trans-unit>
+            <trans-unit id="electronicsCompSensor" datatype="html">
+                <source>Temperature &amp; humidity sensor (DHT22)</source>
+                <target>Capteur de température et d'humidité (DHT22)</target>
+            </trans-unit>
+            <trans-unit id="electronicsServoMoving" datatype="html">
+                <source>Moving</source>
+                <target>En mouvement</target>
+            </trans-unit>
+            <trans-unit id="electronicsServoIdle" datatype="html">
+                <source>Idle</source>
+                <target>Immobile</target>
+            </trans-unit>
+            <trans-unit id="aiInferenceModelLabel" datatype="html">
+                <source>Model</source>
+                <target>Modèle</target>
+            </trans-unit>
+            <trans-unit id="aiStepSendingPicture" datatype="html">
+                <source>Sending the picture to the model</source>
+                <target>Envoi de la photo au modèle</target>
+            </trans-unit>
+            <trans-unit id="aiStepCountingHens" datatype="html">
+                <source>Counting hens</source>
+                <target>Comptage des poules</target>
+            </trans-unit>
+            <trans-unit id="aiStepLookingForEggs" datatype="html">
+                <source>Looking for eggs</source>
+                <target>Recherche des œufs</target>
+            </trans-unit>
+            <trans-unit id="aiStepCheckingDoor" datatype="html">
+                <source>Checking the door state</source>
+                <target>Vérification de l'état de la porte</target>
+            </trans-unit>
+            <trans-unit id="aiStepInspectingFloor" datatype="html">
+                <source>Inspecting hay and dirt levels</source>
+                <target>Inspection du foin et de la saleté</target>
+            </trans-unit>
+            <trans-unit id="aiStepFinalizing" datatype="html">
+                <source>Wrapping up the analysis</source>
+                <target>Finalisation de l'analyse</target>
+            </trans-unit>
+            <trans-unit id="aiInferenceCacheTtlLabel" datatype="html">
+                <source>Cache (s)</source>
+                <target>Cache (s)</target>
+            </trans-unit>
+            <trans-unit id="weatherTestBadgeOk" datatype="html">
+                <source>Successful</source>
+                <target>Réussi</target>
+            </trans-unit>
+            <trans-unit id="weatherTestBadgeKo" datatype="html">
+                <source>Failed</source>
+                <target>Échec</target>
+            </trans-unit>
+            <trans-unit id="aiInferencePromptLabel" datatype="html">
+                <source>Prompt (English only)</source>
+                <target>Prompt (anglais uniquement)</target>
+            </trans-unit>
+            <trans-unit id="aiInferencePromptHint" datatype="html">
+                <source>Leave empty to use the built-in default. The UI language is appended automatically.</source>
+                <target>Laisser vide pour utiliser le prompt par défaut. La langue de l'interface est ajoutée automatiquement.</target>
             </trans-unit>
         </body>
     </file>

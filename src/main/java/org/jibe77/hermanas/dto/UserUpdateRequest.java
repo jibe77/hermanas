@@ -21,6 +21,10 @@ public class UserUpdateRequest {
     @Schema(description = "New role (admin only)")
     private String role;
 
+    @Schema(description = "Preferred UI / notification language (\"fr\" or \"en\"). "
+            + "Unrecognised values fall back to \"fr\".")
+    private String language;
+
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
@@ -32,4 +36,7 @@ public class UserUpdateRequest {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
 }

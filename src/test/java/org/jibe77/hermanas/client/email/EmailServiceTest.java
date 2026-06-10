@@ -1,5 +1,7 @@
 package org.jibe77.hermanas.client.email;
 
+import org.jibe77.hermanas.data.entity.HermanasUser;
+import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -27,51 +30,52 @@ class EmailServiceTest {
     @MockBean
     org.jibe77.hermanas.service.config.ConfigService configService;
 
+    @MockBean
+    HermanasUserRepository userRepository;
+
     @org.junit.jupiter.api.BeforeEach
-    void wireConfigService() {
-        // Make the mock honour setEnabled() so the existing test pattern keeps working:
-        // the test calls emailService.setEnabled(true), which now routes to configService,
-        // and emailService.isEnabled() in turn reads back from configService.
-        Mockito.doAnswer(inv -> {
-                    Mockito.when(configService.isEmailNotificationEnabled())
-                            .thenReturn(inv.getArgument(0, Boolean.class));
-                    return null;
-                })
-                .when(configService).setEmailNotificationEnabled(Mockito.anyBoolean());
-        Mockito.when(configService.getEmailNotificationTo()).thenReturn("test-to@example.com");
+    void wireMocks() {
         Mockito.when(configService.getEmailNotificationFrom()).thenReturn("test-from@example.com");
+
+        // Default: one opted-in user — sendMail will queue and send.
+        // Tests that need the "no recipient" scenario override this themselves.
+        HermanasUser user = new HermanasUser();
+        user.setLogin("alice");
+        user.setEmail("alice@example.com");
+        user.setNotificationsEnabled(true);
+        Mockito.when(userRepository.findByNotificationsEnabledTrue())
+                .thenReturn(Collections.singletonList(user));
     }
 
     @Test
-    void testEmailEnabled() {
-        emailService.setEnabled(true);
-
+    void sendsMailWhenAtLeastOneUserOptedIn() {
         emailService.sendMail("Subject Test", "Subject body");
 
         assertTrue(emailService.isSendingQueueEmpty());
-
         Mockito.verify(javaMailSender, Mockito.times(1))
                 .send((MimeMessagePreparator) Mockito.any());
     }
 
     @Test
-    void testEmailDisabled() {
-        emailService.setEnabled(false);
+    void skipsMailWhenNoUserOptedIn() {
+        Mockito.when(userRepository.findByNotificationsEnabledTrue())
+                .thenReturn(Collections.emptyList());
 
         emailService.sendMail("Subject Test", "Subject body");
+
         assertTrue(emailService.isSendingQueueEmpty());
         Mockito.verify(javaMailSender, Mockito.times(0))
                 .send((MimeMessagePreparator) Mockito.any());
     }
 
     @Test
-    void testEmailEnabledWithException() {
-        emailService.setEnabled(true);
+    void keepsFailedMailInQueueOnSmtpException() {
         Mockito.doThrow(new MailSendException("Test Exception"))
                 .when(javaMailSender)
                 .send((MimeMessagePreparator) Mockito.any());
 
         emailService.sendMail("Subject Test", "Subject body");
+
         assertFalse(emailService.isSendingQueueEmpty());
         emailService.emptySendingQueue();
         assertTrue(emailService.isSendingQueueEmpty());
@@ -80,33 +84,34 @@ class EmailServiceTest {
     }
 
     @Test
-    void testEmailWithAttachmentEnabled() {
-        emailService.setEnabled(true);
-
+    void sendsMailWithAttachmentWhenAtLeastOneUserOptedIn() {
         emailService.sendMail("Subject Test", "Subject body", Optional.of(new File("test.txt")));
+
         assertTrue(emailService.isSendingQueueEmpty());
         Mockito.verify(javaMailSender, Mockito.times(1))
                 .send((MimeMessagePreparator) Mockito.any());
     }
 
     @Test
-    void testEmailWithAttachmentDisabled() {
-        emailService.setEnabled(false);
+    void skipsMailWithAttachmentWhenNoUserOptedIn() {
+        Mockito.when(userRepository.findByNotificationsEnabledTrue())
+                .thenReturn(Collections.emptyList());
 
         emailService.sendMail("Subject Test", "Subject body", Optional.of(new File("test.txt")));
+
         assertTrue(emailService.isSendingQueueEmpty());
         Mockito.verify(javaMailSender, Mockito.times(0))
                 .send((MimeMessagePreparator) Mockito.any());
     }
 
     @Test
-    void testEmailWithAttachmentWithException() {
-        emailService.setEnabled(true);
+    void keepsFailedMailWithAttachmentInQueueOnSmtpException() {
         Mockito.doThrow(new MailSendException("Test Exception"))
                 .when(javaMailSender)
                 .send((MimeMessagePreparator) Mockito.any());
 
         emailService.sendMail("Subject Test", "Subject body", Optional.of(new File("test.txt")));
+
         assertFalse(emailService.isSendingQueueEmpty());
         emailService.emptySendingQueue();
         assertTrue(emailService.isSendingQueueEmpty());

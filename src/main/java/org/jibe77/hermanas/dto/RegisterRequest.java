@@ -19,6 +19,11 @@ public class RegisterRequest {
             example = "alice@example.com", required = true)
     private String email;
 
+    @Schema(description = "Preferred UI / notification language (two-letter ISO code). "
+            + "Accepted values: \"fr\", \"en\". Defaults to \"fr\" when omitted.",
+            example = "fr")
+    private String language;
+
     public String getLogin() { return login; }
     public void setLogin(String login) { this.login = login; }
 
@@ -27,4 +32,7 @@ public class RegisterRequest {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
 }

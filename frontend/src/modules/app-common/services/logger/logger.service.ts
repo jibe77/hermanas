@@ -21,9 +21,39 @@ export interface LogEntry {
     providedIn: 'root',
 })
 export class LoggerService {
-    private currentLogLevel: LogLevel = environment.production ? LogLevel.Warn : LogLevel.Debug;
+    private currentLogLevel: LogLevel = LoggerService.initialLogLevel();
     private logHistory: LogEntry[] = [];
     private readonly MAX_HISTORY = 100;
+
+    /**
+     * Resolves the log level used at construction. Priority:
+     * <ol>
+     *   <li>{@code ?debug=1} in the URL — one-shot override, useful in prod
+     *       when reproducing a bug live without rebuilding;</li>
+     *   <li>{@code localStorage["hermanas.debug"] === "1"} — same override
+     *       but persisted across reloads;</li>
+     *   <li>{@code environment.production} default — {@link LogLevel.Warn}
+     *       in prod, {@link LogLevel.Debug} elsewhere.</li>
+     * </ol>
+     * Wrapped in try/catch because the SPA also runs server-side (SSR-style
+     * pre-render isn't enabled today, but defensive coding is cheap here).
+     */
+    private static initialLogLevel(): LogLevel {
+        try {
+            if (typeof window !== 'undefined') {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('debug') === '1') {
+                    return LogLevel.Debug;
+                }
+                if (window.localStorage?.getItem('hermanas.debug') === '1') {
+                    return LogLevel.Debug;
+                }
+            }
+        } catch {
+            // ignore — fall through to the build-time default
+        }
+        return environment.production ? LogLevel.Warn : LogLevel.Debug;
+    }
 
     /**
      * Log a debug message

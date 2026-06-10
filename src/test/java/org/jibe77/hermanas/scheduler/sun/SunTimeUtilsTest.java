@@ -3,6 +3,7 @@ package org.jibe77.hermanas.scheduler.sun;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,12 @@ class SunTimeUtilsTest {
 
     @BeforeEach
     private void init() {
+        // SunTimeUtils now reads coordinates through ConfigService instead of its own
+        // @Value fields, so route the mock to the same property values the test
+        // properties file already provides (Tokyo for these expectations).
+        Mockito.when(configService.getLatitude()).thenReturn(latitude);
+        Mockito.when(configService.getLongitude()).thenReturn(longitude);
+
         zone = ZoneId.of(zoneId);
         dateTime = ZonedDateTime.of(
                 2020,

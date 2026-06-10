@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { LoginModalService } from '@modules/auth/services';
 import { NavigationService } from '@modules/navigation/services';
 import { RouterLink } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -14,8 +15,12 @@ import { TopNavUserComponent } from '../../components/top-nav-user/top-nav-user.
 })
 export class TopNavComponent {
     private navigationService = inject(NavigationService);
+    private loginModal = inject(LoginModalService);
 
     toggleSideNav() {
+        if (this.loginModal.open()) {
+            return;
+        }
         this.navigationService.toggleSideNav();
     }
 }

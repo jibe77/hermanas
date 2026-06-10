@@ -1,4 +1,4 @@
-.toast-container {
+.hermanas-toast-container {
     position: fixed;
     top: 20px;
     right: 20px;
@@ -14,7 +14,7 @@
     }
 }
 
-.toast {
+.hermanas-toast {
     background: white;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -24,24 +24,24 @@
     border-left: 4px solid;
     animation: slideIn 0.3s ease-out;
 
-    &.toast-success {
+    &.hermanas-toast-success {
         border-left-color: #28a745;
     }
 
-    &.toast-error {
+    &.hermanas-toast-error {
         border-left-color: #dc3545;
     }
 
-    &.toast-warning {
+    &.hermanas-toast-warning {
         border-left-color: #ffc107;
     }
 
-    &.toast-info {
+    &.hermanas-toast-info {
         border-left-color: #17a2b8;
     }
 }
 
-.toast-header {
+.hermanas-toast-header {
     display: flex;
     align-items: center;
     padding: 12px 16px;
@@ -49,35 +49,35 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.toast-icon {
+.hermanas-toast-icon {
     margin-right: 8px;
     font-size: 18px;
 
-    .toast-success & {
+    .hermanas-toast-success & {
         color: #28a745;
     }
 
-    .toast-error & {
+    .hermanas-toast-error & {
         color: #dc3545;
     }
 
-    .toast-warning & {
+    .hermanas-toast-warning & {
         color: #ffc107;
     }
 
-    .toast-info & {
+    .hermanas-toast-info & {
         color: #17a2b8;
     }
 }
 
-.toast-title {
+.hermanas-toast-title {
     flex: 1;
     font-size: 14px;
     font-weight: 600;
     color: #333;
 }
 
-.toast-close {
+.hermanas-toast-close {
     background: none;
     border: none;
     font-size: 24px;
@@ -97,7 +97,7 @@
     }
 }
 
-.toast-body {
+.hermanas-toast-body {
     padding: 12px 16px;
     font-size: 14px;
     color: #666;

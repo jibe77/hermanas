@@ -36,10 +36,17 @@ public class ConfigRestController {
     private static final Logger logger = LoggerFactory.getLogger(ConfigRestController.class);
     private final ConfigService configService;
     private final CacheManager cacheManager;
+    private final org.jibe77.hermanas.client.ai.AiVisionCache aiVisionCache;
+    private final org.jibe77.hermanas.service.camera.CameraService cameraService;
 
-    public ConfigRestController(ConfigService configService, CacheManager cacheManager) {
+    public ConfigRestController(ConfigService configService,
+                                CacheManager cacheManager,
+                                org.jibe77.hermanas.client.ai.AiVisionCache aiVisionCache,
+                                org.jibe77.hermanas.service.camera.CameraService cameraService) {
         this.configService = configService;
         this.cacheManager = cacheManager;
+        this.aiVisionCache = aiVisionCache;
+        this.cameraService = cameraService;
     }
 
     // ============================================================================
@@ -143,9 +150,8 @@ public class ConfigRestController {
         audio.put("song_at_sunset", configService.isSongAtSunsetEnabled());
         config.put("audio_toggles", audio);
 
-        // Notification toggles
+        // Notification toggles — email is opt-in per user, not a global flag.
         Map<String, Boolean> notifications = new LinkedHashMap<>();
-        notifications.put("email_enabled", configService.isEmailNotificationEnabled());
         notifications.put("weather_enabled", configService.isWeatherInfoEnabled());
         config.put("notifications", notifications);
 
@@ -161,6 +167,10 @@ public class ConfigRestController {
         // Weather provider — return the URL template but mask the API key. We expose
         // only "set: true/false" + "length" so the admin can confirm the key is in
         // place without surfacing the secret to anyone with a session cookie.
+        // Latitude/longitude are NOT returned here — they identify the physical
+        // location of the chicken coop, which is sensitive data. The admin can
+        // still write new values via PUT /api/v1/config/location/{latitude,longitude}
+        // (write-only).
         Map<String, Object> weatherSettings = new LinkedHashMap<>();
         weatherSettings.put("url", configService.getWeatherInfoUrl());
         String key = configService.getWeatherInfoKey();
@@ -169,11 +179,30 @@ public class ConfigRestController {
         weatherSettings.put("key_length", key == null ? 0 : key.trim().length());
         config.put("weather_settings", weatherSettings);
 
-        // Email addresses
+        // AI inference (URL + model of the local LLM used by /camera/analyze).
+        Map<String, Object> aiSettings = new LinkedHashMap<>();
+        aiSettings.put("inference_url", configService.getAiInferenceUrl());
+        aiSettings.put("inference_model", configService.getAiInferenceModel());
+        aiSettings.put("cache_ttl_ms", configService.getAiInferenceCacheTtlMs());
+        aiSettings.put("prompt", configService.getAiInferencePrompt());
+        aiSettings.put("prompt_default",
+                org.jibe77.hermanas.client.ai.CameraPromptBuilder.DEFAULT_PROMPT);
+        config.put("ai_settings", aiSettings);
+
+        // Email "from" address — recipients are derived from the user table at send time.
         Map<String, String> emailSettings = new LinkedHashMap<>();
-        emailSettings.put("to", configService.getEmailNotificationTo());
         emailSettings.put("from", configService.getEmailNotificationFrom());
         config.put("email_settings", emailSettings);
+
+        // SMTP transport — password never returned, only a "set" flag.
+        Map<String, Object> smtpSettings = new LinkedHashMap<>();
+        smtpSettings.put("host", configService.getMailHost());
+        smtpSettings.put("port", configService.getMailPort());
+        smtpSettings.put("username", configService.getMailUsername());
+        smtpSettings.put("password_set", configService.isMailPasswordSet());
+        smtpSettings.put("auth", configService.isMailSmtpAuth());
+        smtpSettings.put("starttls", configService.isMailStartTlsEnable());
+        config.put("email_smtp", smtpSettings);
 
         return ResponseEntity.ok(config);
     }
@@ -221,6 +250,12 @@ public class ConfigRestController {
                 logger.debug("Cleared cache: {}", cacheName);
             }
         }
+        // Custom in-memory caches (not backed by Spring's CacheManager) are
+        // wiped manually so a refresh button truly empties everything.
+        aiVisionCache.clear();
+        cachesCleared++;
+        cameraService.clearPictureCache();
+        cachesCleared++;
 
         logger.info("Configuration cache refresh completed. {} caches cleared", cachesCleared);
 
@@ -432,13 +467,7 @@ public class ConfigRestController {
     }
 
     // ─── Notification toggles ───────────────────────────────────────────────────
-
-    @Operation(summary = "Enable/disable email notifications")
-    @PutMapping("/notifications/email")
-    public ResponseEntity<String> setEmailNotifications(@RequestParam boolean enabled) {
-        configService.setEmailNotificationEnabled(enabled);
-        return ResponseEntity.ok("Email notifications " + (enabled ? "enabled" : "disabled"));
-    }
+    // No "email enabled" endpoint: email recipients are managed per-user.
 
     @Operation(summary = "Enable/disable weather info fetching")
     @PutMapping("/notifications/weather")
@@ -501,20 +530,127 @@ public class ConfigRestController {
         return ResponseEntity.ok("Weather API key updated");
     }
 
-    // ─── Email addresses ───────────────────────────────────────────────────────
+    // ─── AI inference endpoint ─────────────────────────────────────────────────
 
-    @Operation(summary = "Update email notification recipient")
-    @PutMapping("/email/to")
-    public ResponseEntity<String> setEmailTo(@RequestParam String email) {
-        configService.setEmailNotificationTo(email);
-        return ResponseEntity.ok("Email 'to' updated to " + email);
+    @Operation(summary = "Update the local LLM inference URL used by /camera/analyze")
+    @PutMapping("/ai/inference-url")
+    public ResponseEntity<String> setAiInferenceUrl(@RequestParam(required = false, defaultValue = "") String url) {
+        configService.setAiInferenceUrl(url);
+        // The cached analysis is tied to the previous URL — wiping it ensures the
+        // next call really hits the new endpoint instead of returning stale text.
+        aiVisionCache.clear();
+        return ResponseEntity.ok("AI inference URL updated");
     }
+
+    @Operation(summary = "Update the local LLM model name (OpenAI-compatible)")
+    @PutMapping("/ai/inference-model")
+    public ResponseEntity<String> setAiInferenceModel(@RequestParam(required = false, defaultValue = "") String model) {
+        configService.setAiInferenceModel(model);
+        aiVisionCache.clear();
+        return ResponseEntity.ok("AI inference model updated");
+    }
+
+    @Operation(summary = "Update the AI vision cache TTL (in milliseconds). 0 disables the cache.")
+    @PutMapping("/ai/cache-ttl-ms")
+    public ResponseEntity<String> setAiInferenceCacheTtlMs(@RequestParam long ttlMs) {
+        if (ttlMs < 0) {
+            return ResponseEntity.badRequest().body("ttlMs must be >= 0");
+        }
+        configService.setAiInferenceCacheTtlMs(ttlMs);
+        // Drop the existing entries so a stricter TTL (or 0 = disabled) is
+        // honoured immediately instead of waiting for the old timestamps to expire.
+        aiVisionCache.clear();
+        return ResponseEntity.ok("AI inference cache TTL updated");
+    }
+
+    @Operation(summary = "Update the prompt sent to the multimodal model. Empty string restores the built-in default.")
+    @PutMapping("/ai/prompt")
+    public ResponseEntity<String> setAiInferencePrompt(
+            @RequestBody(required = false) String prompt) {
+        // Log payload size + a short preview so a missed update can be triaged
+        // from the journal — we do not want to dump multi-kB prompts into the
+        // log on every save, hence the 60-char truncation.
+        int len = prompt == null ? 0 : prompt.length();
+        String preview = prompt == null ? "<null>"
+                : (prompt.length() > 60 ? prompt.substring(0, 60) + "…" : prompt);
+        logger.info("setAiInferencePrompt called: length={} preview='{}'",
+                len, preview.replace("\n", " "));
+        configService.setAiInferencePrompt(prompt);
+        // Cached analyses were built with the previous prompt; drop them so the
+        // next call uses the new one.
+        aiVisionCache.clear();
+        return ResponseEntity.ok("AI inference prompt updated");
+    }
+
+    // ─── GPS coordinates ───────────────────────────────────────────────────────
+    // Used by both the sun-time scheduler (door open/close) and the weather lookup.
+
+    @Operation(summary = "Update latitude (-90..90)")
+    @PutMapping("/location/latitude")
+    public ResponseEntity<String> setLatitude(@RequestParam double value) {
+        configService.setLatitude(value);
+        return ResponseEntity.ok("Latitude updated to " + value);
+    }
+
+    @Operation(summary = "Update longitude (-180..180)")
+    @PutMapping("/location/longitude")
+    public ResponseEntity<String> setLongitude(@RequestParam double value) {
+        configService.setLongitude(value);
+        return ResponseEntity.ok("Longitude updated to " + value);
+    }
+
+    // ─── Email "from" address ──────────────────────────────────────────────────
+    // No "to" endpoint: notification recipients come from the user table.
 
     @Operation(summary = "Update email notification sender")
     @PutMapping("/email/from")
     public ResponseEntity<String> setEmailFrom(@RequestParam String email) {
         configService.setEmailNotificationFrom(email);
         return ResponseEntity.ok("Email 'from' updated to " + email);
+    }
+
+    // ─── SMTP transport ────────────────────────────────────────────────────────
+
+    @Operation(summary = "Update SMTP host")
+    @PutMapping("/mail/host")
+    public ResponseEntity<String> setMailHost(@RequestParam String host) {
+        configService.setMailHost(host);
+        return ResponseEntity.ok("SMTP host updated to " + host);
+    }
+
+    @Operation(summary = "Update SMTP port (1..65535)")
+    @PutMapping("/mail/port")
+    public ResponseEntity<String> setMailPort(@RequestParam int port) {
+        configService.setMailPort(port);
+        return ResponseEntity.ok("SMTP port updated to " + port);
+    }
+
+    @Operation(summary = "Update SMTP username")
+    @PutMapping("/mail/username")
+    public ResponseEntity<String> setMailUsername(@RequestParam String username) {
+        configService.setMailUsername(username);
+        return ResponseEntity.ok("SMTP username updated");
+    }
+
+    @Operation(summary = "Update SMTP password (write-only; never returned)")
+    @PutMapping("/mail/password")
+    public ResponseEntity<String> setMailPassword(@RequestParam String password) {
+        configService.setMailPassword(password);
+        return ResponseEntity.ok("SMTP password updated");
+    }
+
+    @Operation(summary = "Toggle SMTP authentication")
+    @PutMapping("/mail/auth")
+    public ResponseEntity<String> setMailAuth(@RequestParam boolean enabled) {
+        configService.setMailSmtpAuth(enabled);
+        return ResponseEntity.ok("SMTP auth set to " + enabled);
+    }
+
+    @Operation(summary = "Toggle SMTP STARTTLS")
+    @PutMapping("/mail/starttls")
+    public ResponseEntity<String> setMailStartTls(@RequestParam boolean enabled) {
+        configService.setMailStartTlsEnable(enabled);
+        return ResponseEntity.ok("SMTP STARTTLS set to " + enabled);
     }
 
     // Removed:

@@ -46,3 +46,129 @@
 .photo-large {
     max-height: 70vh;
 }
+
+// Rendered Markdown output from the AI analysis — paragraphs and lists are
+// already real HTML now, so no need for `pre-wrap`. We just trim margins so
+// the box stays compact in the card.
+.ai-analysis-result {
+    line-height: 1.45;
+    // Warm parchment instead of the Bootstrap #f8f9fa gray that fought with
+    // the dashboard's egg-yolk theme. Subtle yolk-tinted border + soft inner
+    // shadow so the panel still reads as "set in" without grayscale.
+    background: #fff8e2;
+    border: 1px solid rgba(240, 196, 25, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    padding: 0.75rem;
+    border-radius: 6px;
+    max-height: 40vh;
+    overflow: auto;
+
+    p {
+        margin-bottom: 0.5rem;
+    }
+    p:last-child {
+        margin-bottom: 0;
+    }
+    ul {
+        margin-bottom: 0.5rem;
+        padding-left: 1.25rem;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+        margin-bottom: 0.35rem;
+    }
+    code {
+        background: #eef0f3;
+        padding: 0 0.25rem;
+        border-radius: 3px;
+        font-size: 0.85em;
+    }
+}
+
+// Loader shown while the model is thinking. The five themed icons (hen, egg,
+// door, fan, magnifier) each pulse in turn so the panel never looks frozen —
+// inference can take 20+ seconds on a self-hosted LLM and a static spinner
+// felt very long during testing.
+.ai-analysis-loader {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.ai-loader-icons {
+    display: flex;
+    justify-content: center;
+    gap: 0.85rem;
+    font-size: 1.4rem;
+}
+
+.ai-loader-icon {
+    color: #0d6efd;
+    animation: ai-loader-pulse 1.6s ease-in-out infinite;
+    opacity: 0.4;
+}
+
+@for $i from 1 through 5 {
+    .ai-loader-icon:nth-child(#{$i}) {
+        animation-delay: ($i - 1) * 0.18s;
+    }
+}
+
+@keyframes ai-loader-pulse {
+    0%, 100% {
+        opacity: 0.25;
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translateY(-3px) scale(1.15);
+    }
+}
+
+.ai-loader-progress {
+    height: 4px;
+    background: rgba(13, 110, 253, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 0 auto;
+    max-width: 320px;
+}
+
+.ai-loader-bar {
+    height: 100%;
+    width: 40%;
+    background: #0d6efd;
+    border-radius: 2px;
+    animation: ai-loader-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes ai-loader-slide {
+    0%   { transform: translateX(-100%); }
+    50%  { transform: translateX(180%); }
+    100% { transform: translateX(-100%); }
+}
+
+.ai-loader-dots span {
+    display: inline-block;
+    animation: ai-loader-dot 1.4s ease-in-out infinite;
+    opacity: 0.2;
+}
+
+.ai-loader-dots span:nth-child(1) { animation-delay: 0s; }
+.ai-loader-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ai-loader-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes ai-loader-dot {
+    0%, 100% { opacity: 0.2; }
+    50%      { opacity: 1; }
+}
+
+// Comfortable height for the prompt textarea — 8 rows is enough to see the
+// structure of the default prompt without scrolling.
+.ai-prompt-textarea {
+    font-size: 0.8rem;
+    min-height: 12rem;
+}

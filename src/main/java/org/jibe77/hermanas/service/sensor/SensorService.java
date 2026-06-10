@@ -1,8 +1,10 @@
 package org.jibe77.hermanas.service.sensor;
 
 import org.jibe77.hermanas.data.entity.Sensor;
+import org.jibe77.hermanas.websocket.SensorNotificationController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -41,6 +43,15 @@ public class SensorService {
     @Value("${sensor.python.arg2}")
     private String scriptArg2;
 
+    /**
+     * Optional WebSocket publisher — injected as {@code required=false} so the
+     * service still bootstraps if the websocket module is not active (e.g. in
+     * test profiles that strip out STOMP). Each successful read fans out to
+     * the Electronics page subscribers.
+     */
+    @Autowired(required = false)
+    private SensorNotificationController sensorNotificationController;
+
     public SensorService() {
         // default constructor
     }
@@ -57,6 +68,9 @@ public class SensorService {
             logger.info("temperature {} and humidity {}", sensor.getTemperature(), sensor.getHumidity());
             int exitValue = p.waitFor();
             logger.info("exit value {}.", exitValue);
+            if (sensorNotificationController != null) {
+                sensorNotificationController.notify(sensor);
+            }
             return sensor;
         } catch (InterruptedException e) {
             logger.error("interrupted while refreshing data.", e);

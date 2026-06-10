@@ -1,19 +1,25 @@
-<div class="toast-container">
+<div class="hermanas-toast-container">
     @for (toast of toasts; track toast) {
-        <div [class]="'toast ' + getToastClass(toast.type)" [@toastAnimation]>
-            <div class="toast-header">
-                <fa-icon [icon]="['fas', getIconClass(toast.type)]" class="toast-icon"></fa-icon>
-                <strong class="toast-title">{{ toast.title || toast.type | titlecase }}</strong>
+        <div [class]="'hermanas-toast ' + getToastClass(toast.type)" [@toastAnimation]>
+            <div class="hermanas-toast-header">
+                <fa-icon
+                    [icon]="['fas', getIconClass(toast.type)]"
+                    class="hermanas-toast-icon"
+                ></fa-icon>
+                <strong class="hermanas-toast-title">{{
+                    toast.title || toast.type | titlecase
+                }}</strong>
                 <button
                     type="button"
-                    class="toast-close"
+                    class="hermanas-toast-close"
                     (click)="removeToast(toast.id)"
+                    i18n-aria-label="@@close"
                     aria-label="Close"
                 >
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="toast-body">
+            <div class="hermanas-toast-body">
                 {{ toast.message }}
             </div>
         </div>

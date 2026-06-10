@@ -10,6 +10,7 @@ import {
     ToastContainerComponent,
 } from '@common/components';
 import { LoginModalComponent } from '@modules/auth/components';
+import { DemoConfirmModalComponent } from '@common/components/demo-confirm-modal/demo-confirm-modal.component';
 
 @Component({
     selector: 'app-root',
@@ -21,6 +22,7 @@ import { LoginModalComponent } from '@modules/auth/components';
         PwaInstallBannerComponent,
         OfflineBannerComponent,
         LoginModalComponent,
+        DemoConfirmModalComponent,
     ],
 })
 export class AppComponent implements OnInit, OnDestroy {

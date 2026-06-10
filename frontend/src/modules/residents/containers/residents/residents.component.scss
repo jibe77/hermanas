@@ -16,3 +16,14 @@
 .resident-row.deceased {
     opacity: 0.55;
 }
+
+// The app's topnav uses z-index: 1090 (see styles/variables/_navigation.scss),
+// which is higher than Bootstrap's default modal z-index (1055). Without these
+// overrides the modal renders behind the fixed topnav.
+.modal.d-block {
+    z-index: 1100;
+}
+
+.modal-backdrop {
+    z-index: 1095;
+}

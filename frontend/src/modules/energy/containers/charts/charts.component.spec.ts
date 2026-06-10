@@ -93,7 +93,7 @@ describe('Energy ChartsComponent', () => {
                         door_closing_duration_ms: 2350,
                     },
                     audio_toggles: { cocorico_at_sunrise: true, song_at_sunset: true },
-                    notifications: { email_enabled: false, weather_enabled: false },
+                    notifications: { weather_enabled: false },
                     camera_settings: { brightness: 60, rotation: 180 },
                 })
             ),
@@ -101,10 +101,6 @@ describe('Energy ChartsComponent', () => {
             setDoorCloseAfterSunset: vi.fn().mockReturnValue(of('ok')),
             setDoorOpenAfterSunrise: vi.fn().mockReturnValue(of('ok')),
             setSunriseForceAt8: vi.fn().mockReturnValue(of('ok')),
-            setDoorOpeningDuration: vi.fn().mockReturnValue(of('ok')),
-            setDoorClosingDuration: vi.fn().mockReturnValue(of('ok')),
-            setEmailNotifications: vi.fn().mockReturnValue(of('ok')),
-            setWeatherInfo: vi.fn().mockReturnValue(of('ok')),
         };
 
         TestBed.configureTestingModule({

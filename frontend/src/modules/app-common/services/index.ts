@@ -30,3 +30,5 @@ export * from './pwa-install/pwa-install.service';
 export * from './network-status/network-status.service';
 export * from './sw-update/sw-update.service';
 export * from './push/push.service';
+export * from './demo-fixture/demo-fixture.service';
+export * from './demo-confirm/demo-confirm.service';

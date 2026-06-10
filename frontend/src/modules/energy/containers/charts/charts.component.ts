@@ -70,7 +70,6 @@ export class ChartsComponent implements OnInit {
     loading = true;
     saving = false;
     savingSun = false;
-    savingDoorDurations = false;
 
     sunOffsets: SunOffsets = {
         light_on_minutes_before_sunset: 0,
@@ -79,10 +78,6 @@ export class ChartsComponent implements OnInit {
         force_at_8: false,
     };
 
-    doorOpeningDuration = 10000;
-    doorClosingDuration = 2350;
-    emailEnabled = false;
-    weatherEnabled = false;
 
     /** Active mode reported by the backend (read-only display). */
     currentMode: EnergyModeEnum = 'REGULAR';
@@ -111,6 +106,22 @@ export class ChartsComponent implements OnInit {
     readonly musicMax = MUSIC_MAX_MINUTES;
     readonly modes: EnergyModeEnum[] = ['ECO', 'REGULAR', 'SUNNY'];
 
+    /**
+     * Translated label for an energy mode. The backend enum values (ECO / REGULAR / SUNNY) are
+     * left untouched — only the UI display goes through i18n. New locales just need to provide
+     * a translation for the three IDs below.
+     */
+    modeLabel(mode: EnergyModeEnum): string {
+        switch (mode) {
+            case 'ECO':
+                return $localize`:@@energyModeEco:Economy`;
+            case 'REGULAR':
+                return $localize`:@@energyModeRegular:Normal`;
+            case 'SUNNY':
+                return $localize`:@@energyModeSunny:Sunny`;
+        }
+    }
+
     ngOnInit(): void {
         this.reload();
     }
@@ -137,10 +148,6 @@ export class ChartsComponent implements OnInit {
                     SUNNY: this.toMinutes(result.sunny),
                 };
                 this.sunOffsets = result.config.sun_offsets;
-                this.doorOpeningDuration = result.config.servo_positions.door_opening_duration_ms;
-                this.doorClosingDuration = result.config.servo_positions.door_closing_duration_ms;
-                this.emailEnabled = result.config.notifications.email_enabled;
-                this.weatherEnabled = result.config.notifications.weather_enabled;
                 this.loading = false;
                 this.cdr.markForCheck();
             },
@@ -174,7 +181,10 @@ export class ChartsComponent implements OnInit {
         }).subscribe({
             next: () => {
                 this.savingSun = false;
-                this.toast.success('Horaires solaires enregistrés', 'Énergie');
+                this.toast.success(
+                    $localize`:@@energySunOffsetsSaved:Sun-related offsets saved`,
+                    $localize`:@@energyToastTitle:Energy`
+                );
                 this.cdr.markForCheck();
             },
             error: (err: HttpErrorResponse) => {
@@ -185,59 +195,6 @@ export class ChartsComponent implements OnInit {
                 );
                 this.cdr.markForCheck();
             },
-        });
-    }
-
-    saveDoorDurations(): void {
-        if (this.savingDoorDurations) return;
-        this.savingDoorDurations = true;
-        forkJoin({
-            opening: this.configService.setDoorOpeningDuration(this.doorOpeningDuration),
-            closing: this.configService.setDoorClosingDuration(this.doorClosingDuration),
-        }).subscribe({
-            next: () => {
-                this.savingDoorDurations = false;
-                this.toast.success('Durées porte enregistrées', 'Énergie');
-                this.cdr.markForCheck();
-            },
-            error: (err: HttpErrorResponse) => {
-                this.savingDoorDurations = false;
-                this.toast.error(
-                    err.error?.message || err.message || 'Save failed',
-                    `Energy — HTTP ${err.status}`
-                );
-                this.cdr.markForCheck();
-            },
-        });
-    }
-
-    onEmailToggle(): void {
-        this.configService.setEmailNotifications(this.emailEnabled).subscribe({
-            next: () =>
-                this.toast.success(
-                    this.emailEnabled ? 'Emails activés' : 'Emails désactivés',
-                    'Notifications'
-                ),
-            error: (err: HttpErrorResponse) =>
-                this.toast.error(
-                    err.error?.message || err.message || 'Save failed',
-                    `Notifications — HTTP ${err.status}`
-                ),
-        });
-    }
-
-    onWeatherToggle(): void {
-        this.configService.setWeatherInfo(this.weatherEnabled).subscribe({
-            next: () =>
-                this.toast.success(
-                    this.weatherEnabled ? 'Météo activée' : 'Météo désactivée',
-                    'Notifications'
-                ),
-            error: (err: HttpErrorResponse) =>
-                this.toast.error(
-                    err.error?.message || err.message || 'Save failed',
-                    `Notifications — HTTP ${err.status}`
-                ),
         });
     }
 
@@ -269,7 +226,10 @@ export class ChartsComponent implements OnInit {
         }).subscribe({
             next: () => {
                 this.saving = false;
-                this.toast.success('Configuration enregistrée', 'Énergie');
+                this.toast.success(
+                    $localize`:@@energyConfigSaved:Configuration saved`,
+                    $localize`:@@energyToastTitle:Energy`
+                );
                 this.reload();
             },
             error: (err: HttpErrorResponse) => {

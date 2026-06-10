@@ -6,4 +6,8 @@ export * from './version.service';
 export * from './button-status.service';
 export * from './email-test.service';
 export * from './disk-usage.service';
+export * from './memory-usage.service';
+export * from './cpu-usage.service';
+export * from './system-snapshot.service';
 export * from './system-power.service';
+export * from './actuator-info.service';

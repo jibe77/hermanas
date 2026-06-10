@@ -1,6 +1,8 @@
 package org.jibe77.hermanas.security;
 
 import org.jibe77.hermanas.data.entity.EventType;
+import org.jibe77.hermanas.security.ratelimit.LoginRateLimitFilter;
+import org.jibe77.hermanas.security.siri.SiriTokenAuthenticationFilter;
 import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -75,14 +78,31 @@ public class SecurityConfig
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            PersistentTokenBasedRememberMeServices rememberMeServices,
-                                           EventService eventService)
+                                           EventService eventService,
+                                           LoginRateLimitFilter loginRateLimitFilter,
+                                           SiriTokenAuthenticationFilter siriTokenAuthenticationFilter)
             throws Exception
     {
         logger.info("Configure authorizations.");
         http
+                // Block brute-force on the form-login endpoint before Spring Security tries to
+                // authenticate. The filter only inspects POST /api/v1/auth/login and lets everything
+                // else through unchanged. Placed before UsernamePasswordAuthenticationFilter so it
+                // runs while the request body is still untouched.
+                .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+                // Authenticate iOS Shortcuts / Siri requests carrying X-Siri-Token before the
+                // standard auth machinery runs, so they bypass the form-login flow and inherit
+                // the matching authorizeRequests rules (ROLE_USER).
+                .addFilterBefore(siriTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers().frameOptions().disable()
                 .and()
+                // CSRF protection relies on the SPA echoing a cookie value in a header — Shortcuts
+                // cannot do that, so requests carrying the Siri token are exempt. The token itself
+                // (sent in X-Siri-Token, never in a cookie) is the CSRF defence for those calls.
                 .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .requireCsrfProtectionMatcher(req ->
+                        org.springframework.security.web.csrf.CsrfFilter.DEFAULT_CSRF_MATCHER.matches(req)
+                                && req.getHeader(SiriTokenAuthenticationFilter.HEADER_NAME) == null)
                 .and()
                 .authorizeRequests()
 
@@ -114,7 +134,11 @@ public class SecurityConfig
                 .antMatchers("/api/v1/events/auth/**").hasRole(ROLE_ADMIN)
 
                 // ─── Diagnostics: admin only — exposes hardware state and SMTP test ──────────
-                .antMatchers("/api/v1/buttons/**").hasRole(ROLE_ADMIN)
+                // /api/v1/buttons/status is intentionally NOT listed here. It only reports the
+                // pressed/released state of the limit switches — same information already pushed
+                // on the public STOMP topic /topic/buttons. Falls through to .permitAll() below so
+                // the Electronics page can render the live state for any visitor (including the
+                // anonymous showcase view).
                 .antMatchers("/api/v1/email/**").hasRole(ROLE_ADMIN)
 
                 // ─── Camera photo archive: authenticated users only — the historical
@@ -122,6 +146,18 @@ public class SecurityConfig
                 //     (takePicture, stream, closingRate) stay public so unauthenticated
                 //     visitors can still see the current chicken-coop view. ───────────────
                 .antMatchers("/api/v1/camera/photos/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                // AI analysis hits an external inference server (Alyssa) and is rate-limited
+                // at the controller level; restricting it to authenticated visitors keeps an
+                // anonymous crowd from hammering the LLM and burning GPU time.
+                .antMatchers(HttpMethod.GET, "/api/v1/camera/analyze").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                // Async capture pipeline: open to anonymous visitors so the public Webcam
+                // showcase can trigger AI analyses. Abuse is contained by @RateLimited
+                // (5 req / 60 s per IP) on the controller method itself, and the
+                // AiVisionCache further deduplicates concurrent requests for the same
+                // language within its TTL window.
+                .antMatchers(HttpMethod.POST, "/api/v1/captures").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/v1/captures/*/image",
+                        "/api/v1/captures/*/status").permitAll()
 
                 // ─── Protected: every mutating call ───────────────────────────────────────────
                 // Any state-changing HTTP verb on the API requires authentication.
@@ -155,6 +191,19 @@ public class SecurityConfig
                 // websockets, API GET reads, deep-link SPA routes) is public ──────────────────
                 .anyRequest().permitAll()
 
+                .and()
+                // API calls must get a clean 401 JSON, not an HTML redirect to /auth/login —
+                // otherwise Angular's HttpClient parses the HTML body and surfaces a useless
+                // "Http failure during parsing" error. For non-API paths we fall back to the
+                // default behaviour so deep links into the SPA still hit the login page.
+                .exceptionHandling()
+                    .defaultAuthenticationEntryPointFor(
+                            (req, res, ex) -> {
+                                res.setStatus(401);
+                                res.setContentType("application/json");
+                                res.getWriter().write("{\"error\":\"UNAUTHENTICATED\"}");
+                            },
+                            new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/**"))
                 .and()
                 .formLogin()
                     // Declaring a custom loginPage disables Spring's DefaultLoginPageGeneratingFilter,

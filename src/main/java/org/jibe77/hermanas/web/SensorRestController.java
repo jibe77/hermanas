@@ -80,8 +80,13 @@ public class SensorRestController {
         sensor.setExternalHumidity(weatherInfo.getHumidity());
         sensor.setExternalTemperature(weatherInfo.getTemp());
 
-        // Record current sensor readings as metrics (if metrics available)
-        if (metrics != null) {
+        // Record current sensor readings as metrics (if metrics available). The DHT22
+        // native reader occasionally returns exit code 1 (sensor read failure on the
+        // Pi Zero) which leaves both fields null on the returned Sensor — we must not
+        // pass those to recordSensorReading(double, double) or auto-unboxing NPEs.
+        if (metrics != null
+                && sensor.getTemperature() != null
+                && sensor.getHumidity() != null) {
             metrics.recordSensorReading(sensor.getTemperature(), sensor.getHumidity());
         }
 

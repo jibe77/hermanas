@@ -26,14 +26,30 @@ public class HermanasUser {
     @Column(nullable = false)
     private boolean notificationsEnabled;
 
+    /**
+     * Preferred UI / notification language. Two-letter lower-case ISO code, currently
+     * limited to {@code "fr"} and {@code "en"}. Drives the locale of the Angular SPA
+     * after login and selects the matching template for outgoing notification mails.
+     * Defaults to {@code "fr"} for historical accounts that never made a choice.
+     */
+    @Column(nullable = false, length = 8)
+    private String language = "fr";
+
     public HermanasUser() {}
 
-    public HermanasUser(String login, String passwordHash, String email, String role, boolean notificationsEnabled) {
+    public HermanasUser(String login, String passwordHash, String email, String role,
+                        boolean notificationsEnabled) {
+        this(login, passwordHash, email, role, notificationsEnabled, "fr");
+    }
+
+    public HermanasUser(String login, String passwordHash, String email, String role,
+                        boolean notificationsEnabled, String language) {
         this.login = login;
         this.passwordHash = passwordHash;
         this.email = email;
         this.role = role;
         this.notificationsEnabled = notificationsEnabled;
+        this.language = language != null ? language : "fr";
     }
 
     public Long getId() { return id; }
@@ -53,6 +69,9 @@ public class HermanasUser {
 
     public boolean isNotificationsEnabled() { return notificationsEnabled; }
     public void setNotificationsEnabled(boolean notificationsEnabled) { this.notificationsEnabled = notificationsEnabled; }
+
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language != null ? language : "fr"; }
 
     @Override
     public boolean equals(Object o) {

@@ -32,6 +32,12 @@
 		<bootstrap.version>5.3.3</bootstrap.version>
 		<web-push.version>5.1.2</web-push.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <!--
+            CycloneDX SBOM plugin — emits target/bom.json + target/bom.xml at every
+            `mvn package`. 2.9.x is the last 2.x line and stays Java 11 compatible,
+            which the Pi Zero deployment requires. Bumping to 3.x needs Java 17.
+        -->
+        <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
 
 		<!-- Frontend build (Angular) -->
 		<frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
@@ -279,6 +285,41 @@
 				<configuration>
 					<excludedGroups>image_processing</excludedGroups>
 				</configuration>
+			</plugin>
+			<!--
+				CycloneDX SBOM generation. Produces target/bom.json and target/bom.xml
+				during `mvn package`, listing every resolved dependency with its
+				version, license and PURL. The makeAggregateBom goal walks the runtime
+				+ compile scopes only — we don't want test-scope clutter in the
+				security inventory.
+				The file is copied into the JAR under META-INF/sbom/ so a downstream
+				operator can extract it without rebuilding (jar tf hermanas.jar | grep bom).
+			-->
+			<plugin>
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+				<version>${cyclonedx-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>build-sbom</id>
+						<phase>package</phase>
+						<goals>
+							<goal>makeAggregateBom</goal>
+						</goals>
+						<configuration>
+							<outputFormat>all</outputFormat>
+							<schemaVersion>1.5</schemaVersion>
+							<includeBomSerialNumber>true</includeBomSerialNumber>
+							<includeCompileScope>true</includeCompileScope>
+							<includeRuntimeScope>true</includeRuntimeScope>
+							<includeTestScope>false</includeTestScope>
+							<includeProvidedScope>false</includeProvidedScope>
+							<includeSystemScope>false</includeSystemScope>
+							<outputDirectory>${project.build.outputDirectory}/META-INF/sbom</outputDirectory>
+							<outputName>bom</outputName>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

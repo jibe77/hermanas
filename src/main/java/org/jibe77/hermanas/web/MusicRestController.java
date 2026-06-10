@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.data.entity.EventType;
+import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.service.abstract_model.Status;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.service.config.ConfigService;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -30,14 +32,17 @@ public class MusicRestController {
     MusicService musicService;
     ConfigService configService;
     EventService eventService;
+    ConsumptionModeController consumptionModeController;
 
     private static final Logger logger = LoggerFactory.getLogger(MusicRestController.class);
 
     public MusicRestController(MusicService musicService, ConfigService configService,
-                               EventService eventService) {
+                               EventService eventService,
+                               ConsumptionModeController consumptionModeController) {
         this.musicService = musicService;
         this.configService = configService;
         this.eventService = eventService;
+        this.consumptionModeController = consumptionModeController;
     }
 
     @Operation(
@@ -80,6 +85,25 @@ public class MusicRestController {
     public Status getStatus() {
         logger.info("return music player status");
         return musicService.getStatus();
+    }
+
+    @Operation(
+            summary = "Get the playback duration that will apply on the next play",
+            description = "Returns the duration (in milliseconds) the music will play for if started right now, " +
+                    "based on the current energy mode (eco / regular / sunny). The UI can show this so the user " +
+                    "knows how long the playback will last before the security timer stops it."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Duration retrieved")
+    })
+    @GetMapping(value = "/play-duration", produces = "application/json")
+    public Map<String, Long> getPlayDuration() {
+        long durationMs = consumptionModeController.getDuration(
+                configService.getLightSecurityTimerDelayEco(),
+                configService.getLightSecurityTimerDelayRegular(),
+                configService.getLightSecurityTimerDelaySunny(),
+                LocalDateTime.now());
+        return Collections.singletonMap("durationMs", durationMs);
     }
 
     @Operation(

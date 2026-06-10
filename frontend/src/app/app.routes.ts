@@ -25,6 +25,11 @@ export const APP_ROUTES: Routes = [
             import('modules/dashboard/dashboard-routing.module').then(m => m.ROUTES),
     },
     {
+        path: 'electronics',
+        loadChildren: () =>
+            import('modules/electronics/electronics-routing.module').then(m => m.ROUTES),
+    },
+    {
         path: 'energy',
         loadChildren: () => import('modules/energy/energy-routing.module').then(m => m.ROUTES),
     },

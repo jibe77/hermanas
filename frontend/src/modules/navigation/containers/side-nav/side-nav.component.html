@@ -10,14 +10,12 @@
                         </div>
                         <span i18n="@@dashboard">Dashboard</span></a
                     >
-                    @if (isSignedIn()) {
-                        <a class="nav-link" routerLink="/camera" routerLinkActive="active"
-                            ><div class="sb-nav-link-icon">
-                                <fa-icon [icon]="['fas', 'camera']"></fa-icon>
-                            </div>
-                            <span i18n="@@webcamMenu">Webcam</span></a
-                        >
-                    }
+                    <a class="nav-link" routerLink="/camera" routerLinkActive="active"
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'camera']"></fa-icon>
+                        </div>
+                        <span i18n="@@webcamMenu">Webcam</span></a
+                    >
                     <a class="nav-link" routerLink="/music" routerLinkActive="active"
                         ><div class="sb-nav-link-icon">
                             <fa-icon [icon]="['fas', 'music']"></fa-icon>
@@ -32,7 +30,7 @@
                         ><div class="sb-nav-link-icon">
                             <fa-icon [icon]="['fas', 'feather']"></fa-icon>
                         </div>
-                        <span i18n="@@residentsMenu">Pensionnaires</span></a
+                        <span i18n="@@residentsMenu">Residents</span></a
                     >
                 </ng-container>
                 <ng-container>
@@ -52,11 +50,16 @@
                             <span i18n="@@usersMenu">Users</span></a
                         >
                     }
-                    <a class="nav-link" routerLink="/logs" routerLinkActive="active"
+                    <a class="nav-link" routerLink="/electronics" routerLinkActive="active"
+                        ><div class="sb-nav-link-icon">
+                            <fa-icon [icon]="['fas', 'microchip']"></fa-icon>
+                        </div>
+                        <span i18n="@@electronicsMenu">Electronics</span></a
+                    ><a class="nav-link" routerLink="/logs" routerLinkActive="active"
                         ><div class="sb-nav-link-icon">
                             <fa-icon [icon]="['fas', 'file-contract']"></fa-icon>
                         </div>
-                        <span i18n="@@journalMenu">Journalisation</span></a
+                        <span i18n="@@journalMenu">Logs</span></a
                     ><a class="nav-link" routerLink="/system" routerLinkActive="active"
                         ><div class="sb-nav-link-icon">
                             <fa-icon [icon]="['fas', 'laptop']"></fa-icon>

@@ -71,6 +71,9 @@ export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.pictureInitialised = false;
+        // Reset src before teardown so the browser closes the MJPEG socket;
+        // otherwise mjpg_streamer keeps pushing frames the user can't see.
+        this.picturePath = 'favicon.ico';
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -117,20 +120,40 @@ export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
 
     public updateDoorStatus(status: string) {
         this.doorStatus = status;
-        this.refreshPicture();
+        // Only force a new still picture when we're already showing one. While
+        // the live MJPEG stream is on (the user is actively watching the door
+        // move), refreshing to /takePicture would kill mjpg_streamer mid-cycle
+        // — every websocket transition (OPENING, OPENED, …) would otherwise
+        // tear the stream down and the user would see a flash of a still photo
+        // instead of the door moving.
+        if (!this.isStreamingWebcam()) {
+            this.refreshPicture();
+        }
         this.loadNextEvents();
         this.changeDetectorRef.markForCheck();
+    }
+
+    private isStreamingWebcam(): boolean {
+        return this.picturePath.indexOf('/camera/stream') !== -1;
     }
 
     public refreshPicture() {
         this.pictureInitialised = false;
         this.pictureNotInitialised = false;
-        // date param is functionally useless, but technically allows to force the web browser to refresh the picture
-        this.picturePath = this.domainBase + '/camera/takePicture?date=' + new Date().getTime();
+        // force=true bypasses the backend's 30 s picture cache so the dashboard
+        // never serves a stale shot. date= is a cache-buster on the browser side
+        // — changing the URL is enough to make the browser drop any in-flight
+        // request for the previous src (no need for an intermediate reset).
+        this.picturePath =
+            this.domainBase + '/camera/takePicture?force=true&date=' + new Date().getTime();
         this.changeDetectorRef.markForCheck();
     }
 
     public displayWebcam() {
+        // The URL change alone makes the browser close the previous <img>
+        // request before opening the stream. Assigning two values to the same
+        // [src] within one change-detection tick triggers spurious setProperty
+        // calls and was tripping up Angular bindings.
         this.picturePath = this.domainBase + '/camera/stream';
         this.changeDetectorRef.markForCheck();
     }

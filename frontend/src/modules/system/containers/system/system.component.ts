@@ -10,20 +10,19 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '@common/services';
 import { User, AuthState } from '@modules/auth/models';
 import { UserService } from '@modules/auth/services';
+import { DiskUsage } from '@modules/system/services/disk-usage.service';
+import { MemoryUsage } from '@modules/system/services/memory-usage.service';
+import { CpuUsage } from '@modules/system/services/cpu-usage.service';
 import {
-    ButtonName,
-    ButtonStatus,
-    ButtonStatusService,
-} from '@modules/system/services/button-status.service';
-import { DiskUsage, DiskUsageService } from '@modules/system/services/disk-usage.service';
-import { EmailTestService } from '@modules/system/services/email-test.service';
+    StackSnapshot,
+    SystemSnapshot,
+    SystemSnapshotService,
+} from '@modules/system/services/system-snapshot.service';
 import { SystemPowerService } from '@modules/system/services/system-power.service';
 import { VersionInfo, VersionService } from '@modules/system/services/version.service';
-import { ServoCalibrationService } from '@modules/system/services/servo-calibration.service';
 import { ConfigService } from '@modules/energy/services/config.service';
-import { FormsModule } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, interval } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
 import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
 import { CommonCardsComponent } from '../../../app-common/components/common-cards/common-cards.component';
@@ -31,12 +30,6 @@ import { CardComponent } from '../../../app-common/components/card/card.componen
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu } from '@ng-bootstrap/ng-bootstrap';
 import { DatePipe } from '@angular/common';
-
-interface ButtonState {
-    pressed?: boolean;
-    timestamp?: number;
-    error: boolean;
-}
 
 @Component({
     selector: 'sb-system',
@@ -53,17 +46,13 @@ interface ButtonState {
         NgbDropdownToggle,
         NgbDropdownMenu,
         DatePipe,
-        FormsModule,
     ],
 })
 export class SystemComponent implements OnInit, OnDestroy {
     private _versionService = inject(VersionService);
-    private _buttonStatusService = inject(ButtonStatusService);
-    private _emailTestService = inject(EmailTestService);
-    private _diskUsageService = inject(DiskUsageService);
+    private _snapshotService = inject(SystemSnapshotService);
     private _systemPowerService = inject(SystemPowerService);
     private _configService = inject(ConfigService);
-    private _servoService = inject(ServoCalibrationService);
     private _userService = inject(UserService);
     private _toastService = inject(ToastService);
     private changeDetectorRef = inject(ChangeDetectorRef);
@@ -72,39 +61,32 @@ export class SystemComponent implements OnInit, OnDestroy {
     public backEndBuildTime: string;
     public backEndVersionOnError: boolean;
 
-    public upButton: ButtonState = { error: false };
-    public bottomButton: ButtonState = { error: false };
-    public birdhouseButton: ButtonState = { error: false };
-
     public isAuthenticated = false;
     public isAdmin = false;
-    public emailTestSending = false;
     public powerActionInFlight = false;
     public configRefreshing = false;
-
-    // Servo calibration state
-    public servoOpeningPosition = 16;
-    public servoClosingPosition = 5;
-    public servoSaving = false;
-    public servoNudgeMs = 100;
-    public servoNudging = false;
-
-    // Email config state
-    public emailEnabled = false;
-    public emailTo = '';
-    public emailFrom = '';
-    public emailSaving = false;
-
-    // Weather config state
-    public weatherUrl = '';
-    public weatherKeyInput = '';
-    public weatherKeySet = false;
-    public weatherKeyLength = 0;
-    public weatherSaving = false;
 
     public diskUsage?: DiskUsage;
     public diskUsageError = false;
     public diskUsageLoading = false;
+
+    public memoryUsage?: MemoryUsage;
+    public memoryUsageError = false;
+    public memoryUsageLoading = false;
+
+    public cpuUsage?: CpuUsage;
+    public cpuUsageError = false;
+    /** Subject used to stop the snapshot polling stream — separate from
+     *  destroy$ so logging out can kill the loop without ending all
+     *  subscriptions held by this component. */
+    private snapshotPollStop$ = new Subject<void>();
+
+    // Software stack panel (admin only): pulled from the snapshot's `stack`
+    // section. {@link stackInfo} is the flat structure assembled server-side
+    // and is now the single source of truth for the Software stack card.
+    public stackInfo?: StackSnapshot;
+    public stackLoading = false;
+    public stackError = false;
 
     notificationSubject: Subject<void> = new Subject<void>();
     private destroy$ = new Subject<void>();
@@ -116,6 +98,8 @@ export class SystemComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.stopSnapshotPolling();
+        this.snapshotPollStop$.complete();
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -148,55 +132,7 @@ export class SystemComponent implements OnInit, OnDestroy {
         if (this.backEndVersionOnError) {
             this.createSubscriptionToBackendVersion();
         }
-        if (this.upButton.error || this.bottomButton.error) {
-            this.loadInitialButtonStatus();
-        }
         this.changeDetectorRef.detectChanges();
-    }
-
-    private loadInitialButtonStatus(): void {
-        this._buttonStatusService
-            .getInitialStatus()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(
-                statuses => {
-                    statuses.forEach(s => this.applyStatus(s));
-                    this.upButton.error = false;
-                    this.bottomButton.error = false;
-                    this.birdhouseButton.error = false;
-                    this.changeDetectorRef.detectChanges();
-                },
-                () => {
-                    this.upButton = { error: true };
-                    this.bottomButton = { error: true };
-                    this.birdhouseButton = { error: true };
-                    this.notificationSubject.next();
-                    this.changeDetectorRef.detectChanges();
-                }
-            );
-    }
-
-    private subscribeToButtonUpdates(): void {
-        this._buttonStatusService
-            .observeUpdates()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(update => {
-                this.applyStatus(update);
-                this.changeDetectorRef.detectChanges();
-            });
-    }
-
-    private applyStatus(status: ButtonStatus): void {
-        const target = this.targetFor(status.button);
-        target.pressed = status.pressed;
-        target.timestamp = status.timestamp;
-        target.error = false;
-    }
-
-    private targetFor(button: ButtonName): ButtonState {
-        if (button === 'UP') return this.upButton;
-        if (button === 'BIRDHOUSE') return this.birdhouseButton;
-        return this.bottomButton;
     }
 
     setCardChangeDetectorRef(_changeDetectorRef: ChangeDetectorRef) {
@@ -209,141 +145,116 @@ export class SystemComponent implements OnInit, OnDestroy {
             const wasAdmin = this.isAdmin;
             this.isAdmin = this._userService.isAdmin();
             if (this.isAdmin && !wasAdmin) {
-                this.loadInitialButtonStatus();
-                this.subscribeToButtonUpdates();
-                this.loadDiskUsage();
-                this.loadServoPositions();
-                this.loadEmailSettings();
-                this.loadWeatherSettings();
+                this.startSnapshotPolling();
+            }
+            if (!this.isAdmin && wasAdmin) {
+                this.stopSnapshotPolling();
             }
             this.changeDetectorRef.detectChanges();
         });
     }
 
-    private loadServoPositions(): void {
-        this._configService
-            .getAll()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: cfg => {
-                    this.servoOpeningPosition = cfg.servo_positions.door_opening_position;
-                    this.servoClosingPosition = cfg.servo_positions.door_closing_position;
-                    this.changeDetectorRef.detectChanges();
-                },
-                error: () => {
-                    /* keep defaults */
-                },
-            });
-    }
-
-    public saveOpeningPosition(): void {
-        if (this.servoSaving) return;
-        this.servoSaving = true;
-        this._configService
-            .setDoorOpeningPosition(this.servoOpeningPosition)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: () => {
-                    this.servoSaving = false;
-                    this._toastService.success(
-                        `Position ouverte : ${this.servoOpeningPosition}`,
-                        'Servo'
-                    );
-                    this.changeDetectorRef.detectChanges();
-                },
-                error: (err: HttpErrorResponse) => {
-                    this.servoSaving = false;
-                    this._toastService.error(
-                        err.error?.message || err.message || 'Save failed',
-                        `Servo — HTTP ${err.status}`
-                    );
-                    this.changeDetectorRef.detectChanges();
-                },
-            });
-    }
-
-    public saveClosingPosition(): void {
-        if (this.servoSaving) return;
-        this.servoSaving = true;
-        this._configService
-            .setDoorClosingPosition(this.servoClosingPosition)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: () => {
-                    this.servoSaving = false;
-                    this._toastService.success(
-                        `Position fermée : ${this.servoClosingPosition}`,
-                        'Servo'
-                    );
-                    this.changeDetectorRef.detectChanges();
-                },
-                error: (err: HttpErrorResponse) => {
-                    this.servoSaving = false;
-                    this._toastService.error(
-                        err.error?.message || err.message || 'Save failed',
-                        `Servo — HTTP ${err.status}`
-                    );
-                    this.changeDetectorRef.detectChanges();
-                },
-            });
-    }
-
-    public nudgeClockwise(): void {
-        this.nudge(true);
-    }
-
-    public nudgeCounterClockwise(): void {
-        this.nudge(false);
-    }
-
-    private nudge(clockwise: boolean): void {
-        if (this.servoNudging) return;
-        const ms = Math.max(1, Math.min(30000, this.servoNudgeMs || 100));
-        this.servoNudging = true;
-        const call$ = clockwise
-            ? this._servoService.turnClockwise(ms)
-            : this._servoService.turnCounterClockwise(ms);
-        call$.pipe(takeUntil(this.destroy$)).subscribe({
-            next: () => {
-                this.servoNudging = false;
-                this._toastService.success(
-                    `Servo ${clockwise ? 'clockwise' : 'counter-clockwise'} ${ms} ms`,
-                    'Servo'
-                );
-                this.changeDetectorRef.detectChanges();
-            },
-            error: (err: HttpErrorResponse) => {
-                this.servoNudging = false;
-                this._toastService.error(
-                    err.error?.message || err.message || 'Nudge failed',
-                    `Servo — HTTP ${err.status}`
-                );
-                this.changeDetectorRef.detectChanges();
-            },
+    /**
+     * Starts polling {@code /api/v1/system/snapshot} every 2 seconds. One
+     * request fetches disk, memory, CPU + OS uptime, and the entire Software
+     * stack section — replaces the 9 separate requests we used to fire on
+     * every tick. Each section is dispatched to the existing state fields so
+     * the template does not change.
+     *
+     * <p>The endpoint also computes the CPU percentage from a delta between
+     * two {@code /proc/stat} reads, so the very first response always
+     * reports 0%; we prime the loop with an immediate call so the second
+     * tick already shows a meaningful number.</p>
+     */
+    public startSnapshotPolling(): void {
+        // Defensive: in dev a quick logout/login cycle could otherwise leave
+        // two concurrent polls running.
+        this.stopSnapshotPolling();
+        this.diskUsageLoading = true;
+        this.memoryUsageLoading = true;
+        this.stackLoading = true;
+        const stream$ = interval(2000)
+            .pipe(
+                switchMap(() => this._snapshotService.getSnapshot()),
+                takeUntil(this.snapshotPollStop$),
+                takeUntil(this.destroy$)
+            );
+        stream$.subscribe({
+            next: snap => this.applySnapshot(snap),
+            error: () => this.applySnapshotError(),
+        });
+        // Prime so the first tick already carries data (and so the CPU
+        // backend has its previous /proc/stat sample by tick #2).
+        this._snapshotService.getSnapshot().subscribe({
+            next: snap => this.applySnapshot(snap),
+            error: () => this.applySnapshotError(),
         });
     }
 
-    public loadDiskUsage(): void {
-        this.diskUsageLoading = true;
-        this.diskUsageError = false;
-        this._diskUsageService
-            .getDiskUsage()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (data: DiskUsage) => {
-                    this.diskUsage = data;
-                    this.diskUsageError = false;
-                    this.diskUsageLoading = false;
-                    this.changeDetectorRef.detectChanges();
-                },
-                error: () => {
-                    this.diskUsage = undefined;
-                    this.diskUsageError = true;
-                    this.diskUsageLoading = false;
-                    this.changeDetectorRef.detectChanges();
-                },
-            });
+    public stopSnapshotPolling(): void {
+        this.snapshotPollStop$.next();
     }
+
+    private applySnapshot(snap: SystemSnapshot): void {
+        this.diskUsage = snap.disk;
+        this.diskUsageError = false;
+        this.diskUsageLoading = false;
+        this.memoryUsage = snap.memory;
+        this.memoryUsageError = false;
+        this.memoryUsageLoading = false;
+        this.cpuUsage = snap.cpu;
+        this.cpuUsageError = false;
+        this.stackInfo = snap.stack;
+        this.stackError = false;
+        this.stackLoading = false;
+        this.changeDetectorRef.detectChanges();
+    }
+
+    private applySnapshotError(): void {
+        // Don't blank out the cards — keep the last good values and only flip
+        // the error flags so the user knows the live feed died. The template
+        // gates rendering on the *Loading flags which we leave false so the
+        // last frame stays visible.
+        this.diskUsageError = !this.diskUsage;
+        this.memoryUsageError = !this.memoryUsage;
+        this.cpuUsageError = !this.cpuUsage;
+        this.stackError = !this.stackInfo;
+        this.diskUsageLoading = false;
+        this.memoryUsageLoading = false;
+        this.stackLoading = false;
+        this.changeDetectorRef.detectChanges();
+    }
+
+    /** Formats a byte count as a human-readable MB or GB string. */
+    public formatBytes(bytes: number): string {
+        if (!isFinite(bytes) || bytes <= 0) return '0 MB';
+        const mb = bytes / (1024 * 1024);
+        if (mb >= 1024) {
+            return (mb / 1024).toFixed(2) + ' GB';
+        }
+        return mb.toFixed(0) + ' MB';
+    }
+
+    /** Formats {@code process.uptime} (seconds) as "3d 12h 5min". */
+    public formatUptime(seconds?: number): string {
+        if (seconds === undefined || !isFinite(seconds) || seconds < 0) return '';
+        const total = Math.round(seconds);
+        const d = Math.floor(total / 86400);
+        const h = Math.floor((total % 86400) / 3600);
+        const m = Math.floor((total % 3600) / 60);
+        const parts: string[] = [];
+        if (d > 0) parts.push(`${d}d`);
+        if (h > 0 || d > 0) parts.push(`${h}h`);
+        parts.push(`${m}min`);
+        return parts.join(' ');
+    }
+
+    /** Formats a fraction (0..1) returned by metrics like process.cpu.usage as a percentage. */
+    public formatPercent(ratio?: number): string {
+        if (ratio === undefined || !isFinite(ratio)) return '';
+        return (ratio * 100).toFixed(1) + ' %';
+    }
+
 
     /**
      * Shuts down the Raspberry Pi via the audit-logged, rate-limited
@@ -393,7 +304,7 @@ export class SystemComponent implements OnInit, OnDestroy {
             return;
         }
         // eslint-disable-next-line max-len -- $localize template literal kept on one line on purpose.
-        const confirmMsg = $localize`:@@systemRebootConfirm:Reboot the Raspberry Pi now? The application will be unavailable for ~30 seconds.`;
+        const confirmMsg = $localize`:@@systemRebootConfirm:Reboot the Raspberry Pi now? The application will be unavailable for up to 10 minutes.`;
         if (!window.confirm(confirmMsg)) {
             return;
         }
@@ -457,160 +368,4 @@ export class SystemComponent implements OnInit, OnDestroy {
             });
     }
 
-    private loadEmailSettings(): void {
-        this._configService
-            .getAll()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: cfg => {
-                    this.emailEnabled = cfg.notifications.email_enabled;
-                    this.emailTo = cfg.email_settings.to ?? '';
-                    this.emailFrom = cfg.email_settings.from ?? '';
-                    this.changeDetectorRef.detectChanges();
-                },
-                error: () => {
-                    /* silent — defaults stay */
-                },
-            });
-    }
-
-    public onEmailEnabledToggle(): void {
-        this._configService
-            .setEmailNotifications(this.emailEnabled)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: () =>
-                    this._toastService.success(
-                        this.emailEnabled ? 'Emails activés' : 'Emails désactivés',
-                        'Email'
-                    ),
-                error: (err: HttpErrorResponse) =>
-                    this._toastService.error(
-                        err.error?.message || err.message || 'Save failed',
-                        `Email — HTTP ${err.status}`
-                    ),
-            });
-    }
-
-    public saveEmailSettings(): void {
-        if (this.emailSaving) return;
-        this.emailSaving = true;
-        // Save both addresses in sequence so a server-side validation error on one
-        // does not leave the user with a half-applied state.
-        this._configService
-            .setEmailFrom(this.emailFrom)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: () => {
-                    this._configService
-                        .setEmailTo(this.emailTo)
-                        .pipe(takeUntil(this.destroy$))
-                        .subscribe({
-                            next: () => {
-                                this.emailSaving = false;
-                                this._toastService.success('Adresses email enregistrées', 'Email');
-                                this.changeDetectorRef.detectChanges();
-                            },
-                            error: (err: HttpErrorResponse) => this.onEmailSaveError(err),
-                        });
-                },
-                error: (err: HttpErrorResponse) => this.onEmailSaveError(err),
-            });
-    }
-
-    private onEmailSaveError(err: HttpErrorResponse): void {
-        this.emailSaving = false;
-        this._toastService.error(
-            err.error?.message || err.message || 'Save failed',
-            `Email — HTTP ${err.status}`
-        );
-        this.changeDetectorRef.detectChanges();
-    }
-
-    private loadWeatherSettings(): void {
-        this._configService
-            .getAll()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: cfg => {
-                    this.weatherUrl = cfg.weather_settings.url;
-                    this.weatherKeySet = cfg.weather_settings.key_set;
-                    this.weatherKeyLength = cfg.weather_settings.key_length;
-                    this.changeDetectorRef.detectChanges();
-                },
-                error: () => {
-                    /* silent — admin can retry */
-                },
-            });
-    }
-
-    public saveWeatherSettings(): void {
-        if (this.weatherSaving) return;
-        this.weatherSaving = true;
-        this._configService
-            .setWeatherUrl(this.weatherUrl)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: () => {
-                    if (this.weatherKeyInput && this.weatherKeyInput.trim().length > 0) {
-                        this._configService
-                            .setWeatherKey(this.weatherKeyInput.trim())
-                            .pipe(takeUntil(this.destroy$))
-                            .subscribe({
-                                next: () => this.onWeatherSaveSuccess(true),
-                                error: (err: HttpErrorResponse) => this.onWeatherSaveError(err),
-                            });
-                    } else {
-                        this.onWeatherSaveSuccess(false);
-                    }
-                },
-                error: (err: HttpErrorResponse) => this.onWeatherSaveError(err),
-            });
-    }
-
-    private onWeatherSaveSuccess(keyUpdated: boolean): void {
-        this.weatherSaving = false;
-        if (keyUpdated) {
-            this.weatherKeyInput = '';
-            this.weatherKeySet = true;
-        }
-        this._toastService.success(
-            keyUpdated ? 'Réglages météo et clé enregistrés' : 'URL météo enregistrée',
-            'Météo'
-        );
-        this.loadWeatherSettings();
-    }
-
-    private onWeatherSaveError(err: HttpErrorResponse): void {
-        this.weatherSaving = false;
-        this._toastService.error(
-            err.error?.message || err.message || 'Save failed',
-            `Météo — HTTP ${err.status}`
-        );
-        this.changeDetectorRef.detectChanges();
-    }
-
-    public sendTestEmail(): void {
-        if (this.emailTestSending) {
-            return;
-        }
-        this.emailTestSending = true;
-        this.changeDetectorRef.detectChanges();
-        this._emailTestService
-            .sendTestEmail()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: response => {
-                    this.emailTestSending = false;
-                    this._toastService.success(response.message || 'Test email sent.', 'Email');
-                    this.changeDetectorRef.detectChanges();
-                },
-                error: (err: HttpErrorResponse) => {
-                    this.emailTestSending = false;
-                    const detail = err.error?.message || err.message || 'Unknown error';
-                    this._toastService.error(detail, `Email — HTTP ${err.status}`);
-                    this.changeDetectorRef.detectChanges();
-                },
-            });
-    }
 }

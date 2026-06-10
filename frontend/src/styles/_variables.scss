@@ -1,5 +1,55 @@
 // Import Bootstrap variables for use within theme
 @import "bootstrap/scss/functions.scss";
+
+// ─── Hermanas warm palette ────────────────────────────────────────────────
+// Inspired by the animated 404 chicken page so the dashboard, the error
+// pages and the brand all share one visual language. The point is to
+// replace the default Bootstrap grayscale "undertaker" feel with the
+// egg-yolk + brown + coop-green that already shows up on the 404.
+//
+// These overrides have to come BEFORE bootstrap/scss/variables.scss so
+// Bootstrap's own !default falls back to them — anything declared after
+// the variables import is ignored.
+
+// Eggshell / parchment instead of pure white.
+$body-bg:            #fffdf6;
+// Warm dark brown instead of near-black for body copy: keeps readability
+// while removing the harsh #212529.
+$body-color:         #3a2715;
+
+// Brand colours
+$primary:            #f0c419;          // egg yolk
+$secondary:          #6b4226;          // wood brown
+$success:            #3b6b3a;          // coop green
+$danger:             #d93030;          // hen comb red
+$warning:            #e0a96d;           // feather tan
+$info:               #c08552;           // tail brown
+$light:              #fff8e2;           // cream
+$dark:               #2a1d11;           // deep walnut
+
+// Links — use the wood brown so they don't fight the egg-yolk primary.
+$link-color:         $secondary;
+$link-hover-color:   darken($secondary, 12%);
+
+// Cards / borders — soften the harsh gray bootstrap default.
+$border-color:       rgba(107, 66, 38, 0.20);
+$card-bg:            #fffdf6;
+$card-border-color:  $border-color;
+$card-cap-bg:        rgba(240, 196, 25, 0.10);
+$card-cap-color:     $secondary;
+
+// Buttons — slightly rounder and bolder so the egg yolk pops.
+$btn-border-radius:  0.5rem;
+$btn-font-weight:    500;
+
+// Form controls
+$input-bg:           #ffffff;
+$input-border-color: rgba(107, 66, 38, 0.30);
+$input-focus-border-color: rgba(240, 196, 25, 0.70);
+$input-focus-box-shadow:   0 0 0 0.2rem rgba(240, 196, 25, 0.25);
+
+// Now import Bootstrap's own variable defaults — the overrides above win
+// thanks to !default in the upstream file.
 @import "bootstrap/scss/variables.scss";
 
 // Import spacing variables

@@ -5,16 +5,18 @@ import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+
+import java.util.Properties;
 
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Message;
@@ -37,15 +39,6 @@ public class EmailService {
 
     private final org.jibe77.hermanas.service.config.ConfigService configService;
 
-    /** Reads through configService so an admin can toggle email notifications at runtime. */
-    private boolean isEnabled() {
-        return configService == null ? false : configService.isEmailNotificationEnabled();
-    }
-
-    private String getEmailNotificationTo() {
-        return configService == null ? null : configService.getEmailNotificationTo();
-    }
-
     private String getEmailNotificationFrom() {
         return configService == null ? null : configService.getEmailNotificationFrom();
     }
@@ -61,6 +54,41 @@ public class EmailService {
         this.configService = configService;
     }
 
+    /**
+     * Returns the JavaMailSender to use for the next send. Builds a fresh
+     * {@link JavaMailSenderImpl} from {@link org.jibe77.hermanas.service.config.ConfigService}
+     * whenever a host has been configured at runtime, so a change made through
+     * /api/v1/config/mail/* takes effect on the next send without restart.
+     * <p>Falls back to the injected Spring-Boot autoconfigured sender otherwise — that
+     * keeps tests (which mock JavaMailSender) and the historical application.properties
+     * path working unchanged.
+     */
+    private JavaMailSender resolveSender() {
+        if (configService == null) {
+            return mailSender;
+        }
+        String host = configService.getMailHost();
+        if (host == null || host.trim().isEmpty()) {
+            return mailSender;
+        }
+        JavaMailSenderImpl impl = new JavaMailSenderImpl();
+        impl.setHost(host);
+        impl.setPort(configService.getMailPort());
+        String username = configService.getMailUsername();
+        if (username != null && !username.isEmpty()) {
+            impl.setUsername(username);
+        }
+        String password = configService.getMailPassword();
+        if (password != null && !password.isEmpty()) {
+            impl.setPassword(password);
+        }
+        Properties props = impl.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", String.valueOf(configService.isMailSmtpAuth()));
+        props.put("mail.smtp.starttls.enable", String.valueOf(configService.isMailStartTlsEnable()));
+        return impl;
+    }
+
     public void sendMail(String subject, String body, Optional<File>... filesToAttach)
     {
         sendMailTo(resolveRecipients(), subject, body, filesToAttach);
@@ -74,70 +102,61 @@ public class EmailService {
     @SafeVarargs
     public final void sendMailTo(List<String> recipients, String subject, String body,
                                  Optional<File>... filesToAttach) {
-        if (isEnabled()) {
-            if (recipients == null || recipients.isEmpty()) {
-                logger.info("No recipients for mail '{}' — skipping.", subject);
-                return;
-            }
-            MimeMessagePreparator preparator = mimeMessage -> {
-                InternetAddress[] to = recipients.stream()
-                        .map(address -> {
-                            try {
-                                return new InternetAddress(address);
-                            } catch (javax.mail.internet.AddressException e) {
-                                logger.warn("Skipping invalid recipient address '{}'.", address);
-                                return null;
-                            }
-                        })
-                        .filter(a -> a != null)
-                        .toArray(InternetAddress[]::new);
-                mimeMessage.setRecipients(Message.RecipientType.TO, to);
-                mimeMessage.setFrom(new InternetAddress(getEmailNotificationFrom()));
-                mimeMessage.setSubject(subject);
-                mimeMessage.setText(body);
-
-                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-
-                for (Optional<File> fileToAttach : filesToAttach) {
-                    if (fileToAttach.isPresent()) {
-                        FileSystemResource file = new FileSystemResource(fileToAttach.get());
-                        helper.addAttachment(file.getFilename(), file);
-                    }
-                }
-
-                helper.setText(body, true);
-            };
-            sendingQueue.add(preparator);
-            processSendingQueue();
+        if (recipients == null || recipients.isEmpty()) {
+            logger.info("No recipients for mail '{}' — skipping.", subject);
+            return;
         }
+        MimeMessagePreparator preparator = mimeMessage -> {
+            InternetAddress[] to = recipients.stream()
+                    .map(address -> {
+                        try {
+                            return new InternetAddress(address);
+                        } catch (javax.mail.internet.AddressException e) {
+                            logger.warn("Skipping invalid recipient address '{}'.", address);
+                            return null;
+                        }
+                    })
+                    .filter(a -> a != null)
+                    .toArray(InternetAddress[]::new);
+            mimeMessage.setRecipients(Message.RecipientType.TO, to);
+            mimeMessage.setFrom(new InternetAddress(getEmailNotificationFrom()));
+            mimeMessage.setSubject(subject);
+            mimeMessage.setText(body);
+
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+            for (Optional<File> fileToAttach : filesToAttach) {
+                if (fileToAttach.isPresent()) {
+                    FileSystemResource file = new FileSystemResource(fileToAttach.get());
+                    helper.addAttachment(file.getFilename(), file);
+                }
+            }
+
+            helper.setText(body, true);
+        };
+        sendingQueue.add(preparator);
+        processSendingQueue();
     }
 
     /**
-     * Resolves the list of recipients for an automated notification. The source of truth is the
-     * {@code hermanas_user} table — every user with {@code notificationsEnabled=true} and a
-     * non-blank email address. When the repository is not available or the list is empty,
-     * falls back to the historical {@code email.notification.to} property so that an isolated
-     * misconfiguration of the user database never causes notifications to vanish silently.
+     * Resolves the list of recipients for an automated notification: every user in the
+     * {@code hermanas_user} table with {@code notificationsEnabled=true} and a non-blank
+     * email address. Returns an empty list when no one is opted in — the queued send
+     * path logs that fact and skips the message rather than fail.
      */
     private List<String> resolveRecipients() {
-        if (userRepository != null) {
-            try {
-                List<String> optedIn = userRepository.findByNotificationsEnabledTrue().stream()
-                        .map(HermanasUser::getEmail)
-                        .filter(e -> e != null && !e.trim().isEmpty())
-                        .collect(Collectors.toList());
-                if (!optedIn.isEmpty()) {
-                    return optedIn;
-                }
-            } catch (Exception e) {
-                logger.warn("Failed to load opted-in users from database, falling back to configured address.", e);
-            }
-        }
-        String emailNotificationTo = getEmailNotificationTo();
-        if (emailNotificationTo == null || emailNotificationTo.trim().isEmpty()) {
+        if (userRepository == null) {
             return Collections.emptyList();
         }
-        return Collections.singletonList(emailNotificationTo);
+        try {
+            return userRepository.findByNotificationsEnabledTrue().stream()
+                    .map(HermanasUser::getEmail)
+                    .filter(e -> e != null && !e.trim().isEmpty())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.warn("Failed to load opted-in users from database; notification will be skipped.", e);
+            return Collections.emptyList();
+        }
     }
 
     public synchronized void processSendingQueue() {
@@ -161,7 +180,7 @@ public class EmailService {
             backoff = @Backoff(delay = 20000))
     private synchronized void send(MimeMessagePreparator mimeMessagePreparator) {
         logger.info("send mail now ...");
-        mailSender.send(mimeMessagePreparator);
+        resolveSender().send(mimeMessagePreparator);
         logger.info("mail has been sent.");
     }
 
@@ -176,17 +195,19 @@ public class EmailService {
      * the recipient sees the chicken-coop snapshot directly in the mail body, matching the
      * style of door open/close notifications.</p>
      *
-     * @throws IllegalStateException if email notifications are disabled.
+     * @param picture optional snapshot to embed in the body
+     * @param recipient explicit destination address — typically the email of the
+     *                  authenticated admin clicking the "send test" button.
+     * @throws IllegalStateException if the recipient is blank.
      * @throws MailException if the underlying SMTP send fails.
      */
-    public void sendTestMail(Optional<File> picture) {
-        if (!isEnabled()) {
-            throw new IllegalStateException("Email notifications are disabled (email.notification.enabled=false).");
+    public void sendTestMail(Optional<File> picture, String recipient) {
+        if (recipient == null || recipient.trim().isEmpty()) {
+            throw new IllegalStateException("No recipient email available for the test. Set your email address in your user profile.");
         }
-        String emailNotificationTo = getEmailNotificationTo();
         MimeMessagePreparator preparator = mimeMessage -> {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            helper.setTo(emailNotificationTo);
+            helper.setTo(recipient);
             helper.setFrom(getEmailNotificationFrom());
             helper.setSubject("Hermanas — test email");
 
@@ -202,8 +223,8 @@ public class EmailService {
                 helper.setText(introText + "\n(No picture available.)", false);
             }
         };
-        logger.info("Sending diagnostics test email to {}.", emailNotificationTo);
-        mailSender.send(preparator);
+        logger.info("Sending diagnostics test email to {}.", recipient);
+        resolveSender().send(preparator);
         logger.info("Diagnostics test email sent successfully.");
     }
 
@@ -213,15 +234,5 @@ public class EmailService {
 
     public void emptySendingQueue() {
         sendingQueue.clear();
-    }
-
-    /**
-     * Test-only knob: forwards to ConfigService so existing tests that flip the
-     * flag still work without touching the database directly.
-     */
-    void setEnabled(boolean enabled) {
-        if (configService != null) {
-            configService.setEmailNotificationEnabled(enabled);
-        }
     }
 }

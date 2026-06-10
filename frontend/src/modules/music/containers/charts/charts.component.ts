@@ -17,6 +17,7 @@ import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-das
 import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
 import { CardComponent } from '../../../app-common/components/card/card.component';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @Component({
@@ -29,6 +30,9 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
         DashboardHeadComponent,
         CardComponent,
         FaIconComponent,
+        NgbDropdown,
+        NgbDropdownToggle,
+        NgbDropdownMenu,
         ReactiveFormsModule,
         FormsModule,
     ],
@@ -41,6 +45,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
     private cdr = inject(ChangeDetectorRef);
 
     isAdmin = false;
+    isSignedIn = false;
     cocoricoEnabled = false;
     songAtSunsetEnabled = false;
     private persistedCocoricoEnabled = false;
@@ -55,17 +60,42 @@ export class ChartsComponent implements OnInit, OnDestroy {
     loadingPlaylists = false;
     loadingSongs = false;
     saving = false;
+    playerBusy = false;
 
     volumePercent = 78;
     private persistedVolume = 78;
     volumeSaving = false;
 
+    /**
+     * Duration the music will play for if the user hits Play *right now*. The
+     * backend picks one of the three light.security.timer.delay.* values based
+     * on the current energy mode (eco / regular / sunny), so this number can
+     * change throughout the day. We refresh it on page load and after Play /
+     * Stop so the button label stays accurate.
+     */
+    playDurationMs: number | null = null;
+
     private destroy$ = new Subject<void>();
 
     ngOnInit(): void {
-        this.isAdmin = this._userService.isAdmin();
         this.loadPlaylists();
-        this.loadConfig();
+        this.loadPlayDuration();
+        // Stay subscribed to auth changes so logging in/out while the page is
+        // open toggles the admin-only audio toggles panel and the signed-in
+        // playback controls without needing a manual reload. loadConfig pulls
+        // the persisted toggle values, which only matter once the admin panel
+        // is visible — so kick it on signed-in transitions only.
+        this._userService.user$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+            const wasAdmin = this.isAdmin;
+            this.isAdmin = this._userService.isAdmin();
+            this.isSignedIn =
+                this.isAdmin ||
+                this._userService.getCurrentUser().authState === 'signedIn';
+            if (this.isAdmin && !wasAdmin) {
+                this.loadConfig();
+            }
+            this.cdr.detectChanges();
+        });
     }
 
     private loadConfig(): void {
@@ -168,6 +198,30 @@ export class ChartsComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+
+    private loadPlayDuration(): void {
+        this._chartsService
+            .getPlayDuration()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: res => {
+                    this.playDurationMs = res.durationMs;
+                    this.cdr.detectChanges();
+                },
+                error: () => {
+                    // Silent: the button just falls back to the generic "Play"
+                    // label, which is still functional.
+                    this.playDurationMs = null;
+                },
+            });
+    }
+
+    get playDurationMinutes(): number | null {
+        if (this.playDurationMs === null || this.playDurationMs < 0) {
+            return null;
+        }
+        return Math.max(1, Math.round(this.playDurationMs / 60000));
     }
 
     private loadPlaylists(): void {
@@ -286,5 +340,96 @@ export class ChartsComponent implements OnInit, OnDestroy {
 
     get isDirty(): boolean {
         return this.selectedPlaylist !== this.persistedPlaylist;
+    }
+
+    playSelected(): void {
+        if (!this.selectedPlaylist || this.playerBusy) {
+            return;
+        }
+        this.playerBusy = true;
+        this._chartsService
+            .playPlaylist(this.selectedPlaylist)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.playerBusy = false;
+                    const minutes = this.playDurationMinutes;
+                    const message =
+                        minutes !== null
+                            ? `Lecture de "${this.selectedPlaylist}" pendant ${minutes} minute${minutes > 1 ? 's' : ''}`
+                            : `Lecture de "${this.selectedPlaylist}"`;
+                    this._toastService.success(message, 'Music');
+                    // Energy mode may have shifted since the page loaded;
+                    // refresh the duration so the button label stays honest.
+                    this.loadPlayDuration();
+                    this.cdr.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.playerBusy = false;
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Cannot start playback',
+                        `Music — HTTP ${err.status}`
+                    );
+                    this.cdr.detectChanges();
+                },
+            });
+    }
+
+    /**
+     * One-shot cock-crow trigger for signed-in users. Reuses the same
+     * playerBusy flag as the playlist controls so the user cannot stack
+     * cocoricos on top of an in-flight playback toggle.
+     */
+    playCocorico(): void {
+        if (this.playerBusy) {
+            return;
+        }
+        this.playerBusy = true;
+        this._chartsService
+            .cocorico()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.playerBusy = false;
+                    this._toastService.success(
+                        $localize`:@@musicCocoricoPlayed:Cocorico !`,
+                        'Music'
+                    );
+                    this.cdr.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.playerBusy = false;
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Cannot play cocorico',
+                        `Music — HTTP ${err.status}`
+                    );
+                    this.cdr.detectChanges();
+                },
+            });
+    }
+
+    stopPlayback(): void {
+        if (this.playerBusy) {
+            return;
+        }
+        this.playerBusy = true;
+        this._chartsService
+            .stop()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.playerBusy = false;
+                    this._toastService.success('Lecture arrêtée', 'Music');
+                    this.cdr.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.playerBusy = false;
+                    this._toastService.error(
+                        err.error?.message || err.message || 'Cannot stop playback',
+                        `Music — HTTP ${err.status}`
+                    );
+                    this.cdr.detectChanges();
+                },
+            });
     }
 }

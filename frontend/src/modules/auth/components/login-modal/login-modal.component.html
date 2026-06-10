@@ -13,78 +13,204 @@
                     class="btn-close float-end"
                     (click)="close()"
                     [disabled]="submitting"
+                    i18n-aria-label="@@close"
                     aria-label="Close"
                 ></button>
-                <h4 class="card-title text-center mb-3" id="sbLoginModalTitle" i18n="@@signin">
-                    Connexion
-                </h4>
-                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
-                    <div class="form-group mb-3">
-                        <label for="sb-login-modal-username" i18n="@@username">Identifiant</label>
-                        <input
-                            class="form-control"
-                            id="sb-login-modal-username"
-                            type="text"
-                            formControlName="username"
-                            autocomplete="username"
-                            data-cy="loginUsername"
-                            required
-                        />
-                    </div>
-                    <div class="form-group mb-3">
-                        <label for="sb-login-modal-password" i18n="@@password">Mot de passe</label>
-                        <input
-                            class="form-control"
-                            id="sb-login-modal-password"
-                            type="password"
-                            formControlName="password"
-                            autocomplete="current-password"
-                            data-cy="loginPassword"
-                            required
-                        />
-                    </div>
-                    <div class="form-check mb-3">
-                        <input
-                            class="form-check-input"
-                            id="sb-login-modal-rememberme"
-                            type="checkbox"
-                            formControlName="rememberMe"
-                            data-cy="loginRememberMe"
-                        />
-                        <label
-                            class="form-check-label"
-                            for="sb-login-modal-rememberme"
-                            i18n="@@rememberMe"
-                            >Se souvenir de moi</label
+
+                @if (view === 'login') {
+                    <h4
+                        class="card-title text-center mb-3"
+                        id="sbLoginModalTitle"
+                        i18n="@@signin"
+                    >
+                        Login / Sign up
+                    </h4>
+                    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+                        <div class="form-group mb-3">
+                            <label for="sb-login-modal-username" i18n="@@username">Login</label>
+                            <input
+                                class="form-control"
+                                id="sb-login-modal-username"
+                                type="text"
+                                formControlName="username"
+                                autocomplete="username"
+                                data-cy="loginUsername"
+                                required
+                            />
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="sb-login-modal-password" i18n="@@password">Password</label>
+                            <input
+                                class="form-control"
+                                id="sb-login-modal-password"
+                                type="password"
+                                formControlName="password"
+                                autocomplete="current-password"
+                                data-cy="loginPassword"
+                                required
+                            />
+                        </div>
+                        <div class="form-check mb-3">
+                            <input
+                                class="form-check-input"
+                                id="sb-login-modal-rememberme"
+                                type="checkbox"
+                                formControlName="rememberMe"
+                                data-cy="loginRememberMe"
+                            />
+                            <label
+                                class="form-check-label"
+                                for="sb-login-modal-rememberme"
+                                i18n="@@rememberMe"
+                                >Remember me</label
+                            >
+                        </div>
+                        @if (errorMessage) {
+                            <div class="alert alert-danger" data-cy="loginError">
+                                {{ errorMessage }}
+                            </div>
+                        }
+                        <button
+                            class="btn btn-primary w-100"
+                            type="submit"
+                            data-cy="loginSubmit"
+                            [disabled]="loginForm.invalid || submitting"
                         >
-                    </div>
-                    @if (errorMessage) {
-                        <div class="alert alert-danger" data-cy="loginError">
-                            {{ errorMessage }}
+                            @if (!submitting) {
+                                <span i18n="@@signinSubmit">Sign in</span>
+                            }
+                            @if (submitting) {
+                                <span i18n="@@signinInProgress">Signing in…</span>
+                            }
+                        </button>
+                        <div class="mt-3 text-center">
+                            <a
+                                href="javascript:void(0)"
+                                (click)="goToRegister()"
+                                i18n="@@loginCreateAccount"
+                                >No account yet? Sign up</a
+                            >
+                        </div>
+                    </form>
+                }
+
+                @if (view === 'register') {
+                    <h4
+                        class="card-title text-center mb-3"
+                        id="sbLoginModalTitle"
+                        i18n="@@register"
+                    >
+                        Sign up
+                    </h4>
+
+                    @if (registrationSuccess) {
+                        <div class="text-center">
+                            <div class="alert alert-success" i18n="@@registerSuccessMessage">
+                                Your account has been created. An administrator needs to validate
+                                your registration before you can sign in. You will receive a
+                                confirmation email.
+                            </div>
+                            <button
+                                class="btn btn-primary"
+                                type="button"
+                                (click)="goToLogin()"
+                                i18n="@@registerBackToLogin"
+                            >
+                                Back to sign in
+                            </button>
                         </div>
                     }
-                    <button
-                        class="btn btn-primary w-100"
-                        type="submit"
-                        data-cy="loginSubmit"
-                        [disabled]="loginForm.invalid || submitting"
-                    >
-                        @if (!submitting) {
-                            <span i18n="@@signin">Se connecter</span>
-                        }
-                        @if (submitting) {
-                            <span i18n="@@signinInProgress">Connexion…</span>
-                        }
-                    </button>
-                    <div class="mt-3 text-center">
-                        <a
-                            href="javascript:void(0)"
-                            (click)="goToRegister()"
-                            i18n="@@loginCreateAccount"
-                            >Pas de compte ? S'inscrire</a
+
+                    @if (!registrationSuccess) {
+                        <form
+                            [formGroup]="registerForm"
+                            (ngSubmit)="onRegisterSubmit()"
+                            novalidate
                         >
-                    </div>
-                </form>
+                            <div class="form-group mb-3">
+                                <label for="sb-register-modal-login" i18n="@@username">Login</label>
+                                <input
+                                    class="form-control"
+                                    id="sb-register-modal-login"
+                                    type="text"
+                                    formControlName="login"
+                                    autocomplete="username"
+                                    data-cy="registerLogin"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="sb-register-modal-email" i18n="@@email">Email</label>
+                                <input
+                                    class="form-control"
+                                    id="sb-register-modal-email"
+                                    type="email"
+                                    formControlName="email"
+                                    autocomplete="email"
+                                    data-cy="registerEmail"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="sb-register-modal-password" i18n="@@password"
+                                    >Password</label
+                                >
+                                <input
+                                    class="form-control"
+                                    id="sb-register-modal-password"
+                                    type="password"
+                                    formControlName="password"
+                                    autocomplete="new-password"
+                                    data-cy="registerPassword"
+                                    required
+                                />
+                            </div>
+                            <div class="form-group mb-3">
+                                <label
+                                    for="sb-register-modal-language"
+                                    i18n="@@preferredLanguage"
+                                    >Preferred language</label
+                                >
+                                <select
+                                    id="sb-register-modal-language"
+                                    class="form-select"
+                                    formControlName="language"
+                                    data-cy="registerLanguage"
+                                >
+                                    <option value="fr" i18n="@@languageFrench">French</option>
+                                    <option value="en" i18n="@@languageEnglish">English</option>
+                                    <option value="ro" i18n="@@languageRomanian">Romanian</option>
+                                </select>
+                            </div>
+                            @if (errorMessage) {
+                                <div class="alert alert-danger" data-cy="registerError">
+                                    {{ errorMessage }}
+                                </div>
+                            }
+                            <button
+                                class="btn btn-primary w-100"
+                                type="submit"
+                                [disabled]="registerForm.invalid || submitting"
+                                data-cy="registerSubmit"
+                            >
+                                @if (!submitting) {
+                                    <span i18n="@@registerSubmit">Create account</span>
+                                }
+                                @if (submitting) {
+                                    <span i18n="@@registerInProgress">Creating…</span>
+                                }
+                            </button>
+                            <div class="mt-3 text-center">
+                                <a
+                                    href="javascript:void(0)"
+                                    (click)="goToLogin()"
+                                    i18n="@@registerAlreadyHaveAccount"
+                                    >Already have an account?</a
+                                >
+                            </div>
+                        </form>
+                    }
+                }
             </div>
         </div>
     </div>

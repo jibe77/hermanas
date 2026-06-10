@@ -4,14 +4,17 @@ $zindex-topnav: 1090 !default;
 
 // Color variables for the sidenav
 
-// -- Sidenav Dark
-$sidenav-dark-bg: $gray-900;
-$sidenav-dark-color: fade-out($white, 0.5);
-$sidenav-dark-heading-color: fade-out($white, 0.75);
-$sidenav-dark-link-color: fade-out($white, 0.5);
-$sidenav-dark-link-active-color: $white;
-$sidenav-dark-icon-color: fade-out($white, 0.75);
-$sidenav-dark-footer-bg: $gray-800;
+// -- Sidenav Dark — Hermanas walnut/cream palette (was solid black before).
+//   $dark and $primary are overridden in _variables.scss to wood-brown and
+//   egg-yolk respectively, so the sidenav inherits the same warm feel as
+//   the rest of the dashboard.
+$sidenav-dark-bg: $dark;
+$sidenav-dark-color: fade-out(#fff8e2, 0.35);
+$sidenav-dark-heading-color: fade-out($primary, 0.20);
+$sidenav-dark-link-color: fade-out(#fff8e2, 0.30);
+$sidenav-dark-link-active-color: $primary;
+$sidenav-dark-icon-color: fade-out($primary, 0.40);
+$sidenav-dark-footer-bg: darken($dark, 4%);
 
 // -- Sidenav Light
 $sidenav-light-bg: $gray-100;

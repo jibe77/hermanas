@@ -1,28 +1,41 @@
 package org.jibe77.hermanas.client.email;
 
+import org.jibe77.hermanas.data.entity.HermanasUser;
+import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.service.camera.CameraService;
-import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+/**
+ * Builds the localized body of every coop notification mail and hands it off to
+ * {@link EmailService} for delivery.
+ *
+ * <p>Each opt-in user has a preferred language ({@link HermanasUser#getLanguage()})
+ * — we group recipients by that language and render the template once per group so
+ * a French opt-in receives the FR version while an English opt-in receives the EN
+ * version for the same physical event.</p>
+ */
 @Service
 public class NotificationService {
 
     public static final String RETURN_TO_NEXT_LINE = "\r\n";
 
-    private final ConfigService configService;
-
-    private boolean isEnabled() {
-        return configService != null && configService.isEmailNotificationEnabled();
-    }
+    @Autowired(required = false)
+    private HermanasUserRepository userRepository;
 
     private CameraService cameraService;
 
@@ -30,100 +43,125 @@ public class NotificationService {
 
     private SunTimeManager sunTimeManager;
 
-    MessageSource messageSource;
+    private final MessageSource messageSource;
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     public NotificationService(EmailService emailService, CameraService cameraService,
-                               MessageSource messageSource, SunTimeManager sunTimeManager,
-                               ConfigService configService) {
+                               MessageSource messageSource, SunTimeManager sunTimeManager) {
         this.cameraService = cameraService;
         this.emailService = emailService;
         this.messageSource = messageSource;
         this.sunTimeManager = sunTimeManager;
-        this.configService = configService;
+    }
+
+    /**
+     * Returns opt-in users grouped by language code ("fr", "en", …). Empty when no one
+     * has notifications enabled — the caller short-circuits the snapshot capture in
+     * that case (expensive on the Pi Zero).
+     */
+    private Map<String, List<String>> recipientsByLanguage() {
+        if (userRepository == null) {
+            return Collections.emptyMap();
+        }
+        try {
+            List<HermanasUser> users = userRepository.findByNotificationsEnabledTrue();
+            // LinkedHashMap so iteration order is deterministic (FR first when several
+            // languages are present in a single run). Unsupported codes are bucketed under
+            // "fr" so the message bundle always has a matching properties file.
+            Map<String, List<String>> grouped = new LinkedHashMap<>();
+            for (HermanasUser u : users) {
+                String email = u.getEmail();
+                if (email == null || email.trim().isEmpty()) {
+                    continue;
+                }
+                String lang = u.getLanguage();
+                if (!"en".equals(lang) && !"ro".equals(lang)) {
+                    lang = "fr";
+                }
+                grouped.computeIfAbsent(lang, k -> new java.util.ArrayList<>()).add(email);
+            }
+            return grouped;
+        } catch (Exception e) {
+            logger.warn("Failed to query opt-in users; skipping notification.", e);
+            return Collections.emptyMap();
+        }
     }
 
     public void doorOpeningEvent(boolean isOpenedCorrectly, Optional<File> picBeforeOpening) {
-        if (isEnabled()) {
-            // prepare title and message
+        Map<String, List<String>> recipients = recipientsByLanguage();
+        if (recipients.isEmpty()) {
+            logger.info("Notification 'doorOpeningEvent' not activated.");
+            return;
+        }
+
+        // Snapshot is expensive — take it once and reuse it across language groups.
+        Optional<File> picWithClosedDoor = cameraService.takePictureNoException(true);
+        String pictureKey = pickPictureKey(picBeforeOpening, picWithClosedDoor);
+
+        for (Map.Entry<String, List<String>> entry : recipients.entrySet()) {
+            Locale locale = Locale.forLanguageTag(entry.getKey());
             String title = messageSource.getMessage(
                     isOpenedCorrectly ? "event.mail.opening.ok.title" : "event.mail.opening.ko.title",
-                    null, Locale.getDefault());
+                    null, locale);
             StringBuilder message = new StringBuilder();
             message.append(messageSource.getMessage(
                     isOpenedCorrectly ? "event.mail.opening.ok.message" : "event.mail.opening.ko.message",
-                    null, Locale.getDefault()));
+                    null, locale));
             message.append(RETURN_TO_NEXT_LINE);
-
-            // add closing time
             message.append(messageSource.getMessage(
                     "event.mail.opening.closing.time",
-                    new Object[]{
-                            sunTimeManager.getNextDoorClosingTime().format(
-                                    DateTimeFormatter.ofPattern(SunTimeManager.HH_MM))}
-                     ,
-                    Locale.getDefault()));
+                    new Object[]{sunTimeManager.getNextDoorClosingTime().format(
+                            DateTimeFormatter.ofPattern(SunTimeManager.HH_MM))},
+                    locale));
+            message.append(messageSource.getMessage(pictureKey, null, locale));
 
-            // add pictures
-            Optional<File> picWithClosedDoor = cameraService.takePictureNoException(true);
-            String messageKey;
-            if (picBeforeOpening.isPresent() && picWithClosedDoor.isPresent()) {
-                messageKey = "event.mail.with_pictures.message";
-            } else if (picBeforeOpening.isPresent() || picWithClosedDoor.isPresent()) {
-                messageKey = "event.mail.with_picture.message";
-            } else {
-                messageKey = "event.mail.without_picture.message";
-            }
-            message.append(messageSource.getMessage(
-                    messageKey,
-                    null, Locale.getDefault()));
-
-            emailService.sendMail(
-                    title,
-                    message.toString(),
-                    picBeforeOpening,
-                    picWithClosedDoor);
-        } else {
-            logger.info("Notification 'doorOpeningEvent' not activated.");
+            emailService.sendMailTo(entry.getValue(), title, message.toString(),
+                    picBeforeOpening, picWithClosedDoor);
         }
     }
 
     public void doorClosingEvent(boolean isClosedCorrectly) {
-        if (isEnabled()) {
-            // prepare title and message
+        Map<String, List<String>> recipients = recipientsByLanguage();
+        if (recipients.isEmpty()) {
+            logger.info("Notification 'doorClosingEvent' not activated.");
+            return;
+        }
+
+        Optional<File> picWithClosedDoor = cameraService.takePictureNoException(true);
+        String pictureKey = picWithClosedDoor.isPresent()
+                ? "event.mail.with_picture.message"
+                : "event.mail.without_picture.message";
+
+        for (Map.Entry<String, List<String>> entry : recipients.entrySet()) {
+            Locale locale = Locale.forLanguageTag(entry.getKey());
             String title = messageSource.getMessage(
                     isClosedCorrectly ? "event.mail.closing.ok.title" : "event.mail.closing.ko.title",
-                    null, Locale.getDefault());
+                    null, locale);
             StringBuilder message = new StringBuilder();
             message.append(messageSource.getMessage(
                     isClosedCorrectly ? "event.mail.closing.ok.message" : "event.mail.closing.ko.message",
-                    null, Locale.getDefault()));
+                    null, locale));
             message.append(RETURN_TO_NEXT_LINE);
-
-            // add opening time
             message.append(messageSource.getMessage(
                     "event.mail.closing.opening.time",
-                    new Object[]{
-                            sunTimeManager.getNextDoorOpeningTime().format(
-                                    DateTimeFormatter.ofPattern(SunTimeManager.HH_MM))}
-                    ,
-                    Locale.getDefault()));
+                    new Object[]{sunTimeManager.getNextDoorOpeningTime().format(
+                            DateTimeFormatter.ofPattern(SunTimeManager.HH_MM))},
+                    locale));
+            message.append(messageSource.getMessage(pictureKey, null, locale));
 
-            // add pictures
-            Optional<File> picWithClosedDoor = cameraService.takePictureNoException(true);
-            message.append(messageSource.getMessage(
-                    picWithClosedDoor.isPresent() ?
-                            "event.mail.with_picture.message" :
-                            "event.mail.without_picture.message",
-                    null, Locale.getDefault()));
-
-            emailService.sendMail(
-                    title,
-                    message.toString(),
-                    picWithClosedDoor);
-        } else {
-            logger.info("Notification 'doorClosingEvent' not activated.");
+            emailService.sendMailTo(entry.getValue(), title, message.toString(), picWithClosedDoor);
         }
+    }
+
+    /** Chooses the picture paragraph based on how many snapshots are actually available. */
+    private static String pickPictureKey(Optional<File> a, Optional<File> b) {
+        if (a.isPresent() && b.isPresent()) {
+            return "event.mail.with_pictures.message";
+        }
+        if (a.isPresent() || b.isPresent()) {
+            return "event.mail.with_picture.message";
+        }
+        return "event.mail.without_picture.message";
     }
 }

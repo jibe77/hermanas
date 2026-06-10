@@ -47,9 +47,43 @@ export class TopNavUserComponent implements OnInit, OnDestroy {
         this.loginModal.show();
     }
 
+    openRegister(): void {
+        this.loginModal.show('register');
+    }
+
+    /**
+     * Front-only demo mode for showcasing the application during job interviews.
+     * Flips the synthetic user to ADMIN so every protected panel and menu entry
+     * unfolds without a real backend login. Mutating calls are blocked by
+     * demoModeInterceptor with a warning toast.
+     */
+    enableDemo(): void {
+        this.userService.enableDemoMode();
+        const currentUrl = this.router.url || '/dashboard';
+        this.router.navigateByUrl(currentUrl);
+        this.changeDetectorRef.markForCheck();
+    }
+
+    disableDemo(): void {
+        this.userService.disableDemoMode();
+        const currentUrl = this.router.url || '/dashboard';
+        this.router.navigateByUrl(currentUrl);
+        this.changeDetectorRef.markForCheck();
+    }
+
+    isDemoMode(): boolean {
+        return this.userService.isDemoMode();
+    }
+
     async logout(): Promise<void> {
         await this.loginService.logout();
-        this.router.navigate(['/dashboard']);
+        // Re-trigger the current route (or fall back to /dashboard for protected
+        // pages — the auth guard will redirect signed-out users away from admin
+        // screens). The router is configured with onSameUrlNavigation: 'reload'
+        // so this rebuilds the component tree and clears any admin-only UI that
+        // is still mounted.
+        const currentUrl = this.router.url || '/dashboard';
+        this.router.navigateByUrl(currentUrl);
         this.changeDetectorRef.markForCheck();
     }
 

@@ -1,6 +1,39 @@
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-    <a class="navbar-brand" routerLink="/dashboard">Hermanas</a
-    ><button
+    <!-- Brand: mini SVG hen + name, same visual language as the 404 page so
+         the friendly chicken motif appears as soon as the visitor lands. The
+         SVG is inline so the comb / beak colours follow the theme without an
+         extra asset, and the head wobbles every few seconds to give the bar a
+         tiny bit of life without being distracting. -->
+    <a class="navbar-brand brand-hen" routerLink="/dashboard" aria-label="Hermanas — home" i18n-aria-label="@@brandHenAriaLabel">
+        <svg
+            class="brand-hen-svg"
+            viewBox="0 0 60 50"
+            role="img"
+            aria-hidden="true"
+        >
+            <!-- Body -->
+            <ellipse cx="32" cy="34" rx="18" ry="13" fill="#f5d49b" stroke="#6b4226" stroke-width="1.5" />
+            <!-- Wing -->
+            <path d="M 23 32 Q 19 22 35 25 Q 42 35 26 40 Z" fill="#e0a96d" stroke="#6b4226" stroke-width="1.2" />
+            <!-- Tail feathers -->
+            <path d="M 49 30 Q 58 26 56 36 Q 53 42 47 36 Z" fill="#c08552" stroke="#6b4226" stroke-width="1.2" />
+            <!-- Head (group for wobble animation) -->
+            <g class="brand-hen-head">
+                <circle cx="22" cy="20" r="9" fill="#f5d49b" stroke="#6b4226" stroke-width="1.5" />
+                <!-- Comb -->
+                <path d="M 18 12 Q 20 7 22 13 Q 24 8 26 13 Q 28 9 29 14 Z" fill="#d93030" stroke="#6b4226" stroke-width="1" />
+                <!-- Beak -->
+                <polygon points="13,21 7,22 13,25" fill="#f0a830" stroke="#6b4226" stroke-width="1" />
+                <!-- Eye -->
+                <circle cx="18" cy="19" r="1.5" fill="#222" />
+            </g>
+            <!-- Legs -->
+            <line x1="28" y1="46" x2="28" y2="50" stroke="#6b4226" stroke-width="1.5" stroke-linecap="round" />
+            <line x1="36" y1="46" x2="36" y2="50" stroke="#6b4226" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        <span class="brand-hen-text">Hermanas</span>
+    </a>
+    <button
         class="btn btn-link btn-sm order-1 order-lg-0"
         id="sidebarToggle"
         data-cy="topNavToggleSideNav"

@@ -8,7 +8,7 @@ import {
     inject,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Subject, timer } from 'rxjs';
+import { Subject, forkJoin, timer } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
@@ -161,8 +161,32 @@ export class ElectronicsComponent implements OnInit, OnDestroy {
         return this.localeId.startsWith('fr');
     }
 
+    /**
+     * Localized name of a GPIO component. Uses Angular i18n keyed on the
+     * pin's stable {@code key} (e.g. {@code door.servo}) so the SPA renders
+     * the proper FR/EN/RO label regardless of the locale — the legacy
+     * label/labelFr fields from the backend are ignored. Falls back to the
+     * English label when the key is not yet known to the frontend.
+     */
     pinDisplayName(p: GpioPin): string {
-        return this.isFr() ? p.labelFr : p.label;
+        switch (p.key) {
+            case 'door.servo':
+                return $localize`:@@electronicsCompDoorServo:Door servomotor`;
+            case 'door.button.up':
+                return $localize`:@@electronicsCompDoorBtnUp:Door upper end-stop button`;
+            case 'door.button.bottom':
+                return $localize`:@@electronicsCompDoorBtnBottom:Door bottom end-stop button`;
+            case 'birdhouse.button':
+                return $localize`:@@electronicsCompBirdhouseBtn:Birdhouse button`;
+            case 'light.relay':
+                return $localize`:@@electronicsCompLightRelay:Light relay`;
+            case 'fan.relay':
+                return $localize`:@@electronicsCompFanRelay:Fan relay`;
+            case 'sensor.dht22':
+                return $localize`:@@electronicsCompSensor:Temperature & humidity sensor (DHT22)`;
+            default:
+                return p.label || p.key;
+        }
     }
 
     /**
@@ -261,9 +285,9 @@ export class ElectronicsComponent implements OnInit, OnDestroy {
      */
     doorStateLabel(state: string): string {
         if (state === 'OPENING' || state === 'CLOSING') {
-            return this.isFr() ? 'En mouvement' : 'Moving';
+            return $localize`:@@electronicsServoMoving:Moving`;
         }
-        return this.isFr() ? 'Immobile' : 'Idle';
+        return $localize`:@@electronicsServoIdle:Idle`;
     }
 
     doorStateBadge(state: string): string {
@@ -466,83 +490,74 @@ export class ElectronicsComponent implements OnInit, OnDestroy {
             });
     }
 
-    saveOpeningPosition(): void {
-        this.saveServoConfig(
-            this.configService.setDoorOpeningPosition(this.servoOpeningPosition),
-            `Position ouverte : ${this.servoOpeningPosition}`
-        );
-    }
-
-    saveClosingPosition(): void {
-        this.saveServoConfig(
-            this.configService.setDoorClosingPosition(this.servoClosingPosition),
-            `Position fermée : ${this.servoClosingPosition}`
-        );
-    }
-
-    saveOpeningDuration(): void {
-        this.saveServoConfig(
-            this.configService.setDoorOpeningDuration(this.servoOpeningDurationMs),
-            `Durée d'ouverture : ${this.servoOpeningDurationMs} ms`
-        );
-    }
-
-    saveClosingDuration(): void {
-        this.saveServoConfig(
-            this.configService.setDoorClosingDuration(this.servoClosingDurationMs),
-            `Durée de fermeture : ${this.servoClosingDurationMs} ms`
-        );
-    }
-
-    private saveServoConfig(call$: import('rxjs').Observable<unknown>, successMsg: string): void {
+    saveServoSettings(): void {
         if (this.servoSaving) return;
         this.servoSaving = true;
-        call$.pipe(takeUntil(this.destroy$)).subscribe({
-            next: () => {
-                this.servoSaving = false;
-                this.toast.success(successMsg, 'Servo');
-                this.cdr.detectChanges();
-            },
-            error: (err: HttpErrorResponse) => {
-                this.servoSaving = false;
-                this.toast.error(
-                    err.error?.message || err.message || 'Save failed',
-                    `Servo — HTTP ${err.status}`
-                );
-                this.cdr.detectChanges();
-            },
-        });
+        const toastTitle = $localize`:@@servoToastTitle:Servo`;
+        forkJoin({
+            openPos: this.configService.setDoorOpeningPosition(this.servoOpeningPosition),
+            closePos: this.configService.setDoorClosingPosition(this.servoClosingPosition),
+            openDur: this.configService.setDoorOpeningDuration(this.servoOpeningDurationMs),
+            closeDur: this.configService.setDoorClosingDuration(this.servoClosingDurationMs),
+        })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.servoSaving = false;
+                    this.toast.success(
+                        $localize`:@@servoSettingsSaved:Servomotor settings saved.`,
+                        toastTitle
+                    );
+                    this.cdr.detectChanges();
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.servoSaving = false;
+                    this.toast.error(
+                        err.error?.message || err.message || 'Save failed',
+                        `${toastTitle} — HTTP ${err.status}`
+                    );
+                    this.cdr.detectChanges();
+                },
+            });
     }
 
-    nudgeClockwise(): void {
-        this.nudge(true);
+    /** "Open a bit" — nudges the servo in the direction that opens the door. */
+    nudgeOpen(): void {
+        this.nudge('open');
     }
 
-    nudgeCounterClockwise(): void {
-        this.nudge(false);
+    /** "Close a bit" — nudges the servo in the direction that closes the door. */
+    nudgeClose(): void {
+        this.nudge('close');
     }
 
-    private nudge(clockwise: boolean): void {
+    private nudge(direction: 'open' | 'close'): void {
         if (this.servoNudging) return;
         const ms = Math.max(1, Math.min(30000, this.servoNudgeMs || 100));
         this.servoNudging = true;
-        const call$ = clockwise
-            ? this.servoService.turnClockwise(ms)
-            : this.servoService.turnCounterClockwise(ms);
+        // Convention (matches the previous Counter-clockwise/Clockwise wiring,
+        // just relabelled): counter-clockwise opens, clockwise closes. If a
+        // future build inverts the servo direction, swap these two calls.
+        const call$ =
+            direction === 'open'
+                ? this.servoService.turnCounterClockwise(ms)
+                : this.servoService.turnClockwise(ms);
+        const toastTitle = $localize`:@@servoToastTitle:Servo`;
         call$.pipe(takeUntil(this.destroy$)).subscribe({
             next: () => {
                 this.servoNudging = false;
-                this.toast.success(
-                    `Servo ${clockwise ? 'clockwise' : 'counter-clockwise'} ${ms} ms`,
-                    'Servo'
-                );
+                const msg =
+                    direction === 'open'
+                        ? $localize`:@@servoNudgeOpen:Open by ${ms}:ms: ms`
+                        : $localize`:@@servoNudgeClose:Close by ${ms}:ms: ms`;
+                this.toast.success(msg, toastTitle);
                 this.cdr.detectChanges();
             },
             error: (err: HttpErrorResponse) => {
                 this.servoNudging = false;
                 this.toast.error(
                     err.error?.message || err.message || 'Nudge failed',
-                    `Servo — HTTP ${err.status}`
+                    `${toastTitle} — HTTP ${err.status}`
                 );
                 this.cdr.detectChanges();
             },

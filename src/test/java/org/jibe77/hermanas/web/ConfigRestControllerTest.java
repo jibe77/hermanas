@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.web;
 
+import org.jibe77.hermanas.client.ai.AiVisionCache;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,12 @@ class ConfigRestControllerTest {
 
     @MockBean
     private CacheManager cacheManager;
+
+    @MockBean
+    private AiVisionCache aiVisionCache;
+
+    @MockBean
+    private org.jibe77.hermanas.service.camera.CameraService cameraService;
 
     // ============================================================================
     // GET /api/v1/config - View Configuration
@@ -81,15 +88,18 @@ class ConfigRestControllerTest {
         when(cacheManager.getCache("cache1")).thenReturn(mockCache);
         when(cacheManager.getCache("cache2")).thenReturn(mockCache);
 
-        // When/Then
+        // When/Then — Spring caches (cache1, cache2) plus the custom AiVisionCache
+        // and the CameraService picture cache bring the total to 4 cleared entries.
         mockMvc.perform(post("/api/v1/config/refresh")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Configuration caches refreshed successfully"))
-                .andExpect(jsonPath("$.caches_cleared").value(2))
+                .andExpect(jsonPath("$.caches_cleared").value(4))
                 .andExpect(jsonPath("$.hot_reload_enabled").value(true));
 
         verify(mockCache, times(2)).clear();
+        verify(aiVisionCache, times(1)).clear();
+        verify(cameraService, times(1)).clearPictureCache();
     }
 
     @Test

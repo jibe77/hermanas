@@ -21,7 +21,7 @@
     <sb-card>
         <div class="card-header">
             <fa-icon class="me-1" [icon]="['fas', 'chart-area']"></fa-icon>
-            <span i18n="@@weatherMonthlyTrend">Tendance sur 30 jours (moyennes journalières)</span>
+            <span i18n="@@weatherMonthlyTrend">30-day trend (daily averages)</span>
         </div>
         <div class="card-body">
             <hermanas-monthly-trend-chart></hermanas-monthly-trend-chart>
@@ -40,4 +40,147 @@
             ></hermanas-weather-table-area>
         </div>
     </sb-card>
+
+    @if (isAdmin) {
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'cloud-sun']"></fa-icon>
+                <span i18n="@@weatherProviderTitle">Weather provider (OpenWeather)</span>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted" i18n="@@weatherProviderHelp">
+                    The URL must contain the {{ '{' }}latitude{{ '}' }}, {{ '{' }}longitude{{ '}' }}
+                    and {{ '{' }}key{{ '}' }} placeholders. The API key is never sent back by the
+                    server — re-enter it to update it.
+                </p>
+                <div class="mb-3">
+                    <label for="weatherUrl" class="form-label small" i18n="@@weatherUrlLabel"
+                        >Provider URL</label
+                    >
+                    <input
+                        id="weatherUrl"
+                        type="text"
+                        class="form-control form-control-sm"
+                        [(ngModel)]="weatherUrl"
+                        (ngModelChange)="onWeatherFieldChange()"
+                    />
+                </div>
+                <div class="mb-3">
+                    <label for="weatherKey" class="form-label small d-flex justify-content-between">
+                        <span i18n="@@weatherKeyLabel">API key</span>
+                        @if (weatherKeySet) {
+                            <span class="badge text-bg-success" i18n="@@weatherKeySet"
+                                >Set ({{ weatherKeyLength }} chars)</span
+                            >
+                        }
+                        @if (!weatherKeySet) {
+                            <span class="badge text-bg-warning" i18n="@@weatherKeyMissing"
+                                >Not set</span
+                            >
+                        }
+                    </label>
+                    <input
+                        id="weatherKey"
+                        type="password"
+                        class="form-control form-control-sm"
+                        placeholder="(leave empty to keep current value)"
+                        i18n-placeholder="@@weatherKeyPlaceholder"
+                        autocomplete="new-password"
+                        [(ngModel)]="weatherKeyInput"
+                        (ngModelChange)="onWeatherFieldChange()"
+                    />
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="latitude" class="form-label small" i18n="@@latitudeLabel"
+                            >Latitude (-90..90)</label
+                        >
+                        <input
+                            id="latitude"
+                            type="number"
+                            step="0.000001"
+                            min="-90"
+                            max="90"
+                            class="form-control form-control-sm"
+                            i18n-placeholder="@@locationWriteOnlyPlaceholder"
+                            placeholder="(leave empty to keep the current value)"
+                            [(ngModel)]="latitudeInput"
+                            (ngModelChange)="onWeatherFieldChange()"
+                        />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="longitude" class="form-label small" i18n="@@longitudeLabel"
+                            >Longitude (-180..180)</label
+                        >
+                        <input
+                            id="longitude"
+                            type="number"
+                            step="0.000001"
+                            min="-180"
+                            max="180"
+                            class="form-control form-control-sm"
+                            i18n-placeholder="@@locationWriteOnlyPlaceholder"
+                            placeholder="(leave empty to keep the current value)"
+                            [(ngModel)]="longitudeInput"
+                            (ngModelChange)="onWeatherFieldChange()"
+                        />
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <button
+                        type="button"
+                        class="btn btn-primary btn-sm"
+                        (click)="saveWeatherSettings()"
+                        [disabled]="weatherSaving || weatherTesting"
+                    >
+                        <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                        <span i18n="@@save">Save</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        (click)="testWeatherSettings()"
+                        [disabled]="weatherSaving || weatherTesting"
+                    >
+                        @if (weatherTesting) {
+                            <span
+                                class="spinner-border spinner-border-sm me-1"
+                                role="status"
+                            ></span>
+                            <span i18n="@@weatherTesting">Testing…</span>
+                        }
+                        @if (!weatherTesting) {
+                            <fa-icon class="me-1" [icon]="['fas', 'vial']"></fa-icon>
+                            <span i18n="@@weatherTestButton">Test configuration</span>
+                        }
+                    </button>
+                    @if (weatherTestResult === 'success') {
+                        <span
+                            class="badge text-bg-success"
+                            data-cy="weatherTestSuccessBadge"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                            <span i18n="@@weatherTestBadgeOk">Successful</span>
+                            @if (weatherTestDurationMs !== null) {
+                                <span class="ms-1">({{ weatherTestDurationMs }} ms)</span>
+                            }
+                        </span>
+                    }
+                    @if (weatherTestResult === 'failure') {
+                        <span
+                            class="badge text-bg-danger"
+                            data-cy="weatherTestFailureBadge"
+                            [title]="weatherTestError"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'times']"></fa-icon>
+                            <span i18n="@@weatherTestBadgeKo">Failed</span>
+                        </span>
+                    }
+                </div>
+                @if (weatherTestResult === 'failure' && weatherTestError) {
+                    <div class="small text-danger mt-2">{{ weatherTestError }}</div>
+                }
+            </div>
+        </sb-card>
+    }
 </sb-layout-dashboard>

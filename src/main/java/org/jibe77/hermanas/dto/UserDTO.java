@@ -20,13 +20,18 @@ public class UserDTO {
     @Schema(description = "Whether this user should receive coop notifications by email")
     private boolean notificationsEnabled;
 
+    @Schema(description = "Preferred UI / notification language (\"fr\" or \"en\")", example = "fr")
+    private String language;
+
     public UserDTO() {}
 
-    public UserDTO(String login, String email, String role, boolean notificationsEnabled) {
+    public UserDTO(String login, String email, String role, boolean notificationsEnabled,
+                   String language) {
         this.login = login;
         this.email = email;
         this.role = role;
         this.notificationsEnabled = notificationsEnabled;
+        this.language = language;
     }
 
     public String getLogin() { return login; }
@@ -40,4 +45,7 @@ public class UserDTO {
 
     public boolean isNotificationsEnabled() { return notificationsEnabled; }
     public void setNotificationsEnabled(boolean notificationsEnabled) { this.notificationsEnabled = notificationsEnabled; }
+
+    public String getLanguage() { return language; }
+    public void setLanguage(String language) { this.language = language; }
 }

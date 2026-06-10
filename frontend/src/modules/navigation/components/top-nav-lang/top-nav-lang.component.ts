@@ -17,11 +17,13 @@ export class TopNavLangComponent implements OnInit {
     languageList = [
         { code: 'en-US', label: 'English' },
         { code: 'fr-FR', label: 'Français' },
+        { code: 'ro-RO', label: 'Română' },
     ];
 
     ngOnInit(): void {
         this.siteLocale = window.location.pathname.split('/')[1];
         const language = this.languageList.find(f => f.code === this.siteLocale);
-        this.siteLanguage = (language ?? this.languageList[1]).label;
+        // Default to English when the URL prefix is unknown, since "/" serves the EN bundle.
+        this.siteLanguage = (language ?? this.languageList[0]).label;
     }
 }

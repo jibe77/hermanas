@@ -35,6 +35,17 @@ public class CameraService {
     @Value("${camera.path.root}")
     private String rootPath;
 
+    /**
+     * Short-lived cache to share the same JPEG between near-simultaneous
+     * callers (e.g. the {@code <img>} on the Webcam page and the AI analysis
+     * triggered right after it loads). Two entries max — one per
+     * {@code highQuality} flavour.
+     */
+    @Value("${camera.cache.ttl-ms:30000}")
+    private long pictureCacheTtlMs;
+
+    private final java.util.Map<Boolean, CachedPicture> pictureCache = new java.util.concurrent.ConcurrentHashMap<>();
+
     private static final Logger logger = LoggerFactory.getLogger(CameraService.class);
 
     @Value("${camera.streaming.command}")
@@ -137,6 +148,60 @@ public class CameraService {
         } catch (IOException | InterruptedException e) {
             logger.error("Can't take picture.", e);
             return Optional.empty();
+        }
+    }
+
+    /**
+     * Variant of {@link #takePicture(boolean)} that returns the previous
+     * capture (per {@code highQuality} flavour) when it is younger than
+     * {@code camera.cache.ttl-ms} and the file still exists on disk. Lets the
+     * Webcam page <img> and the AI analyze button share a single physical
+     * capture rather than fire the camera twice in a row.
+     *
+     * <p>The {@code force} flag bypasses the cache, used by the "refresh"
+     * button on the Webcam page so the operator can demand a fresh shot.</p>
+     *
+     * <p>Scheduler-triggered captures and event-driven captures keep using
+     * {@link #takePicture(boolean)} directly so they always produce a fresh
+     * archive picture.</p>
+     */
+    public File takePictureCached(boolean highQuality, boolean force)
+            throws IOException, InterruptedException {
+        if (!force) {
+            CachedPicture cached = pictureCache.get(highQuality);
+            if (cached != null && cached.isFresh(pictureCacheTtlMs) && cached.file.exists()) {
+                logger.info("Picture cache hit (highQuality={}, age={} ms, file={}).",
+                        highQuality, System.currentTimeMillis() - cached.timestamp,
+                        cached.file.getAbsolutePath());
+                return cached.file;
+            }
+        }
+        File fresh = takePicture(highQuality);
+        if (pictureCacheTtlMs > 0) {
+            pictureCache.put(highQuality, new CachedPicture(fresh, System.currentTimeMillis()));
+        }
+        return fresh;
+    }
+
+    /**
+     * Drops every cached entry. Exposed for the admin-side "refresh
+     * configuration" action and reused by tests.
+     */
+    public void clearPictureCache() {
+        pictureCache.clear();
+    }
+
+    private static final class CachedPicture {
+        final File file;
+        final long timestamp;
+
+        CachedPicture(File file, long timestamp) {
+            this.file = file;
+            this.timestamp = timestamp;
+        }
+
+        boolean isFresh(long ttlMs) {
+            return ttlMs > 0 && System.currentTimeMillis() - timestamp <= ttlMs;
         }
     }
 

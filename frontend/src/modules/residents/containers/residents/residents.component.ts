@@ -10,6 +10,7 @@ import { ToastService } from '@common/services';
 import { UserService } from '@modules/auth/services';
 import { AuthState } from '@modules/auth/models';
 import { Resident, ResidentRequest, ResidentsService } from '@modules/residents/services';
+import { resizePhotoForUpload } from '@modules/residents/services/photo-resize';
 import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-dashboard/layout-dashboard.component';
 import { DashboardHeadComponent } from '../../../navigation/components/dashboard-head/dashboard-head.component';
 import { CardComponent } from '../../../app-common/components/card/card.component';
@@ -126,8 +127,9 @@ export class ResidentsComponent implements OnInit {
 
     save(): void {
         if (this.saving) return;
+        const toastTitle = $localize`:@@residentsToastTitle:Residents`;
         if (!this.form.name || this.form.name.trim().length === 0) {
-            this.toast.error('Le nom est requis', 'Pensionnaires');
+            this.toast.error($localize`:@@residentsNameRequired:Name is required`, toastTitle);
             return;
         }
         this.saving = true;
@@ -147,17 +149,18 @@ export class ResidentsComponent implements OnInit {
             next: () => {
                 this.saving = false;
                 this.showModal = false;
-                this.toast.success(
-                    this.form.id === null ? 'Pensionnaire ajouté' : 'Pensionnaire mis à jour',
-                    'Pensionnaires'
-                );
+                const msg =
+                    this.form.id === null
+                        ? $localize`:@@residentsCreated:Resident added`
+                        : $localize`:@@residentsUpdated:Resident updated`;
+                this.toast.success(msg, toastTitle);
                 this.load();
             },
             error: (err: HttpErrorResponse) => {
                 this.saving = false;
                 this.toast.error(
                     err.error?.message || err.message || 'Save failed',
-                    `Pensionnaires — HTTP ${err.status}`
+                    `${toastTitle} — HTTP ${err.status}`
                 );
                 this.cdr.markForCheck();
             },
@@ -165,19 +168,23 @@ export class ResidentsComponent implements OnInit {
     }
 
     remove(r: Resident): void {
+        const toastTitle = $localize`:@@residentsToastTitle:Residents`;
         const ok = window.confirm(
-            `Supprimer définitivement ${r.name} ? Cette action est irréversible.`
+            $localize`:@@residentsDeleteConfirm:Permanently delete ${r.name}:name:? This action cannot be undone.`
         );
         if (!ok) return;
         this.service.remove(r.id).subscribe({
             next: () => {
-                this.toast.success(`${r.name} supprimé`, 'Pensionnaires');
+                this.toast.success(
+                    $localize`:@@residentsDeleted:${r.name}:name: deleted`,
+                    toastTitle
+                );
                 this.load();
             },
             error: (err: HttpErrorResponse) =>
                 this.toast.error(
                     err.error?.message || err.message || 'Delete failed',
-                    `Pensionnaires — HTTP ${err.status}`
+                    `${toastTitle} — HTTP ${err.status}`
                 ),
         });
     }
@@ -185,39 +192,54 @@ export class ResidentsComponent implements OnInit {
     onPhotoSelected(r: Resident, event: Event): void {
         const input = event.target as HTMLInputElement;
         if (!input.files || input.files.length === 0) return;
-        const file = input.files[0];
+        const original = input.files[0];
         this.photoUploading = true;
-        this.service.uploadPhoto(r.id, file).subscribe({
-            next: () => {
-                this.photoUploading = false;
-                this.toast.success(`Photo mise à jour pour ${r.name}`, 'Pensionnaires');
-                input.value = '';
-                this.load();
-            },
-            error: (err: HttpErrorResponse) => {
-                this.photoUploading = false;
-                input.value = '';
-                this.toast.error(
-                    err.error?.message || err.message || 'Upload failed',
-                    `Pensionnaires — HTTP ${err.status}`
-                );
-                this.cdr.markForCheck();
-            },
-        });
+        this.cdr.markForCheck();
+        const toastTitle = $localize`:@@residentsToastTitle:Residents`;
+        resizePhotoForUpload(original)
+            .catch(() => original)
+            .then(file => {
+                this.service.uploadPhoto(r.id, file).subscribe({
+                    next: () => {
+                        this.photoUploading = false;
+                        this.toast.success(
+                            $localize`:@@residentsPhotoUpdated:Photo updated for ${r.name}:name:`,
+                            toastTitle
+                        );
+                        input.value = '';
+                        this.load();
+                    },
+                    error: (err: HttpErrorResponse) => {
+                        this.photoUploading = false;
+                        input.value = '';
+                        this.toast.error(
+                            err.error?.message || err.message || 'Upload failed',
+                            `${toastTitle} — HTTP ${err.status}`
+                        );
+                        this.cdr.markForCheck();
+                    },
+                });
+            });
     }
 
     deletePhoto(r: Resident): void {
-        const ok = window.confirm(`Supprimer la photo de ${r.name} ?`);
+        const toastTitle = $localize`:@@residentsToastTitle:Residents`;
+        const ok = window.confirm(
+            $localize`:@@residentsDeletePhotoConfirm:Delete the photo of ${r.name}:name:?`
+        );
         if (!ok) return;
         this.service.deletePhoto(r.id).subscribe({
             next: () => {
-                this.toast.success(`Photo de ${r.name} supprimée`, 'Pensionnaires');
+                this.toast.success(
+                    $localize`:@@residentsPhotoDeleted:Photo of ${r.name}:name: deleted`,
+                    toastTitle
+                );
                 this.load();
             },
             error: (err: HttpErrorResponse) =>
                 this.toast.error(
                     err.error?.message || err.message || 'Delete failed',
-                    `Pensionnaires — HTTP ${err.status}`
+                    `${toastTitle} — HTTP ${err.status}`
                 ),
         });
     }

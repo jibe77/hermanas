@@ -19,6 +19,10 @@
                     "fr-FR": {
                         "translation": "src/locale/messages.fr-FR.xlf",
                         "baseHref": "/fr-FR/"
+                    },
+                    "ro-RO": {
+                        "translation": "src/locale/messages.ro-RO.xlf",
+                        "baseHref": "/ro-RO/"
                     }
                 }
             },
@@ -27,6 +31,7 @@
                     "builder": "@angular-devkit/build-angular:browser",
                     "options": {
                         "localize": true,
+                        "i18nMissingTranslation": "warning",
                         "outputPath": "dist/hermanas-client",
                         "index": "src/index.html",
                         "main": "src/main.ts",
@@ -82,6 +87,10 @@
                         "en": {
                             "outputPath": "dist/hermanas-client/en-US/",
                             "localize": ["en-US"]
+                        },
+                        "ro": {
+                            "outputPath": "dist/hermanas-client/ro-RO/",
+                            "localize": ["ro-RO"]
                         }
                     },
                     "defaultConfiguration": ""

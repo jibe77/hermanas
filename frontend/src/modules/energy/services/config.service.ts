@@ -22,7 +22,22 @@ export interface AllConfig {
     notifications: NotificationToggles;
     camera_settings: CameraSettings;
     weather_settings: WeatherSettings;
+    ai_settings: AiSettings;
     email_settings: EmailSettings;
+    email_smtp: EmailSmtpSettings;
+}
+
+export interface AiSettings {
+    /** URL of the local LLM endpoint used by /camera/analyze. Empty string = not configured. */
+    inference_url: string;
+    /** Name of the multimodal model exposed by that server. Defaults to "focus" (qwen2.5-vl). */
+    inference_model: string;
+    /** TTL (in milliseconds) of the server-side cache for successful analyses. 0 disables it. */
+    cache_ttl_ms: number;
+    /** Custom prompt sent to the model. Empty string means "use the built-in default". */
+    prompt: string;
+    /** Built-in default prompt — used to pre-fill the textarea when nothing is configured. */
+    prompt_default: string;
 }
 
 export interface SunOffsets {
@@ -49,7 +64,6 @@ export interface AudioToggles {
 }
 
 export interface NotificationToggles {
-    email_enabled: boolean;
     weather_enabled: boolean;
 }
 
@@ -64,11 +78,23 @@ export interface WeatherSettings {
     key_set: boolean;
     /** Length of the stored key in characters (0 if unset). Used as a visual sanity check. */
     key_length: number;
+    // latitude/longitude are write-only — the server does not return them
+    // (chicken-coop location is sensitive). Use setLatitude()/setLongitude()
+    // to push new values.
 }
 
 export interface EmailSettings {
-    to: string;
     from: string;
+}
+
+export interface EmailSmtpSettings {
+    host: string;
+    port: number;
+    username: string;
+    /** true if a non-default password is stored. The password itself is never sent. */
+    password_set: boolean;
+    auth: boolean;
+    starttls: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -159,14 +185,6 @@ export class ConfigService extends AbstractService {
         });
     }
 
-    setEmailNotifications(enabled: boolean): Observable<string> {
-        const params = new HttpParams().set('enabled', String(enabled));
-        return this.http.put(`${this.domainBase}/config/notifications/email`, null, {
-            params,
-            responseType: 'text',
-        });
-    }
-
     setWeatherInfo(enabled: boolean): Observable<string> {
         const params = new HttpParams().set('enabled', String(enabled));
         return this.http.put(`${this.domainBase}/config/notifications/weather`, null, {
@@ -215,9 +233,59 @@ export class ConfigService extends AbstractService {
         });
     }
 
-    setEmailTo(email: string): Observable<string> {
-        const params = new HttpParams().set('email', email);
-        return this.http.put(`${this.domainBase}/config/email/to`, null, {
+    /**
+     * Sets the URL of the local LLM inference service used by /camera/analyze.
+     * Empty string clears the configuration (analyze endpoint then stays in WIP / 501 mode).
+     */
+    setAiInferenceUrl(url: string): Observable<string> {
+        const params = new HttpParams().set('url', url);
+        return this.http.put(`${this.domainBase}/config/ai/inference-url`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** Updates the model name passed in the OpenAI-compatible chat/completions payload. */
+    setAiInferenceModel(model: string): Observable<string> {
+        const params = new HttpParams().set('model', model);
+        return this.http.put(`${this.domainBase}/config/ai/inference-model`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** Updates the server-side AI vision cache TTL in milliseconds. 0 disables the cache. */
+    setAiInferenceCacheTtlMs(ttlMs: number): Observable<string> {
+        const params = new HttpParams().set('ttlMs', String(ttlMs));
+        return this.http.put(`${this.domainBase}/config/ai/cache-ttl-ms`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /**
+     * Updates the prompt sent to the multimodal model. Empty string restores
+     * the built-in default. The body is sent as raw text so the operator can
+     * keep multi-line content without escaping anything client-side.
+     */
+    setAiInferencePrompt(prompt: string): Observable<string> {
+        return this.http.put(`${this.domainBase}/config/ai/prompt`, prompt, {
+            headers: { 'Content-Type': 'text/plain' },
+            responseType: 'text',
+        });
+    }
+
+    setLatitude(value: number): Observable<string> {
+        const params = new HttpParams().set('value', String(value));
+        return this.http.put(`${this.domainBase}/config/location/latitude`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setLongitude(value: number): Observable<string> {
+        const params = new HttpParams().set('value', String(value));
+        return this.http.put(`${this.domainBase}/config/location/longitude`, null, {
             params,
             responseType: 'text',
         });
@@ -226,6 +294,54 @@ export class ConfigService extends AbstractService {
     setEmailFrom(email: string): Observable<string> {
         const params = new HttpParams().set('email', email);
         return this.http.put(`${this.domainBase}/config/email/from`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setMailHost(host: string): Observable<string> {
+        const params = new HttpParams().set('host', host);
+        return this.http.put(`${this.domainBase}/config/mail/host`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setMailPort(port: number): Observable<string> {
+        const params = new HttpParams().set('port', String(port));
+        return this.http.put(`${this.domainBase}/config/mail/port`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setMailUsername(username: string): Observable<string> {
+        const params = new HttpParams().set('username', username);
+        return this.http.put(`${this.domainBase}/config/mail/username`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setMailPassword(password: string): Observable<string> {
+        const params = new HttpParams().set('password', password);
+        return this.http.put(`${this.domainBase}/config/mail/password`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setMailAuth(enabled: boolean): Observable<string> {
+        const params = new HttpParams().set('enabled', String(enabled));
+        return this.http.put(`${this.domainBase}/config/mail/auth`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setMailStartTls(enabled: boolean): Observable<string> {
+        const params = new HttpParams().set('enabled', String(enabled));
+        return this.http.put(`${this.domainBase}/config/mail/starttls`, null, {
             params,
             responseType: 'text',
         });

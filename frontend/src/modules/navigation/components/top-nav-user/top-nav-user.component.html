@@ -18,30 +18,46 @@
         <div class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="dropdownUser">
             <h6 class="dropdown-header">
                 <div class="dropdown-user-details">
-                    @if (user.authState === 'signedIn') {
+                    @if (isDemoMode()) {
+                        <div class="dropdown-user-details-name">
+                            <span i18n="@@demoUserLabel">Démo (admin simulé)</span>
+                        </div>
+                    }
+                    @if (!isDemoMode() && user.authState === 'signedIn') {
                         <div class="dropdown-user-details-name">
                             {{ user.login }}
                         </div>
                     }
-                    @if (user.authState !== 'signedIn') {
+                    @if (!isDemoMode() && user.authState !== 'signedIn') {
                         <div class="dropdown-user-details-name" i18n="@@guest">Guest</div>
                     }
                 </div>
             </h6>
             <div class="dropdown-divider"></div>
-            @if (user.authState !== 'signedIn') {
+            @if (!isDemoMode() && user.authState !== 'signedIn') {
                 <button class="dropdown-item" type="button" (click)="openLogin()">
-                    <span i18n="@@signin">Connexion</span>
+                    <span i18n="@@signinButton">Sign in</span>
+                </button>
+                <button class="dropdown-item" type="button" (click)="openRegister()">
+                    <span i18n="@@registerButton">Inscription</span>
+                </button>
+                <button class="dropdown-item" type="button" (click)="enableDemo()">
+                    <span i18n="@@demoModeEnable">Enable demo mode</span>
                 </button>
             }
-            @if (user.authState === 'signedIn') {
+            @if (isDemoMode()) {
+                <button class="dropdown-item" type="button" (click)="disableDemo()">
+                    <span i18n="@@demoModeDisable">Quitter le mode démo</span>
+                </button>
+            }
+            @if (!isDemoMode() && user.authState === 'signedIn') {
                 <button
                     class="dropdown-item"
                     type="button"
                     (click)="logout()"
                     data-cy="logoutButton"
                 >
-                    <span i18n="@@signout">Déconnexion</span>
+                    <span i18n="@@signout">Sign out</span>
                 </button>
             }
         </div>

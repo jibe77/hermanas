@@ -73,6 +73,6 @@ export class ToastContainerComponent implements OnInit, OnDestroy {
      * Get CSS class for toast type
      */
     public getToastClass(type: Toast['type']): string {
-        return `toast-${type}`;
+        return `hermanas-toast-${type}`;
     }
 }

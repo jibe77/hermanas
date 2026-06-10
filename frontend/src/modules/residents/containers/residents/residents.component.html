@@ -1,6 +1,6 @@
 <sb-layout-dashboard>
     <sb-dashboard-head
-        title="Pensionnaires"
+        title="Residents"
         i18n-title="@@residents"
         [hideBreadcrumbs]="true"
     ></sb-dashboard-head>
@@ -8,12 +8,12 @@
     <sb-card>
         <div class="card-body d-flex justify-content-between align-items-center">
             <span i18n="@@residentsInfo"
-                >La liste des poules qui vivent (ou ont vécu) dans le poulailler.</span
+                >The list of hens that live (or have lived) in the chicken coop.</span
             >
             @if (isAuthenticated) {
                 <button type="button" class="btn btn-primary btn-sm" (click)="openCreate()">
                     <fa-icon class="me-1" [icon]="['fas', 'plus']"></fa-icon>
-                    <span i18n="@@residentsAdd">Ajouter une poule</span>
+                    <span i18n="@@residentsAdd">Add a hen</span>
                 </button>
             }
         </div>
@@ -30,7 +30,7 @@
     @if (!loading && residents.length === 0) {
         <sb-card>
             <div class="card-body text-muted" i18n="@@residentsEmpty">
-                Aucune poule enregistrée pour le moment.
+                No hen recorded yet.
             </div>
         </sb-card>
     }
@@ -65,19 +65,19 @@
                         </h5>
                         @if (r.breed) {
                             <div class="small text-muted">
-                                <span i18n="@@residentsBreed">Race</span>
+                                <span i18n="@@residentsBreed">Breed</span>
                                 {{ ' ' }}:{{ ' ' }}{{ r.breed }}
                             </div>
                         }
                         @if (r.birthDate) {
                             <div class="small text-muted">
-                                <span i18n="@@residentsBirthDate">Naissance</span>
+                                <span i18n="@@residentsBirthDate">Birth</span>
                                 {{ ' ' }}:{{ ' ' }}{{ r.birthDate | date: 'yyyy-MM-dd' }}
                             </div>
                         }
                         @if (r.arrivalDate) {
                             <div class="small text-muted">
-                                <span i18n="@@residentsArrivalDate">Arrivée</span>
+                                <span i18n="@@residentsArrivalDate">Arrival</span>
                                 {{ ' ' }}:{{ ' ' }}{{ r.arrivalDate | date: 'yyyy-MM-dd' }}
                             </div>
                         }
@@ -92,7 +92,7 @@
                                     (click)="openEdit(r)"
                                 >
                                     <fa-icon class="me-1" [icon]="['fas', 'edit']"></fa-icon>
-                                    <span i18n="@@residentsEdit">Modifier</span>
+                                    <span i18n="@@residentsEdit">Edit</span>
                                 </button>
                                 <label class="btn btn-outline-secondary btn-sm mb-0">
                                     <fa-icon class="me-1" [icon]="['fas', 'camera']"></fa-icon>
@@ -111,7 +111,7 @@
                                         (click)="deletePhoto(r)"
                                     >
                                         <fa-icon class="me-1" [icon]="['fas', 'image']"></fa-icon>
-                                        <span i18n="@@residentsDeletePhoto">Suppr. photo</span>
+                                        <span i18n="@@residentsDeletePhoto">Delete photo</span>
                                     </button>
                                 }
                                 <button
@@ -120,7 +120,7 @@
                                     (click)="remove(r)"
                                 >
                                     <fa-icon class="me-1" [icon]="['fas', 'trash']"></fa-icon>
-                                    <span i18n="@@residentsDelete">Supprimer</span>
+                                    <span i18n="@@residentsDelete">Delete</span>
                                 </button>
                             </div>
                         }
@@ -137,15 +137,16 @@
                     <div class="modal-header">
                         <h5 class="modal-title">
                             @if (form.id === null) {
-                                <span i18n="@@residentsAddTitle">Nouvelle poule</span>
+                                <span i18n="@@residentsAddTitle">New hen</span>
                             }
                             @if (form.id !== null) {
-                                <span i18n="@@residentsEditTitle">Modifier la poule</span>
+                                <span i18n="@@residentsEditTitle">Edit hen</span>
                             }
                         </h5>
                         <button
                             type="button"
                             class="btn-close"
+                            i18n-aria-label="@@close"
                             aria-label="Close"
                             (click)="closeModal()"
                         ></button>
@@ -154,7 +155,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="resName" class="form-label small" i18n="@@residentsName"
-                                    >Nom</label
+                                    >Name</label
                                 >
                                 <input
                                     id="resName"
@@ -169,7 +170,7 @@
                                     for="resBreed"
                                     class="form-label small"
                                     i18n="@@residentsBreed"
-                                    >Race</label
+                                    >Breed</label
                                 >
                                 <input
                                     id="resBreed"
@@ -183,7 +184,7 @@
                                     for="resBirth"
                                     class="form-label small"
                                     i18n="@@residentsBirthDate"
-                                    >Naissance</label
+                                    >Birth</label
                                 >
                                 <input
                                     id="resBirth"
@@ -197,7 +198,7 @@
                                     for="resArrival"
                                     class="form-label small"
                                     i18n="@@residentsArrivalDate"
-                                    >Arrivée</label
+                                    >Arrival</label
                                 >
                                 <input
                                     id="resArrival"
@@ -211,7 +212,7 @@
                                     for="resDeath"
                                     class="form-label small"
                                     i18n="@@residentsDeathDate"
-                                    >Décès</label
+                                    >Death</label
                                 >
                                 <input
                                     id="resDeath"
@@ -225,7 +226,7 @@
                                     for="resComments"
                                     class="form-label small"
                                     i18n="@@residentsComments"
-                                    >Commentaires</label
+                                    >Comments</label
                                 >
                                 <textarea
                                     id="resComments"

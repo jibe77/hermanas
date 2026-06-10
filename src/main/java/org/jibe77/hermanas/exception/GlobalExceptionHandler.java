@@ -1,5 +1,6 @@
 package org.jibe77.hermanas.exception;
 
+import org.apache.catalina.connector.ClientAbortException;
 import org.jibe77.hermanas.image.PredictionException;
 import org.jibe77.hermanas.security.ratelimit.RateLimitExceededException;
 import org.jibe77.hermanas.service.door.DoorNotClosedCorrectlyException;
@@ -163,6 +164,16 @@ public class GlobalExceptionHandler {
 
         logger.warn("Rate limit exceeded: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errors);
+    }
+
+    /**
+     * Client closed the connection before the response was fully written. Not an application
+     * error — common on slow links and on the Pi Zero with large sensor-history payloads.
+     * Returning void avoids a second write attempt (which would just re-throw Broken pipe).
+     */
+    @ExceptionHandler(ClientAbortException.class)
+    public void handleClientAbortException(ClientAbortException ex) {
+        logger.debug("Client aborted connection: {}", ex.getMessage());
     }
 
     /**

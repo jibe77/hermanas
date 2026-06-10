@@ -45,6 +45,7 @@ frontend/bazel-out/
 
 # dependencies
 frontend/node_modules/
+node_modules/
 
 # Angular cache
 frontend/.angular/
