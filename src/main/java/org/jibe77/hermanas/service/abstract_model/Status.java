@@ -1,8 +1,8 @@
 package org.jibe77.hermanas.service.abstract_model;
 
 public class Status {
-    StatusEnum status;
-    int timeOut;
+    private final StatusEnum status;
+    private final int timeOut;
 
     public Status(StatusEnum status, int timeOut) {
         this.status = status;
@@ -13,21 +13,13 @@ public class Status {
         return status;
     }
 
-    public void setStatus(StatusEnum status) {
-        this.status = status;
-    }
-
     public int getTimeOut() {
         return timeOut;
     }
 
-    public void setTimeOut(int timeOut) {
-        this.timeOut = timeOut;
-    }
-
     @Override
     public String toString() {
-        return "FanStatus{" +
+        return "Status{" +
                 "status=" + status +
                 ", timeOut=" + timeOut +
                 '}';

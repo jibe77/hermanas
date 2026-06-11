@@ -112,9 +112,6 @@ public class GpioHermanasRpiService implements GpioHermanasService {
                 .debounce(3000L)
                 .provider("pigpio-digital-input");
         return pi4j.create(d);
-
-        //return gpio.provisionDigitalInputPin(
-        //        RaspiPin.getPinByAddress(gpioAddress), PinPullResistance.PULL_DOWN);
     }
 
     @Override

@@ -32,6 +32,10 @@ public class CameraService {
 
     private DoorPictureAnalizer doorPictureAnalizer;
 
+    private ProcessLauncher processLauncher;
+
+    private Process currentStreamingProcess;
+
     @Value("${camera.path.root}")
     private String rootPath;
 
@@ -204,10 +208,6 @@ public class CameraService {
             return ttlMs > 0 && System.currentTimeMillis() - timestamp <= ttlMs;
         }
     }
-
-    ProcessLauncher processLauncher;
-
-    private Process currentStreamingProcess;
 
     public void stream() throws IOException {
         if (currentStreamingProcess == null) {
