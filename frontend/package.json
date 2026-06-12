@@ -80,7 +80,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "jsdom": "^29.1.1",
     "prettier": "^3.6.2",
-    "shelljs": "0.8.4",
+    "shelljs": "0.8.5",
     "ts-node": "9.1.1",
     "typescript": "~5.9.3",
     "vitest": "^3.2.4"
