@@ -39,6 +39,11 @@ export class DemoFixtureService {
             return { authenticated: true, username: 'demo', roles: ['ADMIN'] };
         }
 
+        // ── Electronics GPIO wiring (admin) ──────────────────────────────────
+        if (path.endsWith('/electronics/gpio')) {
+            return this.syntheticGpioPins();
+        }
+
         // ── Buttons live status (admin) ──────────────────────────────────────
         if (path.endsWith('/buttons/status')) {
             const now = Date.now();
@@ -186,7 +191,60 @@ export class DemoFixtureService {
 
         // ── System (admin) ───────────────────────────────────────────────────
         if (path.endsWith('/system/disk-usage')) {
-            return { usedPercent: 42, path: '/ (demo)' };
+            return {
+                readable: true,
+                usedPercent: 42,
+                totalBytes: 64 * 1024 ** 3,
+                usedBytes: 27 * 1024 ** 3,
+                availableBytes: 37 * 1024 ** 3,
+                path: '/ (demo)',
+            };
+        }
+        if (path.endsWith('/system/cpu')) {
+            return {
+                readable: true,
+                usedPercent: 18,
+                coreCount: 1,
+                loadAverage1m: 0.42,
+                uptimeSeconds: 86400 * 6 + 3 * 3600,
+            };
+        }
+        if (path.endsWith('/system/memory')) {
+            return {
+                readable: true,
+                totalBytes: 512 * 1024 ** 2,
+                usedBytes: 218 * 1024 ** 2,
+                availableBytes: 294 * 1024 ** 2,
+                usedPercent: 42,
+                swapTotalBytes: 1024 ** 3,
+                swapUsedBytes: 64 * 1024 ** 2,
+                swapFreeBytes: 960 * 1024 ** 2,
+                swapUsedPercent: 6,
+            };
+        }
+        if (path.endsWith('/system/snapshot')) {
+            return this.syntheticSystemSnapshot();
+        }
+        if (path.endsWith('/actuator/info')) {
+            return {
+                build: {
+                    version: '0.8.1-demo',
+                    time: new Date().toISOString(),
+                    artifact: 'hermanas',
+                    name: 'Hermanas',
+                    group: 'org.jibe77',
+                },
+                app: { name: 'Hermanas', description: 'Chicken coop automation' },
+                java: {
+                    source: '11',
+                    target: '11',
+                    runtime: { name: 'OpenJDK Runtime Environment', version: '11.0.21' },
+                    vendor: 'Eclipse Adoptium',
+                },
+            };
+        }
+        if (path.includes('/actuator/metrics/')) {
+            return this.syntheticActuatorMetric(path);
         }
 
         // ── Info (public but included so demos work offline) ─────────────────
@@ -362,7 +420,9 @@ export class DemoFixtureService {
     }
 
     private syntheticLogs(path: string): unknown {
-        if (path.endsWith('/logs/files')) {
+        // `GET /logs` lists the available log files. We also accept
+        // /logs/files for compatibility with older callers.
+        if (path.endsWith('/logs') || path.endsWith('/logs/files')) {
             return [
                 { name: 'spring.log', size: 81920, modified: new Date().toISOString() },
                 {
@@ -370,15 +430,145 @@ export class DemoFixtureService {
                     size: 12288,
                     modified: new Date(Date.now() - 86400 * 1000).toISOString(),
                 },
+                {
+                    name: 'spring.log.2026-05-31.0.gz',
+                    size: 14336,
+                    modified: new Date(Date.now() - 2 * 86400 * 1000).toISOString(),
+                },
             ];
         }
-        // Tail content
+        // `GET /logs/{filename}` returns the tail of the named file as a
+        // plain string array. Synthetic lines cover the typical mix of
+        // INFO/WARN/ERROR so the level filter has something to grade.
+        const now = Date.now();
+        const ts = (offsetMin: number) =>
+            new Date(now - offsetMin * 60_000)
+                .toISOString()
+                .replace('T', ' ')
+                .substring(0, 23);
         return [
-            '2026-06-02 08:42:11.243  INFO 1234 --- [main] o.j.h.HermanasApplication       : Demo mode — synthetic log line',
-            '2026-06-02 08:42:11.245  INFO 1234 --- [main] o.j.h.scheduler.job.PeriodicJob : Sensor scheduled job is taking temperature and humidity now.',
-            '2026-06-02 08:42:14.901  INFO 1234 --- [main] o.j.h.service.sensor.SensorService : temperature 18.4 and humidity 62.1',
-            '2026-06-02 08:43:05.012  INFO 1234 --- [main] o.j.h.service.door.DoorService     : Door opened at sunrise + 0 min.',
+            `${ts(15)}  INFO 1234 --- [main] o.j.h.HermanasApplication       : Demo mode — synthetic log line`,
+            `${ts(14)}  INFO 1234 --- [scheduler-1] o.j.h.scheduler.job.PeriodicJob : Sensor scheduled job is taking temperature and humidity now.`,
+            `${ts(14)}  INFO 1234 --- [scheduler-1] o.j.h.service.sensor.SensorService : temperature 18.4 and humidity 62.1`,
+            `${ts(12)}  INFO 1234 --- [http-nio-8080-exec-3] o.j.h.security.audit.AuditLogger : user=demo ip=127.0.0.1 op=DOOR_STATUS result=OK`,
+            `${ts(10)}  WARN 1234 --- [main] o.j.h.client.weather.WeatherClient : OpenWeather replied 502 — falling back to cached value.`,
+            `${ts(8)}  INFO 1234 --- [scheduler-2] o.j.h.service.door.DoorService     : Door opened at sunrise + 0 min.`,
+            `${ts(5)} ERROR 1234 --- [http-nio-8080-exec-5] o.j.h.client.ai.AiVisionClient : POST http://alyssa:8080/v1/chat/completions failed: read timeout (will not retry).`,
+            `${ts(3)}  INFO 1234 --- [main] o.j.h.service.camera.CameraService : Picture cache hit (highQuality=true, age=4831 ms).`,
+            `${ts(1)}  INFO 1234 --- [scheduler-1] o.j.h.scheduler.job.SunRelatedJob : Sun checks done — next door close in 6h12m.`,
         ];
+    }
+
+    /**
+     * GPIO wiring shown on the Electronics page. Pin numbers mirror the
+     * production application.properties so the demo board diagram lines up
+     * with what a real Hermanas user would see on their own hardware.
+     */
+    private syntheticGpioPins(): unknown {
+        return [
+            {
+                key: 'doorServo', label: 'Door servomotor', labelFr: 'Servomoteur de la porte',
+                direction: 'OUTPUT', kind: 'servo', pin: 25, boardPin: '22',
+            },
+            {
+                key: 'upperEndStop', label: 'Upper end-stop button',
+                labelFr: 'Bouton de fin de course haut', direction: 'INPUT',
+                kind: 'button', pin: 15, boardPin: '10',
+            },
+            {
+                key: 'lowerEndStop', label: 'Lower end-stop button',
+                labelFr: 'Bouton de fin de course bas', direction: 'INPUT',
+                kind: 'button', pin: 18, boardPin: '12',
+            },
+            {
+                key: 'light', label: 'Coop light', labelFr: 'Lumière du poulailler',
+                direction: 'OUTPUT', kind: 'light', pin: 14, boardPin: '8',
+            },
+            {
+                key: 'fan', label: 'Ventilation fan', labelFr: 'Ventilateur',
+                direction: 'OUTPUT', kind: 'fan', pin: 23, boardPin: '16',
+            },
+            {
+                key: 'sensor', label: 'Temperature & humidity sensor',
+                labelFr: 'Capteur température / humidité', direction: 'INPUT',
+                kind: 'sensor', pin: 4, boardPin: '7',
+            },
+        ];
+    }
+
+    /** GET /system/snapshot — composite payload consumed by the System page. */
+    private syntheticSystemSnapshot(): unknown {
+        return {
+            disk: {
+                readable: true,
+                usedPercent: 42,
+                totalBytes: 64 * 1024 ** 3,
+                usedBytes: 27 * 1024 ** 3,
+                availableBytes: 37 * 1024 ** 3,
+                path: '/ (demo)',
+            },
+            memory: {
+                readable: true,
+                totalBytes: 512 * 1024 ** 2,
+                usedBytes: 218 * 1024 ** 2,
+                availableBytes: 294 * 1024 ** 2,
+                usedPercent: 42,
+                swapTotalBytes: 1024 ** 3,
+                swapUsedBytes: 64 * 1024 ** 2,
+                swapFreeBytes: 960 * 1024 ** 2,
+                swapUsedPercent: 6,
+            },
+            cpu: {
+                readable: true,
+                usedPercent: 18,
+                coreCount: 1,
+                loadAverage1m: 0.42,
+                uptimeSeconds: 86400 * 6 + 3 * 3600,
+            },
+            stack: {
+                appName: 'Hermanas',
+                appDescription: 'Chicken coop automation',
+                appEncoding: 'UTF-8',
+                javaSource: '11',
+                javaTarget: '11',
+                javaVendor: 'Eclipse Adoptium',
+                javaRuntimeVersion: '11.0.21',
+                javaRuntimeVendor: 'Eclipse Adoptium',
+                javaRuntimeName: 'OpenJDK Runtime Environment',
+                hostname: 'hermanas-demo',
+                buildVersion: '0.8.1-demo',
+                buildTime: new Date().toISOString(),
+                uptimeSeconds: 86400 * 6 + 3 * 3600,
+                jvmHeapUsed: 96 * 1024 ** 2,
+                jvmHeapMax: 256 * 1024 ** 2,
+                jvmThreads: 38,
+                httpRequests: 14_512,
+                processCpu: 0.16,
+            },
+        };
+    }
+
+    /**
+     * GET /actuator/metrics/<name> — minimal Spring Boot Actuator shape. The
+     * Hermanas System page reads `measurements[0].value` only, so a single-
+     * measurement payload is enough; the actual value is derived from the
+     * metric name so the demo isn't filled with identical zeros.
+     */
+    private syntheticActuatorMetric(path: string): unknown {
+        const name = path.substring(path.lastIndexOf('/') + 1);
+        let value = 0;
+        if (name.includes('uptime')) value = 86400 * 6 + 3 * 3600;
+        else if (name.includes('cpu')) value = 0.16;
+        else if (name.includes('memory.used')) value = 96 * 1024 ** 2;
+        else if (name.includes('memory.max')) value = 256 * 1024 ** 2;
+        else if (name.includes('threads')) value = 38;
+        else if (name.includes('http')) value = 14_512;
+        else value = 1;
+        return {
+            name,
+            measurements: [{ statistic: 'VALUE', value }],
+            availableTags: [],
+        };
     }
 
     private syntheticAuthEvents(): unknown {
@@ -481,6 +671,42 @@ export class DemoFixtureService {
         ];
     }
 
+    /**
+     * Synthetic AI settings shown in the Webcam configuration panel. The
+     * inference URL host, port and model name are randomised once per service
+     * instance — keeps the value plausible and avoids any accidental hint at
+     * the real production hostname. Timeouts/retry mirror the production
+     * defaults so the operator sees the actual tunable surface. The
+     * {@code prompt_default} matches the Java {@code CameraPromptBuilder
+     * #DEFAULT_PROMPT} verbatim so the textarea pre-fills with the real
+     * built-in prompt, not a placeholder.
+     */
+    private cachedAiSettings: unknown | null = null;
+    private syntheticAiSettings(): unknown {
+        if (this.cachedAiSettings) {
+            return this.cachedAiSettings;
+        }
+        const hosts = ['alyssa', 'helga', 'kelda', 'astrid', 'birgit', 'sigrid'];
+        const models = ['focus', 'vision-pro', 'qwen-vl', 'multimodal-v2', 'farm-watch'];
+        const ports = [8080, 11434, 5050, 7860, 9090];
+        const host = hosts[Math.floor(Math.random() * hosts.length)];
+        const port = ports[Math.floor(Math.random() * ports.length)];
+        const model = models[Math.floor(Math.random() * models.length)];
+        this.cachedAiSettings = {
+            inference_url: `http://${host}:${port}/v1`,
+            inference_model: model,
+            cache_ttl_ms: 120000,
+            prompt: '',
+            prompt_default: DEMO_DEFAULT_AI_PROMPT,
+            connect_timeout_ms: 15000,
+            read_timeout_ms: 180000,
+            retry_max_attempts: 3,
+            retry_initial_backoff_ms: 2000,
+            retry_max_backoff_ms: 10000,
+        };
+        return this.cachedAiSettings;
+    }
+
     /** GET /users/me — synthetic profile for the demo "admin" visitor. */
     private syntheticMe(): unknown {
         return {
@@ -537,14 +763,12 @@ export class DemoFixtureService {
             audio_toggles: { cocorico_at_sunrise: true, song_at_sunset: false },
             notifications: { weather_enabled: true },
             camera_settings: { brightness: 60, rotation: 180 },
-            weather_settings: { url: 'https://api.openweathermap.org', key_set: true, key_length: 32 },
-            ai_settings: {
-                inference_url: 'http://localhost:11434',
-                inference_model: 'focus',
-                cache_ttl_ms: 120000,
-                prompt: '',
-                prompt_default: 'Describe the chicken coop: hens, eggs, hay, door state, dirt.',
+            weather_settings: {
+                url: 'https://weather.example.demo/v1',
+                key_set: true,
+                key_length: 32,
             },
+            ai_settings: this.syntheticAiSettings(),
             email_settings: { from: 'hermanas@demo.fr' },
             email_smtp: {
                 host: 'smtp.demo.fr',
@@ -633,3 +857,34 @@ export class DemoFixtureService {
         return params.get('path') ?? '';
     }
 }
+
+/**
+ * Mirror of CameraPromptBuilder.DEFAULT_PROMPT (Java side). Kept verbatim so
+ * the demo Webcam config panel pre-fills the textarea with the actual
+ * production default, not a placeholder. Hand-synced — drift will only
+ * affect what the demo visitor sees, never real inference behaviour.
+ */
+const DEMO_DEFAULT_AI_PROMPT =
+    "Can you analyze this pictures from the inside of my chicken coop ? Be very" +
+    " straightforward in your answers, and don't reply like it's questions, make real" +
+    " answer because the person who will read this text can't see the prompt.\n" +
+    "*   how many chicken can you see ? (watch out, some chicken are black so they can be" +
+    " difficult to notice, if you see a tiny glimpse of another chicken then take it in" +
+    " account, if this is just a silhouette or a shadow it's a false positive so skip" +
+    " it) However, be very strict: if a black shape looks like a shadow, a dark piece of" +
+    " wood, or a pile of feathers without a distinct head or eye, do not count it. If" +
+    " you are not 100% sure it is a living bird, assume it is a shadow.\n" +
+    "*   how many eggs can you see on the floor ? (watch out, an egg is different from a" +
+    " poop, even if they are both round oval, a poop is dark and sometimes white, but an" +
+    " egg is cuckoo maran. If you see a round dark shape in the shadows of the nesting" +
+    " box, verify if it has the smooth, glossy texture of an egg before counting it. If" +
+    " it's blue, it's not an egg. Verify it's not a shadow) (note : if you see something" +
+    " blue/green it's probably a glove, skip it)\n" +
+    "*   is they enough hay on the ground  ?\n" +
+    "*   is the door on the lower left corner opened or closed ? (when the door is" +
+    " closed, it has a wooden color, when it's opened you can see the outside) (Note: If" +
+    " it is night time, an opened door will appear as a dark void or shadow similar to" +
+    " the outside, whereas a closed door will show the visible wooden texture/panel of" +
+    " the door itself).\n" +
+    "*   is there poop / dirt on the floor ? (grade from 1 to 5)\n" +
+    "*   there is a fan on the upper right corner, is it dusty ?";
