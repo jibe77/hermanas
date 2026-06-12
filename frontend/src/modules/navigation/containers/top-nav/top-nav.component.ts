@@ -8,6 +8,7 @@ import {
     ConfettiComponent,
     DiscoOverlayComponent,
     EasterOverlayComponent,
+    HalloweenOverlayComponent,
 } from '@modules/easter-eggs/components';
 import { EasterEggsService } from '@modules/easter-eggs/services';
 import { ChickensStripComponent } from '../../components/chickens-strip/chickens-strip.component';
@@ -29,6 +30,7 @@ import { TopNavUserComponent } from '../../components/top-nav-user/top-nav-user.
         DiscoOverlayComponent,
         AdventOverlayComponent,
         EasterOverlayComponent,
+        HalloweenOverlayComponent,
     ],
 })
 export class TopNavComponent {
@@ -38,6 +40,7 @@ export class TopNavComponent {
 
     readonly advent = computed(() => this.ee.advent());
     readonly easter = computed(() => this.ee.easter());
+    readonly halloween = computed(() => this.ee.halloween());
 
     toggleSideNav() {
         if (this.loginModal.open()) {

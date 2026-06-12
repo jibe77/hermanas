@@ -330,6 +330,8 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
       `.xmas-tree` rendered, brand-hen carries `.brand-santa-hat`.
     - `?theme=easter` → `.sb-topnav.easter`, `.easter-field` rendered,
       pastel border visible.
+    - `?theme=halloween` → `.sb-topnav.halloween`, `.halloween-field`
+      and `.spider-web` rendered, brand-hen carries `.brand-witch-hat`.
     - `?theme=april` → `.chickens-strip.april-fools` class present.
     - `sb-chickens-strip` mounts 4 hens; clicking a hen toggles `.jumping`
       for ~600 ms.

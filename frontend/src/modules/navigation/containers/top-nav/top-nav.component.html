@@ -1,4 +1,4 @@
-<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark" [class.advent]="advent()" [class.easter]="easter()">
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark" [class.advent]="advent()" [class.easter]="easter()" [class.halloween]="halloween()">
     <!-- Brand: mini SVG hen + name, same visual language as the 404 page so
          the friendly chicken motif appears as soon as the visitor lands. The
          SVG is inline so the comb / beak colours follow the theme without an
@@ -33,6 +33,12 @@
                     <ellipse cx="28" cy="11" rx="7" ry="2" fill="#ffffff" stroke="#cccccc" stroke-width="0.6" />
                     <circle cx="34" cy="-2" r="2.2" fill="#ffffff" stroke="#cccccc" stroke-width="0.6" />
                 </g>
+                <!-- Witch hat — shown only during Halloween. -->
+                <g class="brand-witch-hat">
+                    <polygon points="14,11 30,11 26,-4" fill="#2a1430" stroke="#0c0410" stroke-width="0.8" />
+                    <ellipse cx="22" cy="11" rx="11" ry="1.8" fill="#2a1430" stroke="#0c0410" stroke-width="0.6" />
+                    <path d="M 17 8 L 21 8 L 19 11 Z" fill="#d4a020" stroke="#0c0410" stroke-width="0.4" />
+                </g>
             </g>
             <!-- Legs -->
             <line x1="28" y1="46" x2="28" y2="50" stroke="#6b4226" stroke-width="1.5" stroke-linecap="round" />
@@ -59,3 +65,4 @@
 <sb-disco-overlay></sb-disco-overlay>
 <sb-advent-overlay></sb-advent-overlay>
 <sb-easter-overlay></sb-easter-overlay>
+<sb-halloween-overlay></sb-halloween-overlay>

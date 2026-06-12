@@ -90,12 +90,15 @@
     50%      { transform: translateY(-2px); }
 }
 
-// Santa hats during Advent. Hidden by default so they don't bleed onto
-// the silhouette outside the holiday window.
-.santa-hat {
+// Seasonal headgear on the strolling hens. Hidden by default so they
+// don't bleed onto the silhouette outside their respective holiday
+// windows; revealed via the matching class on the strip.
+.santa-hat,
+.witch-hat {
     display: none;
 }
-.chickens-strip.advent .santa-hat {
+.chickens-strip.advent .santa-hat,
+.chickens-strip.halloween .witch-hat {
     display: inline;
 }
 

@@ -1,0 +1,83 @@
+// Halloween season overlay: floating pumpkins, gliding bats, corner web.
+// Same family of effects as the Easter overlay (rising motion with a
+// horizontal sway via --sway) but with a Halloween palette and added
+// flying-bat layer for movement variety.
+.halloween-field {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1020;
+}
+
+.floating-pumpkin {
+    position: absolute;
+    bottom: -60px;
+    animation-name: halloween-float;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+@keyframes halloween-float {
+    0%   { transform: translate(0, 0);                          opacity: 0; }
+    10%  {                                                      opacity: 1; }
+    90%  {                                                      opacity: 1; }
+    100% { transform: translate(var(--sway), -110vh);           opacity: 0; }
+}
+
+// Bats glide horizontally with a gentle vertical wobble. ltr/rtl swap the
+// start/end positions; .rtl also mirrors the sprite so the bat faces its
+// travel direction.
+.flying-bat {
+    position: absolute;
+    animation-name: bat-glide-ltr;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+.flying-bat.rtl {
+    animation-name: bat-glide-rtl;
+}
+.flying-bat.rtl svg {
+    transform: scaleX(-1);
+}
+
+@keyframes bat-glide-ltr {
+    0%   { left: -40px;                  transform: translateY(0); }
+    50%  {                                transform: translateY(-12px); }
+    100% { left: calc(100% + 40px);      transform: translateY(0); }
+}
+@keyframes bat-glide-rtl {
+    0%   { right: -40px;                 transform: translateY(0); }
+    50%  {                                transform: translateY(-12px); }
+    100% { right: calc(100% + 40px);     transform: translateY(0); }
+}
+
+// Corner web — top-right, slightly mirrored so the spokes point into the
+// viewport. The spider gently sways at the bottom of its thread.
+.spider-web {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1025;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+    transform-origin: top right;
+    animation: spider-sway 4s ease-in-out infinite;
+}
+
+@keyframes spider-sway {
+    0%, 100% { transform: rotate(0); }
+    50%      { transform: rotate(-2deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .floating-pumpkin,
+    .flying-bat,
+    .spider-web { animation: none; }
+    .flying-bat { display: none; }
+}
+
+@media (max-width: 575.98px) {
+    .spider-web { transform: scale(0.6); }
+}

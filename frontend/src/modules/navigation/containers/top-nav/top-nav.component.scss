@@ -67,11 +67,12 @@
 }
 
 // ---------------------------------------------------------------------------
-// Advent season: santa hat on the brand hen + warm holiday border under the
-// navbar. The hat lives in the SVG so it follows the head wobble; SCSS just
-// reveals it when the .advent class is on the nav.
+// Seasonal headgear on the brand hen: santa hat for Advent, witch hat for
+// Halloween. Both live inside the SVG so they follow the head wobble; SCSS
+// just reveals the right one when the matching class is on the nav.
 // ---------------------------------------------------------------------------
 .brand-santa-hat { display: none; }
+.brand-witch-hat { display: none; }
 
 .sb-topnav.advent {
     .brand-santa-hat { display: inline; }
@@ -91,4 +92,14 @@
                           #ffd1dc, #c1e7ff, #d8f5c1, #fff3b0, #e5d4ff, #ffe1c1);
     background-origin: border-box;
     background-clip: padding-box, border-box;
+}
+
+// ---------------------------------------------------------------------------
+// Halloween season: orange/purple border + witch hat on the brand hen.
+// Matches the pumpkin/bat palette of the overlay.
+// ---------------------------------------------------------------------------
+.sb-topnav.halloween {
+    .brand-witch-hat { display: inline; }
+    border-bottom: 3px solid #f08020;
+    box-shadow: inset 0 -6px 0 #4a1a55;
 }

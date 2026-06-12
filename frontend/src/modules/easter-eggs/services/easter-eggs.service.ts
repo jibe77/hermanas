@@ -29,6 +29,11 @@ export class EasterEggsService extends AbstractService {
     // Holy Week → Easter Monday → floating pastel eggs, pastel navbar
     // accent, occasional egg laid by each strolling hen.
     readonly easter = signal(false);
+    // Halloween window (Oct 24 → Nov 1 inclusive, covering All Saints' Day
+    // and the prior week so the theme has a meaningful presence). Floating
+    // pumpkins, bats flying across, spider web in a corner, orange/purple
+    // navbar accent, witch hats on the strolling hens.
+    readonly halloween = signal(false);
 
     private konamiBuffer: string[] = [];
     private static readonly KONAMI: readonly string[] = [
@@ -51,9 +56,11 @@ export class EasterEggsService extends AbstractService {
         const isAprilFools = today.getMonth() === 3 && today.getDate() === 1;
         const isAdvent = this.isAdvent(today);
         const isEaster = this.isEasterSeason(today);
+        const isHalloween = this.isHalloweenSeason(today);
         if (isAprilFools) this.aprilFools.set(true);
         if (isAdvent) this.advent.set(true);
         if (isEaster) this.easter.set(true);
+        if (isHalloween) this.halloween.set(true);
         // Surfaced so an operator playing with ?theme-date=YYYY-MM-DD can see
         // in the console which season the reference date is supposed to hit —
         // a date outside any window is silently no-op otherwise.
@@ -61,7 +68,8 @@ export class EasterEggsService extends AbstractService {
             const isoDay = today.toISOString().substring(0, 10);
             console.info(
                 `[hermanas] seasonal check: reference=${isoDay}, ` +
-                `aprilFools=${isAprilFools}, advent=${isAdvent}, easter=${isEaster}`
+                `aprilFools=${isAprilFools}, advent=${isAdvent}, ` +
+                `easter=${isEaster}, halloween=${isHalloween}`
             );
         }
 
@@ -185,6 +193,10 @@ export class EasterEggsService extends AbstractService {
             goodFriday.setDate(e.getDate() - 2);
             return goodFriday;
         }
+        if (shorthand === 'halloween') {
+            // Halloween itself — comfortably inside the Oct 24 → Nov 1 window.
+            return new Date(new Date().getFullYear(), 9, 31);
+        }
         return new Date();
     }
 
@@ -219,6 +231,16 @@ export class EasterEggsService extends AbstractService {
         const month = Math.floor((h + l - 7 * m + 114) / 31); // 3 = March, 4 = April
         const day = ((h + l - 7 * m + 114) % 31) + 1;
         return new Date(year, month - 1, day);
+    }
+
+    // Halloween window: Oct 24 → Nov 1 inclusive (covers the building
+    // anticipation in late October plus All Saints' Day in France). Fixed
+    // calendar — no astronomical calculation needed.
+    private isHalloweenSeason(today: Date): boolean {
+        const year = today.getFullYear();
+        const start = new Date(year, 9, 24);
+        const end = new Date(year, 10, 1, 23, 59, 59);
+        return today >= start && today <= end;
     }
 
     // Easter season for the UI: Palm Sunday (Easter - 7d, start of Holy

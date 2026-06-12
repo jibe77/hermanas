@@ -32,6 +32,7 @@ export class ChickensStripComponent {
     readonly aprilFools = computed(() => this.ee.aprilFools());
     readonly advent = computed(() => this.ee.advent());
     readonly easter = computed(() => this.ee.easter());
+    readonly halloween = computed(() => this.ee.halloween());
 
     // Pastel colours assigned per-hen so each lays a uniquely coloured egg
     // during Easter season. Indexed in template via the *ngFor index.
