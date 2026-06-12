@@ -49,7 +49,7 @@
     "flag-icon-css": "^3.5.0",
     "rxjs": "~7.8.1",
     "tslib": "2.2.0",
-    "uuid": "^9.0.1",
+    "uuid": "^14.0.0",
     "webpack-bundle-analyzer": "4.4.0",
     "zone.js": "~0.15.1"
   },
