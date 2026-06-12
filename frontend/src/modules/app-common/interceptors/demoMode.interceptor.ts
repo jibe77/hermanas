@@ -12,7 +12,6 @@ import { UserService } from '@modules/auth/services';
 import {
     DemoConfirmService,
     DemoFixtureService,
-    ToastService,
 } from '@common/services';
 
 /**
@@ -52,7 +51,6 @@ export const demoModeInterceptor: HttpInterceptorFn = (req, next) => {
     // bypass the demo confirmation modal and hit the real backend.
     if (isMutating(req.method) || isStateChangingGet(req.method, req.url)) {
         const fixtures = inject(DemoFixtureService);
-        const toast = inject(ToastService);
         const confirm = inject(DemoConfirmService);
         const description = describeMutation(req.method, req.url);
 
@@ -62,6 +60,9 @@ export const demoModeInterceptor: HttpInterceptorFn = (req, next) => {
                     // User cancelled — surface a 0-status error so the caller's
                     // .subscribe({ error }) clears its loading flag. The status
                     // code 0 mirrors what a network-aborted request looks like.
+                    // ToastService swallows the resulting error toast in demo
+                    // mode so the cancelled action stays quiet (the user just
+                    // saw the dedicated modal).
                     return throwError(
                         () =>
                             new HttpErrorResponse({
@@ -72,10 +73,9 @@ export const demoModeInterceptor: HttpInterceptorFn = (req, next) => {
                             })
                     );
                 }
-                toast.warning(
-                    $localize`:@@demoActionBlockedMessage:Cette action est désactivée en mode démo. Connectez-vous pour modifier la configuration du poulailler.`,
-                    $localize`:@@demoActionBlockedTitle:Mode démo`
-                );
+                // No toast on accepted-in-demo path either: the user already
+                // saw the confirm modal explaining what was simulated, an
+                // extra warning toast was redundant and made the UI noisy.
                 const body = fixtures.matchMutation(req.url, req.body);
                 return of(
                     new HttpResponse({
