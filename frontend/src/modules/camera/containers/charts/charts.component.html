@@ -330,5 +330,122 @@
                 </div>
             </div>
         </sb-card>
+
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'stopwatch']"></fa-icon>
+                <span i18n="@@aiTimeoutsTitle">AI timeouts &amp; retry</span>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted" i18n="@@aiTimeoutsHelp">
+                    HTTP timeouts and retry policy used by the "AI analysis" button. Only
+                    connection failures are retried (timeouts mid-inference are not, to
+                    avoid multi-minute waits). Changes take effect on the next reboot.
+                </p>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label
+                            for="aiConnectTimeout"
+                            class="form-label small"
+                            i18n="@@aiConnectTimeoutLabel"
+                            >Connect timeout (s)</label
+                        >
+                        <input
+                            id="aiConnectTimeout"
+                            type="number"
+                            min="1"
+                            max="600"
+                            step="1"
+                            class="form-control form-control-sm"
+                            placeholder="15"
+                            [(ngModel)]="aiInferenceConnectTimeoutSec"
+                        />
+                    </div>
+                    <div class="col-md-3">
+                        <label
+                            for="aiReadTimeout"
+                            class="form-label small"
+                            i18n="@@aiReadTimeoutLabel"
+                            >Read timeout (s)</label
+                        >
+                        <input
+                            id="aiReadTimeout"
+                            type="number"
+                            min="1"
+                            max="1800"
+                            step="1"
+                            class="form-control form-control-sm"
+                            placeholder="180"
+                            [(ngModel)]="aiInferenceReadTimeoutSec"
+                        />
+                    </div>
+                    <div class="col-md-2">
+                        <label
+                            for="aiRetryAttempts"
+                            class="form-label small"
+                            i18n="@@aiRetryAttemptsLabel"
+                            >Max attempts</label
+                        >
+                        <input
+                            id="aiRetryAttempts"
+                            type="number"
+                            min="1"
+                            max="10"
+                            step="1"
+                            class="form-control form-control-sm"
+                            placeholder="3"
+                            [(ngModel)]="aiInferenceRetryMaxAttempts"
+                        />
+                    </div>
+                    <div class="col-md-2">
+                        <label
+                            for="aiRetryInitialBackoff"
+                            class="form-label small"
+                            i18n="@@aiRetryInitialBackoffLabel"
+                            >Initial backoff (s)</label
+                        >
+                        <input
+                            id="aiRetryInitialBackoff"
+                            type="number"
+                            min="0"
+                            max="60"
+                            step="1"
+                            class="form-control form-control-sm"
+                            placeholder="2"
+                            [(ngModel)]="aiInferenceRetryInitialBackoffSec"
+                        />
+                    </div>
+                    <div class="col-md-2">
+                        <label
+                            for="aiRetryMaxBackoff"
+                            class="form-label small"
+                            i18n="@@aiRetryMaxBackoffLabel"
+                            >Max backoff (s)</label
+                        >
+                        <input
+                            id="aiRetryMaxBackoff"
+                            type="number"
+                            min="0"
+                            max="120"
+                            step="1"
+                            class="form-control form-control-sm"
+                            placeholder="10"
+                            [(ngModel)]="aiInferenceRetryMaxBackoffSec"
+                        />
+                    </div>
+                    <div class="col-12 d-flex justify-content-end">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm"
+                            (click)="saveAiInferenceTimeouts()"
+                            [disabled]="aiInferenceTimeoutsSaving"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'check']"></fa-icon>
+                            <span i18n="@@save">Save</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </sb-card>
     }
 </sb-layout-dashboard>

@@ -3,7 +3,6 @@ package org.jibe77.hermanas.client.ai;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -51,19 +50,22 @@ public class AiVisionClient {
 
     public AiVisionClient(ConfigService configService,
                           CameraPromptBuilder promptBuilder,
-                          RestTemplateBuilder builder,
-                          @Value("${ai.inference.connect-timeout-ms:15000}") int connectTimeoutMs,
-                          @Value("${ai.inference.read-timeout-ms:180000}") int readTimeoutMs,
-                          @Value("${ai.inference.retry.max-attempts:3}") int maxAttempts,
-                          @Value("${ai.inference.retry.initial-backoff-ms:2000}") long initialBackoffMs,
-                          @Value("${ai.inference.retry.max-backoff-ms:10000}") long maxBackoffMs) {
+                          RestTemplateBuilder builder) {
         this.configService = configService;
         this.promptBuilder = promptBuilder;
-        // Vision calls on a Pi-class CPU can legitimately take 30+ seconds; give
-        // both phases of the request generous windows. Connect needs to absorb a
-        // momentarily swapped-out llama.cpp server; read covers the actual
-        // inference time. Both timeouts are externalised so they can be tuned
-        // without a rebuild.
+        // Timeouts and retry policy are read from ConfigService so values
+        // persisted from the Webcam configuration page survive across
+        // reboots (application.properties only feeds first-boot defaults).
+        // RestTemplate is built once at construction — changes from the UI
+        // take effect on the next reboot, same as the camera settings.
+        int connectTimeoutMs = configService.getAiInferenceConnectTimeoutMs();
+        int readTimeoutMs = configService.getAiInferenceReadTimeoutMs();
+        int maxAttempts = configService.getAiInferenceRetryMaxAttempts();
+        long initialBackoffMs = configService.getAiInferenceRetryInitialBackoffMs();
+        long maxBackoffMs = configService.getAiInferenceRetryMaxBackoffMs();
+        logger.info("AI vision: connect={} ms, read={} ms, retry attempts={}, backoff {}-{} ms.",
+                connectTimeoutMs, readTimeoutMs, maxAttempts, initialBackoffMs, maxBackoffMs);
+
         this.restTemplate = builder
                 .setConnectTimeout(Duration.ofMillis(connectTimeoutMs))
                 .setReadTimeout(Duration.ofMillis(readTimeoutMs))

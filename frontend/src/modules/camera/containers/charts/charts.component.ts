@@ -85,6 +85,15 @@ export class ChartsComponent implements OnInit, OnDestroy {
     aiInferencePromptDefault = '';
     aiInferenceSaving = false;
 
+    // Timeouts & retry policy — exposed in seconds in the UI for readability,
+    // but the backend stores everything in milliseconds.
+    aiInferenceConnectTimeoutSec = 15;
+    aiInferenceReadTimeoutSec = 180;
+    aiInferenceRetryMaxAttempts = 3;
+    aiInferenceRetryInitialBackoffSec = 2;
+    aiInferenceRetryMaxBackoffSec = 10;
+    aiInferenceTimeoutsSaving = false;
+
     /** Object URL of the currently displayed JPEG, or '' before the first capture. */
     snapshotUrl = '';
     /** True once {@link captureImageUrl} has resolved a blob. */
@@ -424,6 +433,22 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 // current default value.
                 const stored = cfg.ai_settings?.prompt ?? '';
                 this.aiInferencePrompt = stored || this.aiInferencePromptDefault;
+                // Timeouts & retry — store as seconds in the UI; milliseconds go
+                // over the wire. The ?? fallbacks match the backend defaults so
+                // an old config payload without these keys still renders sane values.
+                this.aiInferenceConnectTimeoutSec = Math.round(
+                    (cfg.ai_settings?.connect_timeout_ms ?? 15000) / 1000
+                );
+                this.aiInferenceReadTimeoutSec = Math.round(
+                    (cfg.ai_settings?.read_timeout_ms ?? 180000) / 1000
+                );
+                this.aiInferenceRetryMaxAttempts = cfg.ai_settings?.retry_max_attempts ?? 3;
+                this.aiInferenceRetryInitialBackoffSec = Math.round(
+                    (cfg.ai_settings?.retry_initial_backoff_ms ?? 2000) / 1000
+                );
+                this.aiInferenceRetryMaxBackoffSec = Math.round(
+                    (cfg.ai_settings?.retry_max_backoff_ms ?? 10000) / 1000
+                );
                 this.cdr.markForCheck();
             },
             error: () => {
@@ -521,6 +546,47 @@ export class ChartsComponent implements OnInit, OnDestroy {
             },
             error: (err: HttpErrorResponse) => {
                 this.aiInferenceSaving = false;
+                this.toast.error(
+                    err.error?.message || err.message || 'Save failed',
+                    `Caméra — HTTP ${err.status}`
+                );
+                this.cdr.markForCheck();
+            },
+        });
+    }
+
+    /**
+     * Persists the timeouts + retry policy. Values are entered in seconds in
+     * the UI but sent in milliseconds. The success toast reminds the admin
+     * that AiVisionClient reads these on boot so changes only take effect
+     * on the next reboot — same contract as the camera settings.
+     */
+    saveAiInferenceTimeouts(): void {
+        if (this.aiInferenceTimeoutsSaving) return;
+        this.aiInferenceTimeoutsSaving = true;
+        const connectMs = Math.max(1, Math.min(600, this.aiInferenceConnectTimeoutSec || 1)) * 1000;
+        const readMs = Math.max(1, Math.min(1800, this.aiInferenceReadTimeoutSec || 1)) * 1000;
+        const attempts = Math.max(1, Math.min(10, this.aiInferenceRetryMaxAttempts || 1));
+        const initialBackoffMs = Math.max(0, Math.min(60, this.aiInferenceRetryInitialBackoffSec || 0)) * 1000;
+        const maxBackoffMs = Math.max(0, Math.min(120, this.aiInferenceRetryMaxBackoffSec || 0)) * 1000;
+        forkJoin({
+            connect: this.configService.setAiInferenceConnectTimeoutMs(connectMs),
+            read: this.configService.setAiInferenceReadTimeoutMs(readMs),
+            attempts: this.configService.setAiInferenceRetryMaxAttempts(attempts),
+            initialBackoff: this.configService.setAiInferenceRetryInitialBackoffMs(initialBackoffMs),
+            maxBackoff: this.configService.setAiInferenceRetryMaxBackoffMs(maxBackoffMs),
+        }).subscribe({
+            next: () => {
+                this.aiInferenceTimeoutsSaving = false;
+                this.loadCameraSettings();
+                this.toast.success(
+                    $localize`:@@cameraAiTimeoutsSaved:Timeouts & retry saved (effective on next reboot).`,
+                    $localize`:@@cameraToastTitle:Camera`
+                );
+                this.cdr.markForCheck();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.aiInferenceTimeoutsSaving = false;
                 this.toast.error(
                     err.error?.message || err.message || 'Save failed',
                     `Caméra — HTTP ${err.status}`

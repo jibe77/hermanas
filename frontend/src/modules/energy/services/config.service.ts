@@ -38,6 +38,16 @@ export interface AiSettings {
     prompt: string;
     /** Built-in default prompt — used to pre-fill the textarea when nothing is configured. */
     prompt_default: string;
+    /** HTTP connect timeout (ms) when reaching the inference server. */
+    connect_timeout_ms: number;
+    /** HTTP read timeout (ms) — covers actual model inference time. */
+    read_timeout_ms: number;
+    /** Total attempts (initial + retries) on connect-phase failures. */
+    retry_max_attempts: number;
+    /** Initial exponential backoff (ms) between retry attempts. */
+    retry_initial_backoff_ms: number;
+    /** Cap on the exponential backoff (ms) between retry attempts. */
+    retry_max_backoff_ms: number;
 }
 
 export interface SunOffsets {
@@ -271,6 +281,51 @@ export class ConfigService extends AbstractService {
     setAiInferencePrompt(prompt: string): Observable<string> {
         return this.http.put(`${this.domainBase}/config/ai/prompt`, prompt, {
             headers: { 'Content-Type': 'text/plain' },
+            responseType: 'text',
+        });
+    }
+
+    /** HTTP connect timeout (ms) for the inference call. Takes effect on next reboot. */
+    setAiInferenceConnectTimeoutMs(ms: number): Observable<string> {
+        const params = new HttpParams().set('ms', String(ms));
+        return this.http.put(`${this.domainBase}/config/ai/connect-timeout-ms`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** HTTP read timeout (ms) for the inference call. Takes effect on next reboot. */
+    setAiInferenceReadTimeoutMs(ms: number): Observable<string> {
+        const params = new HttpParams().set('ms', String(ms));
+        return this.http.put(`${this.domainBase}/config/ai/read-timeout-ms`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** Total number of attempts (initial + retries). Takes effect on next reboot. */
+    setAiInferenceRetryMaxAttempts(attempts: number): Observable<string> {
+        const params = new HttpParams().set('attempts', String(attempts));
+        return this.http.put(`${this.domainBase}/config/ai/retry-max-attempts`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** Initial exponential backoff (ms) between retries. Takes effect on next reboot. */
+    setAiInferenceRetryInitialBackoffMs(ms: number): Observable<string> {
+        const params = new HttpParams().set('ms', String(ms));
+        return this.http.put(`${this.domainBase}/config/ai/retry-initial-backoff-ms`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** Cap on the exponential backoff (ms) between retries. Takes effect on next reboot. */
+    setAiInferenceRetryMaxBackoffMs(ms: number): Observable<string> {
+        const params = new HttpParams().set('ms', String(ms));
+        return this.http.put(`${this.domainBase}/config/ai/retry-max-backoff-ms`, null, {
+            params,
             responseType: 'text',
         });
     }

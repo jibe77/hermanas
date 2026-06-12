@@ -173,6 +173,21 @@ public class ConfigService {
     @Value("${ai.inference.prompt:}")
     private String aiInferencePrompt;
 
+    @Value("${ai.inference.connect-timeout-ms:15000}")
+    private int aiInferenceConnectTimeoutMs;
+
+    @Value("${ai.inference.read-timeout-ms:180000}")
+    private int aiInferenceReadTimeoutMs;
+
+    @Value("${ai.inference.retry.max-attempts:3}")
+    private int aiInferenceRetryMaxAttempts;
+
+    @Value("${ai.inference.retry.initial-backoff-ms:2000}")
+    private long aiInferenceRetryInitialBackoffMs;
+
+    @Value("${ai.inference.retry.max-backoff-ms:10000}")
+    private long aiInferenceRetryMaxBackoffMs;
+
     // ─── Email sender ─────────────────────────────────────────────────────────────
 
     @Value("${email.notification.from}")
@@ -1094,6 +1109,77 @@ public class ConfigService {
     @CacheEvict(value = "aiInferencePrompt")
     public void setAiInferencePrompt(String prompt) {
         setConfigValue("ai.inference.prompt", prompt == null ? "" : prompt.trim(), null);
+    }
+
+    /**
+     * HTTP connect timeout (ms) for the call to the inference server. Tuned
+     * up from the original 5 s so a momentarily swapped-out llama.cpp still
+     * answers the TCP handshake. Changes take effect on the next reboot
+     * because {@link org.jibe77.hermanas.client.ai.AiVisionClient} builds
+     * its RestTemplate once at construction.
+     */
+    @Cacheable(value = "aiInferenceConnectTimeoutMs")
+    public int getAiInferenceConnectTimeoutMs() {
+        return getConfigValue("ai.inference.connect-timeout-ms",
+                aiInferenceConnectTimeoutMs, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "aiInferenceConnectTimeoutMs")
+    public void setAiInferenceConnectTimeoutMs(int ms) {
+        setConfigValue("ai.inference.connect-timeout-ms", ms, null);
+    }
+
+    /**
+     * HTTP read timeout (ms) for the call to the inference server. Covers
+     * the actual inference time — vision on a Pi-class CPU is slow, so
+     * keep this generous (default 180 s).
+     */
+    @Cacheable(value = "aiInferenceReadTimeoutMs")
+    public int getAiInferenceReadTimeoutMs() {
+        return getConfigValue("ai.inference.read-timeout-ms",
+                aiInferenceReadTimeoutMs, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "aiInferenceReadTimeoutMs")
+    public void setAiInferenceReadTimeoutMs(int ms) {
+        setConfigValue("ai.inference.read-timeout-ms", ms, null);
+    }
+
+    /**
+     * Total number of attempts (initial + retries) for the inference HTTP
+     * call. Only connect-phase failures are retried — see AiVisionClient.
+     */
+    @Cacheable(value = "aiInferenceRetryMaxAttempts")
+    public int getAiInferenceRetryMaxAttempts() {
+        return getConfigValue("ai.inference.retry.max-attempts",
+                aiInferenceRetryMaxAttempts, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "aiInferenceRetryMaxAttempts")
+    public void setAiInferenceRetryMaxAttempts(int attempts) {
+        setConfigValue("ai.inference.retry.max-attempts", attempts, null);
+    }
+
+    @Cacheable(value = "aiInferenceRetryInitialBackoffMs")
+    public long getAiInferenceRetryInitialBackoffMs() {
+        return getConfigValue("ai.inference.retry.initial-backoff-ms",
+                aiInferenceRetryInitialBackoffMs, Long::parseLong);
+    }
+
+    @CacheEvict(value = "aiInferenceRetryInitialBackoffMs")
+    public void setAiInferenceRetryInitialBackoffMs(long ms) {
+        setConfigValue("ai.inference.retry.initial-backoff-ms", ms, null);
+    }
+
+    @Cacheable(value = "aiInferenceRetryMaxBackoffMs")
+    public long getAiInferenceRetryMaxBackoffMs() {
+        return getConfigValue("ai.inference.retry.max-backoff-ms",
+                aiInferenceRetryMaxBackoffMs, Long::parseLong);
+    }
+
+    @CacheEvict(value = "aiInferenceRetryMaxBackoffMs")
+    public void setAiInferenceRetryMaxBackoffMs(long ms) {
+        setConfigValue("ai.inference.retry.max-backoff-ms", ms, null);
     }
 
     // ============================================================================

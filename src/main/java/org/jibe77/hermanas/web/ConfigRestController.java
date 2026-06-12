@@ -187,6 +187,11 @@ public class ConfigRestController {
         aiSettings.put("prompt", configService.getAiInferencePrompt());
         aiSettings.put("prompt_default",
                 org.jibe77.hermanas.client.ai.CameraPromptBuilder.DEFAULT_PROMPT);
+        aiSettings.put("connect_timeout_ms", configService.getAiInferenceConnectTimeoutMs());
+        aiSettings.put("read_timeout_ms", configService.getAiInferenceReadTimeoutMs());
+        aiSettings.put("retry_max_attempts", configService.getAiInferenceRetryMaxAttempts());
+        aiSettings.put("retry_initial_backoff_ms", configService.getAiInferenceRetryInitialBackoffMs());
+        aiSettings.put("retry_max_backoff_ms", configService.getAiInferenceRetryMaxBackoffMs());
         config.put("ai_settings", aiSettings);
 
         // Email "from" address — recipients are derived from the user table at send time.
@@ -580,6 +585,61 @@ public class ConfigRestController {
         // next call uses the new one.
         aiVisionCache.clear();
         return ResponseEntity.ok("AI inference prompt updated");
+    }
+
+    // ─── AI inference timeouts & retry policy ──────────────────────────────────
+    // These five values are read by AiVisionClient at construction time, so a
+    // change here is persisted but only takes effect on the next reboot — same
+    // contract as the camera settings.
+
+    @Operation(summary = "Update the HTTP connect timeout (ms) for the inference call. Takes effect on next reboot.")
+    @PutMapping("/ai/connect-timeout-ms")
+    public ResponseEntity<String> setAiInferenceConnectTimeoutMs(@RequestParam int ms) {
+        if (ms < 100 || ms > 600000) {
+            return ResponseEntity.badRequest().body("ms must be between 100 and 600000");
+        }
+        configService.setAiInferenceConnectTimeoutMs(ms);
+        return ResponseEntity.ok("AI inference connect timeout updated");
+    }
+
+    @Operation(summary = "Update the HTTP read timeout (ms) for the inference call. Takes effect on next reboot.")
+    @PutMapping("/ai/read-timeout-ms")
+    public ResponseEntity<String> setAiInferenceReadTimeoutMs(@RequestParam int ms) {
+        if (ms < 1000 || ms > 1800000) {
+            return ResponseEntity.badRequest().body("ms must be between 1000 and 1800000");
+        }
+        configService.setAiInferenceReadTimeoutMs(ms);
+        return ResponseEntity.ok("AI inference read timeout updated");
+    }
+
+    @Operation(summary = "Update the total number of inference call attempts (initial + retries). Takes effect on next reboot.")
+    @PutMapping("/ai/retry-max-attempts")
+    public ResponseEntity<String> setAiInferenceRetryMaxAttempts(@RequestParam int attempts) {
+        if (attempts < 1 || attempts > 10) {
+            return ResponseEntity.badRequest().body("attempts must be between 1 and 10");
+        }
+        configService.setAiInferenceRetryMaxAttempts(attempts);
+        return ResponseEntity.ok("AI inference retry attempts updated");
+    }
+
+    @Operation(summary = "Update the initial backoff between retries (ms). Takes effect on next reboot.")
+    @PutMapping("/ai/retry-initial-backoff-ms")
+    public ResponseEntity<String> setAiInferenceRetryInitialBackoffMs(@RequestParam long ms) {
+        if (ms < 0 || ms > 60000) {
+            return ResponseEntity.badRequest().body("ms must be between 0 and 60000");
+        }
+        configService.setAiInferenceRetryInitialBackoffMs(ms);
+        return ResponseEntity.ok("AI inference retry initial backoff updated");
+    }
+
+    @Operation(summary = "Update the max backoff between retries (ms). Takes effect on next reboot.")
+    @PutMapping("/ai/retry-max-backoff-ms")
+    public ResponseEntity<String> setAiInferenceRetryMaxBackoffMs(@RequestParam long ms) {
+        if (ms < 0 || ms > 120000) {
+            return ResponseEntity.badRequest().body("ms must be between 0 and 120000");
+        }
+        configService.setAiInferenceRetryMaxBackoffMs(ms);
+        return ResponseEntity.ok("AI inference retry max backoff updated");
     }
 
     // ─── GPS coordinates ───────────────────────────────────────────────────────
