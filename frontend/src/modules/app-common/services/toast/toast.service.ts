@@ -62,6 +62,29 @@ export class ToastService {
     }
 
     /**
+     * Yellow toast emitted by {@code demoModeInterceptor} when a mutation
+     * is blocked in demo mode. Bypasses the demo-mode warning/error filter
+     * so the visitor gets *exactly one* explanation that the action did not
+     * run. Components using regular {@code warning()} / {@code error()} stay
+     * silenced under demo mode — only this dedicated path surfaces.
+     */
+    public demoBlocked(message: string, title?: string, duration?: number): void {
+        const toast: Toast = {
+            id: this.generateId(),
+            type: 'warning',
+            message,
+            title,
+            duration: duration ?? this.DEFAULT_DURATION,
+            timestamp: new Date(),
+        };
+        this.toastQueue.push(toast);
+        this.toastSubject.next(toast);
+        if (toast.duration > 0) {
+            setTimeout(() => this.remove(toast.id), toast.duration);
+        }
+    }
+
+    /**
      * In demo mode, swallow error and warning toasts. They almost always
      * trace back to a REST call that demoModeInterceptor cancelled with a
      * synthetic 0-status response — the visitor has already seen the

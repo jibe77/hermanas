@@ -6,9 +6,8 @@ import { Injectable, signal } from '@angular/core';
  * "this is just a preview" message lands once instead of being surfaced
  * piecemeal through toasts on every protected action.
  *
- * State-wise the service mirrors {@link DemoConfirmService}: an {@code open}
- * signal feeds the modal component, and a {@code close} method handles the
- * single "OK, got it" button.
+ * State-wise: an {@code open} signal feeds the modal component, and a
+ * {@code close} method handles the single "OK, got it" button.
  */
 @Injectable({ providedIn: 'root' })
 export class DemoWelcomeService {

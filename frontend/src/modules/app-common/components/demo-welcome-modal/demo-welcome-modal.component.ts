@@ -12,8 +12,7 @@ import { DemoWelcomeService } from '@common/services';
  * Shown once when the visitor enables demo mode from the user menu. Reads
  * its open/closed state from {@link DemoWelcomeService} and dismisses on
  * Escape, backdrop click, or the "Got it" button. Mounted at the root of
- * the SPA next to {@code DemoConfirmModalComponent} so it overlays every
- * route including the top-nav and side-nav.
+ * the SPA so it overlays every route including the top-nav and side-nav.
  */
 @Component({
     selector: 'sb-demo-welcome-modal',

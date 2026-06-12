@@ -10,7 +10,6 @@ import {
     ToastContainerComponent,
 } from '@common/components';
 import { LoginModalComponent } from '@modules/auth/components';
-import { DemoConfirmModalComponent } from '@common/components/demo-confirm-modal/demo-confirm-modal.component';
 import { DemoWelcomeModalComponent } from '@common/components/demo-welcome-modal/demo-welcome-modal.component';
 
 @Component({
@@ -23,7 +22,6 @@ import { DemoWelcomeModalComponent } from '@common/components/demo-welcome-modal
         PwaInstallBannerComponent,
         OfflineBannerComponent,
         LoginModalComponent,
-        DemoConfirmModalComponent,
         DemoWelcomeModalComponent,
     ],
 })

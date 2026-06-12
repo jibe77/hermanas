@@ -165,18 +165,10 @@ export class DemoFixtureService {
         if (path.endsWith('/actuator/metrics')) {
             return { names: ['hermanas.door.opened', 'hermanas.door.closed'] };
         }
-        // AI snapshot analysis — plausible chicken-coop report so the recruiter
-        // sees the feature working end-to-end without needing an actual LLM behind.
-        if (path.endsWith('/camera/analyze')) {
-            const q = url.indexOf('?');
-            const params = q >= 0 ? new URLSearchParams(url.substring(q + 1)) : null;
-            const lang = (params?.get('lang') ?? 'en') as 'fr' | 'en' | 'ro';
-            return {
-                status: 'ok',
-                lang,
-                message: this.syntheticAnalysisText(lang),
-            };
-        }
+        // AI snapshot analysis intentionally has no fixture: in demo mode
+        // the Webcam page should behave like an unauthenticated visitor —
+        // no fake AI report, no fake live photo. The yellow "demo blocked"
+        // toast surfaces when the visitor hits the live capture button.
         if (path.endsWith('/actuator/health')) {
             return {
                 status: 'UP',
@@ -593,52 +585,6 @@ export class DemoFixtureService {
                 details: 'login=marguerite',
             },
         ];
-    }
-
-    /**
-     * Public accessor so the Webcam page can short-circuit the async capture
-     * pipeline in demo mode (no real POST, no polling) and still display the
-     * same synthetic analysis users get via the legacy /camera/analyze fixture.
-     */
-    public buildAnalysisText(lang: 'fr' | 'en' | 'ro'): string {
-        return this.syntheticAnalysisText(lang);
-    }
-
-    private syntheticAnalysisText(lang: 'fr' | 'en' | 'ro'): string {
-        if (lang === 'fr') {
-            return (
-                'Analyse du poulailler :\n' +
-                '*   Poules : 4 visibles (3 rousses + 1 noire dans le fond).\n' +
-                '*   Œufs : 2 œufs visibles dans le pondoir.\n' +
-                "*   Foin : niveau correct, l'épaisseur est suffisante.\n" +
-                '*   Porte (coin bas gauche) : fermée (texture bois visible).\n' +
-                '*   Saleté au sol : 2/5, légère.\n' +
-                "*   Ventilateur (coin haut droit) : un peu de poussière, à dépoussiérer.\n\n" +
-                '(Réponse factice — mode démo)'
-            );
-        }
-        if (lang === 'ro') {
-            return (
-                'Analiza coteței:\n' +
-                '*   Găini: 4 vizibile (3 roșcate + 1 neagră în fundal).\n' +
-                '*   Ouă: 2 ouă vizibile în cuibar.\n' +
-                '*   Fân: nivel corect, suficient pe sol.\n' +
-                '*   Ușa (colțul stânga-jos): închisă (textura lemnului vizibilă).\n' +
-                '*   Murdărie pe sol: 2/5, ușoară.\n' +
-                '*   Ventilator (colțul dreapta-sus): puțin praf, ar trebui curățat.\n\n' +
-                '(Răspuns fictiv — mod demo)'
-            );
-        }
-        return (
-            'Chicken coop analysis:\n' +
-            '*   Chickens: 4 visible (3 brown + 1 black in the back).\n' +
-            '*   Eggs: 2 eggs visible in the nesting box.\n' +
-            '*   Hay: level looks correct, enough on the floor.\n' +
-            '*   Door (lower left corner): closed (wooden texture visible).\n' +
-            '*   Dirt on the floor: 2/5, light.\n' +
-            '*   Fan (upper right corner): a bit dusty, should be cleaned.\n\n' +
-            '(Synthetic answer — demo mode)'
-        );
     }
 
     private syntheticUsers(): unknown {

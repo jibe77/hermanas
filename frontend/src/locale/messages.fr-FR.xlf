@@ -2344,8 +2344,8 @@
                 <target><x id="START_TAG_STRONG" ctype="x-strong"/>Ce qui fonctionne :<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> la navigation, les panneaux en lecture seule et le changement de page.</target>
             </trans-unit>
             <trans-unit id="demoWelcomeWhatBlocks" datatype="html">
-                <source><x id="START_TAG_STRONG" ctype="x-strong"/>What is blocked:<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> any action that would change the chicken coop (open the door, save a configuration, send an email…) is intercepted on the client. A confirmation modal pops up; even if you confirm, <x id="START_TAG_STRONG_1" ctype="x-strong"/>nothing reaches the Raspberry Pi<x id="CLOSE_TAG_STRONG" ctype="x-strong"/>.</source>
-                <target><x id="START_TAG_STRONG" ctype="x-strong"/>Ce qui est bloqué :<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> toute action qui modifierait le poulailler (ouvrir la porte, sauvegarder une configuration, envoyer un email…) est interceptée côté client. Une fenêtre de confirmation apparaît ; même si tu confirmes, <x id="START_TAG_STRONG_1" ctype="x-strong"/>rien n'atteint le Raspberry Pi<x id="CLOSE_TAG_STRONG" ctype="x-strong"/>.</target>
+                <source><x id="START_TAG_STRONG" ctype="x-strong"/>What is blocked:<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> any action that would change the chicken coop (open the door, save a configuration, send an email…) is intercepted on the client and a yellow toast warns you. Nothing reaches the Raspberry Pi.</source>
+                <target><x id="START_TAG_STRONG" ctype="x-strong"/>Ce qui est bloqué :<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> toute action qui modifierait le poulailler (ouvrir la porte, sauvegarder une configuration, envoyer un email…) est interceptée côté client et une notification jaune t'avertit. Rien n'atteint le Raspberry Pi.</target>
             </trans-unit>
             <trans-unit id="demoWelcomeHowToExit" datatype="html">
                 <source>Use the user menu (top right) to disable demo mode, or simply refresh the page.</source>

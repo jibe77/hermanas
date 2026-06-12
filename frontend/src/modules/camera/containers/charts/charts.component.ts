@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { DemoFixtureService, LoggerService, ToastService } from '@common/services';
+import { LoggerService, ToastService } from '@common/services';
 import {
     CaptureState,
     PhotoEntry,
@@ -53,7 +53,6 @@ export class ChartsComponent implements OnInit, OnDestroy {
     private photos = inject(PhotosService);
     private configService = inject(ConfigService);
     private userService = inject(UserService);
-    private demoFixtures = inject(DemoFixtureService);
     private toast = inject(ToastService);
     private logger = inject(LoggerService);
     private sanitizer = inject(DomSanitizer);
@@ -174,17 +173,12 @@ export class ChartsComponent implements OnInit, OnDestroy {
               ? 'ro'
               : 'en';
 
-        // Demo mode bypasses the real async capture pipeline: POST /captures is
-        // mutating, which demoModeInterceptor would gate behind a confirmation
-        // modal — defeating the "preview just works" intent. We synthesise the
-        // image (SVG placeholder via PhotosService.snapshotUrl) and the
-        // analysis text directly, with a short artificial delay so the loader
-        // animation gets a chance to play.
-        if (this.userService.isDemoMode()) {
-            this.runDemoCapture(lang);
-            return;
-        }
-
+        // Demo mode falls through to the regular pipeline. The mutating POST
+        // /captures will be blocked by demoModeInterceptor, which surfaces
+        // the yellow "demo blocked" toast and rejects with status 0 — the
+        // applyCaptureError path below clears the spinner and the live
+        // panel ends up empty, matching what an unauthenticated visitor
+        // sees (no live picture, no fake AI analysis).
         this.logger.info('startCapture: requesting new capture', { lang }, 'Webcam');
         this.photos.startCapture(lang).subscribe({
             next: captureId => {
@@ -278,34 +272,6 @@ export class ChartsComponent implements OnInit, OnDestroy {
         this.aiAnalysisResultHtml = this.renderMarkdown(this.aiAnalysisResult);
         this.stopAiAnalysisAnimation();
         this.cdr.markForCheck();
-    }
-
-    /**
-     * Synthesised version of the capture + analysis pipeline used in demo mode.
-     * No HTTP traffic: the image comes straight from PhotosService.snapshotUrl()
-     * (SVG data URL) and the AI text from DemoFixtureService — same payload as
-     * the /camera/analyze GET fixture. The short timers replay the spinner so
-     * the page does not feel cached.
-     */
-    private runDemoCapture(lang: 'fr' | 'en' | 'ro'): void {
-        this.logger.info('startCapture: demo mode — synthesising capture', { lang }, 'Webcam');
-        // Snapshot ready almost immediately — mirrors a fast POST /captures
-        // followed by a quick image fetch.
-        setTimeout(() => {
-            this.snapshotUrl = this.photos.snapshotUrl(/* highQuality */ true);
-            this.snapshotLoaded = true;
-            this.cdr.markForCheck();
-        }, 350);
-        // Analysis takes longer in real life; 2.5 s here gives the loader
-        // animation time to cycle through a couple of "step" messages.
-        setTimeout(() => {
-            this.aiAnalysisLoading = false;
-            this.captureInFlight = false;
-            this.aiAnalysisResult = this.demoFixtures.buildAnalysisText(lang);
-            this.aiAnalysisResultHtml = this.renderMarkdown(this.aiAnalysisResult);
-            this.stopAiAnalysisAnimation();
-            this.cdr.markForCheck();
-        }, 2500);
     }
 
     /**

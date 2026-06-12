@@ -79,13 +79,10 @@ export class PhotosService {
      *              capture if they happen within the cache window.
      */
     snapshotUrl(highQuality = false, force = false): string {
-        if (this.userService.isDemoMode()) {
-            // Bundled chicken-coop JPEG — same shot the gallery serves so the
-            // visitor sees a real picture rather than the previous abstract
-            // SVG placeholder. highQuality / force are intentionally ignored
-            // in demo: there is no second variant of the bundled asset.
-            return DEMO_COOP_PHOTO_URL;
-        }
+        // No demo-mode shortcut here: the live snapshot panel hits the real
+        // backend even in demo, exactly like an unauthenticated visitor.
+        // The blocked POST will surface the yellow "demo blocked" toast and
+        // the panel stays empty — same behaviour as a logged-out session.
         const parts = [`date=${Date.now()}`];
         if (highQuality) parts.push('highQuality=true');
         if (force) parts.push('force=true');
