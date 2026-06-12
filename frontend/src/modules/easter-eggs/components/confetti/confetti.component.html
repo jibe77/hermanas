@@ -1,0 +1,17 @@
+<ng-container *ngIf="residentName() as name">
+    <div class="confetti-banner" role="status" aria-live="polite">
+        <span class="cake">🎂</span>
+        <span i18n="@@birthdayBanner">Joyeux anniversaire, {{ name }} !</span>
+    </div>
+    <div class="confetti-field" aria-hidden="true">
+        <span
+            *ngFor="let p of pieces"
+            class="piece"
+            [style.left]="p.left"
+            [style.background]="p.color"
+            [style.animation-delay]="p.delay"
+            [style.animation-duration]="p.duration"
+            [style.transform]="'rotate(' + p.rotation + ')'"
+        ></span>
+    </div>
+</ng-container>

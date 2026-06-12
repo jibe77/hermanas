@@ -21,6 +21,7 @@ import {
 } from '@common/interceptors';
 import { UserService } from '@modules/auth/services/user.service';
 import { httpErrorInterceptor } from '@modules/dashboard/interceptors';
+import { EasterEggsService } from '@modules/easter-eggs/services';
 import { provideHermanasIcons } from '@modules/icons/icons.provider';
 
 import { APP_ROUTES } from './app.routes';
@@ -61,6 +62,10 @@ export const appConfig: ApplicationConfig = {
         { provide: ErrorHandler, useClass: GlobalErrorHandler },
         provideHermanasIcons(),
         provideAppInitializer(() => inject(UserService).initialAuthCheck()),
+        // Easter eggs: install global listeners (konami, window.cocorico…)
+        // and check today for a pensioner's birthday. Runs after the auth
+        // check so the /residents call has a chance at being authenticated.
+        provideAppInitializer(() => inject(EasterEggsService).install()),
         provideServiceWorker('ngsw-worker.js', {
             enabled: !isDevMode(),
             // Register the ServiceWorker as soon as the application is stable

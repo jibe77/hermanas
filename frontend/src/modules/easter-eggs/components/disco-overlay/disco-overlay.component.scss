@@ -1,0 +1,35 @@
+// Disco mode: four radial color spots glide and fade across the viewport
+// for ~8s after the brand hen is clicked 10× in a row. mix-blend-mode keeps
+// the UI behind them readable while still bathing it in colored light.
+.disco-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1030;
+    overflow: hidden;
+    mix-blend-mode: overlay;
+}
+
+.light {
+    position: absolute;
+    width: 60vmax;
+    height: 60vmax;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.7;
+    animation: disco-spin 1.2s ease-in-out infinite alternate;
+}
+
+.light-1 { background: #ff2a6d; top: -20vmax; left: -20vmax; animation-delay: 0s;    }
+.light-2 { background: #05d9e8; top: -20vmax; right: -20vmax; animation-delay: -0.3s; }
+.light-3 { background: #d1f7ff; bottom: -20vmax; left: -20vmax; animation-delay: -0.6s; }
+.light-4 { background: #f0a830; bottom: -20vmax; right: -20vmax; animation-delay: -0.9s; }
+
+@keyframes disco-spin {
+    from { transform: scale(0.8) rotate(0deg);   opacity: 0.4; }
+    to   { transform: scale(1.2) rotate(180deg); opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .disco-overlay { display: none; }
+}

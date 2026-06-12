@@ -1,0 +1,41 @@
+// Floating eggs: 18 pastel SVG eggs rise gently from below the viewport
+// to above it. Each carries its own --sway custom property so it drifts
+// left or right by a small amount as it rises, like a balloon caught in
+// a breeze.
+.easter-field {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1020;
+}
+
+.floating-egg {
+    position: absolute;
+    bottom: -60px;
+    animation-name: easter-float;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.15));
+}
+
+@keyframes easter-float {
+    0% {
+        transform: translate(0, 0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--sway), -110vh);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .floating-egg { animation: none; display: none; }
+}

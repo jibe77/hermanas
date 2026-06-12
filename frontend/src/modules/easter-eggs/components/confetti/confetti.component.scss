@@ -1,0 +1,62 @@
+// Confetti overlay shown on a resident's birthday. Banner is small and
+// non-blocking, sitting under the topnav. Pieces fall from above the
+// viewport and exit below it. pointer-events: none so the page stays
+// fully usable.
+.confetti-banner {
+    position: fixed;
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(31, 20, 16, 0.9);
+    color: #fff8e2;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    z-index: 1050;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.cake {
+    font-size: 1.4rem;
+}
+
+.confetti-field {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1040;
+}
+
+.piece {
+    position: absolute;
+    top: -20px;
+    width: 8px;
+    height: 14px;
+    border-radius: 2px;
+    animation-name: confetti-fall;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(-20px) rotate(0deg);
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .piece { animation: none; display: none; }
+}

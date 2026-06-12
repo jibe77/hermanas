@@ -1,0 +1,213 @@
+// 4 colored chickens strolling across the empty space of the dark topnav.
+// The strip is a flex-1 container that absorbs the free space between the
+// brand on the left and the lang/user nav on the right. Each chicken loops
+// horizontally with a different duration/delay so they spread out naturally
+// and never overlap for long. Head wobble + leg motion give them life.
+// Pointer events disabled — the strip is purely decorative and must not
+// intercept clicks meant for the topnav buttons behind it.
+//
+// IMPORTANT: the host element (<sb-chickens-strip>) must itself participate
+// in the navbar flex layout — Angular renders it as inline by default, so
+// without :host { display: flex } the inner .chickens-strip would never
+// receive any width and the hens would not show.
+:host {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    align-items: center;
+    margin: 0 1rem;
+}
+
+.chickens-strip {
+    position: relative;
+    flex: 1 1 auto;
+    height: 36px;
+    overflow: hidden;
+    // The strip itself ignores pointer events so it doesn't intercept
+    // clicks meant for the topnav buttons behind it, but individual
+    // .chicken spans re-enable them so users can click on a hen to make
+    // it cluck (easter egg).
+    pointer-events: none;
+    min-width: 0;
+}
+
+// Each chicken is animated through `left` (which IS relative to the parent
+// container), not `transform: translateX(%)` (which would be relative to
+// the chicken's own width). We pair it with `translate(-50%, -50%)` to
+// keep vertical centering and stagger entries so they don't overlap.
+.chicken {
+    position: absolute;
+    top: 50%;
+    left: -60px;
+    transform: translateY(-50%);
+    animation-name: chicken-walk;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+// Click feedback: one-shot jump when a hen is clicked. The component
+// toggles this class for ~600 ms.
+.chicken.jumping .chicken-svg {
+    animation: chicken-jump 0.5s ease-out 1;
+}
+
+@keyframes chicken-jump {
+    0%, 100% { transform: scaleX(-1) translateY(0); }
+    40%      { transform: scaleX(-1) translateY(-16px) rotate(-8deg); }
+    70%      { transform: scaleX(-1) translateY(-4px)  rotate(4deg); }
+}
+
+// Konami code → every hen does a little disco shimmy in place. We don't
+// stop the walk; we add a quick spin/scale on top of the bob.
+.chickens-strip.dancing .chicken-svg {
+    animation:
+        chicken-bob 0.4s ease-in-out infinite,
+        chicken-dance 0.6s ease-in-out infinite;
+}
+
+@keyframes chicken-dance {
+    0%, 100% { transform: scaleX(-1) rotate(-8deg) scale(1); }
+    50%      { transform: scaleX(-1) rotate(8deg)  scale(1.15); }
+}
+
+// April Fools' day → hens parade backwards, head pointing left, walking
+// right-to-left. We reverse the walk direction AND drop the scaleX flip.
+.chickens-strip.april-fools .chicken {
+    animation-direction: reverse;
+}
+.chickens-strip.april-fools .chicken-svg {
+    transform: none;
+}
+.chickens-strip.april-fools .chicken-svg,
+.chickens-strip.april-fools.dancing .chicken-svg {
+    animation-name: chicken-bob-natural;
+}
+
+@keyframes chicken-bob-natural {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-2px); }
+}
+
+// Santa hats during Advent. Hidden by default so they don't bleed onto
+// the silhouette outside the holiday window.
+.santa-hat {
+    display: none;
+}
+.chickens-strip.advent .santa-hat {
+    display: inline;
+}
+
+// Easter season: a pastel egg appears below each hen, drops, and fades
+// out. The animation duration matches the hen's walk so a fresh egg is
+// laid every cycle. Hidden outside the holiday window via display: none
+// to keep the markup inert.
+.laid-egg {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: -2px;
+    width: 6px;
+    height: 8px;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.chickens-strip.easter .laid-egg {
+    display: block;
+    animation-name: egg-drop;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    // Inherit the hen's animation-duration so eggs are laid in sync with
+    // the walk cycle (passed through CSS variable would be cleaner but
+    // would require an extra binding — animation-duration inheritance via
+    // matching the parent's stagger is good enough visually).
+}
+// Stagger so each hen lays its egg at a different point of the loop.
+.chickens-strip.easter .chicken:nth-child(1) .laid-egg { animation-duration: 22s; animation-delay: -4s;  }
+.chickens-strip.easter .chicken:nth-child(2) .laid-egg { animation-duration: 26s; animation-delay: -10s; }
+.chickens-strip.easter .chicken:nth-child(3) .laid-egg { animation-duration: 24s; animation-delay: -16s; }
+.chickens-strip.easter .chicken:nth-child(4) .laid-egg { animation-duration: 28s; animation-delay: -22s; }
+
+@keyframes egg-drop {
+    0%, 80% { opacity: 0;   transform: translate(-50%, 0);    }
+    85%     { opacity: 1;   transform: translate(-50%, 0);    }
+    100%    { opacity: 0;   transform: translate(-50%, 28px); }
+}
+
+// The hen silhouette has its head on the left (cx=22) and tail on the
+// right (cx=49). Since the strip animates left→right, we flip the SVG
+// horizontally so the head leads and the hens walk forward, not backwards.
+.chicken-svg {
+    display: block;
+    width: 28px;
+    height: auto;
+    animation: chicken-bob 0.8s ease-in-out infinite;
+    transform-origin: center bottom;
+    transform: scaleX(-1);
+}
+
+.chicken-head {
+    transform-origin: 22px 24px;
+    animation: chicken-head-wobble 3.5s ease-in-out infinite;
+}
+
+.leg {
+    transform-origin: top center;
+    animation: chicken-leg 0.4s ease-in-out infinite;
+}
+
+.leg-front {
+    animation-delay: -0.2s;
+}
+
+// Walk across the parent strip. `left` is relative to the strip width, so
+// going from -60px (offscreen left) to calc(100% + 60px) (offscreen right)
+// produces a clean traversal regardless of strip width.
+@keyframes chicken-walk {
+    0%   { left: -60px;                  }
+    100% { left: calc(100% + 60px);      }
+}
+
+// Tiny vertical bob to mimic the up/down motion of a walking hen.
+// scaleX(-1) is re-applied in every keyframe because the running animation
+// otherwise replaces the static transform set on .chicken-svg and the hen
+// would flicker back to facing-left mid-bob.
+@keyframes chicken-bob {
+    0%, 100% { transform: scaleX(-1) translateY(0); }
+    50%      { transform: scaleX(-1) translateY(-2px); }
+}
+
+@keyframes chicken-head-wobble {
+    0%, 60%, 100% { transform: rotate(0); }
+    65%           { transform: rotate(-12deg); }
+    75%           { transform: rotate(12deg); }
+    85%           { transform: rotate(0); }
+}
+
+@keyframes chicken-leg {
+    0%, 100% { transform: rotate(0); }
+    50%      { transform: rotate(15deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chicken,
+    .chicken-svg,
+    .chicken-head,
+    .leg {
+        animation: none;
+    }
+    // Without animations the strip would just stack 4 hens at x=-60px.
+    // Spread them out statically so they remain a nice decoration.
+    .chicken:nth-child(1) { transform: translate(10%,  -50%); }
+    .chicken:nth-child(2) { transform: translate(35%,  -50%); }
+    .chicken:nth-child(3) { transform: translate(60%,  -50%); }
+    .chicken:nth-child(4) { transform: translate(85%,  -50%); }
+}
+
+// Hide on narrow screens — the topnav already feels cramped on phones.
+@media (max-width: 575.98px) {
+    .chickens-strip { display: none; }
+}

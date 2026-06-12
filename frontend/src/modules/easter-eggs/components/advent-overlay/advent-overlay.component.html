@@ -1,0 +1,37 @@
+<ng-container *ngIf="active()">
+    <div class="snowfall" aria-hidden="true">
+        <span
+            *ngFor="let f of flakes"
+            class="flake"
+            [style.left]="f.left"
+            [style.width]="f.size"
+            [style.height]="f.size"
+            [style.animation-delay]="f.delay"
+            [style.animation-duration]="f.duration"
+            [style.--drift]="f.drift"
+            [style.opacity]="f.opacity"
+        ></span>
+    </div>
+
+    <div class="xmas-tree" aria-hidden="true" title="Joyeux Noël !">
+        <svg viewBox="0 0 60 80" width="60" height="80">
+            <!-- Trunk -->
+            <rect x="26" y="64" width="8" height="12" fill="#6b4226" />
+            <!-- Tree (three triangles stacked) -->
+            <polygon points="30,4 12,30 48,30" fill="#1f6f3a" stroke="#0f3a1d" stroke-width="1" />
+            <polygon points="30,20 10,46 50,46" fill="#1f6f3a" stroke="#0f3a1d" stroke-width="1" />
+            <polygon points="30,36 8,64 52,64" fill="#1f6f3a" stroke="#0f3a1d" stroke-width="1" />
+            <!-- Star -->
+            <polygon points="30,2 32,8 38,8 33,12 35,18 30,14 25,18 27,12 22,8 28,8" fill="#f0c540" stroke="#7a5a10" stroke-width="0.5" />
+            <!-- Garland lights, blinking on a stagger -->
+            <circle class="light l1" cx="20" cy="22" r="2" fill="#ff2a4c" />
+            <circle class="light l2" cx="34" cy="26" r="2" fill="#ffd24c" />
+            <circle class="light l3" cx="16" cy="40" r="2" fill="#2af0c1" />
+            <circle class="light l4" cx="40" cy="42" r="2" fill="#ff5cf0" />
+            <circle class="light l5" cx="22" cy="56" r="2" fill="#ffd24c" />
+            <circle class="light l6" cx="38" cy="58" r="2" fill="#2af0c1" />
+            <circle class="light l7" cx="14" cy="62" r="2" fill="#ff2a4c" />
+            <circle class="light l8" cx="46" cy="60" r="2" fill="#5cd6ff" />
+        </svg>
+    </div>
+</ng-container>

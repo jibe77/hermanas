@@ -1,0 +1,60 @@
+// Snowfall: 80 white round flakes drifting down with a horizontal sway.
+// They use --drift as a custom property so each flake has its own gentle
+// left/right amplitude without a separate @keyframes per flake.
+.snowfall {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1020;
+}
+
+.flake {
+    position: absolute;
+    top: -20px;
+    background: radial-gradient(circle, #ffffff 60%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    animation-name: snow-fall;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes snow-fall {
+    0%   { transform: translate(0, 0); }
+    100% { transform: translate(var(--drift), 110vh); }
+}
+
+// Small Christmas tree pinned bottom-left so it doesn't collide with the
+// usual right-side FABs and toasts. Garland lights blink in three groups
+// with staggered timing — feels alive without being flashy.
+.xmas-tree {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    z-index: 1025;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.light {
+    animation: light-blink 1.4s ease-in-out infinite;
+}
+.light.l1, .light.l5 { animation-delay: 0s;    }
+.light.l2, .light.l6 { animation-delay: -0.4s; }
+.light.l3, .light.l7 { animation-delay: -0.8s; }
+.light.l4, .light.l8 { animation-delay: -1.2s; }
+
+@keyframes light-blink {
+    0%, 100% { opacity: 1;   transform: scale(1);   }
+    50%      { opacity: 0.3; transform: scale(0.7); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .flake { animation: none; display: none; }
+    .light { animation: none; }
+}
+
+// On small screens the tree feels cramped — shrink it.
+@media (max-width: 575.98px) {
+    .xmas-tree { transform: scale(0.7); transform-origin: bottom left; }
+}

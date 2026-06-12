@@ -31,10 +31,15 @@
     text-decoration: none;
 }
 
+// Flip horizontally so the brand hen faces the same direction as the
+// hens strolling in the strip (head on the right). scaleX(-1) sits on
+// the SVG element itself; the head-wobble animation runs on a child <g>
+// so the two transforms don't collide.
 .brand-hen-svg {
     width: 32px;
     height: auto;
     flex-shrink: 0;
+    transform: scaleX(-1);
 }
 
 .brand-hen-head {
@@ -59,4 +64,31 @@
     .brand-hen-head {
         animation: none;
     }
+}
+
+// ---------------------------------------------------------------------------
+// Advent season: santa hat on the brand hen + warm holiday border under the
+// navbar. The hat lives in the SVG so it follows the head wobble; SCSS just
+// reveals it when the .advent class is on the nav.
+// ---------------------------------------------------------------------------
+.brand-santa-hat { display: none; }
+
+.sb-topnav.advent {
+    .brand-santa-hat { display: inline; }
+    border-bottom: 3px solid #1f6f3a;
+    box-shadow: inset 0 -6px 0 #d93030;
+}
+
+// ---------------------------------------------------------------------------
+// Easter season: pastel rainbow accent under the navbar. The gradient runs
+// in the box-shadow inset so it doesn't change the navbar's own height and
+// echoes the floating eggs' palette.
+// ---------------------------------------------------------------------------
+.sb-topnav.easter {
+    border-bottom: 3px solid transparent;
+    background-image: linear-gradient($dark, $dark),
+                      linear-gradient(90deg,
+                          #ffd1dc, #c1e7ff, #d8f5c1, #fff3b0, #e5d4ff, #ffe1c1);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
 }

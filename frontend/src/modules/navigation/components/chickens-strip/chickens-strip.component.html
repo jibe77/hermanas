@@ -1,0 +1,46 @@
+<div
+    class="chickens-strip"
+    [class.dancing]="dancing()"
+    [class.april-fools]="aprilFools()"
+    [class.advent]="advent()"
+    [class.easter]="easter()"
+    aria-hidden="true"
+>
+    <span
+        *ngFor="let c of chickens; let i = index"
+        class="chicken"
+        [style.animation-delay]="c.delay"
+        [style.animation-duration]="c.duration"
+        (click)="onChickenClick($event, i)"
+    >
+        <svg
+            class="chicken-svg"
+            viewBox="0 0 60 50"
+            [style.animation-delay]="c.bobDelay"
+        >
+            <ellipse cx="32" cy="34" rx="18" ry="13" [attr.fill]="c.palette.body" [attr.stroke]="c.palette.outline" stroke-width="1.5" />
+            <path d="M 23 32 Q 19 22 35 25 Q 42 35 26 40 Z" [attr.fill]="c.palette.wing" [attr.stroke]="c.palette.outline" stroke-width="1.2" />
+            <path d="M 49 30 Q 58 26 56 36 Q 53 42 47 36 Z" [attr.fill]="c.palette.tail" [attr.stroke]="c.palette.outline" stroke-width="1.2" />
+            <g class="chicken-head">
+                <circle cx="22" cy="20" r="9" [attr.fill]="c.palette.body" [attr.stroke]="c.palette.outline" stroke-width="1.5" />
+                <path d="M 18 12 Q 20 7 22 13 Q 24 8 26 13 Q 28 9 29 14 Z" [attr.fill]="c.palette.comb" [attr.stroke]="c.palette.outline" stroke-width="1" />
+                <polygon points="13,21 7,22 13,25" [attr.fill]="c.palette.beak" [attr.stroke]="c.palette.outline" stroke-width="1" />
+                <circle cx="18" cy="19" r="1.5" fill="#222" />
+                <!-- Santa hat: red triangle leaning back over the comb, white
+                     band at the base and pompom at the tip. Hidden unless
+                     the strip carries the .advent class. -->
+                <g class="santa-hat">
+                    <polygon points="14,11 28,11 34,-2" fill="#d93030" stroke="#7a1818" stroke-width="0.8" />
+                    <ellipse cx="14" cy="11" rx="7" ry="2" fill="#ffffff" stroke="#cccccc" stroke-width="0.6" />
+                    <ellipse cx="28" cy="11" rx="7" ry="2" fill="#ffffff" stroke="#cccccc" stroke-width="0.6" />
+                    <circle cx="34" cy="-2" r="2.2" fill="#ffffff" stroke="#cccccc" stroke-width="0.6" />
+                </g>
+            </g>
+            <line x1="28" y1="46" x2="28" y2="50" [attr.stroke]="c.palette.outline" stroke-width="1.5" stroke-linecap="round" class="leg leg-back" />
+            <line x1="36" y1="46" x2="36" y2="50" [attr.stroke]="c.palette.outline" stroke-width="1.5" stroke-linecap="round" class="leg leg-front" />
+        </svg>
+        <!-- Easter season: a pastel egg falls from under the hen every full
+             walk cycle. Hidden by default; .easter on the strip reveals it. -->
+        <span class="laid-egg" [style.background]="eggColors[i % eggColors.length]"></span>
+    </span>
+</div>
