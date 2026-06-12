@@ -347,6 +347,57 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
     - Also tee the e2e report to `coverage/e2e/` so the link from the
       docs survives between runs.
 
+- [ ] **Frontend major upgrades worth doing in their own commits**
+  - **Context:** Routine `npm update` only picks up patches/minors that
+    fit the existing semver ranges. The bumps below cross a major and
+    were deliberately deferred from the 2026-06 dependency pass — each
+    deserves its own branch + visual QA pass + e2e run before merging.
+  - **Angular 20 → 21** — Angular 21 shipped 2025-11-19 and is now on
+    21.2.x (mature). The Pi Zero deployment is unaffected since this
+    only touches the frontend. Run `ng update @angular/core@21
+    @angular/cli@21` and let the Angular migrations do their work; the
+    control-flow / signal API surface keeps evolving, expect template
+    deprecations. Hold off on Angular 22 (shipped 2026-06-03, brand new)
+    until ~early 2027 — same posture took us through 20 → 21 cleanly.
+  - **`@angular/cdk` + `@angular/material` 20 → 22** — Material 3 design
+    tokens land in v22; expect overrides in `styles/` to need rewiring,
+    especially anything touching color/typography roles. Best done
+    *after* Angular core 21 lands so there is exactly one moving target
+    at a time.
+  - **`@angular-eslint/*` 20 → 22** — Must follow Angular core. The
+    lint rules drift with each Angular release, so chain it with the
+    Angular 21 upgrade.
+  - **`@fortawesome/angular-fontawesome` 2 → 5 + `fontawesome-svg-core`
+    6 → 7** — Triple major. FA7 finishes the FA5 → FA6 alias deprecation
+    (`info-circle` → `circle-info`, `arrow-up-from-bracket`, etc.). Grep
+    every `<fa-icon [icon]="['fas', 'X']">` in the templates and update
+    each name; the missing-icon warnings will tell you what slipped.
+  - **`@ng-bootstrap/ng-bootstrap` 19 → 20** — Drives the top-nav user/
+    lang dropdowns and the login modal. Smoke-test the dropdowns, the
+    NgbActiveModal close paths and the keyboard shortcuts before merge.
+  - **`typescript` 5.8 → 6.0** — Stricter type checking, decorators
+    stage 3. Likely surfaces latent issues — easier when Angular has
+    already moved (Angular 21 needs TS ≥ 5.8 and is fine with 5.x).
+  - **`vitest` 3.2 → 4.1** — Mock/hook API refactor. The 192 specs
+    might need adjustments around `vi.fn()` and lifecycle hooks.
+    `@vitest/coverage-v8` follows the same major.
+  - **`eslint` 9 → 10** — Pure linting, no runtime impact. Already on
+    flat config so the migration should be cosmetic. Lowest-risk of the
+    bunch — could be done alone if you want a small win.
+  - **`uuid` 9 → 14** — Five majors. ESM-only since v10; grep for any
+    `require('uuid')` in scripts/* and convert to `import`.
+  - **`zone.js` 0.15 → 0.16** — Tied to the Angular version; bump it in
+    the same commit as Angular core 21 so the versions stay matched.
+  - **`cross-env` 7 → 10 + `shelljs` 0.8 → 0.10** — Used by the npm
+    scripts (`scripts/index.js`, `scripts/version.js`); skim those two
+    files when upgrading so the env-var syntax still resolves.
+  - **Held back as long as the Pi Zero stays:** Spring Boot 3, Spring
+    Security 7, Pi4j 4.x, h2 2.4, spring-retry 2.x, resilience4j 2.x —
+    all require Java 17. Move with the hardware upgrade (Phase 9).
+  - **Held back for visual breakage risk:** jQuery 3 → 4 (touches every
+    legacy template script), webjars:webjars-locator-core breaking
+    change between 0.x and 1.x.
+
 - [ ] **Bundle Angular frontend into the same JAR** (currently deployed separately on another server)
   - Frontend source: https://github.com/jibe77/hermanasclient
   - Goal: single JAR deployment containing both backend REST API and Angular SPA
