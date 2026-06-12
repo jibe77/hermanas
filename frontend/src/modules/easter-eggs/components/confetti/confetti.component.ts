@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { EasterEggsService } from '../../services';
 
 interface ConfettiPiece {
@@ -18,7 +18,7 @@ interface ConfettiPiece {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './confetti.component.html',
     styleUrls: ['confetti.component.scss'],
-    imports: [NgFor, NgIf],
+    imports: [],
 })
 export class ConfettiComponent {
     private ee = inject(EasterEggsService);
@@ -34,4 +34,13 @@ export class ConfettiComponent {
     }));
 }
 
-const PALETTE = ['#f0a830', '#d93030', '#6b4226', '#fff5e0', '#e0a96d', '#5a4233', '#b8b5ad', '#e25555'];
+const PALETTE = [
+    '#f0a830',
+    '#d93030',
+    '#6b4226',
+    '#fff5e0',
+    '#e0a96d',
+    '#5a4233',
+    '#b8b5ad',
+    '#e25555',
+];

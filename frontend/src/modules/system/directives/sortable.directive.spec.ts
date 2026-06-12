@@ -2,7 +2,7 @@ import { Component, DebugElement } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
-import { SBSortableHeaderDirective, SortEvent } from './sortable.directive';
+import { SBSortableHeaderDirective, SortDirection, SortEvent } from './sortable.directive';
 
 @Component({
     template: `
@@ -50,6 +50,19 @@ describe('SBSortableHeaderDirective (System)', () => {
         expect(directive).toBeTruthy();
     });
 
+    // Helper: write to the parent's `sortDirection` and let Angular settle.
+    // Angular 21 made the "expression changed after checked" guard stricter
+    // — a bare `component.x = …; fixture.detectChanges()` now trips NG0100
+    // when the parent template owns the @Input binding. Going through
+    // markForCheck() + detectChanges() rebuilds the LView checkpoint the
+    // second-pass guard compares against, mirroring what Angular's own
+    // scheduler does in production.
+    function setDirection(value: SortDirection): void {
+        component.sortDirection = value;
+        fixture.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+    }
+
     describe('Input properties', () => {
         it('should have sbSortable column name', () => {
             expect(directive.sbSortable).toBe('name');
@@ -66,8 +79,7 @@ describe('SBSortableHeaderDirective (System)', () => {
         });
 
         it('should accept direction input', () => {
-            component.sortDirection = 'asc';
-            fixture.detectChanges();
+            setDirection('asc');
 
             expect(directive.direction).toBe('asc');
         });
@@ -75,41 +87,35 @@ describe('SBSortableHeaderDirective (System)', () => {
 
     describe('CSS class bindings', () => {
         it('should not have asc or desc class when direction is empty', () => {
-            directive.direction = '';
-            fixture.detectChanges();
+            setDirection('');
 
             expect(directiveElement.nativeElement.classList.contains('asc')).toBe(false);
             expect(directiveElement.nativeElement.classList.contains('desc')).toBe(false);
         });
 
         it('should apply asc class when direction is ascending', () => {
-            directive.direction = 'asc';
-            fixture.detectChanges();
+            setDirection('asc');
 
             expect(directiveElement.nativeElement.classList.contains('asc')).toBe(true);
             expect(directiveElement.nativeElement.classList.contains('desc')).toBe(false);
         });
 
         it('should apply desc class when direction is descending', () => {
-            directive.direction = 'desc';
-            fixture.detectChanges();
+            setDirection('desc');
 
             expect(directiveElement.nativeElement.classList.contains('desc')).toBe(true);
             expect(directiveElement.nativeElement.classList.contains('asc')).toBe(false);
         });
 
         it('should update classes when direction changes', () => {
-            directive.direction = 'asc';
-            fixture.detectChanges();
+            setDirection('asc');
             expect(directiveElement.nativeElement.classList.contains('asc')).toBe(true);
 
-            directive.direction = 'desc';
-            fixture.detectChanges();
+            setDirection('desc');
             expect(directiveElement.nativeElement.classList.contains('desc')).toBe(true);
             expect(directiveElement.nativeElement.classList.contains('asc')).toBe(false);
 
-            directive.direction = '';
-            fixture.detectChanges();
+            setDirection('');
             expect(directiveElement.nativeElement.classList.contains('desc')).toBe(false);
             expect(directiveElement.nativeElement.classList.contains('asc')).toBe(false);
         });
@@ -247,8 +253,7 @@ describe('SBSortableHeaderDirective (System)', () => {
         });
 
         it('should reflect component direction changes', () => {
-            component.sortDirection = 'desc';
-            fixture.detectChanges();
+            setDirection('desc');
 
             expect(directive.direction).toBe('desc');
             expect(directiveElement.nativeElement.classList.contains('desc')).toBe(true);

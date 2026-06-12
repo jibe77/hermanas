@@ -8,41 +8,26 @@
     },
     "compileOnSave": false,
     "compilerOptions": {
-      "baseUrl": "src",
-      "esModuleInterop": true,
-      "outDir": "./dist/out-tsc",
-      "paths": {
-        "@app/*": [
-          "app/*"
-        ],
-        "@common/*": [
-          "modules/app-common/*"
-        ],
-        "@modules/*": [
-          "modules/*"
-        ],
-        "@testing/*": [
-          "testing/*"
-        ]
-      },
-      "resolveJsonModule": true,
-      "sourceMap": true,
-      "declaration": false,
-      "downlevelIteration": true,
-      "experimentalDecorators": true,
-      "moduleResolution": "bundler",
-      "importHelpers": true,
-      "allowJs": true,
-      "target": "ES2022",
-      "typeRoots": [
-        "node_modules/@types",
-        "src/typings"
-      ],
-      "module": "es2020",
-      "lib": [
-        "es2018",
-        "dom"
-      ],
-      "useDefineForClassFields": false
+        "baseUrl": "src",
+        "esModuleInterop": true,
+        "outDir": "./dist/out-tsc",
+        "paths": {
+            "@app/*": ["app/*"],
+            "@common/*": ["modules/app-common/*"],
+            "@modules/*": ["modules/*"],
+            "@testing/*": ["testing/*"]
+        },
+        "resolveJsonModule": true,
+        "sourceMap": true,
+        "declaration": false,
+        "downlevelIteration": true,
+        "experimentalDecorators": true,
+        "moduleResolution": "bundler",
+        "importHelpers": true,
+        "allowJs": true,
+        "target": "ES2022",
+        "typeRoots": ["node_modules/@types", "src/typings"],
+        "module": "es2020",
+        "useDefineForClassFields": false
     }
 }

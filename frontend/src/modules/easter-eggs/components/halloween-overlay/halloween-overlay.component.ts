@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { EasterEggsService } from '../../services';
 
 interface FloatingPumpkin {
@@ -28,7 +28,7 @@ interface FlyingBat {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './halloween-overlay.component.html',
     styleUrls: ['halloween-overlay.component.scss'],
-    imports: [NgIf, NgFor],
+    imports: [],
 })
 export class HalloweenOverlayComponent {
     private ee = inject(EasterEggsService);

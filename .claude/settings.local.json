@@ -146,7 +146,9 @@
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"https://hermanas.r3n4.uk/api/v1/users\")",
       "Bash(curl -s -o /dev/null -w \"/users HTTP %{http_code}\\\\n\" \"https://hermanas.r3n4.uk/api/v1/users\")",
       "Bash(curl -s -o /dev/null -w \"/users/me HTTP %{http_code}\\\\n\" \"https://hermanas.r3n4.uk/api/v1/users/me\")",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(npm --version)",
+      "Bash(npx -y npm-registry-fetch view @angular/core@21 version engines.node peerDependencies.typescript peerDependencies.rxjs peerDependencies.zone.js)"
     ],
     "deny": [],
     "ask": []

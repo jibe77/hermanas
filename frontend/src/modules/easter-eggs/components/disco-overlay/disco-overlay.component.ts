@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { NgIf } from '@angular/common';
+
 import { EasterEggsService } from '../../services';
 
 // Full-viewport overlay that pulses colored gradients when disco mode is
@@ -10,7 +10,7 @@ import { EasterEggsService } from '../../services';
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './disco-overlay.component.html',
     styleUrls: ['disco-overlay.component.scss'],
-    imports: [NgIf],
+    imports: [],
 })
 export class DiscoOverlayComponent {
     private ee = inject(EasterEggsService);

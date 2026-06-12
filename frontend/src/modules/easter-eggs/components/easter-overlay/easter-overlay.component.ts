@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { EasterEggsService } from '../../services';
 
 interface FloatingEgg {
@@ -21,7 +21,7 @@ interface FloatingEgg {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './easter-overlay.component.html',
     styleUrls: ['easter-overlay.component.scss'],
-    imports: [NgIf, NgFor],
+    imports: [],
 })
 export class EasterOverlayComponent {
     private ee = inject(EasterEggsService);

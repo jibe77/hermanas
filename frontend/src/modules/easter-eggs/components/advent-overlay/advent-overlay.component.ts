@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+
 import { EasterEggsService } from '../../services';
 
 interface Snowflake {
@@ -20,7 +20,7 @@ interface Snowflake {
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './advent-overlay.component.html',
     styleUrls: ['advent-overlay.component.scss'],
-    imports: [NgIf, NgFor],
+    imports: [],
 })
 export class AdventOverlayComponent {
     private ee = inject(EasterEggsService);
