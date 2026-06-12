@@ -49,8 +49,6 @@
     "flag-icon-css": "^3.5.0",
     "rxjs": "~7.8.1",
     "tslib": "2.2.0",
-    "uuid": "^14.0.0",
-    "webpack-bundle-analyzer": "4.4.0",
     "zone.js": "^0.16.2"
   },
   "devDependencies": {
@@ -69,11 +67,10 @@
     "@inip/static-server": "1.0.1",
     "@playwright/test": "^1.57.0",
     "@types/node": "^20.19.41",
-    "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^8.60.0",
     "@typescript-eslint/parser": "^8.60.0",
     "@vitest/coverage-v8": "^4.1.8",
-    "bootstrap": "5.3.3",
+    "bootstrap": "^5.3.8",
     "cross-env": "^10.1.0",
     "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
@@ -81,9 +78,9 @@
     "jsdom": "^29.1.1",
     "prettier": "^3.6.2",
     "shelljs": "^0.10.0",
-    "ts-node": "9.1.1",
     "typescript": "~5.9.3",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "webpack-bundle-analyzer": "^5.3.0"
   },
   "browser": {
     "crpyto": false
