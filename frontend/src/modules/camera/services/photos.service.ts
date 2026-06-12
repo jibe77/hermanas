@@ -53,11 +53,13 @@ export class PhotosService {
 
     /** Returns the URL to use as <img src=""> for the given image relative path. */
     fileUrl(relativePath: string): string {
-        // In demo mode there is no real backend file — return an inline SVG so
-        // the <img> tag renders something plausible. Angular HTTP interceptors
+        // In demo mode there is no real backend file — serve a real chicken-
+        // coop snapshot bundled with the SPA. We swap the per-file URL for a
+        // tag-line caption baked into the image itself, so every cell of the
+        // demo gallery resolves to the same photo. Angular HTTP interceptors
         // are bypassed by <img src>, so we have to handle the substitution here.
         if (this.userService.isDemoMode()) {
-            return buildPlaceholderDataUrl(/* live */ false, relativePath);
+            return DEMO_COOP_PHOTO_URL;
         }
         return `${this.base}/file?path=${encodeURIComponent(relativePath)}`;
     }
@@ -78,7 +80,11 @@ export class PhotosService {
      */
     snapshotUrl(highQuality = false, force = false): string {
         if (this.userService.isDemoMode()) {
-            return buildPlaceholderDataUrl(/* live */ true);
+            // Bundled chicken-coop JPEG — same shot the gallery serves so the
+            // visitor sees a real picture rather than the previous abstract
+            // SVG placeholder. highQuality / force are intentionally ignored
+            // in demo: there is no second variant of the bundled asset.
+            return DEMO_COOP_PHOTO_URL;
         }
         const parts = [`date=${Date.now()}`];
         if (highQuality) parts.push('highQuality=true');
@@ -155,25 +161,10 @@ export class PhotosService {
 }
 
 /**
- * Returns an inline SVG data-URL used as a placeholder image in demo mode. Two
- * palettes — green/yellow for the "Live" snapshot and brown/cream for archive
- * photos — so the two panels feel distinct at a glance. The optional `label`
- * argument is rendered in the bottom-right so an interviewer can verify the
- * archive grid wires through to per-file URLs (the file name appears on each
- * placeholder).
+ * Real chicken-coop snapshot bundled with the SPA. Used in demo mode by both
+ * the live panel and the archive gallery so the visitor sees an actual hen
+ * picture instead of the previous abstract SVG placeholder. Lives under
+ * src/assets/demo/ so Angular's asset pipeline serves it from the same
+ * origin as the SPA — no extra Spring static-resource wiring needed.
  */
-function buildPlaceholderDataUrl(live: boolean, label?: string): string {
-    const bg = live ? '#3b6b3a' : '#7a6b58';
-    const accent = live ? '#d4e85b' : '#f0d27a';
-    const title = live ? 'LIVE DEMO' : 'DEMO ARCHIVE';
-    const sublabel = label ? label.split('/').pop() ?? '' : 'Hermanas — chicken coop';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
-  <rect width="100%" height="100%" fill="${bg}"/>
-  <rect x="40" y="40" width="560" height="280" fill="none" stroke="${accent}" stroke-width="4"/>
-  <text x="320" y="180" font-family="sans-serif" font-size="38" font-weight="bold"
-        text-anchor="middle" fill="${accent}">${title}</text>
-  <text x="320" y="220" font-family="sans-serif" font-size="18"
-        text-anchor="middle" fill="#ffffff">${sublabel}</text>
-</svg>`;
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-}
+const DEMO_COOP_PHOTO_URL = 'assets/demo/coop-01.jpeg';
