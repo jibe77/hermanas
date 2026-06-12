@@ -24,7 +24,7 @@
 		<springdoc-openapi-ui.version>1.8.0</springdoc-openapi-ui.version>
 		<lib-sunrise-sunset.version>1.1.2</lib-sunrise-sunset.version>
 		<picam.version>2.0.2</picam.version>
-		<commons-io.version>2.20.0</commons-io.version>
+		<commons-io.version>2.22.0</commons-io.version>
 		<!-- Override the Spring Boot 2.7 BOM (3.12.0) — 3.20.0 stays Java 8
 		     compatible per its pom, so it survives the Pi Zero / Java 11
 		     constraint. Picks up minor API additions + CVE fixes accumulated
