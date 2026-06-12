@@ -32,3 +32,4 @@ export * from './sw-update/sw-update.service';
 export * from './push/push.service';
 export * from './demo-fixture/demo-fixture.service';
 export * from './demo-confirm/demo-confirm.service';
+export * from './demo-welcome/demo-welcome.service';

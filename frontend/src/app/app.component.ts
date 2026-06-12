@@ -11,6 +11,7 @@ import {
 } from '@common/components';
 import { LoginModalComponent } from '@modules/auth/components';
 import { DemoConfirmModalComponent } from '@common/components/demo-confirm-modal/demo-confirm-modal.component';
+import { DemoWelcomeModalComponent } from '@common/components/demo-welcome-modal/demo-welcome-modal.component';
 
 @Component({
     selector: 'app-root',
@@ -23,6 +24,7 @@ import { DemoConfirmModalComponent } from '@common/components/demo-confirm-modal
         OfflineBannerComponent,
         LoginModalComponent,
         DemoConfirmModalComponent,
+        DemoWelcomeModalComponent,
     ],
 })
 export class AppComponent implements OnInit, OnDestroy {

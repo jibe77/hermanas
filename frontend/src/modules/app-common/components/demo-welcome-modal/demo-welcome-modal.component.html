@@ -1,0 +1,50 @@
+@if (open()) {
+    <div class="sb-demo-welcome-backdrop" (click)="close()"></div>
+    <div
+        class="sb-demo-welcome-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sbDemoWelcomeTitle"
+    >
+        <div class="card demo-welcome-card" (click)="$event.stopPropagation()">
+            <div class="card-header bg-info-subtle d-flex align-items-center">
+                <fa-icon class="me-2 text-info" [icon]="['fas', 'info-circle']"></fa-icon>
+                <strong id="sbDemoWelcomeTitle" i18n="@@demoWelcomeTitle"
+                    >Demo mode enabled</strong
+                >
+            </div>
+            <div class="card-body">
+                <p class="mb-2" i18n="@@demoWelcomeIntro">
+                    You are now exploring Hermanas as an administrator <strong>without</strong>
+                    being logged in. Every protected screen and admin menu unfolds so you can
+                    see the full interface.
+                </p>
+                <p class="small mb-2" i18n="@@demoWelcomeWhatWorks">
+                    <strong>What works:</strong> navigation, read-only panels, and switching
+                    between pages.
+                </p>
+                <p class="small mb-3" i18n="@@demoWelcomeWhatBlocks">
+                    <strong>What is blocked:</strong> any action that would change the chicken
+                    coop (open the door, save a configuration, send an email…) is intercepted
+                    on the client. A confirmation modal pops up; even if you confirm,
+                    <strong>nothing reaches the Raspberry Pi</strong>.
+                </p>
+                <p class="small text-muted mb-3" i18n="@@demoWelcomeHowToExit">
+                    Use the user menu (top right) to disable demo mode, or simply refresh the
+                    page.
+                </p>
+                <div class="d-flex justify-content-end">
+                    <button
+                        type="button"
+                        class="btn btn-primary btn-sm"
+                        (click)="close()"
+                        data-cy="demoWelcomeClose"
+                        i18n="@@demoWelcomeGotIt"
+                    >
+                        Got it
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

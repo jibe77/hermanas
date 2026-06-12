@@ -7,6 +7,7 @@ import {
     inject,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { DemoWelcomeService } from '@common/services';
 import { LoginModalService, LoginService, UserService } from '@modules/auth/services';
 import { AuthState } from '@modules/auth/models';
 import { NavigationService } from '@modules/navigation/services';
@@ -29,6 +30,7 @@ export class TopNavUserComponent implements OnInit, OnDestroy {
     private loginModal = inject(LoginModalService);
     private changeDetectorRef = inject(ChangeDetectorRef);
     private router = inject(Router);
+    private demoWelcome = inject(DemoWelcomeService);
 
     authState: AuthState = AuthState.SignedOut;
     subscription: Subscription = new Subscription();
@@ -59,6 +61,9 @@ export class TopNavUserComponent implements OnInit, OnDestroy {
      */
     enableDemo(): void {
         this.userService.enableDemoMode();
+        // Surface a one-shot welcome modal so the visitor understands what
+        // demo mode actually does before triggering protected actions.
+        this.demoWelcome.show();
         const currentUrl = this.router.url || '/dashboard';
         this.router.navigateByUrl(currentUrl);
         this.changeDetectorRef.markForCheck();
