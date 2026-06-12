@@ -17,7 +17,7 @@ export class EasterEggsService extends AbstractService {
 
     // Konami code → chickens dance for a short burst.
     readonly dancing = signal(false);
-    // 10 clicks on the brand hen → disco mode (flashing lights).
+    // 5 clicks on the brand hen → disco mode (flashing lights).
     readonly disco = signal(false);
     // April 1st → walk backwards (set once at boot, never changes).
     readonly aprilFools = signal(false);
@@ -44,7 +44,7 @@ export class EasterEggsService extends AbstractService {
 
     private brandClickCount = 0;
     private brandClickResetTimer?: ReturnType<typeof setTimeout>;
-    private static readonly BRAND_CLICKS_FOR_DISCO = 10;
+    private static readonly BRAND_CLICKS_FOR_DISCO = 5;
     private static readonly BRAND_CLICK_WINDOW_MS = 3000;
 
     install(): void {

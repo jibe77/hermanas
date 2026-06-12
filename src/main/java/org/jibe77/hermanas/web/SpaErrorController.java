@@ -45,13 +45,36 @@ public class SpaErrorController implements ErrorController {
             }
         }
 
+        // Preserve the locale the visitor was already on — otherwise a hard
+        // refresh on /ro-RO/<anything-not-yet-mapped> hands them off to
+        // /fr-FR/index.html, the Angular router does not know /ro-RO/... and
+        // ends up rendering /fr-FR/ro-RO/<...>/404. Detect the prefix from
+        // the original request URI and stay there.
+        String localePrefix = detectLocalePrefix(originalUri);
+
         // 404 / no-mapping / typo'd path — forward to the SPA shell so Angular's
         // router lands on the animated 404 chicken. 5xx and anything else also
         // routes through the SPA, which then renders its own error component.
         int code = status instanceof Integer ? (Integer) status : 404;
         if (code == 401) {
-            return "redirect:" + DEFAULT_LOCALE_PREFIX + "/auth/login";
+            return "redirect:" + localePrefix + "/auth/login";
         }
-        return "forward:" + DEFAULT_LOCALE_PREFIX + "/index.html";
+        return "forward:" + localePrefix + "/index.html";
+    }
+
+    private static String detectLocalePrefix(Object originalUri) {
+        if (originalUri instanceof String) {
+            String uri = (String) originalUri;
+            if (uri.startsWith("/fr-FR/") || uri.equals("/fr-FR")) {
+                return "/fr-FR";
+            }
+            if (uri.startsWith("/en-US/") || uri.equals("/en-US")) {
+                return "/en-US";
+            }
+            if (uri.startsWith("/ro-RO/") || uri.equals("/ro-RO")) {
+                return "/ro-RO";
+            }
+        }
+        return DEFAULT_LOCALE_PREFIX;
     }
 }

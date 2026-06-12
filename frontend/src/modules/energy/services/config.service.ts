@@ -115,6 +115,18 @@ export class ConfigService extends AbstractService {
         return this.http.get<AllConfig>(`${this.domainBase}/config`);
     }
 
+    /**
+     * Fetches just the built-in default AI prompt from a public endpoint. Used
+     * by the camera config panel as a fallback when {@link getAll} returns 401
+     * (anonymous visitor or front-only demo mode), so the operator can still
+     * see and copy the default prompt even without being authenticated.
+     */
+    getAiInferencePromptDefault(): Observable<{ prompt_default: string }> {
+        return this.http.get<{ prompt_default: string }>(
+            `${this.domainBase}/config/ai/prompt-default`
+        );
+    }
+
     setLightOnBeforeSunset(minutes: number): Observable<string> {
         const params = new HttpParams().set('minutes', String(minutes));
         return this.http.put(`${this.domainBase}/config/sun/light-on-before-sunset`, null, {

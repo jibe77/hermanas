@@ -418,6 +418,26 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 this.cdr.markForCheck();
             },
             error: () => {
+                // GET /config is admin-only, so an anonymous visitor (including
+                // the front-only demo mode) lands here with a 401. Fall back to
+                // the public /config/ai/prompt-default endpoint so the prompt
+                // textarea still shows the actual default text instead of a
+                // blank box — every other field stays gated.
+                this.loadAiInferencePromptDefaultPublic();
+            },
+        });
+    }
+
+    private loadAiInferencePromptDefaultPublic(): void {
+        this.configService.getAiInferencePromptDefault().subscribe({
+            next: res => {
+                this.aiInferencePromptDefault = res.prompt_default ?? '';
+                if (!this.aiInferencePrompt) {
+                    this.aiInferencePrompt = this.aiInferencePromptDefault;
+                }
+                this.cdr.markForCheck();
+            },
+            error: () => {
                 /* keep defaults */
             },
         });

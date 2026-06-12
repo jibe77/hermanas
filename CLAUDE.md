@@ -337,7 +337,7 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
       for ~600 ms.
     - Konami sequence on `document` flips `.chickens-strip.dancing` on for
       ~6 s.
-    - 10 clicks on `.brand-hen` within 3 s renders `<sb-disco-overlay>`
+    - 5 clicks on `.brand-hen` within 3 s renders `<sb-disco-overlay>`
       visible for ~8 s.
   - **D. Wire e2e into the build loop** so the suite stops drifting:
     - `npm test:all` running Vitest then Playwright sequentially

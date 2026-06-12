@@ -24,5 +24,10 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addViewController("/en-US/{path:[^\\.]*}").setViewName("forward:/en-US/index.html");
         registry.addViewController("/en-US/{path:^(?!api|actuator|swagger-ui|v3|stomp).*}/{subpath:[^\\.]*}")
                 .setViewName("forward:/en-US/index.html");
+
+        registry.addViewController("/ro-RO/").setViewName("forward:/ro-RO/index.html");
+        registry.addViewController("/ro-RO/{path:[^\\.]*}").setViewName("forward:/ro-RO/index.html");
+        registry.addViewController("/ro-RO/{path:^(?!api|actuator|swagger-ui|v3|stomp).*}/{subpath:[^\\.]*}")
+                .setViewName("forward:/ro-RO/index.html");
     }
 }

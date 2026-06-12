@@ -592,6 +592,10 @@ export class DemoFixtureService {
         // {login, email, role (singular), notificationsEnabled, language}. The
         // older { roles: [...], pendingValidation } shape predated the Users
         // admin panel and did not render correctly in the table.
+        // Mix of roles, languages and notification preferences so the table
+        // exercises every badge, every locale column and both notification
+        // states — the empty-email + Pending row at the end keeps the
+        // "approve / placeholder" rendering paths visible.
         return [
             {
                 login: 'marguerite',
@@ -605,6 +609,27 @@ export class DemoFixtureService {
                 email: 'henriette@demo.hermanas.fr',
                 role: 'USER',
                 notificationsEnabled: true,
+                language: 'en',
+            },
+            {
+                login: 'ileana',
+                email: 'ileana@demo.hermanas.fr',
+                role: 'USER',
+                notificationsEnabled: false,
+                language: 'ro',
+            },
+            {
+                login: 'colette',
+                email: 'colette@demo.hermanas.fr',
+                role: 'USER',
+                notificationsEnabled: true,
+                language: 'fr',
+            },
+            {
+                login: 'josephine',
+                email: 'josephine@demo.hermanas.fr',
+                role: 'ADMIN',
+                notificationsEnabled: false,
                 language: 'en',
             },
             {
@@ -710,16 +735,25 @@ export class DemoFixtureService {
             notifications: { weather_enabled: true },
             camera_settings: { brightness: 60, rotation: 180 },
             weather_settings: {
-                url: 'https://weather.example.demo/v1',
+                // Mirrors the shape of the real OpenWeatherMap template so the
+                // demo visitor sees a realistic URL (with the placeholder tokens
+                // the backend substitutes at call time) instead of a generic
+                // example.com domain.
+                url: 'https://api.weather.demo/data/2.5/weather?lat={latitude}&lon={longitude}&units=metric&appid={key}',
                 key_set: true,
                 key_length: 32,
             },
             ai_settings: this.syntheticAiSettings(),
-            email_settings: { from: 'hermanas@demo.fr' },
+            // Sender + SMTP block mirrors a typical Pi deployment (Gmail relay
+            // on 587 + STARTTLS) so the demo visitor sees realistic values
+            // instead of obvious "demo.fr" placeholders. The password is never
+            // returned by the real backend either — only the password_set flag,
+            // which surfaces as the green "Set" badge in the UI.
+            email_settings: { from: 'hermanas.demo@gmail.com' },
             email_smtp: {
-                host: 'smtp.demo.fr',
+                host: 'smtp.gmail.com',
                 port: 587,
-                username: 'hermanas-demo',
+                username: 'hermanas.demo@gmail.com',
                 password_set: true,
                 auth: true,
                 starttls: true,

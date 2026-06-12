@@ -568,6 +568,24 @@ public class ConfigRestController {
         return ResponseEntity.ok("AI inference cache TTL updated");
     }
 
+    /**
+     * Public read-only access to the built-in default prompt. Exposed so the
+     * front-end demo mode (anonymous visitor) can pre-fill the AI prompt
+     * textarea — every other field in the camera config panel stays gated
+     * behind the class-level {@code @PreAuthorize("isAuthenticated()")},
+     * but the default prompt itself is a hardcoded constant with no
+     * secret value and is safe to surface to unauthenticated visitors.
+     */
+    @Operation(summary = "Returns the built-in default prompt used by the multimodal model. Public — no authentication required.")
+    @GetMapping("/ai/prompt-default")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<Map<String, String>> getAiInferencePromptDefault() {
+        Map<String, String> body = new LinkedHashMap<>();
+        body.put("prompt_default",
+                org.jibe77.hermanas.client.ai.CameraPromptBuilder.DEFAULT_PROMPT);
+        return ResponseEntity.ok(body);
+    }
+
     @Operation(summary = "Update the prompt sent to the multimodal model. Empty string restores the built-in default.")
     @PutMapping("/ai/prompt")
     public ResponseEntity<String> setAiInferencePrompt(
