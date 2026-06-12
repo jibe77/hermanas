@@ -94,7 +94,9 @@ public class CaptureService {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            state.fail("CAMERA_ERROR", "Could not capture the snapshot: " + e.getMessage());
+            // Operator-facing message stays neutral; technical detail is
+            // already in the preceding logger.warn("...", id, e) call.
+            state.fail("CAMERA_ERROR", "The snapshot could not be captured. Please try again.");
             return;
         }
 
@@ -113,7 +115,7 @@ public class CaptureService {
         } catch (AiVisionException e) {
             logger.warn("Capture {} analysis failed (code={}, msg={}).",
                     id, e.getCode(), e.getMessage());
-            state.fail(e.getCode(), e.getMessage());
+            state.fail(e.getCode(), e.getPublicMessage());
         }
     }
 

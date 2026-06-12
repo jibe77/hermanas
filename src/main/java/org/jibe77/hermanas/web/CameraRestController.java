@@ -355,8 +355,9 @@ public class CameraRestController {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
+            // Technical detail already captured in the warn log above.
             return errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "CAMERA_ERROR",
-                    "Could not capture the snapshot: " + e.getMessage(), normalized);
+                    "The snapshot could not be captured. Please try again.", normalized);
         }
 
         try {
@@ -369,9 +370,11 @@ public class CameraRestController {
             HttpStatus status = "NOT_CONFIGURED".equals(e.getCode())
                     ? HttpStatus.NOT_IMPLEMENTED
                     : HttpStatus.BAD_GATEWAY;
+            // Technical detail stays in the server log via getMessage();
+            // the operator-facing response surfaces only the public message.
             logger.warn("AI analyze: failed (code={}, status={}, message={}).",
                     e.getCode(), status.value(), e.getMessage());
-            return errorResponse(status, e.getCode(), e.getMessage(), normalized);
+            return errorResponse(status, e.getCode(), e.getPublicMessage(), normalized);
         }
     }
 

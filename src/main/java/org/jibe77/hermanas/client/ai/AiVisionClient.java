@@ -3,11 +3,16 @@ package org.jibe77.hermanas.client.ai;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -42,18 +47,84 @@ public class AiVisionClient {
     private final ConfigService configService;
     private final CameraPromptBuilder promptBuilder;
     private final RestTemplate restTemplate;
+    private final RetryTemplate retryTemplate;
 
     public AiVisionClient(ConfigService configService,
                           CameraPromptBuilder promptBuilder,
-                          RestTemplateBuilder builder) {
+                          RestTemplateBuilder builder,
+                          @Value("${ai.inference.connect-timeout-ms:15000}") int connectTimeoutMs,
+                          @Value("${ai.inference.read-timeout-ms:180000}") int readTimeoutMs,
+                          @Value("${ai.inference.retry.max-attempts:3}") int maxAttempts,
+                          @Value("${ai.inference.retry.initial-backoff-ms:2000}") long initialBackoffMs,
+                          @Value("${ai.inference.retry.max-backoff-ms:10000}") long maxBackoffMs) {
         this.configService = configService;
         this.promptBuilder = promptBuilder;
         // Vision calls on a Pi-class CPU can legitimately take 30+ seconds; give
-        // the request a generous window before timing out.
+        // both phases of the request generous windows. Connect needs to absorb a
+        // momentarily swapped-out llama.cpp server; read covers the actual
+        // inference time. Both timeouts are externalised so they can be tuned
+        // without a rebuild.
         this.restTemplate = builder
-                .setConnectTimeout(Duration.ofSeconds(5))
-                .setReadTimeout(Duration.ofSeconds(120))
+                .setConnectTimeout(Duration.ofMillis(connectTimeoutMs))
+                .setReadTimeout(Duration.ofMillis(readTimeoutMs))
                 .build();
+
+        // Retry policy: only CONNECT-phase failures are retried. We refuse
+        // to retry on a SocketTimeoutException post-connection because the
+        // read timeout (~3 min) would then multiply by the attempt count —
+        // a hung inference is unlikely to recover within seconds, and the
+        // user would wait many minutes for the final failure. HTTP 4xx
+        // (HttpClientErrorException) and 5xx (HttpServerErrorException) are
+        // also not retried: they signal a request-level or server-level
+        // problem that a quick retry won't fix.
+        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(
+                maxAttempts,
+                java.util.Collections.singletonMap(ResourceAccessException.class, true),
+                true) {
+            @Override
+            public boolean canRetry(org.springframework.retry.RetryContext context) {
+                Throwable t = context.getLastThrowable();
+                if (t instanceof ResourceAccessException && isConnectFailure(t)) {
+                    return super.canRetry(context);
+                }
+                if (t == null) {
+                    return super.canRetry(context);
+                }
+                return false;
+            }
+        };
+
+        ExponentialBackOffPolicy backOff = new ExponentialBackOffPolicy();
+        backOff.setInitialInterval(initialBackoffMs);
+        backOff.setMultiplier(2.0);
+        backOff.setMaxInterval(maxBackoffMs);
+
+        this.retryTemplate = new RetryTemplate();
+        this.retryTemplate.setRetryPolicy(retryPolicy);
+        this.retryTemplate.setBackOffPolicy(backOff);
+    }
+
+    /**
+     * True when the cause chain of {@code t} indicates the request failed
+     * to even establish a connection. Spring wraps both connect and read
+     * timeouts in {@link ResourceAccessException}; we look one level deeper
+     * to distinguish the two so we don't compound a multi-minute read
+     * timeout across retries.
+     */
+    private static boolean isConnectFailure(Throwable t) {
+        Throwable cur = t;
+        while (cur != null) {
+            String name = cur.getClass().getSimpleName();
+            if ("ConnectTimeoutException".equals(name)
+                    || "HttpHostConnectException".equals(name)
+                    || "ConnectException".equals(name)
+                    || "NoRouteToHostException".equals(name)
+                    || "UnknownHostException".equals(name)) {
+                return true;
+            }
+            cur = cur.getCause();
+        }
+        return false;
     }
 
     /**
@@ -84,7 +155,8 @@ public class AiVisionClient {
         } catch (IOException e) {
             logger.warn("AI vision: failed to read snapshot file {}.", image.getAbsolutePath(), e);
             throw new AiVisionException("IMAGE_READ_FAILED",
-                    "Could not read the snapshot file: " + e.getMessage());
+                    "Could not read the snapshot file: " + e.getMessage(),
+                    "The snapshot could not be read for analysis. Please try again.");
         }
         logger.debug("AI vision: encoded image to base64, payload size ~{} chars.", base64.length());
 
@@ -96,15 +168,24 @@ public class AiVisionClient {
         try {
             long start = System.currentTimeMillis();
             @SuppressWarnings("unchecked")
-            Map<String, Object> response = restTemplate.postForObject(url, entity, Map.class);
+            Map<String, Object> response = retryTemplate.execute(context -> {
+                int attempt = context.getRetryCount() + 1;
+                if (attempt > 1) {
+                    logger.info("AI vision: retry attempt {} for POST {} (model={}).",
+                            attempt, url, model);
+                }
+                return restTemplate.postForObject(url, entity, Map.class);
+            });
             long elapsed = System.currentTimeMillis() - start;
             logger.info("AI vision: POST {} returned in {} ms (model={}, lang={}).",
                     url, elapsed, model, lang);
             return extractContent(response);
         } catch (RestClientException e) {
-            logger.warn("AI vision: POST {} failed (model={}): {}", url, model, e.toString());
+            logger.warn("AI vision: POST {} failed after retries (model={}): {}",
+                    url, model, e.toString());
             throw new AiVisionException("UPSTREAM_ERROR",
-                    "Inference server unreachable or returned an error: " + e.getMessage());
+                    "Inference server unreachable or returned an error: " + e.getMessage(),
+                    "AI analysis is temporarily unavailable. Please try again later.");
         }
     }
 
