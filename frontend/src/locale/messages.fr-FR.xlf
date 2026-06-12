@@ -2330,6 +2330,69 @@
                 <source>Leave empty to use the built-in default. The UI language is appended automatically.</source>
                 <target>Laisser vide pour utiliser le prompt par défaut. La langue de l'interface est ajoutée automatiquement.</target>
             </trans-unit>
+            <!-- Demo mode — welcome modal -->
+            <trans-unit id="demoWelcomeTitle" datatype="html">
+                <source>Demo mode enabled</source>
+                <target>Mode démo activé</target>
+            </trans-unit>
+            <trans-unit id="demoWelcomeIntro" datatype="html">
+                <source>You are now exploring Hermanas as an administrator <x id="START_TAG_STRONG" ctype="x-strong"/>without<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> being logged in. Every protected screen and admin menu unfolds so you can see the full interface.</source>
+                <target>Tu explores maintenant Hermanas en tant qu'administrateur <x id="START_TAG_STRONG" ctype="x-strong"/>sans<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> être connecté. Tous les écrans protégés et les menus admin sont accessibles pour que tu puisses voir l'interface complète.</target>
+            </trans-unit>
+            <trans-unit id="demoWelcomeWhatWorks" datatype="html">
+                <source><x id="START_TAG_STRONG" ctype="x-strong"/>What works:<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> navigation, read-only panels, and switching between pages.</source>
+                <target><x id="START_TAG_STRONG" ctype="x-strong"/>Ce qui fonctionne :<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> la navigation, les panneaux en lecture seule et le changement de page.</target>
+            </trans-unit>
+            <trans-unit id="demoWelcomeWhatBlocks" datatype="html">
+                <source><x id="START_TAG_STRONG" ctype="x-strong"/>What is blocked:<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> any action that would change the chicken coop (open the door, save a configuration, send an email…) is intercepted on the client. A confirmation modal pops up; even if you confirm, <x id="START_TAG_STRONG_1" ctype="x-strong"/>nothing reaches the Raspberry Pi<x id="CLOSE_TAG_STRONG" ctype="x-strong"/>.</source>
+                <target><x id="START_TAG_STRONG" ctype="x-strong"/>Ce qui est bloqué :<x id="CLOSE_TAG_STRONG" ctype="x-strong"/> toute action qui modifierait le poulailler (ouvrir la porte, sauvegarder une configuration, envoyer un email…) est interceptée côté client. Une fenêtre de confirmation apparaît ; même si tu confirmes, <x id="START_TAG_STRONG_1" ctype="x-strong"/>rien n'atteint le Raspberry Pi<x id="CLOSE_TAG_STRONG" ctype="x-strong"/>.</target>
+            </trans-unit>
+            <trans-unit id="demoWelcomeHowToExit" datatype="html">
+                <source>Use the user menu (top right) to disable demo mode, or simply refresh the page.</source>
+                <target>Utilise le menu utilisateur (en haut à droite) pour désactiver le mode démo, ou rafraîchis simplement la page.</target>
+            </trans-unit>
+            <trans-unit id="demoWelcomeGotIt" datatype="html">
+                <source>Got it</source>
+                <target>C'est compris</target>
+            </trans-unit>
+            <!-- Birthday confetti banner -->
+            <trans-unit id="birthdayBanner" datatype="html">
+                <source>Happy birthday, <x id="INTERPOLATION"/>!</source>
+                <target>Joyeux anniversaire, <x id="INTERPOLATION"/> !</target>
+            </trans-unit>
+            <!-- AI timeouts & retry panel -->
+            <trans-unit id="aiTimeoutsTitle" datatype="html">
+                <source>AI timeouts &amp; retry</source>
+                <target>Délais et nouvelles tentatives IA</target>
+            </trans-unit>
+            <trans-unit id="aiTimeoutsHelp" datatype="html">
+                <source>HTTP timeouts and retry policy used by the "AI analysis" button. Only connection failures are retried (timeouts mid-inference are not, to avoid multi-minute waits). Changes take effect on the next reboot.</source>
+                <target>Délais HTTP et politique de nouvelles tentatives utilisés par le bouton « Analyse IA ». Seuls les échecs de connexion sont réessayés (les délais en cours d'inférence ne le sont pas, pour éviter des attentes de plusieurs minutes). Les changements prennent effet au prochain redémarrage.</target>
+            </trans-unit>
+            <trans-unit id="aiConnectTimeoutLabel" datatype="html">
+                <source>Connect timeout (s)</source>
+                <target>Délai de connexion (s)</target>
+            </trans-unit>
+            <trans-unit id="aiReadTimeoutLabel" datatype="html">
+                <source>Read timeout (s)</source>
+                <target>Délai de lecture (s)</target>
+            </trans-unit>
+            <trans-unit id="aiRetryAttemptsLabel" datatype="html">
+                <source>Max attempts</source>
+                <target>Tentatives max</target>
+            </trans-unit>
+            <trans-unit id="aiRetryInitialBackoffLabel" datatype="html">
+                <source>Initial backoff (s)</source>
+                <target>Délai initial (s)</target>
+            </trans-unit>
+            <trans-unit id="aiRetryMaxBackoffLabel" datatype="html">
+                <source>Max backoff (s)</source>
+                <target>Délai max (s)</target>
+            </trans-unit>
+            <trans-unit id="cameraAiTimeoutsSaved" datatype="html">
+                <source>Timeouts &amp; retry saved (effective on next reboot).</source>
+                <target>Délais et nouvelles tentatives sauvegardés (effectif au prochain redémarrage).</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

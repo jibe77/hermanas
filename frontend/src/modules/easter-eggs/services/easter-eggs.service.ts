@@ -48,14 +48,21 @@ export class EasterEggsService extends AbstractService {
         // boundary won't flip the theme until the page reloads, which is an
         // acceptable trade-off for a static check.
         const today = this.todayWithOverride();
-        if (today.getMonth() === 3 && today.getDate() === 1) {
-            this.aprilFools.set(true);
-        }
-        if (this.isAdvent(today)) {
-            this.advent.set(true);
-        }
-        if (this.isEasterSeason(today)) {
-            this.easter.set(true);
+        const isAprilFools = today.getMonth() === 3 && today.getDate() === 1;
+        const isAdvent = this.isAdvent(today);
+        const isEaster = this.isEasterSeason(today);
+        if (isAprilFools) this.aprilFools.set(true);
+        if (isAdvent) this.advent.set(true);
+        if (isEaster) this.easter.set(true);
+        // Surfaced so an operator playing with ?theme-date=YYYY-MM-DD can see
+        // in the console which season the reference date is supposed to hit —
+        // a date outside any window is silently no-op otherwise.
+        if (window.location.search.includes('theme')) {
+            const isoDay = today.toISOString().substring(0, 10);
+            console.info(
+                `[hermanas] seasonal check: reference=${isoDay}, ` +
+                `aprilFools=${isAprilFools}, advent=${isAdvent}, easter=${isEaster}`
+            );
         }
 
         window.addEventListener('keydown', (e) => this.onKeyDown(e));
@@ -231,9 +238,12 @@ export class EasterEggsService extends AbstractService {
         // Compare today's month/day with each resident's birthDate or, when
         // the birth date is unknown, with their arrivalDate. The first
         // matching resident wins (so we can mention them by name).
+        //
+        // Honour ?theme-date= so the operator can stage a screenshot for the
+        // birthday confetti effect, just like the seasonal theme overrides.
         this.residentsService.list().subscribe({
             next: (residents) => {
-                const today = new Date();
+                const today = this.todayWithOverride();
                 const md = `${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
                 for (const r of residents) {
                     if (r.deathDate) continue;
