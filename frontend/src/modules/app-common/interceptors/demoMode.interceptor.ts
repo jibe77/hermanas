@@ -64,11 +64,16 @@ export const demoModeInterceptor: HttpInterceptorFn = (req, next) => {
         );
     }
 
-    // ── Reads: let the request through, replace 401/403 with a fixture ─────
+    // ── Reads: let the request through, replace failures with a fixture ────
+    // We accept any 4xx/5xx as the substitution trigger (not just 401/403)
+    // because some backend endpoints currently throw a 500 NPE when the
+    // session is missing instead of returning a clean 401. The fixture
+    // lookup is the safety net: if no fixture matches the URL, the original
+    // error is re-thrown so the component error path still runs.
     const fixtures = inject(DemoFixtureService);
     return next(req).pipe(
         catchError((err: HttpErrorResponse) => {
-            if (!isAuthError(err)) {
+            if (!isServerOrAuthError(err)) {
                 return throwError(() => err);
             }
             const fixture = fixtures.matchGet(req.url);
@@ -107,7 +112,13 @@ function isStateChangingGet(method: string, url: string): boolean {
     return (
         tail.endsWith('/music/switch') ||
         tail.endsWith('/music/cocorico') ||
-        tail.endsWith('/fan/switch')
+        tail.endsWith('/fan/switch') ||
+        // Electronics page "open/close a bit" buttons hit these GET endpoints
+        // — they really move the servomotor, so they must be gated by the
+        // demo block just like POST mutations.
+        tail.endsWith('/door/turnClockwise') ||
+        tail.endsWith('/door/turnCounterClockwise') ||
+        tail.endsWith('/door/turnServo')
     );
 }
 
@@ -119,6 +130,9 @@ function isAuthEndpoint(url: string): boolean {
     );
 }
 
-function isAuthError(err: HttpErrorResponse): boolean {
-    return err.status === 401 || err.status === 403;
+function isServerOrAuthError(err: HttpErrorResponse): boolean {
+    // 0 is the synthetic "blocked (demo)" status we emit ourselves for
+    // mutations — never substitute a fixture for those. Otherwise any 4xx
+    // or 5xx that comes back from the live backend is fair game.
+    return err.status >= 400 && err.status < 600;
 }
