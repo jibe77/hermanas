@@ -23,6 +23,11 @@ export default defineConfig({
         environment: 'jsdom',
         setupFiles: ['src/test-setup.ts'],
         include: ['src/**/*.spec.ts'],
+        // Vitest 4 default-flipped lifecycle mocks to "leak across tests",
+        // so vi.spyOn(console, 'debug') in one spec's beforeEach kept
+        // counting calls from the next spec. Restoring on each test
+        // mirrors the Vitest 3 behaviour our suite was written against.
+        restoreMocks: true,
         // Karma was reporting in the terminal; keep the dot reporter for tight CI
         // output and `verbose` for local debugging via `npm test -- --reporter=verbose`.
         reporters: ['default'],
