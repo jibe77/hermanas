@@ -51,7 +51,7 @@
     "tslib": "2.2.0",
     "uuid": "^14.0.0",
     "webpack-bundle-analyzer": "4.4.0",
-    "zone.js": "~0.15.1"
+    "zone.js": "^0.16.2"
   },
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "^2.5.2",
