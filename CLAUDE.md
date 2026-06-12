@@ -298,6 +298,53 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   - Add `@WebMvcTest` for REST layer
   - Add `@DataJpaTest` for repositories
 
+- [ ] **Refresh the Playwright e2e suite** (`frontend/tests/e2e/app.spec.ts`)
+  - **Context:** a single spec file with 22 tests across 7 `test.describe` blocks
+    (Hermanas Application, Login Page, Application Navigation, Performance,
+    Accessibility, SEO and Meta Information, Error Handling). Chromium-only
+    via `playwright.config.ts`, baseURL `http://localhost:4200`.
+    Scripts: `npm run e2e` / `e2e:headed` / `e2e:ui` / `e2e:debug` / `e2e:report`.
+    Not run by `npm test` (Vitest only) nor by any pre-commit hook.
+  - **A. Fix the stale Amplify selectors** (4 tests broken since Phase 6 swapped
+    AWS Amplify for the local users-file login):
+    - line 49 `should display login form elements` — queries `amplify-authenticator`
+    - line 75 `should be responsive on mobile`
+    - line 86 `should be responsive on tablet`
+    - line 236 the "AWS Amplify token-related logs" exception in
+      `should not expose sensitive information in errors`
+    Replace with the new Angular login form selector.
+  - **B. Cover demo mode end-to-end** (high value: most fragile surface area
+    we just touched). Suggested tests:
+    - Enabling demo mode from the top-nav user menu opens the welcome modal
+      (`sb-demo-welcome-modal`, title "Demo mode enabled") exactly once.
+    - With demo mode on, the side-nav exposes the admin entries (Users,
+      Electronics, Logs, System).
+    - Navigating to each protected page renders content (no
+      "Information not available", no red error toast — the
+      ToastService demo-suppression should keep the toast container empty).
+    - Triggering a mutation (e.g. Save in any config form) opens the
+      `sb-demo-confirm-modal`; Cancel and Confirm both close cleanly with
+      no follow-up toast.
+  - **C. Cover the new visual layer** added in 2026-06:
+    - `?theme=advent` → `.sb-topnav.advent` class present, `.snowfall` and
+      `.xmas-tree` rendered, brand-hen carries `.brand-santa-hat`.
+    - `?theme=easter` → `.sb-topnav.easter`, `.easter-field` rendered,
+      pastel border visible.
+    - `?theme=april` → `.chickens-strip.april-fools` class present.
+    - `sb-chickens-strip` mounts 4 hens; clicking a hen toggles `.jumping`
+      for ~600 ms.
+    - Konami sequence on `document` flips `.chickens-strip.dancing` on for
+      ~6 s.
+    - 10 clicks on `.brand-hen` within 3 s renders `<sb-disco-overlay>`
+      visible for ~8 s.
+  - **D. Wire e2e into the build loop** so the suite stops drifting:
+    - `npm test:all` running Vitest then Playwright sequentially
+    - GitHub Actions job (or whatever CI takes over) on PRs, with the dev
+      server started before the suite via `webServer` config block of
+      `playwright.config.ts`.
+    - Also tee the e2e report to `coverage/e2e/` so the link from the
+      docs survives between runs.
+
 - [ ] **Bundle Angular frontend into the same JAR** (currently deployed separately on another server)
   - Frontend source: https://github.com/jibe77/hermanasclient
   - Goal: single JAR deployment containing both backend REST API and Angular SPA
