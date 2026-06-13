@@ -119,7 +119,8 @@ public class MusicRestController {
     })
     @GetMapping(value = "/cocorico")
     public boolean cocorico() {
-        logger.info("Cocorico !");
+        String user = org.jibe77.hermanas.service.event.EventService.currentUsername();
+        logger.info("Cocorico requested manually by {}.", user != null ? user : "anonymous");
         boolean played = musicService.cocorico();
         if (played) {
             eventService.record(EventType.COCORICO);

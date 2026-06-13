@@ -5,6 +5,9 @@ import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.repository.EventRepository;
 import org.jibe77.hermanas.service.door.model.DoorStatusEnum;
 import org.jibe77.hermanas.service.push.PushNotificationService;
+// EventService.currentUsername() reads SecurityContextHolder so manual
+// door operations carry the operator's login, while scheduler-driven calls
+// stay anonymous.
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,46 +60,65 @@ public class DoorEventService {
     }
 
     /**
-     * Records a door opened event.
+     * Records a door opened event triggered by an authenticated user
+     * (from a REST controller). When called outside an HTTP context the
+     * {@code triggeredBy} column stays {@code null}.
      */
     public void recordDoorOpened() {
-        recordEvent(EventType.DOOR_OPENED);
+        recordEvent(EventType.DOOR_OPENED, EventService.currentUsername());
         logger.info("Recorded DOOR_OPENED event");
     }
 
-    /**
-     * Records a door closed event.
-     */
+    /** See {@link #recordDoorOpened()}. */
     public void recordDoorClosed() {
-        recordEvent(EventType.DOOR_CLOSED);
+        recordEvent(EventType.DOOR_CLOSED, EventService.currentUsername());
         logger.info("Recorded DOOR_CLOSED event");
     }
 
-    /**
-     * Records a door open failure event.
-     */
     public void recordDoorOpenFailed() {
-        recordEvent(EventType.DOOR_OPEN_FAILED);
+        recordEvent(EventType.DOOR_OPEN_FAILED, EventService.currentUsername());
         logger.warn("Recorded DOOR_OPEN_FAILED event");
         pushService.broadcast("Hermanas", "L'ouverture de la porte a échoué", "/dashboard");
     }
 
-    /**
-     * Records a door close failure event.
-     */
     public void recordDoorCloseFailed() {
-        recordEvent(EventType.DOOR_CLOSE_FAILED);
+        recordEvent(EventType.DOOR_CLOSE_FAILED, EventService.currentUsername());
         logger.warn("Recorded DOOR_CLOSE_FAILED event");
         pushService.broadcast("Hermanas", "La fermeture de la porte a échoué", "/dashboard");
     }
 
-    /**
-     * Records a door position unknown event.
-     */
     public void recordDoorPositionUnknown() {
-        recordEvent(EventType.DOOR_POSITION_UNKNOWN);
+        recordEvent(EventType.DOOR_POSITION_UNKNOWN, EventService.currentUsername());
         logger.warn("Recorded DOOR_POSITION_UNKNOWN event");
         pushService.broadcast("Hermanas", "Position de la porte indéterminée", "/dashboard");
+    }
+
+    /**
+     * Records an automatic (scheduler-driven) door event with an explanatory
+     * detail string (e.g. {@code "auto: sunrise"}) — kept distinct from the
+     * manual recorders so REST callers and the sun scheduler never accidentally
+     * cross over.
+     */
+    public void recordAutoDoorOpened(String details) {
+        recordEvent(EventType.DOOR_OPENED, details, null);
+        logger.info("Recorded automatic DOOR_OPENED event ({})", details);
+    }
+
+    public void recordAutoDoorClosed(String details) {
+        recordEvent(EventType.DOOR_CLOSED, details, null);
+        logger.info("Recorded automatic DOOR_CLOSED event ({})", details);
+    }
+
+    public void recordAutoDoorOpenFailed(String details) {
+        recordEvent(EventType.DOOR_OPEN_FAILED, details, null);
+        logger.warn("Recorded automatic DOOR_OPEN_FAILED event ({})", details);
+        pushService.broadcast("Hermanas", "L'ouverture de la porte a échoué", "/dashboard");
+    }
+
+    public void recordAutoDoorCloseFailed(String details) {
+        recordEvent(EventType.DOOR_CLOSE_FAILED, details, null);
+        logger.warn("Recorded automatic DOOR_CLOSE_FAILED event ({})", details);
+        pushService.broadcast("Hermanas", "La fermeture de la porte a échoué", "/dashboard");
     }
 
     /**
@@ -120,7 +142,7 @@ public class DoorEventService {
                 eventType = EventType.DOOR_POSITION_UNKNOWN;
                 break;
         }
-        recordEvent(eventType);
+        recordEvent(eventType, EventService.currentUsername());
         logger.info("Recorded {} event from status: {}", eventType, status);
     }
 
@@ -159,15 +181,16 @@ public class DoorEventService {
         );
     }
 
-    /**
-     * Generic event recording helper.
-     *
-     * @param eventType the type of event to record
-     */
-    private void recordEvent(EventType eventType) {
+    private void recordEvent(EventType eventType, String triggeredBy) {
+        recordEvent(eventType, null, triggeredBy);
+    }
+
+    private void recordEvent(EventType eventType, String details, String triggeredBy) {
         Event event = new Event();
         event.setEventType(eventType);
         event.setDateTime(LocalDateTime.now());
+        event.setDetails(details);
+        event.setTriggeredBy(triggeredBy);
         eventRepository.save(event);
     }
 }

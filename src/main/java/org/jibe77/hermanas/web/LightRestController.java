@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.service.abstract_model.Status;
-import org.jibe77.hermanas.service.abstract_model.StatusEnum;
-import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.service.light.LightService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,11 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class LightRestController {
 
     LightService lightService;
-    EventService eventService;
 
-    public LightRestController(LightService lightService, EventService eventService) {
+    public LightRestController(LightService lightService) {
         this.lightService = lightService;
-        this.eventService = eventService;
     }
 
     @Operation(
@@ -45,11 +40,10 @@ public class LightRestController {
     public Status switcher(
             @Parameter(description = "True to turn light on, false to turn off", required = true)
             boolean param) {
-        Status status = lightService.switcher(param);
-        // Record on actual reported state (e.g. switcher() might no-op on identical state).
-        eventService.record(status.getStatusEnum() == StatusEnum.ON
-                ? EventType.LIGHT_ON : EventType.LIGHT_OFF);
-        return status;
+        // The journal entry is now recorded inside LightService.switchOn/switchOff
+        // so we capture both REST-driven toggles AND the security-timer-driven
+        // auto stop in a single place — no risk of double-counting from here.
+        return lightService.switcher(param);
     }
 
     @Operation(

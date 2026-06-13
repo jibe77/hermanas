@@ -106,6 +106,8 @@ public class ResidentRestController {
         mapper.applyRequest(resident, request);
         Resident saved = repository.save(resident);
         logger.info("Resident updated: id={}, name={}", saved.getId(), saved.getName());
+        eventService.record(EventType.RESIDENT_UPDATED,
+                "id=" + saved.getId() + " name=" + saved.getName());
         return mapper.toDTO(saved);
     }
 
@@ -162,6 +164,8 @@ public class ResidentRestController {
             photoStorage.delete(oldFilename);
         }
         logger.info("Resident {} photo uploaded: {}", id, newFilename);
+        eventService.record(EventType.RESIDENT_PHOTO_UPLOADED,
+                "id=" + id + " name=" + resident.getName() + " file=" + newFilename);
         return mapper.toDTO(saved);
     }
 
@@ -171,9 +175,13 @@ public class ResidentRestController {
     public ResponseEntity<Void> deletePhoto(@PathVariable Long id) {
         Resident resident = find(id);
         if (resident.getPhotoFilename() != null) {
-            photoStorage.delete(resident.getPhotoFilename());
+            String oldFilename = resident.getPhotoFilename();
+            photoStorage.delete(oldFilename);
             resident.setPhotoFilename(null);
             repository.save(resident);
+            logger.info("Resident {} photo deleted: {}", id, oldFilename);
+            eventService.record(EventType.RESIDENT_PHOTO_DELETED,
+                    "id=" + id + " name=" + resident.getName() + " file=" + oldFilename);
         }
         return ResponseEntity.noContent().build();
     }

@@ -5,6 +5,7 @@ import org.jibe77.hermanas.client.email.NotificationService;
 import org.jibe77.hermanas.service.camera.CameraService;
 import org.jibe77.hermanas.service.door.DoorService;
 import org.jibe77.hermanas.service.energy.WifiService;
+import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.service.fan.FanService;
 import org.jibe77.hermanas.service.light.LightService;
 import org.jibe77.hermanas.service.music.MusicService;
@@ -53,10 +54,11 @@ class ManageDoorOpeningTest {
         consumptionModeController = mock(ConsumptionModeController.class);
         org.jibe77.hermanas.service.config.ConfigService configService =
                 mock(org.jibe77.hermanas.service.config.ConfigService.class);
+        EventService eventService = mock(EventService.class);
 
         manageDoorOpeningEvent = new ManageDoorOpeningEvent(
                 sunTimeManager, cameraService, doorService, musicService, fanService, wifiService,
-                notificationService, consumptionModeController, configService);
+                notificationService, consumptionModeController, configService, eventService);
     }
 
     @Test
@@ -64,6 +66,10 @@ class ManageDoorOpeningTest {
         when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInThePast);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
+        // Stub the closed sensor explicitly — the scheduler now uses
+        // doorIsClosed() (strict) instead of !doorIsOpened() (lax) to decide
+        // whether to start the morning opening sequence.
+        when(doorService.doorIsClosed()).thenReturn(true);
         manageDoorOpeningEvent.manageDoorOpeningEvent(LocalDateTime.now());
         verify(doorService, times(1)).openDoorWithUpButtonManagment(false, false);
     }

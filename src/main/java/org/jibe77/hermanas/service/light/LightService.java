@@ -1,9 +1,11 @@
 package org.jibe77.hermanas.service.light;
 
 import com.pi4j.io.gpio.digital.DigitalOutput;
+import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.service.abstract_model.Status;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.service.config.ConfigService;
+import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.service.gpio.GpioHermanasService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.Appliance;
@@ -43,14 +45,18 @@ public class LightService {
 
     ConsumptionModeController consumptionModeController;
 
+    private final EventService eventService;
+
     private static final Logger logger = LoggerFactory.getLogger(LightService.class);
 
     public LightService(GpioHermanasService gpioHermanasService, ConsumptionModeController consumptionModeController,
-                           NotificationController notificationController, ConfigService configService) {
+                           NotificationController notificationController, ConfigService configService,
+                           EventService eventService) {
         this.gpioHermanasService = gpioHermanasService;
         this.consumptionModeController = consumptionModeController;
         this.notificationController = notificationController;
         this.configService = configService;
+        this.eventService = eventService;
     }
 
     @PostConstruct
@@ -72,15 +78,37 @@ public class LightService {
     }
 
     public synchronized void switchOn() {
+        switchOn(null);
+    }
+
+    /**
+     * Switch the light on with an optional {@code details} string that ends up
+     * on the journal entry. Schedulers pass {@code "auto: before sunset"} so
+     * operators can tell at a glance which run actually flipped the relay.
+     * REST callers go through {@link #switchOn()} which leaves the column
+     * empty — the journal then sources attribution from the SecurityContext.
+     */
+    public synchronized void switchOn(String details) {
         if (lightEnabled) {
             logger.info("Switching on light.");
             gpioPinDigitalOutput.high();
             startSecurityTimer();
             notificationController.notify(new CoopStatus(Appliance.LIGHT, StatusEnum.ON));
+            eventService.record(EventType.LIGHT_ON, details);
         }
     }
 
     public synchronized void switchOff() {
+        switchOff(null);
+    }
+
+    /**
+     * Switch the light off, recording the optional {@code details} string into
+     * the journal entry. Used by {@link #startSecurityTimer()} to mark the row
+     * as a timer-driven auto stop so operators can tell at a glance whether the
+     * light went off on its own.
+     */
+    public synchronized void switchOff(String details) {
         if (lightEnabled) {
             logger.info("Switching off light.");
             gpioPinDigitalOutput.low();
@@ -89,6 +117,7 @@ public class LightService {
                 lightSecurityStopTimer = null;
             }
             notificationController.notify(new CoopStatus(Appliance.LIGHT, StatusEnum.OFF));
+            eventService.record(EventType.LIGHT_OFF, details);
         }
     }
 
@@ -115,7 +144,7 @@ public class LightService {
         lightSecurityStopTimer.schedule(new TimerTask() {
                                             public void run() {
                                                 logger.info("stopping light after {} ms.", duration);
-                                                switchOff();
+                                                switchOff("auto: security timer");
                                             }
                                         },
                 duration);

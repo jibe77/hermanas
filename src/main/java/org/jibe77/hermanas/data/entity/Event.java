@@ -24,6 +24,14 @@ public class Event {
     @Column(length = 500)
     private String details;
 
+    /**
+     * Login of the authenticated user who triggered the event, or {@code null}
+     * for scheduler-driven events. Exposed by the journal endpoint only to
+     * authenticated callers — anonymous visitors see {@code null}.
+     */
+    @Column(length = 64)
+    private String triggeredBy;
+
     public Long getId() {
         return id;
     }
@@ -56,6 +64,14 @@ public class Event {
         this.details = details;
     }
 
+    public String getTriggeredBy() {
+        return triggeredBy;
+    }
+
+    public void setTriggeredBy(String triggeredBy) {
+        this.triggeredBy = triggeredBy;
+    }
+
     @Override
     public String toString() {
         return "Event{" +
@@ -63,6 +79,7 @@ public class Event {
                 ", eventType=" + eventType +
                 ", dateTime=" + dateTime +
                 ", details=" + details +
+                ", triggeredBy=" + triggeredBy +
                 '}';
     }
 }

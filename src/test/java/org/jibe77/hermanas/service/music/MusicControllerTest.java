@@ -3,6 +3,7 @@ package org.jibe77.hermanas.service.music;
 import org.jibe77.hermanas.service.ProcessLauncher;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.service.energy.SoundCardService;
+import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.service.gpio.GpioHermanasService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.NotificationController;
@@ -41,6 +42,9 @@ class MusicControllerTest {
 
     @MockBean
     ConfigService configService;
+
+    @MockBean
+    EventService eventService;
 
     @Test
     void testStopWithoutCurrentProcess() {

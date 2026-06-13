@@ -12,9 +12,11 @@ import org.apache.commons.io.IOUtils;
 import org.jibe77.hermanas.client.ai.AiVisionCache;
 import org.jibe77.hermanas.client.ai.AiVisionClient;
 import org.jibe77.hermanas.client.ai.AiVisionException;
+import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.security.ratelimit.RateLimited;
 import org.jibe77.hermanas.service.camera.CameraService;
 import org.jibe77.hermanas.service.camera.PhotosService;
+import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
@@ -42,15 +44,18 @@ public class CameraRestController {
     private final PhotosService photosService;
     private final AiVisionClient aiVisionClient;
     private final AiVisionCache aiVisionCache;
+    private final EventService eventService;
 
     public CameraRestController(CameraService cameraService,
                                 PhotosService photosService,
                                 AiVisionClient aiVisionClient,
-                                AiVisionCache aiVisionCache) {
+                                AiVisionCache aiVisionCache,
+                                EventService eventService) {
         this.cameraService = cameraService;
         this.photosService = photosService;
         this.aiVisionClient = aiVisionClient;
         this.aiVisionCache = aiVisionCache;
+        this.eventService = eventService;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CameraRestController.class);
@@ -77,9 +82,16 @@ public class CameraRestController {
             @RequestParam(defaultValue = "false") String highQuality,
             @Parameter(description = "Force a fresh capture even if a recent one is cached", example = "false")
             @RequestParam(defaultValue = "false") String force) throws IOException, InterruptedException {
+        boolean forced = Boolean.parseBoolean(force);
         File picture = cameraService.takePictureCached(
-                Boolean.parseBoolean(highQuality), Boolean.parseBoolean(force));
+                Boolean.parseBoolean(highQuality), forced);
         logger.info("return picture from {}.", picture.getAbsolutePath());
+        // Only journal a manual fresh shot — every dashboard tab polls /takePicture
+        // every couple of seconds without force=true and would otherwise drown
+        // the Journalisation page in PICTURE_TAKEN rows.
+        if (forced) {
+            eventService.record(EventType.PICTURE_TAKEN, "manual: webcam refresh");
+        }
         try (FileInputStream fileInputStream = new FileInputStream(picture)) {
             return IOUtils.toByteArray(fileInputStream);
         }

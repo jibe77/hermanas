@@ -2,6 +2,7 @@ package org.jibe77.hermanas.scheduler.event;
 
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.service.door.DoorService;
+import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.service.fan.FanService;
 import org.jibe77.hermanas.service.light.LightService;
 import org.jibe77.hermanas.service.music.MusicService;
@@ -41,10 +42,11 @@ class ManageLightSwitchOnEventTest {
         consumptionMode = mock(ConsumptionModeController.class);
         musicService = mock(MusicService.class);
         configService = mock(ConfigService.class);
+        EventService eventService = mock(EventService.class);
 
         manageLightSwitchingOnEvent = new ManageLightSwitchingOnEvent(
                 sunTimeManager, lightService, doorService, fanService, consumptionMode, musicService,
-                configService);
+                configService, eventService);
     }
 
     @Test
@@ -54,7 +56,9 @@ class ManageLightSwitchOnEventTest {
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInThePast);
         when(configService.isSongAtSunsetEnabled()).thenReturn(true);
         manageLightSwitchingOnEvent.manageLightSwitchingOnEvent(LocalDateTime.now());
-        verify(lightService, times(1)).switchOn();
+        // The scheduler now uses the details-bearing overload so we can attribute
+        // the auto stop on the journal entry — verify against any string.
+        verify(lightService, times(1)).switchOn(anyString());
         verify(musicService, times(1)).playMusicRandomly();
     }
 }

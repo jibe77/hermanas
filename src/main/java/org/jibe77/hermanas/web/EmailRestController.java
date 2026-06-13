@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.client.email.EmailService;
+import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.entity.HermanasUser;
 import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.service.camera.CameraService;
+import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,12 +35,15 @@ public class EmailRestController {
     private final EmailService emailService;
     private final CameraService cameraService;
     private final HermanasUserRepository userRepository;
+    private final EventService eventService;
 
     public EmailRestController(EmailService emailService, CameraService cameraService,
-                               HermanasUserRepository userRepository) {
+                               HermanasUserRepository userRepository,
+                               EventService eventService) {
         this.emailService = emailService;
         this.cameraService = cameraService;
         this.userRepository = userRepository;
+        this.eventService = eventService;
     }
 
     @Operation(
@@ -65,6 +70,8 @@ public class EmailRestController {
             String detail = picture.isPresent()
                     ? "Test email sent with picture to " + recipient + "."
                     : "Test email sent to " + recipient + " (no picture available).";
+            eventService.record(EventType.EMAIL_TEST_SENT,
+                    "to=" + recipient + (picture.isPresent() ? " withPicture=true" : ""));
             return ResponseEntity.ok(Collections.singletonMap("message", detail));
         } catch (IllegalStateException ex) {
             logger.warn("Test email rejected: {}", ex.getMessage());

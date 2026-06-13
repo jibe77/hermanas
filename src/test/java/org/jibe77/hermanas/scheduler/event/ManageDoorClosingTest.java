@@ -5,6 +5,7 @@ import org.jibe77.hermanas.client.email.NotificationService;
 import org.jibe77.hermanas.service.camera.CameraService;
 import org.jibe77.hermanas.service.door.DoorService;
 import org.jibe77.hermanas.service.energy.WifiService;
+import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.service.music.MusicService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
@@ -31,6 +32,7 @@ class ManageDoorClosingTest {
     WifiService wifiService;
     NotificationService notificationService;
     ConsumptionModeController consumptionModeController;
+    EventService eventService;
 
     @BeforeEach
     void init() {
@@ -45,10 +47,11 @@ class ManageDoorClosingTest {
         wifiService = mock(WifiService.class);
         notificationService = mock(NotificationService.class);
         consumptionModeController = mock(ConsumptionModeController.class);
+        eventService = mock(EventService.class);
 
         manageDoorClosingEvent = new ManageDoorClosingEvent(
                 sunTimeManager, doorService, notificationService,
-                messageSource, wifiService, consumptionModeController);
+                messageSource, wifiService, consumptionModeController, eventService);
     }
 
     @Test

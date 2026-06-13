@@ -6,6 +6,8 @@ import org.jibe77.hermanas.data.repository.EventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -52,7 +54,17 @@ public class EventService {
             EventType.MUSIC_STOPPED,
             EventType.COCORICO,
             EventType.RESIDENT_CREATED,
-            EventType.RESIDENT_DELETED
+            EventType.RESIDENT_DELETED,
+            EventType.RESIDENT_UPDATED,
+            EventType.RESIDENT_PHOTO_UPLOADED,
+            EventType.RESIDENT_PHOTO_DELETED,
+            EventType.USER_CREATED,
+            EventType.USER_UPDATED,
+            EventType.USER_DELETED,
+            EventType.USER_SELF_UPDATED,
+            EventType.CONFIG_CHANGED,
+            EventType.EMAIL_TEST_SENT,
+            EventType.PICTURE_TAKEN
     );
 
     /**
@@ -71,17 +83,59 @@ public class EventService {
         this.eventRepository = eventRepository;
     }
 
+    /**
+     * Records a manually-triggered event, attributing it to the currently
+     * authenticated user. {@code triggeredBy} stays {@code null} for anonymous
+     * callers — the journal endpoint then treats the entry like an automatic
+     * one for display.
+     */
     public void record(EventType type, String details) {
-        Event event = new Event();
-        event.setEventType(type);
-        event.setDateTime(LocalDateTime.now());
-        event.setDetails(truncate(details));
-        eventRepository.save(event);
-        logger.debug("Recorded event {} ({})", type, details);
+        recordInternal(type, details, currentUsername());
     }
 
     public void record(EventType type) {
         record(type, null);
+    }
+
+    /**
+     * Records an automatic (scheduler-driven) event. Forces {@code triggeredBy}
+     * to {@code null} regardless of any thread-local SecurityContext leakage.
+     */
+    public void recordAuto(EventType type, String details) {
+        recordInternal(type, details, null);
+    }
+
+    public void recordAuto(EventType type) {
+        recordAuto(type, null);
+    }
+
+    private void recordInternal(EventType type, String details, String triggeredBy) {
+        Event event = new Event();
+        event.setEventType(type);
+        event.setDateTime(LocalDateTime.now());
+        event.setDetails(truncate(details));
+        event.setTriggeredBy(triggeredBy);
+        eventRepository.save(event);
+        logger.debug("Recorded event {} (details={}, by={})", type, details, triggeredBy);
+    }
+
+    /**
+     * Returns the login of the currently authenticated user, or {@code null}
+     * when the call is anonymous or runs off a non-HTTP thread (scheduler).
+     * Anonymous Spring authentications carry the principal name
+     * {@code "anonymousUser"} which we map to {@code null} so the journal
+     * cleanly distinguishes "logged-in user" from "no user".
+     */
+    public static String currentUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return null;
+        }
+        String name = auth.getName();
+        if (name == null || name.isEmpty() || "anonymousUser".equals(name)) {
+            return null;
+        }
+        return name;
     }
 
     /**

@@ -1,10 +1,12 @@
 package org.jibe77.hermanas.service.music;
 
+import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.service.ProcessLauncher;
 import org.jibe77.hermanas.service.abstract_model.Status;
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.jibe77.hermanas.service.energy.SoundCardService;
+import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.websocket.Appliance;
 import org.jibe77.hermanas.websocket.CoopStatus;
@@ -76,16 +78,19 @@ public class MusicService {
 
     private NotificationController notificationController;
 
+    private final EventService eventService;
+
     private static final Logger logger = LoggerFactory.getLogger(MusicService.class);
 
     public MusicService(ProcessLauncher processLauncher, ConsumptionModeController consumptionModeController,
                            SoundCardService soundCardService, NotificationController notificationController,
-                           ConfigService configService) {
+                           ConfigService configService, EventService eventService) {
         this.processLauncher = processLauncher;
         this.consumptionModeController = consumptionModeController;
         this.soundCardService = soundCardService;
         this.notificationController = notificationController;
         this.configService = configService;
+        this.eventService = eventService;
     }
 
     public boolean playMusicRandomly() {
@@ -265,6 +270,10 @@ public class MusicService {
                                             public void run() {
                                                 logger.info("stopping music after {} ms.", duration);
                                                 stop();
+                                                // Journal the auto stop here — the timer task fires
+                                                // on a non-HTTP thread so EventService.record() also
+                                                // captures triggered_by=null.
+                                                eventService.recordAuto(EventType.MUSIC_STOPPED, "auto: security timer");
                                             }
                                         },
                 duration);

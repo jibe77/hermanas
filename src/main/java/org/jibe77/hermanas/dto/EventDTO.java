@@ -20,14 +20,24 @@ public class EventDTO {
             example = "by jb")
     private String details;
 
+    @Schema(description = "Login of the user who triggered the event. Null for scheduler-driven events, " +
+            "and also null for any caller who is not authenticated (the journal does not leak login names).",
+            example = "jb")
+    private String triggeredBy;
+
     public EventDTO() {
     }
 
     public EventDTO(Long id, String eventType, LocalDateTime dateTime, String details) {
+        this(id, eventType, dateTime, details, null);
+    }
+
+    public EventDTO(Long id, String eventType, LocalDateTime dateTime, String details, String triggeredBy) {
         this.id = id;
         this.eventType = eventType;
         this.dateTime = dateTime;
         this.details = details;
+        this.triggeredBy = triggeredBy;
     }
 
     public Long getId() {
@@ -60,5 +70,13 @@ public class EventDTO {
 
     public void setDetails(String details) {
         this.details = details;
+    }
+
+    public String getTriggeredBy() {
+        return triggeredBy;
+    }
+
+    public void setTriggeredBy(String triggeredBy) {
+        this.triggeredBy = triggeredBy;
     }
 }

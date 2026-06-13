@@ -68,7 +68,10 @@ public class EventRestController {
             @RequestParam(value = "limit", required = false, defaultValue = "200") int limit) {
         LocalDateTime fromTs = parseOrDefault(from, LocalDateTime.now().minusDays(7));
         LocalDateTime toTs = parseOrDefault(to, LocalDateTime.now());
-        return eventMapper.toDTOList(
+        // toDTOListForCurrentCaller masks `triggeredBy` for anonymous visitors
+        // so the public showcase never exposes operator logins, while a logged-in
+        // user sees who hit the open-door button.
+        return eventMapper.toDTOListForCurrentCaller(
                 eventService.findRecent(EventService.BUSINESS_TYPES, fromTs, toTs, limit));
     }
 
@@ -91,8 +94,10 @@ public class EventRestController {
             @RequestParam(value = "limit", required = false, defaultValue = "200") int limit) {
         LocalDateTime fromTs = parseOrDefault(from, LocalDateTime.now().minusDays(7));
         LocalDateTime toTs = parseOrDefault(to, LocalDateTime.now());
+        // Admin-only endpoint — always expose triggeredBy.
         return eventMapper.toDTOList(
-                eventService.findRecent(EventService.AUTH_TYPES, fromTs, toTs, limit));
+                eventService.findRecent(EventService.AUTH_TYPES, fromTs, toTs, limit),
+                true);
     }
 
     private static LocalDateTime parseOrDefault(String value, LocalDateTime fallback) {

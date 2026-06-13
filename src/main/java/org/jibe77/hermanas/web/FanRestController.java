@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.service.abstract_model.Status;
-import org.jibe77.hermanas.service.abstract_model.StatusEnum;
-import org.jibe77.hermanas.service.event.EventService;
 import org.jibe77.hermanas.service.fan.FanService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class FanRestController {
 
     FanService fanService;
-    EventService eventService;
 
-    public FanRestController(FanService fanService, EventService eventService) {
+    public FanRestController(FanService fanService) {
         this.fanService = fanService;
-        this.eventService = eventService;
     }
 
     @Operation(
@@ -46,10 +41,10 @@ public class FanRestController {
     public Status switcher(
             @Parameter(description = "True to turn fan on, false to turn off", required = true)
             boolean param) {
-        Status status = fanService.switcher(param);
-        eventService.record(status.getStatusEnum() == StatusEnum.ON
-                ? EventType.FAN_ON : EventType.FAN_OFF);
-        return status;
+        // FanService.switchOn/switchOff now record the journal entry themselves
+        // so manual REST toggles and the auto security-timer stop are captured
+        // by a single call site.
+        return fanService.switcher(param);
     }
 
     @Operation(

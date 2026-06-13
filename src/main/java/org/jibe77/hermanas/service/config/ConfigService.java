@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.service.config;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.entity.Parameter;
 import org.jibe77.hermanas.data.repository.ParameterRepository;
 import org.jibe77.hermanas.metrics.HermanasMetrics;
@@ -223,6 +224,18 @@ public class ConfigService {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigService.class);
 
+    /**
+     * Dedicated logger for configuration audit trail. Routed to
+     * {@code audit_config.txt} by {@code logback-spring.xml} so operators
+     * can review who changed which knob without grepping the main log.
+     */
+    private static final Logger configAuditLogger = LoggerFactory.getLogger("CONFIG_AUDIT");
+
+    // Optional injection — small Spring contexts in tests (e.g. ConsumptionModeControllerTest)
+    // do not load EventService, and we degrade gracefully to "no journal entry" in that case.
+    @Autowired(required = false)
+    private org.jibe77.hermanas.service.event.EventService eventService;
+
     public ConfigService(ParameterRepository parameterRepository, @Autowired(required = false) HermanasMetrics metrics) {
         this.parameterRepository = parameterRepository;
         this.metrics = metrics;
@@ -307,6 +320,7 @@ public class ConfigService {
         // creating it otherwise. findByEntryKey is the only method on the
         // repository besides the standard CrudRepository ones.
         Parameter parameter = parameterRepository.findByEntryKey(key);
+        String oldValue = parameter != null ? parameter.getEntryValue() : null;
         if (parameter == null) {
             parameter = new Parameter();
             parameter.setEntryKey(key);
@@ -316,10 +330,53 @@ public class ConfigService {
         logger.info("Saving config to database: {} = {}", key, value);
         parameterRepository.save(parameter);
 
+        auditConfigChange(key, oldValue, value);
+
         // Record configuration change metric (if metrics available)
         if (metrics != null) {
             metrics.recordConfigChange(key);
         }
+    }
+
+    /**
+     * Emits one structured line per persisted config change to the
+     * {@code CONFIG_AUDIT} logger (routed to {@code audit_config.txt}) and a
+     * matching {@code CONFIG_CHANGED} business event so the change also lands
+     * on the Journalisation page next to door/light/fan rows.
+     *
+     * <p>Audit log format (pipe-separated for grep-friendliness):</p>
+     * <pre>user=&lt;login|anonymous&gt; | key=&lt;key&gt; | old=&lt;value&gt; | new=&lt;value&gt;</pre>
+     */
+    private void auditConfigChange(String key, Object oldValue, Object newValue) {
+        String user = org.jibe77.hermanas.service.event.EventService.currentUsername();
+        String oldRendered = oldValue == null ? "<unset>" : String.valueOf(oldValue);
+        String newRendered = newValue == null ? "<unset>" : String.valueOf(newValue);
+        configAuditLogger.info("user={} | key={} | old={} | new={}",
+                user == null ? "anonymous" : user, key, oldRendered, newRendered);
+        if (eventService != null) {
+            // Mask secret-looking keys before they reach the journal so the
+            // Journalisation page never surfaces a fresh API key or mail password
+            // in plain text. The CONFIG_AUDIT file still gets the redacted form too.
+            String redactedNew = isSecretKey(key) ? "<redacted>" : newRendered;
+            String redactedOld = isSecretKey(key) ? "<redacted>" : oldRendered;
+            eventService.record(EventType.CONFIG_CHANGED,
+                    "key=" + key + " old=" + redactedOld + " new=" + redactedNew);
+        }
+    }
+
+    /**
+     * Returns true if the given key holds a secret that must never appear in
+     * plain text in the journal (mail password, API keys, etc.). Conservative —
+     * any key containing "password", "key", "secret" or "token" is treated as
+     * sensitive. The latitude/longitude pair is also masked because the coop
+     * coordinates are private.
+     */
+    private static boolean isSecretKey(String key) {
+        if (key == null) return false;
+        String k = key.toLowerCase();
+        return k.contains("password") || k.contains("secret") || k.contains("token")
+                || k.endsWith(".key") || k.contains(".key.")
+                || k.equals("suntime.latitude") || k.equals("suntime.longitude");
     }
 
     // ============================================================================

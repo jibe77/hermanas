@@ -5,12 +5,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.data.entity.HermanasUser;
 import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.dto.UserCreateRequest;
 import org.jibe77.hermanas.dto.UserDTO;
 import org.jibe77.hermanas.dto.UserUpdateRequest;
 import org.jibe77.hermanas.security.SecurityConfig;
+import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -41,10 +43,14 @@ public class UserRestController {
 
     private final HermanasUserRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final EventService eventService;
 
-    public UserRestController(HermanasUserRepository repository, PasswordEncoder passwordEncoder) {
+    public UserRestController(HermanasUserRepository repository,
+                              PasswordEncoder passwordEncoder,
+                              EventService eventService) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.eventService = eventService;
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
@@ -72,7 +78,12 @@ public class UserRestController {
         }
         // self-update cannot change role — silently ignored to keep the API forgiving.
         body.setRole(null);
-        return applyUpdate(user, body);
+        ResponseEntity<?> response = applyUpdate(user, body);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            eventService.record(EventType.USER_SELF_UPDATED,
+                    "login=" + user.getLogin() + " " + describeUpdate(body));
+        }
+        return response;
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
@@ -118,6 +129,8 @@ public class UserRestController {
                 normalizeLanguage(body.getLanguage()));
         repository.save(user);
         logger.info("Admin created user '{}' (role={})", user.getLogin(), user.getRole());
+        eventService.record(EventType.USER_CREATED,
+                "login=" + user.getLogin() + " role=" + user.getRole());
         return ResponseEntity.ok(toDto(user));
     }
 
@@ -137,7 +150,12 @@ public class UserRestController {
                 && repository.countByRole(SecurityConfig.ROLE_ADMIN) <= 1) {
             return badRequest("Cannot remove the last administrator");
         }
-        return applyUpdate(user, body);
+        ResponseEntity<?> response = applyUpdate(user, body);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            eventService.record(EventType.USER_UPDATED,
+                    "login=" + user.getLogin() + " " + describeUpdate(body));
+        }
+        return response;
     }
 
     @Operation(summary = "Delete a user (admin only)")
@@ -159,6 +177,8 @@ public class UserRestController {
         }
         repository.delete(user);
         logger.info("Admin deleted user '{}'", login);
+        eventService.record(EventType.USER_DELETED,
+                "login=" + login + " role=" + user.getRole());
         return ResponseEntity.noContent().build();
     }
 
@@ -234,5 +254,21 @@ public class UserRestController {
 
     private static ResponseEntity<java.util.Map<String, String>> badRequest(String message) {
         return ResponseEntity.badRequest().body(java.util.Collections.singletonMap("error", message));
+    }
+
+    /**
+     * Builds a short, grep-friendly summary of which user fields were touched
+     * by a request, suitable for the {@code details} column of an audit event.
+     * The password is reported as "set" rather than its value so the journal
+     * never carries credentials.
+     */
+    private static String describeUpdate(UserUpdateRequest body) {
+        java.util.List<String> changed = new java.util.ArrayList<>();
+        if (body.getEmail() != null) changed.add("email");
+        if (body.getNotificationsEnabled() != null) changed.add("notifications");
+        if (body.getPassword() != null && !body.getPassword().isEmpty()) changed.add("password");
+        if (body.getRole() != null) changed.add("role=" + normalizeRole(body.getRole()));
+        if (body.getLanguage() != null) changed.add("language=" + normalizeLanguage(body.getLanguage()));
+        return "fields=[" + String.join(",", changed) + "]";
     }
 }

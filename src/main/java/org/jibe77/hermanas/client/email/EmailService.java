@@ -106,6 +106,14 @@ public class EmailService {
             logger.info("No recipients for mail '{}' — skipping.", subject);
             return;
         }
+        // From address is required by SMTP; bailing here keeps a misconfigured
+        // ConfigService entry from crashing the scheduler's @Scheduled thread,
+        // which had no chance to recover and left the morning mail dropped.
+        String from = getEmailNotificationFrom();
+        if (from == null || from.trim().isEmpty()) {
+            logger.warn("No 'From' address configured (email.notification.from); skipping mail '{}'.", subject);
+            return;
+        }
         MimeMessagePreparator preparator = mimeMessage -> {
             InternetAddress[] to = recipients.stream()
                     .map(address -> {
@@ -119,16 +127,18 @@ public class EmailService {
                     .filter(a -> a != null)
                     .toArray(InternetAddress[]::new);
             mimeMessage.setRecipients(Message.RecipientType.TO, to);
-            mimeMessage.setFrom(new InternetAddress(getEmailNotificationFrom()));
+            mimeMessage.setFrom(new InternetAddress(from));
             mimeMessage.setSubject(subject);
             mimeMessage.setText(body);
 
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
-            for (Optional<File> fileToAttach : filesToAttach) {
-                if (fileToAttach.isPresent()) {
-                    FileSystemResource file = new FileSystemResource(fileToAttach.get());
-                    helper.addAttachment(file.getFilename(), file);
+            if (filesToAttach != null) {
+                for (Optional<File> fileToAttach : filesToAttach) {
+                    if (fileToAttach != null && fileToAttach.isPresent()) {
+                        FileSystemResource file = new FileSystemResource(fileToAttach.get());
+                        helper.addAttachment(file.getFilename(), file);
+                    }
                 }
             }
 
@@ -169,6 +179,13 @@ public class EmailService {
                 it.remove();
             } catch (MailException ex) {
                 logger.error("Can't send email", ex);
+            } catch (RuntimeException ex) {
+                // Defensive: a NullPointerException raised inside the preparator
+                // (e.g. invalid From address) used to escape this loop and crash
+                // the scheduler thread that had triggered the send. Drop the
+                // poisoned message so the queue keeps draining.
+                logger.error("Dropping email due to unexpected error", ex);
+                it.remove();
             }
         }
         logger.info("sending queue has been processed.");

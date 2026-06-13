@@ -63,5 +63,27 @@ public enum EventType {
     // Auth (admin-only visibility)
     LOGIN_SUCCESS,
     LOGIN_FAILED,
-    LOGOUT
+    LOGOUT,
+
+    // Camera
+    PICTURE_TAKEN,
+
+    // ─── Appended for the full business-journal coverage (2026-06) ───────────
+    // Residents (mutations beyond create/delete which were already journaled).
+    RESIDENT_UPDATED,
+    RESIDENT_PHOTO_UPLOADED,
+    RESIDENT_PHOTO_DELETED,
+
+    // User account management.
+    USER_CREATED,
+    USER_UPDATED,
+    USER_DELETED,
+    USER_SELF_UPDATED,
+
+    // Configuration change — a single generic type carries the key + old/new
+    // values in the `details` column. Per-knob types would explode the enum.
+    CONFIG_CHANGED,
+
+    // Email / SMTP diagnostics
+    EMAIL_TEST_SENT
 }
