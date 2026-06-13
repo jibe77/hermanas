@@ -517,8 +517,8 @@
                 <target>Utilizatori</target>
             </trans-unit>
             <trans-unit id="playlistMenu" datatype="html">
-                <source>Music playlist</source>
-                <target>Listă muzică</target>
+                <source>Music</source>
+                <target>Muzică</target>
             </trans-unit>
             <trans-unit id="systemMenu" datatype="html">
                 <source>System</source>

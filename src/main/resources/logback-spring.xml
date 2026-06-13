@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Custom Logback configuration for Hermanas.
+
+  Goals:
+    1. Keep Spring Boot's default console output unchanged for every logger except
+       the two audit-only loggers (CONFIG_AUDIT and AUDIT).
+    2. Route CONFIG_AUDIT to `audit_config.txt` next to the running JAR, so
+       operators can quickly review who changed which configuration knob.
+    3. Route AUDIT (the existing @AuditLog AOP aspect) to `audit.txt` for
+       security-sensitive operations (door open/close, shutdown, reboot).
+    4. Use additivity=false on the audit loggers so audit lines do NOT also
+       show up in the noisy console / spring log.
+-->
+<configuration>
+
+    <!-- Inherit Spring Boot's default console appender + pattern. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Resolve the audit log directory from the property, default = current working dir.
+         Use -Dhermanas.audit.dir=/var/log/hermanas on the Pi to put the audit files
+         alongside other system logs. -->
+    <property name="HERMANAS_AUDIT_DIR" value="${hermanas.audit.dir:-.}"/>
+
+    <!-- Plain text appender for configuration changes -->
+    <appender name="CONFIG_AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${HERMANAS_AUDIT_DIR}/audit_config.txt</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${HERMANAS_AUDIT_DIR}/audit_config.%d{yyyy-MM}.txt</fileNamePattern>
+            <!-- Keep 24 months of monthly rollovers; small file, low Pi disk pressure. -->
+            <maxHistory>24</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Plain text appender for the security audit trail (door, shutdown, etc.) -->
+    <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${HERMANAS_AUDIT_DIR}/audit.txt</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${HERMANAS_AUDIT_DIR}/audit.%d{yyyy-MM}.txt</fileNamePattern>
+            <maxHistory>24</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- CONFIG_AUDIT is the dedicated logger used by ConfigService.setConfigValue.
+         additivity=false keeps audit lines out of the main Spring log. -->
+    <logger name="CONFIG_AUDIT" level="INFO" additivity="false">
+        <appender-ref ref="CONFIG_AUDIT_FILE"/>
+    </logger>
+
+    <!-- AUDIT logger used by AuditLogAspect for security-sensitive operations. -->
+    <logger name="AUDIT" level="INFO" additivity="false">
+        <appender-ref ref="AUDIT_FILE"/>
+    </logger>
+
+    <!-- Default root: keep Spring Boot's INFO console behaviour. -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>

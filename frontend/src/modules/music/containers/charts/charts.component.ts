@@ -80,11 +80,19 @@ export class ChartsComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.loadPlaylists();
         this.loadPlayDuration();
+        // Bootstrap the admin panels straight away when the user is already
+        // signed in as admin at mount time — APP_INITIALIZER resolves the
+        // session before the route is activated, so `isAdmin()` is reliable
+        // here. The user$ subscription below then catches later transitions
+        // (login/logout while the page is open).
+        if (this._userService.isAdmin()) {
+            this.isAdmin = true;
+            this.isSignedIn = true;
+            this.loadConfig();
+        }
         // Stay subscribed to auth changes so logging in/out while the page is
         // open toggles the admin-only audio toggles panel and the signed-in
-        // playback controls without needing a manual reload. loadConfig pulls
-        // the persisted toggle values, which only matter once the admin panel
-        // is visible — so kick it on signed-in transitions only.
+        // playback controls without needing a manual reload.
         this._userService.user$.pipe(takeUntil(this.destroy$)).subscribe(() => {
             const wasAdmin = this.isAdmin;
             this.isAdmin = this._userService.isAdmin();
@@ -112,8 +120,12 @@ export class ChartsComponent implements OnInit, OnDestroy {
                     this.persistedSongAtSunsetEnabled = this.songAtSunsetEnabled;
                     this.cdr.detectChanges();
                 },
-                error: () => {
-                    // Silent: keep the default the input was rendered with.
+                error: err => {
+                    // Surface the failure in the console — the panels stay on
+                    // their default values otherwise, which used to look like
+                    // "nothing happens" on the operator side.
+                    // eslint-disable-next-line no-console
+                    console.warn('Failed to load music config', err);
                 },
             });
     }

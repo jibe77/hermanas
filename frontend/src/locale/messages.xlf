@@ -766,7 +766,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="playlistMenu" datatype="html">
-        <source>Music playlist</source>
+        <source>Music</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/modules/navigation/containers/side-nav/side-nav.component.html</context>
           <context context-type="linenumber">31</context>
