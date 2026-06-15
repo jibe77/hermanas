@@ -67,7 +67,7 @@
     "@inip/static-server": "1.0.1",
     "@playwright/test": "^1.57.0",
     "@types/node": "^20.19.41",
-    "@typescript-eslint/eslint-plugin": "^8.60.0",
+    "@typescript-eslint/eslint-plugin": "^8.61.1",
     "@typescript-eslint/parser": "^8.60.0",
     "@vitest/coverage-v8": "^4.1.8",
     "bootstrap": "^5.3.8",
