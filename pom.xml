@@ -36,7 +36,7 @@
 
 		<bootstrap.version>5.3.8</bootstrap.version>
 		<web-push.version>5.1.2</web-push.version>
-        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <!--
             CycloneDX SBOM plugin — emits target/bom.json + target/bom.xml at every
             `mvn package`. 2.9.x is the last 2.x line and stays Java 11 compatible,
