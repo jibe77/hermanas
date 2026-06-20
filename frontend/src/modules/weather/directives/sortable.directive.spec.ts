@@ -1,9 +1,15 @@
-import { Component, DebugElement } from '@angular/core';
+import { Component, DebugElement, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { SBSortableHeaderDirective, SortDirection, SortEvent } from './sortable.directive';
 
+// `sortDirection` is exposed as a real @Input() on TestComponent so the spec
+// can flip it through `fixture.componentRef.setInput()`. Angular 22 dropped
+// the implicit "re-read every template binding on the next detectChanges()"
+// behavior the previous spec relied on; setInput() is the supported API to
+// push a fresh value into a binding from a test, and it integrates with the
+// scheduler so the change propagates to the child directive immediately.
 @Component({
     template: `
         <table>
@@ -19,7 +25,7 @@ import { SBSortableHeaderDirective, SortDirection, SortEvent } from './sortable.
     imports: [SBSortableHeaderDirective],
 })
 class TestComponent {
-    sortDirection: 'asc' | 'desc' | '' = '';
+    @Input() sortDirection: SortDirection = '';
     lastSortEvent?: SortEvent;
 
     onSort(event: SortEvent) {
@@ -50,16 +56,14 @@ describe('SBSortableHeaderDirective', () => {
         expect(directive).toBeTruthy();
     });
 
-    // Helper: write to the parent's `sortDirection` and let Angular settle.
-    // Angular 21 made the "expression changed after checked" guard stricter
-    // — a bare `component.x = …; fixture.detectChanges()` now trips NG0100
-    // when the parent template owns the @Input binding. Going through
-    // markForCheck() + detectChanges() rebuilds the LView checkpoint the
-    // second-pass guard compares against, mirroring what Angular's own
-    // scheduler does in production.
+    // Helper: push a fresh value into TestComponent.sortDirection through the
+    // supported Angular 22 input API. setInput() updates the binding, marks
+    // the host view dirty and schedules a CD cycle; the following
+    // detectChanges() then propagates the new value to the child directive's
+    // @Input. The previous "assign + detectChanges" pattern silently broke
+    // when Angular 22 stopped re-reading template bindings on every CD pass.
     function setDirection(value: SortDirection): void {
-        component.sortDirection = value;
-        fixture.changeDetectorRef.markForCheck();
+        fixture.componentRef.setInput('sortDirection', value);
         fixture.detectChanges();
     }
 
