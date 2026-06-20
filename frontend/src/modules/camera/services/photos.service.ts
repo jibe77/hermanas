@@ -13,6 +13,23 @@ export interface SnapshotAnalysis {
 
 export type CaptureStatusName = 'CAPTURING' | 'ANALYZING' | 'DONE' | 'ERROR';
 
+/**
+ * One bounding box returned by the vision model. Coordinates are normalized
+ * (0..1) relative to the snapshot dimensions, which lets us overlay them on
+ * the rendered <img> at any size without knowing the actual resolution.
+ *
+ * `type` is always the canonical English label (`chicken` / `egg`) regardless
+ * of the analysis language, so the overlay color logic stays language-agnostic.
+ */
+export interface Detection {
+    type: string;
+    confidence: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
 export interface CaptureState {
     status: CaptureStatusName;
     lang: string;
@@ -20,6 +37,7 @@ export interface CaptureState {
     errorCode?: string;
     errorMessage?: string;
     imageAvailable: boolean;
+    detections?: Detection[];
 }
 
 export interface PhotoEntry {

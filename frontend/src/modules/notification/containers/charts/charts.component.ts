@@ -460,9 +460,25 @@ export class ChartsComponent implements OnInit, OnDestroy {
 
     saveEmailSettings(): void {
         if (this.emailSaving) return;
+        const from = (this.emailFrom || '').trim();
+        // Symmetric to the backend ConfigService check: an address without "@"
+        // is rejected with a 400 anyway, but failing fast here gives a clearer
+        // toast and avoids a half-applied save (From rejected, SMTP fields
+        // persisted) since saveEmailSettings -> saveSmtpChanges runs in series.
+        if (!from || !from.includes('@')) {
+            this._toastService.error(
+                $localize`:@@emailFromInvalid:Please provide a valid sender address before saving.`,
+                'Email'
+            );
+            return;
+        }
+        // Normalize the model so the textarea stops showing untrimmed input
+        // after a save — the value sent to the backend and the value in the
+        // form should match exactly.
+        this.emailFrom = from;
         this.emailSaving = true;
         this._configService
-            .setEmailFrom(this.emailFrom)
+            .setEmailFrom(from)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: () => this.saveSmtpChanges(),
@@ -494,6 +510,11 @@ export class ChartsComponent implements OnInit, OnDestroy {
         if (tail.length === 0) {
             this.emailSaving = false;
             this._toastService.success('Adresses email enregistrées', 'Email');
+            // Re-read from the backend so the textarea reflects the actually
+            // persisted value. Without this we'd silently mask a backend that
+            // rejected/clamped the address and the operator would only notice
+            // when the next sunset notification logs "No 'From' address".
+            this.loadEmailSettings();
             this.cdr.detectChanges();
             return;
         }

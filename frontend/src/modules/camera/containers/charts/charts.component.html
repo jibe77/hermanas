@@ -38,28 +38,53 @@
                 </div>
             }
             @if (snapshotUrl && snapshotLoaded) {
-                <img
-                    [src]="snapshotUrl"
-                    class="img-fluid photo-large"
-                    alt="chicken coop snapshot"
-                    i18n-alt="@@cameraSnapshotAlt"
-                />
+                <div class="snapshot-wrapper">
+                    <img
+                        [src]="snapshotUrl"
+                        class="img-fluid photo-large"
+                        [class.photo-clickable]="detections.length > 0"
+                        alt="chicken coop snapshot"
+                        i18n-alt="@@cameraSnapshotAlt"
+                        (click)="toggleDetections()"
+                    />
+                    @if (detections.length > 0 && detectionsVisible) {
+                        <svg
+                            class="detection-overlay"
+                            viewBox="0 0 1 1"
+                            preserveAspectRatio="none"
+                            aria-hidden="true"
+                        >
+                            @for (d of detections; track trackDetection($index, d)) {
+                                <rect
+                                    [attr.x]="d.x"
+                                    [attr.y]="d.y"
+                                    [attr.width]="d.width"
+                                    [attr.height]="d.height"
+                                    [attr.stroke]="detectionStroke(d)"
+                                    fill="none"
+                                    stroke-width="0.005"
+                                    vector-effect="non-scaling-stroke"
+                                />
+                                <text
+                                    [attr.x]="d.x + 0.003"
+                                    [attr.y]="d.y - 0.005"
+                                    [attr.fill]="detectionStroke(d)"
+                                    font-size="0.025"
+                                    font-family="system-ui, sans-serif"
+                                    font-weight="600"
+                                >{{ detectionLabel(d) }}</text>
+                            }
+                        </svg>
+                    }
+                </div>
             }
-            <!-- Analysis controls live outside the snapshot @if so they remain
-                 usable even if the picture itself failed to render. Open to all
-                 visitors: POST /api/v1/captures is rate-limited per IP server
-                 side, so spamming it just earns a 429. -->
+            <!-- Loader + result live outside the snapshot @if so they remain
+                 visible even if the picture itself failed to render. The
+                 refresh button at the top of the card kicks a new capture +
+                 analysis pipeline; no need for a duplicate "Analyse IA"
+                 button — both ran the same startCapture() under the hood. -->
             @if (snapshotUrl || captureInFlight) {
                 <div class="mt-3">
-                    <button
-                        type="button"
-                        class="btn btn-outline-primary btn-sm"
-                        (click)="startCapture()"
-                        [disabled]="captureInFlight"
-                    >
-                        <span i18n="@@cameraAnalyzeButton">AI analysis</span>
-                    </button>
-
                     @if (aiAnalysisLoading) {
                         <div class="ai-analysis-loader mt-3">
                             <div class="ai-loader-icons" aria-hidden="true">
@@ -187,7 +212,7 @@
             </div>
             <div class="card-body">
                 <p class="small text-muted" i18n="@@cameraSettingsHelp">
-                    Les changements prennent effet au prochain redémarrage de l'application.
+                    Les changements prennent effet dès la photo suivante (rechargement à chaud).
                 </p>
                 <div class="row g-3">
                     <div class="col-md-7">
@@ -219,10 +244,42 @@
                             <option [ngValue]="270">270°</option>
                         </select>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label small d-flex justify-content-between">
+                            <span i18n="@@cameraRegularQuality"
+                                >Dashboard JPEG quality</span
+                            >
+                            <span class="text-muted">{{ cameraRegularQuality }}</span>
+                        </label>
+                        <input
+                            type="range"
+                            class="form-range"
+                            min="1"
+                            max="100"
+                            step="1"
+                            [(ngModel)]="cameraRegularQuality"
+                        />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small d-flex justify-content-between">
+                            <span i18n="@@cameraHighQuality"
+                                >Webcam page JPEG quality</span
+                            >
+                            <span class="text-muted">{{ cameraHighQuality }}</span>
+                        </label>
+                        <input
+                            type="range"
+                            class="form-range"
+                            min="1"
+                            max="100"
+                            step="1"
+                            [(ngModel)]="cameraHighQuality"
+                        />
+                    </div>
+                    <div class="col-12 d-flex justify-content-end">
                         <button
                             type="button"
-                            class="btn btn-primary btn-sm w-100"
+                            class="btn btn-primary btn-sm"
                             (click)="saveCameraSettings()"
                             [disabled]="cameraSaving"
                         >

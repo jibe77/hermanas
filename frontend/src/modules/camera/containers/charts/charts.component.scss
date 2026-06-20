@@ -47,6 +47,33 @@
     max-height: 70vh;
 }
 
+.photo-clickable {
+    cursor: pointer;
+}
+
+// Snapshot + AI detection overlay. The wrapper is inline-block so it shrinks
+// to the rendered <img> dimensions, which then anchor the absolutely-positioned
+// SVG. The SVG uses viewBox="0 0 1 1" + preserveAspectRatio="none", so the
+// normalized 0..1 coordinates emitted by the model map directly to the rendered
+// image regardless of viewport size — no JS resize listener needed.
+.snapshot-wrapper {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+
+    .photo-large {
+        display: block;
+    }
+}
+
+.detection-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
 // Rendered Markdown output from the AI analysis — paragraphs and lists are
 // already real HTML now, so no need for `pre-wrap`. We just trim margins so
 // the box stays compact in the card.

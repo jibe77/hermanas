@@ -6,10 +6,16 @@
     ></sb-dashboard-head
     ><sb-card
         ><div class="card-body">
-            <span i18n="@@usersInfo"
-                >Manage your profile and configure email notifications. Administrators can also
-                manage other users from this page.</span
-            >
+            @if (isAdmin) {
+                <span i18n="@@usersInfoAdmin"
+                    >Manage every user from the administration panel below. Browser push
+                    notifications are configured per device.</span
+                >
+            } @else {
+                <span i18n="@@usersInfo"
+                    >Manage your profile and configure email notifications.</span
+                >
+            }
         </div></sb-card
     >
     <sb-card>
@@ -19,6 +25,13 @@
         </div>
         @if (me) {
             <div class="card-body">
+                <!-- The login / email / password / language / receive-notifs form
+                     is hidden for admins: it duplicates the "User administration"
+                     CRUD panel below where the admin can edit their own row, and
+                     the duplication caused confusing double-saves. Browser push
+                     notifications stay visible since they are device-scoped and
+                     have no equivalent in the CRUD panel. -->
+                @if (!isAdmin) {
                 <div class="row g-2 align-items-end">
                     <div class="col-md-3">
                         <label class="form-label small" i18n="@@usersLogin">Login</label>
@@ -102,8 +115,11 @@
                         ><span i18n="@@save">Save</span>
                     </button>
                 </div>
+                }
                 @if (pushSupported) {
-                    <hr class="my-3" />
+                    @if (!isAdmin) {
+                        <hr class="my-3" />
+                    }
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
                             <div class="fw-semibold" i18n="@@pushBrowserTitle">

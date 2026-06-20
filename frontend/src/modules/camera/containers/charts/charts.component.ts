@@ -12,6 +12,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { LoggerService, ToastService } from '@common/services';
 import {
     CaptureState,
+    Detection,
     PhotoEntry,
     PhotoListing,
     PhotosService,
@@ -72,6 +73,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
     isSignedIn = false;
     cameraBrightness = 60;
     cameraRotation = 180;
+    cameraRegularQuality = 45;
+    cameraHighQuality = 80;
     cameraSaving = false;
 
     aiInferenceUrl = '';
@@ -108,6 +111,13 @@ export class ChartsComponent implements OnInit, OnDestroy {
     aiAnalysisResult = '';
     /** Sanitized HTML rendering of {@link aiAnalysisResult} — see renderMarkdown(). */
     aiAnalysisResultHtml: SafeHtml = '';
+    /**
+     * Normalized bounding boxes parsed from the model's hidden JSON tail.
+     * Rendered as an absolutely-positioned SVG overlay above the snapshot
+     * <img>. Empty array when the model emitted nothing usable.
+     */
+    detections: Detection[] = [];
+    detectionsVisible = false;
     aiAnalysisStep = '';
     private aiAnalysisStepTimer?: ReturnType<typeof setInterval>;
     private destroy$ = new Subject<void>();
@@ -161,6 +171,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
         this.snapshotFailed = false;
         this.aiAnalysisResult = '';
         this.aiAnalysisResultHtml = '';
+        this.detections = [];
+        this.detectionsVisible = false;
         this.releaseSnapshotUrl();
         this.snapshotUrl = '';
         this.aiAnalysisLoading = true;
@@ -242,10 +254,15 @@ export class ChartsComponent implements OnInit, OnDestroy {
             this.captureInFlight = false;
             this.aiAnalysisResult = state.message ?? '';
             this.aiAnalysisResultHtml = this.renderMarkdown(this.aiAnalysisResult);
+            this.detections = state.detections ?? [];
             this.stopAiAnalysisAnimation();
             this.logger.info(
                 'pollCaptureStatus: DONE',
-                { captureId, messageLength: this.aiAnalysisResult.length },
+                {
+                    captureId,
+                    messageLength: this.aiAnalysisResult.length,
+                    detectionCount: this.detections.length,
+                },
                 'Webcam'
             );
         } else if (state.status === 'ERROR') {
@@ -369,6 +386,48 @@ export class ChartsComponent implements OnInit, OnDestroy {
         this.aiAnalysisStep = '';
     }
 
+    /**
+     * Returns the stroke color for a detection. Chickens are red, eggs are
+     * blue, anything else falls back to a neutral grey so a future label
+     * doesn't render invisibly. Confidence (0..1) shifts the lightness so
+     * uncertain boxes appear paler — visually obvious without a legend.
+     */
+    detectionStroke(d: Detection): string {
+        const lightness = Math.round(60 - Math.max(0, Math.min(1, d.confidence)) * 25);
+        switch (d.type) {
+            case 'chicken':
+                return `hsl(0, 85%, ${lightness}%)`;
+            case 'egg':
+                return `hsl(215, 85%, ${lightness}%)`;
+            default:
+                return `hsl(0, 0%, ${lightness}%)`;
+        }
+    }
+
+    /** Localized short label drawn next to each bounding box. */
+    detectionLabel(d: Detection): string {
+        const pct = Math.round(Math.max(0, Math.min(1, d.confidence)) * 100);
+        switch (d.type) {
+            case 'chicken':
+                return $localize`:@@detectionLabelChicken:Hen` + ' ' + pct + '%';
+            case 'egg':
+                return $localize`:@@detectionLabelEgg:Egg` + ' ' + pct + '%';
+            default:
+                return d.type + ' ' + pct + '%';
+        }
+    }
+
+    /** Track function for the *ngFor over detections. */
+    trackDetection(index: number, _d: Detection): number {
+        return index;
+    }
+
+    toggleDetections(): void {
+        if (this.detections.length === 0) return;
+        this.detectionsVisible = !this.detectionsVisible;
+        this.cdr.markForCheck();
+    }
+
     private analysisSteps(): string[] {
         return [
             $localize`:@@aiStepSendingPicture:Sending the picture to the model`,
@@ -385,6 +444,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
             next: cfg => {
                 this.cameraBrightness = cfg.camera_settings.brightness;
                 this.cameraRotation = cfg.camera_settings.rotation;
+                this.cameraRegularQuality = cfg.camera_settings.regular_quality ?? 45;
+                this.cameraHighQuality = cfg.camera_settings.high_quality ?? 80;
                 this.aiInferenceUrl = cfg.ai_settings?.inference_url ?? '';
                 this.aiInferenceModel = cfg.ai_settings?.inference_model ?? 'focus';
                 this.aiInferenceCacheTtlSec = Math.round(
@@ -446,14 +507,34 @@ export class ChartsComponent implements OnInit, OnDestroy {
     saveCameraSettings(): void {
         if (this.cameraSaving) return;
         this.cameraSaving = true;
+        // <input type="range"> binds as a string under ngModel; coerce here so
+        // the backend never receives a stringified value (it would still parse
+        // it, but the log lines and the local model would diverge in type).
+        const brightness = Number(this.cameraBrightness);
+        const rotation = Number(this.cameraRotation);
+        const regularQuality = Number(this.cameraRegularQuality);
+        const highQuality = Number(this.cameraHighQuality);
+        this.logger.info(
+            'saveCameraSettings: sending settings',
+            { brightness, rotation, regularQuality, highQuality },
+            'Webcam'
+        );
         forkJoin({
-            brightness: this.configService.setCameraBrightness(this.cameraBrightness),
-            rotation: this.configService.setCameraRotation(this.cameraRotation),
+            brightness: this.configService.setCameraBrightness(brightness),
+            rotation: this.configService.setCameraRotation(rotation),
+            regularQuality: this.configService.setCameraRegularQuality(regularQuality),
+            highQuality: this.configService.setCameraHighQuality(highQuality),
         }).subscribe({
             next: () => {
                 this.cameraSaving = false;
+                // Reload from the backend after a successful save so the form
+                // shows what was actually persisted — same contract as the AI
+                // settings card. Without this, a save that the backend silently
+                // clamped (or that hit a stale cache) would still display the
+                // original textarea value and the operator could not tell.
+                this.loadCameraSettings();
                 this.toast.success(
-                    $localize`:@@cameraSettingsSaved:Settings saved (effective on next reboot).`,
+                    $localize`:@@cameraSettingsSaved:Settings saved — effective on the next picture.`,
                     $localize`:@@cameraToastTitle:Camera`
                 );
                 this.cdr.markForCheck();
@@ -525,7 +606,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 // could be confused about which version is now live.
                 this.loadCameraSettings();
                 this.toast.success(
-                    $localize`:@@cameraAiUrlSaved:AI inference URL saved.`,
+                    $localize`:@@cameraAiSettingsSaved:AI inference settings saved.`,
                     $localize`:@@cameraToastTitle:Camera`
                 );
                 this.cdr.markForCheck();
