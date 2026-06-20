@@ -135,6 +135,19 @@ public class AiVisionClient {
      * first choice. Caller is responsible for cleaning up {@code image}.
      */
     public String analyze(File image, String lang) throws AiVisionException {
+        return sendChatRequest(image, promptBuilder.buildPrompt(lang), lang);
+    }
+
+    /**
+     * Variant of {@link #analyze} used by the morning/evening door-state
+     * verification scheduler. Skips the full coop checklist and asks a single
+     * yes/no question about the door in the bottom-left corner of the frame.
+     */
+    public String analyzeDoorState(File image, boolean isMorning) throws AiVisionException {
+        return sendChatRequest(image, promptBuilder.buildDoorCheckPrompt(isMorning), "en");
+    }
+
+    private String sendChatRequest(File image, String userPrompt, String lang) throws AiVisionException {
         String baseUrl = configService.getAiInferenceUrl();
         String model = configService.getAiInferenceModel();
         // INFO-level so the operator can read the current configuration straight from
@@ -162,7 +175,7 @@ public class AiVisionClient {
         }
         logger.debug("AI vision: encoded image to base64, payload size ~{} chars.", base64.length());
 
-        Map<String, Object> payload = buildChatPayload(model, lang, base64);
+        Map<String, Object> payload = buildChatPayload(model, lang, base64, userPrompt);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
@@ -208,10 +221,10 @@ public class AiVisionClient {
      * server. {@code temperature} is kept low so the answer to "how many
      * chickens" stays repeatable for a given snapshot.
      */
-    private Map<String, Object> buildChatPayload(String model, String lang, String base64Image) {
+    private Map<String, Object> buildChatPayload(String model, String lang, String base64Image, String userPrompt) {
         Map<String, Object> textPart = new LinkedHashMap<>();
         textPart.put("type", "text");
-        textPart.put("text", promptBuilder.buildPrompt(lang));
+        textPart.put("text", userPrompt);
 
         Map<String, Object> imageUrl = new HashMap<>();
         imageUrl.put("url", "data:image/jpeg;base64," + base64Image);

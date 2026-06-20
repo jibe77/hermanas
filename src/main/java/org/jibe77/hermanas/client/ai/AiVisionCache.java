@@ -1,10 +1,13 @@
 package org.jibe77.hermanas.client.ai;
 
+import org.jibe77.hermanas.service.capture.DetectionDto;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,11 +39,11 @@ public class AiVisionCache {
     }
 
     /**
-     * Returns the cached analysis text for the given language, or {@code null}
-     * when nothing is cached, the cached entry has expired, or the call has
-     * been disabled by setting the TTL to a non-positive value.
+     * Returns the cached analysis (text + detections) for the given language,
+     * or {@code null} when nothing is cached, the cached entry has expired, or
+     * the call has been disabled by setting the TTL to a non-positive value.
      */
-    public String get(String lang) {
+    public Entry get(String lang) {
         long ttlMs = configService.getAiInferenceCacheTtlMs();
         if (ttlMs <= 0) {
             return null;
@@ -54,16 +57,20 @@ public class AiVisionCache {
             store.remove(lang, e);
             return null;
         }
-        return e.body;
+        return e;
     }
 
     /** Records a successful analysis. Overwrites any previous entry for the language. */
-    public void put(String lang, String body) {
+    public void put(String lang, String body, List<DetectionDto> detections) {
         if (configService.getAiInferenceCacheTtlMs() <= 0 || body == null) {
             return;
         }
-        store.put(lang, new Entry(body, System.currentTimeMillis()));
-        logger.debug("Cached AI analysis for lang={} ({} chars).", lang, body.length());
+        List<DetectionDto> safe = detections == null
+                ? Collections.emptyList()
+                : Collections.unmodifiableList(detections);
+        store.put(lang, new Entry(body, safe, System.currentTimeMillis()));
+        logger.debug("Cached AI analysis for lang={} ({} chars, {} detections).",
+                lang, body.length(), safe.size());
     }
 
     /** Manually clears the cache — exposed for test purposes and for an eventual admin button. */
@@ -71,13 +78,19 @@ public class AiVisionCache {
         store.clear();
     }
 
-    private static final class Entry {
-        final String body;
+    /** Immutable snapshot of a cached analysis. */
+    public static final class Entry {
+        private final String body;
+        private final List<DetectionDto> detections;
         final long timestamp;
 
-        Entry(String body, long timestamp) {
+        Entry(String body, List<DetectionDto> detections, long timestamp) {
             this.body = body;
+            this.detections = detections;
             this.timestamp = timestamp;
         }
+
+        public String getBody() { return body; }
+        public List<DetectionDto> getDetections() { return detections; }
     }
 }

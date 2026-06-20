@@ -49,7 +49,31 @@ public class CameraPromptBuilder {
             + " the outside, whereas a closed door will show the visible wooden texture/panel of"
             + " the door itself).\n"
             + "*   is there poop / dirt on the floor ? (grade from 1 to 5)\n"
-            + "*   there is a fan on the upper right corner, is it dusty ?";
+            + "*   there is a fan on the upper right corner, is it dusty ?\n"
+            + "\n"
+            + "After your human-readable answer, and ONLY after it, append a fenced JSON block"
+            + " listing the bounding boxes of every chicken and every egg you detected. Do NOT"
+            + " mention this block in your prose and do NOT describe its content — the user does"
+            + " not see it, it is parsed by code. The block must be the very last thing in your"
+            + " reply, on its own lines, with this exact shape:\n"
+            + "```json\n"
+            + "{\"detections\":[\n"
+            + "  {\"type\":\"chicken\",\"confidence\":0.92,\"box\":[0.12,0.34,0.18,0.40]},\n"
+            + "  {\"type\":\"egg\",\"confidence\":0.78,\"box\":[0.55,0.71,0.05,0.04]}\n"
+            + "]}\n"
+            + "```\n"
+            + "Rules for the JSON block:\n"
+            + "*   `type` is either `chicken` or `egg`, lowercase, in English (even when the prose"
+            + " is written in French or Romanian).\n"
+            + "*   `confidence` is a number between 0 and 1.\n"
+            + "*   `box` is `[x, y, width, height]`, each value between 0 and 1, normalized to the"
+            + " image (0,0 = top-left corner; 1,1 = bottom-right corner).\n"
+            + "*   List one entry per object you actually counted in your prose — the counts must"
+            + " match.\n"
+            + "*   If you counted zero chickens and zero eggs, return"
+            + " `{\"detections\":[]}`.\n"
+            + "*   Output valid JSON only: no trailing comma, no comment, no extra prose inside"
+            + " the fence.";
 
     private final ConfigService configService;
 
@@ -90,6 +114,39 @@ public class CameraPromptBuilder {
             default:
                 return "You are an assistant that answers exclusively in English.";
         }
+    }
+
+    /**
+     * Builds the short single-question prompt used by the morning/evening
+     * door-state verification scheduler. Kept English-only and free of the
+     * general coop checklist so the model focuses on one signal — and so its
+     * output is short enough to parse with a regex.
+     *
+     * <p>The reply MUST start with one of {@code OPEN}, {@code CLOSED} or
+     * {@code UNCERTAIN}; the rest is free-form rationale we log but ignore.</p>
+     *
+     * @param isMorning true when the check fires after sunrise — the prompt
+     *                  then tells the model to expect daylight behind an open
+     *                  door. False at sunset+30, when an open door appears as
+     *                  a dark void and the model needs a different cue.
+     */
+    public String buildDoorCheckPrompt(boolean isMorning) {
+        String timeOfDay = isMorning
+                ? "It is shortly after sunrise. If the door is OPEN, you will see daylight"
+                        + " (sky, ground, vegetation) through the door opening. If the door"
+                        + " is CLOSED, you will see the wooden panel of the door itself."
+                : "It is shortly after sunset. If the door is OPEN, the opening will appear"
+                        + " as a dark void (the outside is now dark) similar to a black hole."
+                        + " If the door is CLOSED, you will see the wooden panel of the door"
+                        + " itself, still distinguishable from the dark surroundings.";
+        return "Look at the chicken-coop door in the bottom-left corner of this picture.\n"
+                + timeOfDay + "\n\n"
+                + "Reply with exactly one word on the first line, then a short rationale:\n"
+                + "  OPEN       — the door is clearly open.\n"
+                + "  CLOSED     — the door is clearly closed.\n"
+                + "  UNCERTAIN  — you cannot tell (poor framing, glare, obstruction).\n\n"
+                + "Do not output anything before the first word. Do not wrap it in"
+                + " quotes or Markdown. Answer in English.";
     }
 
     private String resolveBase() {

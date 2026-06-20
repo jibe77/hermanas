@@ -162,6 +162,8 @@ public class ConfigRestController {
         Map<String, Integer> camera = new LinkedHashMap<>();
         camera.put("brightness", configService.getCameraBrightness());
         camera.put("rotation", configService.getCameraRotation());
+        camera.put("regular_quality", configService.getCameraRegularQuality());
+        camera.put("high_quality", configService.getCameraHighQuality());
         config.put("camera_settings", camera);
 
         // Weather provider — return the URL template but mask the API key. We expose
@@ -494,29 +496,56 @@ public class ConfigRestController {
 
     @Operation(
             summary = "Update camera brightness (0-100)",
-            description = "Takes effect on next app reboot — the picam config bean is "
-                        + "built once at startup."
+            description = "Takes effect on the next picture — picam configs are rebuilt at every shot."
     )
     @PutMapping("/camera/brightness")
     public ResponseEntity<String> setCameraBrightness(
             @Parameter(description = "Brightness 0-100", example = "60")
             @RequestParam int brightness) {
         configService.setCameraBrightness(brightness);
-        return ResponseEntity.ok("Camera brightness set to " + brightness
-                + " (reboot required to apply)");
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera brightness set to " + brightness);
     }
 
     @Operation(
             summary = "Update camera rotation (0/90/180/270)",
-            description = "Takes effect on next app reboot."
+            description = "Takes effect on the next picture."
     )
     @PutMapping("/camera/rotation")
     public ResponseEntity<String> setCameraRotation(
             @Parameter(description = "Rotation 0/90/180/270", example = "180")
             @RequestParam int degrees) {
         configService.setCameraRotation(degrees);
-        return ResponseEntity.ok("Camera rotation set to " + degrees
-                + "° (reboot required to apply)");
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera rotation set to " + degrees + "°");
+    }
+
+    @Operation(
+            summary = "Update regular JPEG quality (1-100)",
+            description = "Quality used by the dashboard snapshot (480×270). "
+                        + "Lower values produce smaller files. Takes effect on the next picture."
+    )
+    @PutMapping("/camera/regular-quality")
+    public ResponseEntity<String> setCameraRegularQuality(
+            @Parameter(description = "JPEG quality 1-100", example = "45")
+            @RequestParam int quality) {
+        configService.setCameraRegularQuality(quality);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera regular quality set to " + quality);
+    }
+
+    @Operation(
+            summary = "Update high JPEG quality (1-100)",
+            description = "Quality used by the dedicated Webcam page (960×540). "
+                        + "Takes effect on the next picture."
+    )
+    @PutMapping("/camera/high-quality")
+    public ResponseEntity<String> setCameraHighQuality(
+            @Parameter(description = "JPEG quality 1-100", example = "80")
+            @RequestParam int quality) {
+        configService.setCameraHighQuality(quality);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera high quality set to " + quality);
     }
 
     // ─── Weather provider settings ─────────────────────────────────────────────

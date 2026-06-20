@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,13 +49,16 @@ public class CaptureService {
     private final CameraService cameraService;
     private final AiVisionClient aiVisionClient;
     private final AiVisionCache aiVisionCache;
+    private final DetectionParser detectionParser;
 
     public CaptureService(CameraService cameraService,
                           AiVisionClient aiVisionClient,
-                          AiVisionCache aiVisionCache) {
+                          AiVisionCache aiVisionCache,
+                          DetectionParser detectionParser) {
         this.cameraService = cameraService;
         this.aiVisionClient = aiVisionClient;
         this.aiVisionCache = aiVisionCache;
+        this.detectionParser = detectionParser;
     }
 
     /**
@@ -100,18 +105,21 @@ public class CaptureService {
             return;
         }
 
-        String cached = aiVisionCache.get(lang);
+        AiVisionCache.Entry cached = aiVisionCache.get(lang);
         if (cached != null) {
-            logger.info("Capture {} got cached analysis ({} chars).", id, cached.length());
-            state.complete(cached);
+            logger.info("Capture {} got cached analysis ({} chars, {} detections).",
+                    id, cached.getBody().length(), cached.getDetections().size());
+            state.complete(cached.getBody(), cached.getDetections());
             return;
         }
 
         try {
-            String content = aiVisionClient.analyze(picture, lang);
-            aiVisionCache.put(lang, content);
-            logger.info("Capture {} analysis done ({} chars).", id, content.length());
-            state.complete(content);
+            String raw = aiVisionClient.analyze(picture, lang);
+            DetectionParser.Parsed parsed = detectionParser.parse(raw);
+            aiVisionCache.put(lang, parsed.humanText(), parsed.detections());
+            logger.info("Capture {} analysis done ({} chars, {} detections).",
+                    id, parsed.humanText().length(), parsed.detections().size());
+            state.complete(parsed.humanText(), parsed.detections());
         } catch (AiVisionException e) {
             logger.warn("Capture {} analysis failed (code={}, msg={}).",
                     id, e.getCode(), e.getMessage());
@@ -178,6 +186,7 @@ public class CaptureService {
         private volatile String message;
         private volatile String errorCode;
         private volatile String errorMessage;
+        private volatile List<DetectionDto> detections = Collections.emptyList();
 
         CaptureState(String lang) {
             this.lang = lang;
@@ -188,8 +197,9 @@ public class CaptureService {
         byte[] getImage() { return image; }
         long getCreatedAt() { return createdAt; }
 
-        void complete(String content) {
+        void complete(String content, List<DetectionDto> detections) {
             this.message = content;
+            this.detections = detections == null ? Collections.emptyList() : detections;
             this.status = CaptureStatus.DONE;
         }
 
@@ -201,7 +211,7 @@ public class CaptureService {
 
         CaptureStateDto toDto() {
             return new CaptureStateDto(status, lang, message, errorCode, errorMessage,
-                    image != null);
+                    image != null, detections);
         }
     }
 }

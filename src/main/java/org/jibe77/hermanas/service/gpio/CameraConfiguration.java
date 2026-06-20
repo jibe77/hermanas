@@ -1,13 +1,21 @@
 package org.jibe77.hermanas.service.gpio;
 
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import uk.co.caprica.picam.enums.Encoding;
 
 import static uk.co.caprica.picam.CameraConfiguration.cameraConfiguration;
 
-@Configuration
+/**
+ * Builds picam {@link uk.co.caprica.picam.CameraConfiguration} objects on demand.
+ *
+ * <p>Width/height/encoding come from {@code application.properties} (they are
+ * not exposed to the admin UI). Quality, brightness and rotation are read from
+ * {@link ConfigService} at every call so a hot-reload (via {@code @CacheEvict}
+ * on the setters) takes effect on the very next picture — no app restart needed.
+ */
+@Component
 public class CameraConfiguration {
 
     @Value("${camera.high.width}")
@@ -16,46 +24,38 @@ public class CameraConfiguration {
     @Value("${camera.high.height}")
     private int photoHighHeight;
 
-    @Value("${camera.high.quality}")
-    private int photoHighQuality;
-
     @Value("${camera.regular.width}")
     private int photoRegularWidth;
 
     @Value("${camera.regular.height}")
     private int photoRegularHeight;
 
-    @Value("${camera.regular.quality}")
-    private int photoRegularQuality;
-
     @Value("${camera.encoding}")
     private String photoEncoding;
 
-    @Value("${camera.rotation}")
-    private int photoRotation;
+    private final ConfigService configService;
 
-    @Value("${camera.brightness}")
-    private int photoBrightness;
+    public CameraConfiguration(ConfigService configService) {
+        this.configService = configService;
+    }
 
-    @Bean(name = "CameraHighQualityConfig")
-    public uk.co.caprica.picam.CameraConfiguration initHighQuality() {
+    public uk.co.caprica.picam.CameraConfiguration buildHighQuality() {
         return cameraConfiguration()
                 .width(photoHighWidth)
                 .height(photoHighHeight)
                 .encoding(Encoding.valueOf(photoEncoding))
-                .quality(photoHighQuality)
-                .rotation(photoRotation)
-                .brightness(photoBrightness);
+                .quality(configService.getCameraHighQuality())
+                .rotation(configService.getCameraRotation())
+                .brightness(configService.getCameraBrightness());
     }
 
-    @Bean(name = "CameraRegularQualityConfig")
-    public uk.co.caprica.picam.CameraConfiguration initReguarQuality() {
+    public uk.co.caprica.picam.CameraConfiguration buildRegularQuality() {
         return cameraConfiguration()
                 .width(photoRegularWidth)
                 .height(photoRegularHeight)
                 .encoding(Encoding.valueOf(photoEncoding))
-                .quality(photoRegularQuality)
-                .rotation(photoRotation)
-                .brightness(photoBrightness);
+                .quality(configService.getCameraRegularQuality())
+                .rotation(configService.getCameraRotation())
+                .brightness(configService.getCameraBrightness());
     }
 }

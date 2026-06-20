@@ -70,6 +70,47 @@ public class LogsService {
         return filter(raw, level, search);
     }
 
+    /**
+     * Opens a streaming handle to the full file for the download endpoint. Gzipped
+     * rotated files are decompressed on the fly and exposed under their plain-text
+     * name (stripping the trailing {@code .gz}) so the user gets a readable artefact.
+     */
+    public LogStream openForDownload(String filename) throws IOException {
+        Path file = resolveSafe(filename);
+        InputStream raw = Files.newInputStream(file);
+        String downloadName = file.getFileName().toString();
+        if (isGzipped(file)) {
+            // Wrap in a GZIPInputStream so the client receives plain text. The
+            // returned stream owns the underlying file handle and closes it via
+            // the standard try-with / Spring close-on-complete contract.
+            InputStream gz = new GZIPInputStream(raw);
+            if (downloadName.toLowerCase().endsWith(".gz")) {
+                downloadName = downloadName.substring(0, downloadName.length() - 3);
+            }
+            return new LogStream(gz, downloadName);
+        }
+        return new LogStream(raw, downloadName);
+    }
+
+    /** Stream + suggested filename pair used by the download endpoint. */
+    public static final class LogStream {
+        private final InputStream inputStream;
+        private final String downloadName;
+
+        LogStream(InputStream inputStream, String downloadName) {
+            this.inputStream = inputStream;
+            this.downloadName = downloadName;
+        }
+
+        public InputStream getInputStream() {
+            return inputStream;
+        }
+
+        public String getDownloadName() {
+            return downloadName;
+        }
+    }
+
     private boolean isGzipped(Path file) {
         return file.getFileName().toString().toLowerCase().endsWith(".gz");
     }

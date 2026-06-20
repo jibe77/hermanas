@@ -8,7 +8,6 @@ import com.pi4j.io.pwm.PwmConfig;
 import com.pi4j.io.pwm.PwmType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Profile;
@@ -17,7 +16,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import uk.co.caprica.picam.*;
-import uk.co.caprica.picam.CameraConfiguration;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -36,9 +34,7 @@ public class GpioHermanasRpiService implements GpioHermanasService {
 
     private Context pi4j;
 
-    private CameraConfiguration highQualityConfig;
-
-    private CameraConfiguration regularQualityconfig;
+    private final CameraConfiguration cameraConfiguration;
 
     private static final Logger logger = LoggerFactory.getLogger(GpioHermanasRpiService.class);
 
@@ -51,10 +47,8 @@ public class GpioHermanasRpiService implements GpioHermanasService {
     @Value("${camera.picam.jni.implementation}")
     private String picamJniImplementation;
 
-    public GpioHermanasRpiService(@Qualifier("CameraHighQualityConfig") CameraConfiguration highQualityConfig,
-                                     @Qualifier("CameraRegularQualityConfig") CameraConfiguration regularQualityconfig) {
-        this.highQualityConfig = highQualityConfig;
-        this.regularQualityconfig = regularQualityconfig;
+    public GpioHermanasRpiService(CameraConfiguration cameraConfiguration) {
+        this.cameraConfiguration = cameraConfiguration;
     }
 
     @PostConstruct
@@ -87,7 +81,10 @@ public class GpioHermanasRpiService implements GpioHermanasService {
 
     @Async
     public CompletableFuture<Void> takePictureAsync(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
-        try (Camera camera = new Camera(highQuality ? highQualityConfig : regularQualityconfig)) {
+        uk.co.caprica.picam.CameraConfiguration picamConfig = highQuality
+                ? cameraConfiguration.buildHighQuality()
+                : cameraConfiguration.buildRegularQuality();
+        try (Camera camera = new Camera(picamConfig)) {
             camera.takePicture(filePictureCaptureHandler, highQuality ? photoHighDelay : photoRegularDelay);
         } catch (CaptureFailedException e) {
             throw new IOException("Can't capture a picture.", e);

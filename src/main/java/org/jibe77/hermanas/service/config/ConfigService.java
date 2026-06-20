@@ -152,6 +152,12 @@ public class ConfigService {
     @Value("${camera.rotation}")
     private int cameraRotation;
 
+    @Value("${camera.regular.quality}")
+    private int cameraRegularQuality;
+
+    @Value("${camera.high.quality}")
+    private int cameraHighQuality;
+
     // ─── Weather provider settings ────────────────────────────────────────────────
 
     @Value("${weather.info.url}")
@@ -191,7 +197,11 @@ public class ConfigService {
 
     // ─── Email sender ─────────────────────────────────────────────────────────────
 
-    @Value("${email.notification.from}")
+    // Default left empty intentionally — production deployments may not have
+    // this property in their application.properties, and we'd rather boot with
+    // a null From (caught loudly in getEmailNotificationFrom) than fail at
+    // startup with a BeanCreationException.
+    @Value("${email.notification.from:}")
     private String emailNotificationFrom;
 
     // ─── SMTP transport settings ──────────────────────────────────────────────────
@@ -1061,6 +1071,32 @@ public class ConfigService {
         setConfigValue("camera.rotation", degrees, null);
     }
 
+    @Cacheable(value = "cameraRegularQuality")
+    public int getCameraRegularQuality() {
+        return getConfigValue("camera.regular.quality", cameraRegularQuality, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraRegularQuality")
+    public void setCameraRegularQuality(int quality) {
+        if (quality < 1 || quality > 100) {
+            throw new IllegalArgumentException("Quality must be 1..100, got " + quality);
+        }
+        setConfigValue("camera.regular.quality", quality, null);
+    }
+
+    @Cacheable(value = "cameraHighQuality")
+    public int getCameraHighQuality() {
+        return getConfigValue("camera.high.quality", cameraHighQuality, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraHighQuality")
+    public void setCameraHighQuality(int quality) {
+        if (quality < 1 || quality > 100) {
+            throw new IllegalArgumentException("Quality must be 1..100, got " + quality);
+        }
+        setConfigValue("camera.high.quality", quality, null);
+    }
+
     // ============================================================================
     // Weather Provider Settings
     // ============================================================================
@@ -1286,7 +1322,23 @@ public class ConfigService {
 
     @Cacheable(value = "emailNotificationFrom")
     public String getEmailNotificationFrom() {
-        return getConfigValue("email.notification.from", emailNotificationFrom, s -> s);
+        String resolved = getConfigValue("email.notification.from", emailNotificationFrom, s -> s);
+        // Defensive trim: a value persisted with stray whitespace would pass
+        // the !isEmpty() check inside getConfigValue but still fail the
+        // !trim().isEmpty() check downstream in EmailService, producing the
+        // confusing "No 'From' address configured" warning despite a value
+        // visible in the admin form. Normalize here so callers always see
+        // either a usable address or null.
+        if (resolved == null) {
+            logger.warn("email.notification.from resolved to null — neither DB nor @Value supplied a value.");
+            return null;
+        }
+        String trimmed = resolved.trim();
+        if (trimmed.isEmpty()) {
+            logger.warn("email.notification.from resolved to empty/whitespace — treating as unconfigured.");
+            return null;
+        }
+        return trimmed;
     }
 
     @CacheEvict(value = "emailNotificationFrom")

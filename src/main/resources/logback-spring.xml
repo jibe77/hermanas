@@ -14,9 +14,13 @@
 -->
 <configuration>
 
-    <!-- Inherit Spring Boot's default console appender + pattern. -->
+    <!-- Inherit Spring Boot's default console + file appenders.
+         file-appender.xml resolves LOG_FILE from `logging.file.name` /
+         `logging.file.path` (set via systemd on the Pi -> /home/pi/log/spring.log)
+         and reinstates the daily rolling policy `spring.log.YYYY-MM-DD.N.gz`. -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
 
     <!-- Resolve the audit log directory from the property, default = current working dir.
          Use -Dhermanas.audit.dir=/var/log/hermanas on the Pi to put the audit files
@@ -59,9 +63,10 @@
         <appender-ref ref="AUDIT_FILE"/>
     </logger>
 
-    <!-- Default root: keep Spring Boot's INFO console behaviour. -->
+    <!-- Default root: keep Spring Boot's INFO console behaviour + write to spring.log. -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
     </root>
 
 </configuration>

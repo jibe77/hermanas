@@ -45,17 +45,20 @@ public class CameraRestController {
     private final AiVisionClient aiVisionClient;
     private final AiVisionCache aiVisionCache;
     private final EventService eventService;
+    private final org.jibe77.hermanas.service.capture.DetectionParser detectionParser;
 
     public CameraRestController(CameraService cameraService,
                                 PhotosService photosService,
                                 AiVisionClient aiVisionClient,
                                 AiVisionCache aiVisionCache,
-                                EventService eventService) {
+                                EventService eventService,
+                                org.jibe77.hermanas.service.capture.DetectionParser detectionParser) {
         this.cameraService = cameraService;
         this.photosService = photosService;
         this.aiVisionClient = aiVisionClient;
         this.aiVisionCache = aiVisionCache;
         this.eventService = eventService;
+        this.detectionParser = detectionParser;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CameraRestController.class);
@@ -346,11 +349,11 @@ public class CameraRestController {
         // Cache check happens BEFORE taking a fresh picture — the capture itself
         // is slow on the Pi Zero. Errors are never cached: a NOT_CONFIGURED or
         // UPSTREAM_ERROR result must let the next user click retry immediately.
-        String cached = aiVisionCache.get(normalized);
+        org.jibe77.hermanas.client.ai.AiVisionCache.Entry cached = aiVisionCache.get(normalized);
         if (cached != null) {
             logger.info("AI analyze: cache hit for lang={}, returning {} chars.",
-                    normalized, cached.length());
-            return ResponseEntity.ok(okResponseBody(normalized, cached, true));
+                    normalized, cached.getBody().length());
+            return ResponseEntity.ok(okResponseBody(normalized, cached.getBody(), true));
         }
 
         File picture;
@@ -373,11 +376,13 @@ public class CameraRestController {
         }
 
         try {
-            String content = aiVisionClient.analyze(picture, normalized);
-            aiVisionCache.put(normalized, content);
+            String raw = aiVisionClient.analyze(picture, normalized);
+            org.jibe77.hermanas.service.capture.DetectionParser.Parsed parsed =
+                    detectionParser.parse(raw);
+            aiVisionCache.put(normalized, parsed.humanText(), parsed.detections());
             logger.info("AI analyze: success, {} chars returned for lang={}.",
-                    content.length(), normalized);
-            return ResponseEntity.ok(okResponseBody(normalized, content, false));
+                    parsed.humanText().length(), normalized);
+            return ResponseEntity.ok(okResponseBody(normalized, parsed.humanText(), false));
         } catch (AiVisionException e) {
             HttpStatus status = "NOT_CONFIGURED".equals(e.getCode())
                     ? HttpStatus.NOT_IMPLEMENTED
