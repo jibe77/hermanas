@@ -418,4 +418,8 @@ export class LogsComponent implements OnInit, OnDestroy {
         if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
         return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
     }
+
+    downloadUrl(): string | null {
+        return this.selectedFile ? this._logsService.downloadUrl(this.selectedFile) : null;
+    }
 }

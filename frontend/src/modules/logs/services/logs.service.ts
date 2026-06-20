@@ -43,4 +43,12 @@ export class LogsService extends AbstractService {
             headers: this.getHeaders(),
         });
     }
+
+    /**
+     * Full URL to the streaming download endpoint. Same-origin GET with the
+     * session cookie auto-attached, so an `<a download>` is enough.
+     */
+    downloadUrl(filename: string): string {
+        return `${this.domainBase}/logs/${encodeURIComponent(filename)}/download`;
+    }
 }

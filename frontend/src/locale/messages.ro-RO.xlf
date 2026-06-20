@@ -401,8 +401,12 @@
                 <target>Utilizatori</target>
             </trans-unit>
             <trans-unit id="usersInfo" datatype="html">
-                <source>Manage your profile and configure email notifications. Administrators can also manage other users from this page.</source>
-                <target>Gestionează-ți profilul și configurează notificările prin email. Administratorii pot gestiona, de asemenea, alți utilizatori din această pagină.</target>
+                <source>Manage your profile and configure email notifications.</source>
+                <target>Gestionează-ți profilul și configurează notificările prin email.</target>
+            </trans-unit>
+            <trans-unit id="usersInfoAdmin" datatype="html">
+                <source>Manage every user from the administration panel below. Browser push notifications are configured per device.</source>
+                <target>Gestionează toți utilizatorii din panoul de administrare de mai jos. Notificările browserului sunt configurate per dispozitiv.</target>
             </trans-unit>
             <trans-unit id="usersMyProfile" datatype="html">
                 <source>My profile</source>
@@ -627,6 +631,14 @@
             <trans-unit id="cameraSnapshotAlt" datatype="html">
                 <source>chicken coop snapshot</source>
                 <target>imagine din cotețul găinilor</target>
+            </trans-unit>
+            <trans-unit id="detectionLabelChicken" datatype="html">
+                <source>Hen</source>
+                <target>Găină</target>
+            </trans-unit>
+            <trans-unit id="detectionLabelEgg" datatype="html">
+                <source>Egg</source>
+                <target>Ou</target>
             </trans-unit>
             <trans-unit id="cameraAnalyzeButton" datatype="html">
                 <source>AI analysis</source>
@@ -1625,12 +1637,12 @@
                 <target>Cameră</target>
             </trans-unit>
             <trans-unit id="cameraSettingsSaved" datatype="html">
-                <source>Settings saved (effective on next reboot).</source>
-                <target>Setări salvate (efect la următoarea repornire).</target>
+                <source>Settings saved — effective on the next picture.</source>
+                <target>Setări salvate — efect la următoarea poză.</target>
             </trans-unit>
-            <trans-unit id="cameraAiUrlSaved" datatype="html">
-                <source>AI inference URL saved.</source>
-                <target>URL de inferență AI salvat.</target>
+            <trans-unit id="cameraAiSettingsSaved" datatype="html">
+                <source>AI inference settings saved.</source>
+                <target>Setări de inferență AI salvate.</target>
             </trans-unit>
             <trans-unit id="servoToastTitle" datatype="html">
                 <source>Servo</source>

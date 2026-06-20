@@ -80,6 +80,10 @@ export interface NotificationToggles {
 export interface CameraSettings {
     brightness: number;
     rotation: number;
+    /** JPEG quality used for the dashboard snapshot (480×270). 1..100. */
+    regular_quality: number;
+    /** JPEG quality used for the dedicated Webcam page (960×540). 1..100. */
+    high_quality: number;
 }
 
 export interface WeatherSettings {
@@ -234,6 +238,22 @@ export class ConfigService extends AbstractService {
     setCameraRotation(degrees: number): Observable<string> {
         const params = new HttpParams().set('degrees', String(degrees));
         return this.http.put(`${this.domainBase}/config/camera/rotation`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setCameraRegularQuality(quality: number): Observable<string> {
+        const params = new HttpParams().set('quality', String(quality));
+        return this.http.put(`${this.domainBase}/config/camera/regular-quality`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setCameraHighQuality(quality: number): Observable<string> {
+        const params = new HttpParams().set('quality', String(quality));
+        return this.http.put(`${this.domainBase}/config/camera/high-quality`, null, {
             params,
             responseType: 'text',
         });

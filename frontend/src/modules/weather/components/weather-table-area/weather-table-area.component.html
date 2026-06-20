@@ -1,6 +1,7 @@
 @if (tableIsLoading) {
-    <div class="spinner-border">
-        <span class="sr-only" i18n="@@loading">Loading...</span>
+    <div class="text-muted small">
+        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+        <span i18n="@@loading">Loading...</span>
     </div>
 }
 @if (!tableIsLoading) {

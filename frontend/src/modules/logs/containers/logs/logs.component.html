@@ -304,6 +304,20 @@
                                 <fa-icon [icon]="['fas', 'sync']"></fa-icon>
                             </button>
                         </div>
+                        @if (selectedFile && downloadUrl()) {
+                            <div class="col-md-12 mt-2">
+                                <a
+                                    [href]="downloadUrl()"
+                                    [download]="selectedFile"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    i18n-title="@@logsDownloadTitle"
+                                    title="Download the full file"
+                                >
+                                    <fa-icon class="me-1" [icon]="['fas', 'download']"></fa-icon>
+                                    <span i18n="@@logsDownload">Download</span>
+                                </a>
+                            </div>
+                        }
                     </div>
                 }
             </div>
@@ -325,7 +339,7 @@
                 }
                 @if (!isDemoMode && loading) {
                     <div class="spinner-border" role="status">
-                        <span class="sr-only" i18n="@@loading">Loading...</span>
+                        <span class="visually-hidden" i18n="@@loading">Loading...</span>
                     </div>
                 }
                 @if (!isDemoMode && contentError && !loading) {

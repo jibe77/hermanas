@@ -349,48 +349,43 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 
 - [ ] **Frontend major upgrades worth doing in their own commits**
   - **Context:** Routine `npm update` only picks up patches/minors that
-    fit the existing semver ranges. The bumps below cross a major and
-    were deliberately deferred from the 2026-06 dependency pass — each
-    deserves its own branch + visual QA pass + e2e run before merging.
-  - **Angular 20 → 21** — Angular 21 shipped 2025-11-19 and is now on
-    21.2.x (mature). The Pi Zero deployment is unaffected since this
-    only touches the frontend. Run `ng update @angular/core@21
-    @angular/cli@21` and let the Angular migrations do their work; the
-    control-flow / signal API surface keeps evolving, expect template
-    deprecations. Hold off on Angular 22 (shipped 2026-06-03, brand new)
-    until ~early 2027 — same posture took us through 20 → 21 cleanly.
-  - **`@angular/cdk` + `@angular/material` 20 → 22** — Material 3 design
-    tokens land in v22; expect overrides in `styles/` to need rewiring,
-    especially anything touching color/typography roles. Best done
-    *after* Angular core 21 lands so there is exactly one moving target
-    at a time.
-  - **`@angular-eslint/*` 20 → 22** — Must follow Angular core. The
-    lint rules drift with each Angular release, so chain it with the
-    Angular 21 upgrade.
-  - **`@fortawesome/angular-fontawesome` 2 → 5 + `fontawesome-svg-core`
-    6 → 7** — Triple major. FA7 finishes the FA5 → FA6 alias deprecation
-    (`info-circle` → `circle-info`, `arrow-up-from-bracket`, etc.). Grep
-    every `<fa-icon [icon]="['fas', 'X']">` in the templates and update
-    each name; the missing-icon warnings will tell you what slipped.
-  - **`@ng-bootstrap/ng-bootstrap` 19 → 20** — Drives the top-nav user/
-    lang dropdowns and the login modal. Smoke-test the dropdowns, the
-    NgbActiveModal close paths and the keyboard shortcuts before merge.
-  - **`typescript` 5.8 → 6.0** — Stricter type checking, decorators
-    stage 3. Likely surfaces latent issues — easier when Angular has
-    already moved (Angular 21 needs TS ≥ 5.8 and is fine with 5.x).
-  - **`vitest` 3.2 → 4.1** — Mock/hook API refactor. The 192 specs
-    might need adjustments around `vi.fn()` and lifecycle hooks.
-    `@vitest/coverage-v8` follows the same major.
-  - **`eslint` 9 → 10** — Pure linting, no runtime impact. Already on
-    flat config so the migration should be cosmetic. Lowest-risk of the
-    bunch — could be done alone if you want a small win.
-  - **`uuid` 9 → 14** — Five majors. ESM-only since v10; grep for any
-    `require('uuid')` in scripts/* and convert to `import`.
-  - **`zone.js` 0.15 → 0.16** — Tied to the Angular version; bump it in
-    the same commit as Angular core 21 so the versions stay matched.
-  - **`cross-env` 7 → 10 + `shelljs` 0.8 → 0.10** — Used by the npm
-    scripts (`scripts/index.js`, `scripts/version.js`); skim those two
-    files when upgrading so the env-var syntax still resolves.
+    fit the existing semver ranges. The bumps below cross a major —
+    each deserves its own branch + visual QA pass + e2e run before
+    merging.
+
+  - **Already shipped (state at 2026-06-20):**
+    - ✅ **Angular 20 → 21** — on `~21.2.17` (core, common, compiler,
+      forms, router, platform-browser, service-worker, animations,
+      compiler-cli, language-service, localize).
+    - ✅ **`@angular/cli` + `@angular-devkit/build-angular` → 21.2.15**.
+    - ✅ **`@angular-eslint/*` → 21.4.0**.
+    - ✅ **`zone.js` 0.15 → 0.16.2** (bumped with Angular core).
+    - ✅ **`typescript` 5.8 → 5.9.3**.
+    - ✅ **`@fortawesome/angular-fontawesome` 2 → 4** +
+      **`fontawesome-svg-core` / icon packs 6 → 7** (commit `0edfa00`).
+    - ✅ **`@ng-bootstrap/ng-bootstrap` 19 → 20**.
+    - ✅ **`vitest` 3.2 → 4.1.8** + `@vitest/coverage-v8` 4.1.8 (commit
+      `51ab85a`).
+    - ✅ **`eslint` 9 → 10.5.0**.
+    - ✅ **`cross-env` 7 → 10.1.0** + **`shelljs` 0.8 → 0.10.0** (commit
+      `3b3ca67`).
+
+  - **Still pending:**
+    - **`@angular/cdk` + `@angular/material` 21 → 22** — currently on
+      `^21.2.14`. Material 3 design tokens land in v22; expect overrides
+      in `styles/` to need rewiring, especially anything touching
+      color/typography roles. Safe to do now that Angular core is on 21.
+    - **Angular 21 → 22** — Angular 22 shipped 2026-06-03 (only ~2 weeks
+      old). Hold off until ~early 2027 — same posture that took us
+      cleanly through 20 → 21.
+    - **`typescript` 5.9 → 6.0** — Stricter type checking, decorators
+      stage 3. Will surface latent issues. Wait until Angular has
+      certified TS 6 (Angular 21 is happy with 5.9).
+    - **`uuid` 9 → 14** — Five majors. ESM-only since v10; grep for any
+      `require('uuid')` in scripts/* and convert to `import`. (Verify
+      whether `uuid` is still in the tree — may already be gone after
+      commit `3b3ca67` "drop dead deps".)
+
   - **Held back as long as the Pi Zero stays:** Spring Boot 3, Spring
     Security 7, Pi4j 4.x, h2 2.4, spring-retry 2.x, resilience4j 2.x —
     all require Java 17. Move with the hardware upgrade (Phase 9).

@@ -702,8 +702,12 @@
                 <target>Utilisateurs</target>
             </trans-unit>
             <trans-unit id="usersInfo" datatype="html">
-                <source>Manage your profile and configure email notifications. Administrators can also manage other users from this page.</source>
-                <target>Gérez votre profil et configurez les notifications par email. Les administrateurs peuvent aussi gérer les autres utilisateurs depuis cette page.</target>
+                <source>Manage your profile and configure email notifications.</source>
+                <target>Gérez votre profil et configurez les notifications par email.</target>
+            </trans-unit>
+            <trans-unit id="usersInfoAdmin" datatype="html">
+                <source>Manage every user from the administration panel below. Browser push notifications are configured per device.</source>
+                <target>Gérez tous les utilisateurs depuis le panneau d'administration ci-dessous. Les notifications navigateur sont configurées par appareil.</target>
             </trans-unit>
             <trans-unit id="usersMyProfile" datatype="html">
                 <source>My profile</source>
@@ -1044,6 +1048,14 @@
             <trans-unit id="cameraSnapshotAlt" datatype="html">
                 <source>chicken coop snapshot</source>
                 <target>photo du poulailler</target>
+            </trans-unit>
+            <trans-unit id="detectionLabelChicken" datatype="html">
+                <source>Hen</source>
+                <target>Poule</target>
+            </trans-unit>
+            <trans-unit id="detectionLabelEgg" datatype="html">
+                <source>Egg</source>
+                <target>Œuf</target>
             </trans-unit>
             <trans-unit id="cameraAnalyzeButton" datatype="html">
                 <source>AI analysis</source>
@@ -2101,12 +2113,12 @@
                 <target>Caméra</target>
             </trans-unit>
             <trans-unit id="cameraSettingsSaved" datatype="html">
-                <source>Settings saved (effective on next reboot).</source>
-                <target>Réglages enregistrés (effet au prochain reboot).</target>
+                <source>Settings saved — effective on the next picture.</source>
+                <target>Réglages enregistrés — effet à la prochaine photo.</target>
             </trans-unit>
-            <trans-unit id="cameraAiUrlSaved" datatype="html">
-                <source>AI inference URL saved.</source>
-                <target>URL d'inférence enregistrée.</target>
+            <trans-unit id="cameraAiSettingsSaved" datatype="html">
+                <source>AI inference settings saved.</source>
+                <target>Réglages d'inférence enregistrés.</target>
             </trans-unit>
             <!-- Servo toasts -->
             <trans-unit id="servoToastTitle" datatype="html">
