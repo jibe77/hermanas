@@ -1,4 +1,11 @@
-import { OnInit, ChangeDetectorRef, Component, OnDestroy, inject } from '@angular/core';
+import {
+    OnInit,
+    ChangeDetectorRef,
+    Component,
+    OnDestroy,
+    inject,
+    ChangeDetectionStrategy,
+} from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ChildActivationEnd, Router, RouterOutlet } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -16,6 +23,7 @@ import { DemoWelcomeModalComponent } from '@common/components/demo-welcome-modal
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
         RouterOutlet,
         ToastContainerComponent,

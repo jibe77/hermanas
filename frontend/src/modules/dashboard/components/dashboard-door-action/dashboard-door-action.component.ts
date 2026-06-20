@@ -1,4 +1,12 @@
-import { OnInit, ChangeDetectorRef, Component, Input, OnDestroy, inject } from '@angular/core';
+import {
+    OnInit,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnDestroy,
+    inject,
+    ChangeDetectionStrategy,
+} from '@angular/core';
 import { User } from '@modules/auth/models';
 import { UserService } from '@modules/auth/services';
 import { DashboardWidgetsComponent } from '@modules/dashboard/components/dashboard-widgets/dashboard-widgets.component';
@@ -14,6 +22,7 @@ import { AsyncPipe } from '@angular/common';
     selector: 'sb-dashboard-door-action',
     templateUrl: './dashboard-door-action.component.html',
     styleUrls: ['dashboard-door-action.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
         NgbDropdown,
         NgbDropdownToggle,

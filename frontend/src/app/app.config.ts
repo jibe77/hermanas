@@ -1,4 +1,4 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import {
     ApplicationConfig,
     ErrorHandler,
@@ -48,6 +48,7 @@ export const appConfig: ApplicationConfig = {
         ),
         provideAnimations(),
         provideHttpClient(
+            withXhr(),
             withInterceptors([
                 // Demo-mode safeguard must run first so blocked mutations never
                 // reach the loading spinner / retry / logging stack.

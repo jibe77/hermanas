@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.8.1</version>
+	<version>0.8.3</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
@@ -46,8 +46,8 @@
 
 		<!-- Frontend build (Angular) -->
 		<frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
-		<node.version>v20.19.0</node.version>
-		<npm.version>10.8.2</npm.version>
+		<node.version>v24.17.0</node.version>
+		<npm.version>11.13.0</npm.version>
 		<frontend.src.dir>${project.basedir}/frontend</frontend.src.dir>
 		<frontend.build.dir>${frontend.src.dir}/dist/hermanas-client</frontend.build.dir>
 	</properties>

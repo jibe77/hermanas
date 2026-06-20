@@ -1,10 +1,11 @@
-import { OnInit, Component, inject } from '@angular/core';
+import { OnInit, Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { UtilityService } from '@modules/utility/services';
 import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'sb-version',
     templateUrl: './version.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrls: ['version.component.scss'],
 })
 export class VersionComponent implements OnInit {

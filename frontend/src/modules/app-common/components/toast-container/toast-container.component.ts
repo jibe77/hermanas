@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy } from '@angular/core';
 import { trigger, style, transition, animate } from '@angular/animations';
 import { Toast, ToastService } from '../../services/toast/toast.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -20,6 +20,7 @@ import { TitleCasePipe } from '@angular/common';
             ]),
         ]),
     ],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [FaIconComponent, TitleCasePipe],
 })
 export class ToastContainerComponent implements OnInit, OnDestroy {

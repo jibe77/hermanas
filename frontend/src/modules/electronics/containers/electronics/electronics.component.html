@@ -51,7 +51,9 @@
                                         <span class="badge text-bg-primary">{{ p.pin }}</span>
                                     </td>
                                     <td>
-                                        <span class="badge text-bg-secondary">{{ p.boardPin }}</span>
+                                        <span class="badge text-bg-secondary">{{
+                                            p.boardPin
+                                        }}</span>
                                     </td>
                                     <td>{{ pinDisplayName(p) }}</td>
                                     <td>
@@ -68,7 +70,8 @@
                                                 >
                                             }
                                             @if (!bs?.error) {
-                                                @let pressed = bs ? isButtonPressed(p, bs) : undefined;
+                                                @let pressed =
+                                                    bs ? isButtonPressed(p, bs) : undefined;
                                                 @if (pressed === undefined) {
                                                     <small class="text-muted" i18n="@@loading"
                                                         >Loading...</small
@@ -107,7 +110,9 @@
                                                 >
                                             }
                                             @if (!rs?.error) {
-                                                @if (rs?.on === undefined) {
+                                                @if (
+                                                    $safeNavigationMigration(rs?.on) === undefined
+                                                ) {
                                                     <small class="text-muted" i18n="@@loading"
                                                         >Loading...</small
                                                     >

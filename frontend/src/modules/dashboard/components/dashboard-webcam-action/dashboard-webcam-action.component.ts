@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
 import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
 import { RouterLink } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
@@ -7,6 +7,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
     selector: 'sb-dashboard-webcam-action',
     templateUrl: './dashboard-webcam-action.component.html',
     styleUrls: ['dashboard-webcam-action.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [NgbDropdown, RouterLink, FaIconComponent],
 })
 export class DashboardWebcamActionComponent {

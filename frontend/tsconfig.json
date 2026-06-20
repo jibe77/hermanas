@@ -28,6 +28,11 @@
         "target": "ES2022",
         "typeRoots": ["node_modules/@types", "src/typings"],
         "module": "es2020",
-        "useDefineForClassFields": false
+        "useDefineForClassFields": false,
+        "strict": false,
+        "strictPropertyInitialization": false,
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "ignoreDeprecations": "6.0"
     }
 }
