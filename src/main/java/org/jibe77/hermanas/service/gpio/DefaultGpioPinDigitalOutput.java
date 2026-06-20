@@ -51,12 +51,14 @@ public class DefaultGpioPinDigitalOutput implements DigitalOutput {
 
     @Override
     public DigitalState state() {
-        return null;
+        // LOW (output off) — never null. Mirrors the input default; pi4j's
+        // Digital.isHigh()/isLow() helpers NPE on a null state.
+        return DigitalState.LOW;
     }
 
     @Override
     public DigitalOutput addListener(DigitalStateChangeListener... listener) {
-        return null;
+        return this;
     }
 
     @Override
