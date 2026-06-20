@@ -249,13 +249,6 @@ export class SystemComponent implements OnInit, OnDestroy {
         return parts.join(' ');
     }
 
-    /** Formats a fraction (0..1) returned by metrics like process.cpu.usage as a percentage. */
-    public formatPercent(ratio?: number): string {
-        if (ratio === undefined || !isFinite(ratio)) return '';
-        return (ratio * 100).toFixed(1) + ' %';
-    }
-
-
     /**
      * Shuts down the Raspberry Pi via the audit-logged, rate-limited
      * POST /api/v1/system/shutdown endpoint. Confirms first with a native

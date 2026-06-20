@@ -220,7 +220,7 @@ export class DemoFixtureService {
         if (path.endsWith('/actuator/info')) {
             return {
                 build: {
-                    version: '0.8.1-demo',
+                    version: '0.8.2-demo',
                     time: new Date().toISOString(),
                     artifact: 'hermanas',
                     name: 'Hermanas',
@@ -242,7 +242,7 @@ export class DemoFixtureService {
         // ── Info (public but included so demos work offline) ─────────────────
         if (path.endsWith('/info')) {
             return {
-                build: { version: '0.8.1-demo', time: new Date().toISOString() },
+                build: { version: '0.8.2-demo', time: new Date().toISOString() },
                 app: { name: 'Hermanas', description: 'Chicken coop automation' },
             };
         }
@@ -528,14 +528,13 @@ export class DemoFixtureService {
                 javaRuntimeVendor: 'Eclipse Adoptium',
                 javaRuntimeName: 'OpenJDK Runtime Environment',
                 hostname: 'hermanas-demo',
-                buildVersion: '0.8.1-demo',
+                buildVersion: '0.8.2-demo',
                 buildTime: new Date().toISOString(),
                 uptimeSeconds: 86400 * 6 + 3 * 3600,
                 jvmHeapUsed: 96 * 1024 ** 2,
                 jvmHeapMax: 256 * 1024 ** 2,
                 jvmThreads: 38,
                 httpRequests: 14_512,
-                processCpu: 0.16,
             },
         };
     }
@@ -733,7 +732,7 @@ export class DemoFixtureService {
             },
             audio_toggles: { cocorico_at_sunrise: true, song_at_sunset: false },
             notifications: { weather_enabled: true },
-            camera_settings: { brightness: 60, rotation: 180 },
+            camera_settings: { brightness: 60, rotation: 180, regular_quality: 45, high_quality: 80 },
             weather_settings: {
                 // Mirrors the shape of the real OpenWeatherMap template so the
                 // demo visitor sees a realistic URL (with the placeholder tokens

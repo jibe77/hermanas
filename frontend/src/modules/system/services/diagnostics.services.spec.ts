@@ -22,7 +22,7 @@ describe('Diagnostics services (Version / Email / DiskUsage)', () => {
         it('GETs /info and forwards the JSON payload as-is', async () => {
             const payload: VersionInfo = {
                 time: '2026-05-28T12:00:00Z',
-                version: '0.8.1',
+                version: '0.8.2',
                 artifact: 'hermanas',
                 group: 'org.jibe77',
                 name: 'hermanas',

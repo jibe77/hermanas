@@ -33,7 +33,6 @@ export interface StackSnapshot {
     jvmHeapMax?: number;
     jvmThreads?: number;
     httpRequests?: number;
-    processCpu?: number;
 }
 
 /**
