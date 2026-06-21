@@ -211,7 +211,25 @@ public class ConfigRestController {
         smtpSettings.put("starttls", configService.isMailStartTlsEnable());
         config.put("email_smtp", smtpSettings);
 
-        return ResponseEntity.ok(config);
+        // Belt-and-braces no-cache headers: a reverse proxy in front of the Pi
+        // (nginx / Cloudflare on hermanas.r3n4.uk) was caching this GET despite
+        // Spring Security's defaults, so a PUT /config/camera/* persisted to DB
+        // but the next GET /config served a stale JSON. The combination below is
+        // the strictest CDN-friendly directive set:
+        //   - no-store        : do not write to disk/memory
+        //   - no-cache        : revalidate every time
+        //   - max-age=0       : never reuse without revalidation
+        //   - must-revalidate : do not serve stale on origin error
+        //   - private         : not shareable across users
+        //   - Pragma          : HTTP/1.0 proxies still in the wild
+        //   - Vary: Cookie    : even non-compliant proxies will key per-session
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CACHE_CONTROL,
+                        "no-store, no-cache, max-age=0, must-revalidate, private")
+                .header(org.springframework.http.HttpHeaders.PRAGMA, "no-cache")
+                .header(org.springframework.http.HttpHeaders.VARY,
+                        org.springframework.http.HttpHeaders.COOKIE)
+                .body(config);
     }
 
     /**

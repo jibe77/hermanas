@@ -360,12 +360,15 @@
                 >
             </div>
             <div class="mt-1">
-                <!-- Placeholder for an eventual local-only DB admin UI (e.g.
-                     Adminer or phpMyAdmin proxied behind nginx on the Pi).
-                     Kept here so the link's UX/i18n are in place before the
-                     backend route exists. -->
-                <span i18n="@@systemDbAdminLabel">Database (local only)</span>{{ ' ' }}:{{ ' '
-                }}<span class="text-muted" i18n="@@systemDbAdminTodo">TODO</span>
+                <span i18n="@@systemDbAdminLabel">Database</span>{{ ' ' }}:{{ ' '
+                }}<a
+                    href="https://adminer.r3n4.uk"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <fa-icon class="me-1" [icon]="['fas', 'database']"></fa-icon
+                    ><span i18n="@@systemDbAdminLink">Adminer</span></a
+                >
             </div>
             <div class="mt-1">
                 <!-- Placeholder for a future monitoring dashboard (Grafana /

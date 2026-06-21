@@ -1189,6 +1189,14 @@
                 <source>Swagger</source>
                 <target>Swagger</target>
             </trans-unit>
+            <trans-unit id="systemDbAdminLabel" datatype="html">
+                <source>Database</source>
+                <target>Base de données</target>
+            </trans-unit>
+            <trans-unit id="systemDbAdminLink" datatype="html">
+                <source>Adminer</source>
+                <target>Adminer</target>
+            </trans-unit>
             <trans-unit id="systemShutdown" datatype="html">
                 <source>Shut down the machine</source>
                 <target>Éteindre la machine</target>

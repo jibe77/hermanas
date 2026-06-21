@@ -48,6 +48,11 @@ export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
     public pictureNotInitialised = false;
     public picturePath = 'favicon.ico';
 
+    private static readonly PICTURE_RETRY_DELAY_MS = 5000;
+    private static readonly PICTURE_MAX_RETRIES = 2;
+    private pictureRetryCount = 0;
+    private pictureRetryTimer?: ReturnType<typeof setTimeout>;
+
     private destroy$ = new Subject<void>();
 
     ngOnInit() {
@@ -74,6 +79,10 @@ export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
         // Reset src before teardown so the browser closes the MJPEG socket;
         // otherwise mjpg_streamer keeps pushing frames the user can't see.
         this.picturePath = 'favicon.ico';
+        if (this.pictureRetryTimer) {
+            clearTimeout(this.pictureRetryTimer);
+            this.pictureRetryTimer = undefined;
+        }
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -140,6 +149,11 @@ export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
     public refreshPicture() {
         this.pictureInitialised = false;
         this.pictureNotInitialised = false;
+        this.pictureRetryCount = 0;
+        if (this.pictureRetryTimer) {
+            clearTimeout(this.pictureRetryTimer);
+            this.pictureRetryTimer = undefined;
+        }
         // force=true bypasses the backend's 30 s picture cache so the dashboard
         // never serves a stale shot. date= is a cache-buster on the browser side
         // — changing the URL is enough to make the browser drop any in-flight
@@ -161,11 +175,36 @@ export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
     public pictureIsInitialised() {
         if (this.picturePath !== 'favicon.ico') {
             this.pictureInitialised = true;
+            this.pictureRetryCount = 0;
             this.changeDetectorRef.markForCheck();
         }
     }
 
     public pictureIsNotInitialised() {
+        // Ignore the initial favicon.ico placeholder: if the browser ever fails
+        // to load it (rare, but happens on slow first paints) we must not flip
+        // the widget into "Information not available" before we even tried a
+        // real snapshot URL.
+        if (this.picturePath === 'favicon.ico') {
+            return;
+        }
+        if (this.pictureRetryCount < DashboardDoorWidgetComponent.PICTURE_MAX_RETRIES) {
+            this.pictureRetryCount += 1;
+            if (this.pictureRetryTimer) {
+                clearTimeout(this.pictureRetryTimer);
+            }
+            this.pictureRetryTimer = setTimeout(() => {
+                this.pictureRetryTimer = undefined;
+                this.pictureInitialised = false;
+                this.pictureNotInitialised = false;
+                this.picturePath =
+                    this.domainBase +
+                    '/camera/takePicture?force=true&date=' +
+                    new Date().getTime();
+                this.changeDetectorRef.markForCheck();
+            }, DashboardDoorWidgetComponent.PICTURE_RETRY_DELAY_MS);
+            return;
+        }
         this.pictureNotInitialised = true;
         this.changeDetectorRef.markForCheck();
     }

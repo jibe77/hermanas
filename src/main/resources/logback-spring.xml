@@ -63,6 +63,15 @@
         <appender-ref ref="AUDIT_FILE"/>
     </logger>
 
+    <!-- Silence Tomcat's "Exception Processing ErrorPage" stack trace when the
+         underlying cause is just a ClientAbortException / Broken pipe — i.e. the
+         browser closed the socket before the response finished writing (mostly
+         caused by the webcam <img> swapping its src to trigger a refresh, which
+         cancels the in-flight image request). The exception is benign; logging
+         it at ERROR drowns the real errors in noise. WARN keeps it visible at
+         a glance without the stack trace clutter at INFO level. -->
+    <logger name="org.apache.catalina.core.ContainerBase.[Tomcat].[localhost]" level="WARN"/>
+
     <!-- Default root: keep Spring Boot's INFO console behaviour + write to spring.log. -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
