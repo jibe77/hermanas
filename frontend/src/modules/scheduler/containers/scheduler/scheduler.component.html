@@ -15,6 +15,22 @@
         </div>
     </sb-card>
 
+    <sb-card>
+        <div class="card-body d-flex align-items-center">
+            <fa-icon class="me-2" [icon]="['fas', 'clock']"></fa-icon>
+            <span class="me-2" i18n="@@schedulerCoopTimeLabel">Coop clock:</span>
+            @if (coopTimeLabel) {
+                <strong class="me-2">{{ coopTimeLabel }}</strong>
+                <span class="small text-muted">({{ coopZoneId }})</span>
+            }
+            @if (!coopTimeLabel) {
+                <span class="small text-muted" i18n="@@schedulerCoopTimeLoading"
+                    >Syncing…</span
+                >
+            }
+        </div>
+    </sb-card>
+
     @if (loading) {
         <sb-card>
             <div class="card-body">

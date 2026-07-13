@@ -1624,6 +1624,14 @@
                 <source>Scheduler</source>
                 <target>Programator</target>
             </trans-unit>
+            <trans-unit id="schedulerCoopTimeLabel" datatype="html">
+                <source>Coop clock:</source>
+                <target>Ora din coteț:</target>
+            </trans-unit>
+            <trans-unit id="schedulerCoopTimeLoading" datatype="html">
+                <source>Syncing…</source>
+                <target>Sincronizare…</target>
+            </trans-unit>
             <trans-unit id="swUpdateAvailableTitle" datatype="html">
                 <source>Update available</source>
                 <target>Actualizare disponibilă</target>

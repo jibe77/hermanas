@@ -4,6 +4,7 @@ import {
     ChangeDetectorRef,
     Component,
     inject,
+    OnDestroy,
     OnInit,
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -17,6 +18,7 @@ import {
     ConfigService,
     DoorForceSchedule,
 } from '@modules/energy/services/config.service';
+import { SystemTimeService } from '@modules/system/services';
 
 @Component({
     selector: 'sb-scheduler',
@@ -32,8 +34,9 @@ import {
         FormsModule,
     ],
 })
-export class SchedulerComponent implements OnInit {
+export class SchedulerComponent implements OnInit, OnDestroy {
     private configService = inject(ConfigService);
+    private systemTimeService = inject(SystemTimeService);
     private toast = inject(ToastService);
     private cdr = inject(ChangeDetectorRef);
 
@@ -48,8 +51,64 @@ export class SchedulerComponent implements OnInit {
         closing_time: '20:00',
     };
 
+    /**
+     * Coop clock displayed at the top of the page. We fetch once, then tick
+     * locally every second by adding {@code Date.now() - browserSyncMs} to
+     * {@code serverEpochMs}. Every 60 s we re-sync from the endpoint to
+     * absorb clock drift and avoid caching stale values across long sessions.
+     */
+    coopTimeLabel = '';
+    coopZoneId = '';
+    /** Server epoch ms captured at last sync. */
+    private serverEpochMs = 0;
+    /** Browser Date.now() captured at last sync — used as the reference for the local tick. */
+    private browserSyncMs = 0;
+    private tickHandle: ReturnType<typeof setInterval> | null = null;
+    private resyncHandle: ReturnType<typeof setInterval> | null = null;
+
     ngOnInit(): void {
         this.reload();
+        this.syncCoopTime();
+        this.tickHandle = setInterval(() => this.tickCoopTime(), 1000);
+        this.resyncHandle = setInterval(() => this.syncCoopTime(), 60000);
+    }
+
+    ngOnDestroy(): void {
+        if (this.tickHandle !== null) {
+            clearInterval(this.tickHandle);
+        }
+        if (this.resyncHandle !== null) {
+            clearInterval(this.resyncHandle);
+        }
+    }
+
+    private syncCoopTime(): void {
+        this.systemTimeService.getSystemTime().subscribe({
+            next: t => {
+                this.serverEpochMs = t.epochMs;
+                this.browserSyncMs = Date.now();
+                this.coopZoneId = t.zoneId;
+                this.tickCoopTime();
+            },
+            error: () => {
+                // Silent: the widget is a nice-to-have. Keep the last label
+                // rather than surface a scary error toast that would fire
+                // again every 60 s until connectivity comes back.
+            },
+        });
+    }
+
+    private tickCoopTime(): void {
+        if (this.serverEpochMs === 0) {
+            return;
+        }
+        const nowOnCoop = new Date(this.serverEpochMs + (Date.now() - this.browserSyncMs));
+        this.coopTimeLabel = nowOnCoop.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        });
+        this.cdr.markForCheck();
     }
 
     reload(): void {

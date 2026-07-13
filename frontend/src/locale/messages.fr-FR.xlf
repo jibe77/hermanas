@@ -2096,6 +2096,14 @@
                 <source>Scheduler</source>
                 <target>Minuteur</target>
             </trans-unit>
+            <trans-unit id="schedulerCoopTimeLabel" datatype="html">
+                <source>Coop clock:</source>
+                <target>Heure du poulailler :</target>
+            </trans-unit>
+            <trans-unit id="schedulerCoopTimeLoading" datatype="html">
+                <source>Syncing…</source>
+                <target>Synchronisation…</target>
+            </trans-unit>
             <!-- Service worker update -->
             <trans-unit id="swUpdateAvailableTitle" datatype="html">
                 <source>Update available</source>

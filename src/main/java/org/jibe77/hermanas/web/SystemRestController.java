@@ -313,6 +313,26 @@ public class SystemRestController {
     }
 
     @Operation(
+            summary = "Server-side wall-clock time",
+            description = "Returns the coop's internal clock as ISO-8601 with offset, the zone ID, " +
+                    "and epoch millis so the SPA can tick locally between polls without hammering the Pi."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Server time retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Authenticated user is not an administrator")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping(value = "/time")
+    public Map<String, Object> serverTime() {
+        java.time.ZonedDateTime now = java.time.ZonedDateTime.now();
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("iso", now.format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        response.put("zoneId", now.getZone().getId());
+        response.put("epochMs", now.toInstant().toEpochMilli());
+        return response;
+    }
+
+    @Operation(
             summary = "All system + stack diagnostics in one shot",
             description = "Aggregates disk, memory, CPU, OS uptime, /actuator/info-style stack details " +
                     "and a handful of JVM metrics (uptime, heap, threads, requests, process CPU) into a " +
