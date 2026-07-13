@@ -8,8 +8,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -88,24 +90,40 @@ public class SunTimeUtils {
     }
 
     private LocalDateTime computeCurrentDaySunrise(LocalDateTime date) {
-        LocalDateTime sunrise = calendarToLocalDateTime(computeCurrentDay(date)[0]);
-        if (configService.isSunriseForceAt8()) {
-            return sunrise
-                    .withHour(8)
-                    .withMinute(0)
-                    .withSecond(0)
-                    .withNano(0);
+        if (configService.isDoorOpeningForceEnabled()) {
+            return withForcedTime(date, configService.getDoorOpeningForceTime(), "door.opening.force.time");
         }
-        return sunrise;
+        return calendarToLocalDateTime(computeCurrentDay(date)[0]);
     }
 
     public LocalDateTime computeCurrentDaySunset(LocalDateTime date) {
+        if (configService.isDoorClosingForceEnabled()) {
+            return withForcedTime(date, configService.getDoorClosingForceTime(), "door.closing.force.time");
+        }
         return calendarToLocalDateTime(computeCurrentDay(date)[1]);
     }
 
     public ZonedDateTime computeCurrentDaySunset(ZonedDateTime date) {
-        LocalDateTime localDateTime = calendarToLocalDateTime(computeCurrentDay(convertZonedToLocalDateTime(date))[1]);
+        LocalDateTime localDateTime = computeCurrentDaySunset(convertZonedToLocalDateTime(date));
         return convertLocalToZonedDateTime(localDateTime, date.getZone());
+    }
+
+    // Applies a HH:mm override on top of a given date. Falls back to the
+    // configured default of 8:00 / 20:00 if the persisted value is unparseable
+    // — better than throwing from a scheduler tick that runs every 60s.
+    private LocalDateTime withForcedTime(LocalDateTime date, String hhmm, String key) {
+        LocalTime time;
+        try {
+            time = LocalTime.parse(hhmm.trim());
+        } catch (NullPointerException | DateTimeParseException e) {
+            logger.warn("Invalid '{}' value '{}' — falling back to 08:00.", key, hhmm);
+            time = LocalTime.of(8, 0);
+        }
+        return date
+                .withHour(time.getHour())
+                .withMinute(time.getMinute())
+                .withSecond(0)
+                .withNano(0);
     }
 
     private Calendar[] computeCurrentDay(LocalDateTime date) {

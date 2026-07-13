@@ -35,6 +35,12 @@
                 </ng-container>
                 <ng-container>
                     @if (isAdmin()) {
+                        <a class="nav-link" routerLink="/scheduler" routerLinkActive="active"
+                            ><div class="sb-nav-link-icon">
+                                <fa-icon [icon]="['fas', 'clock']"></fa-icon>
+                            </div>
+                            <span i18n="@@schedulerMenu">Scheduler</span></a
+                        >
                         <a class="nav-link" routerLink="/energy" routerLinkActive="active"
                             ><div class="sb-nav-link-icon">
                                 <fa-icon [icon]="['fas', 'car-battery']"></fa-icon>

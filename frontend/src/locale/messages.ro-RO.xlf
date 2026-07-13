@@ -756,6 +756,14 @@
                 <source>Adminer</source>
                 <target>Adminer</target>
             </trans-unit>
+            <trans-unit id="systemMonitoringLabel" datatype="html">
+                <source>Monitoring</source>
+                <target>Monitorizare</target>
+            </trans-unit>
+            <trans-unit id="systemMonitoringLink" datatype="html">
+                <source>Grafana</source>
+                <target>Grafana</target>
+            </trans-unit>
             <trans-unit id="systemShutdown" datatype="html">
                 <source>Shut down the machine</source>
                 <target>Oprește mașina</target>
@@ -1568,9 +1576,53 @@
                 <source>Light on (min before sunset)</source>
                 <target>Aprindere lumină (min înainte de apus)</target>
             </trans-unit>
-            <trans-unit id="sunForceAt8Label" datatype="html">
-                <source>Do not open before 8 AM (summer)</source>
-                <target>Nu deschide înainte de ora 8 dimineața (vara)</target>
+            <trans-unit id="schedulerTitle" datatype="html">
+                <source>Scheduler</source>
+                <target>Programator</target>
+            </trans-unit>
+            <trans-unit id="schedulerMenu" datatype="html">
+                <source>Scheduler</source>
+                <target>Programator</target>
+            </trans-unit>
+            <trans-unit id="schedulerInfo" datatype="html">
+                <source>Force fixed opening and closing times for the coop door. When enabled, the fixed time fully replaces the sunrise/sunset computation — light and door protocols shift accordingly.</source>
+                <target>Fixează ore precise pentru deschiderea și închiderea ușii de la coteț. Când este activată, ora fixă înlocuiește complet calculul răsăritului/apusului — lumina și celelalte temporizatoare se deplasează în consecință.</target>
+            </trans-unit>
+            <trans-unit id="schedulerForceTitle" datatype="html">
+                <source>Forced door schedule</source>
+                <target>Program forțat al ușii</target>
+            </trans-unit>
+            <trans-unit id="schedulerOpeningBlock" datatype="html">
+                <source>Opening</source>
+                <target>Deschidere</target>
+            </trans-unit>
+            <trans-unit id="schedulerClosingBlock" datatype="html">
+                <source>Closing</source>
+                <target>Închidere</target>
+            </trans-unit>
+            <trans-unit id="schedulerOpeningForceLabel" datatype="html">
+                <source>Force opening time</source>
+                <target>Forțează ora de deschidere</target>
+            </trans-unit>
+            <trans-unit id="schedulerClosingForceLabel" datatype="html">
+                <source>Force closing time</source>
+                <target>Forțează ora de închidere</target>
+            </trans-unit>
+            <trans-unit id="schedulerOpeningTimeLabel" datatype="html">
+                <source>Opening time</source>
+                <target>Ora de deschidere</target>
+            </trans-unit>
+            <trans-unit id="schedulerClosingTimeLabel" datatype="html">
+                <source>Closing time</source>
+                <target>Ora de închidere</target>
+            </trans-unit>
+            <trans-unit id="schedulerSaved" datatype="html">
+                <source>Schedule saved</source>
+                <target>Program salvat</target>
+            </trans-unit>
+            <trans-unit id="schedulerToastTitle" datatype="html">
+                <source>Scheduler</source>
+                <target>Programator</target>
             </trans-unit>
             <trans-unit id="swUpdateAvailableTitle" datatype="html">
                 <source>Update available</source>

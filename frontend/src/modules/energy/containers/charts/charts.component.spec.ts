@@ -83,7 +83,12 @@ describe('Energy ChartsComponent', () => {
                         light_on_minutes_before_sunset: 15,
                         door_close_minutes_after_sunset: 45,
                         door_open_minutes_after_sunrise: 0,
-                        force_at_8: false,
+                    },
+                    door_force_schedule: {
+                        opening_enabled: false,
+                        opening_time: '08:00',
+                        closing_enabled: false,
+                        closing_time: '20:00',
                     },
                     music_settings: { volume_regular_percent: 78 },
                     servo_positions: {
@@ -100,7 +105,6 @@ describe('Energy ChartsComponent', () => {
             setLightOnBeforeSunset: vi.fn().mockReturnValue(of('ok')),
             setDoorCloseAfterSunset: vi.fn().mockReturnValue(of('ok')),
             setDoorOpenAfterSunrise: vi.fn().mockReturnValue(of('ok')),
-            setSunriseForceAt8: vi.fn().mockReturnValue(of('ok')),
         };
 
         TestBed.configureTestingModule({

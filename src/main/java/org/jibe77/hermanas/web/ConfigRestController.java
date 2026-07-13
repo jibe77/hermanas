@@ -115,12 +115,19 @@ public class ConfigRestController {
         // (machine.shutdown.*, wifi.disabled.*) are either unused or hidden safety knobs
         // that should not surface in the admin UI.
 
-        // Sun-time offsets + force-at-8
+        // Sun-time offsets + door force-schedule overrides
         Map<String, Object> sun = new LinkedHashMap<>();
         sun.put("light_on_minutes_before_sunset", configService.getLightOnTimeBeforeSunset());
         sun.put("door_close_minutes_after_sunset", configService.getDoorCloseTimeAfterSunset());
         sun.put("door_open_minutes_after_sunrise", configService.getDoorOpenTimeAfterSunrise());
         config.put("sun_offsets", sun);
+
+        Map<String, Object> doorForce = new LinkedHashMap<>();
+        doorForce.put("opening_enabled", configService.isDoorOpeningForceEnabled());
+        doorForce.put("opening_time", configService.getDoorOpeningForceTime());
+        doorForce.put("closing_enabled", configService.isDoorClosingForceEnabled());
+        doorForce.put("closing_time", configService.getDoorClosingForceTime());
+        config.put("door_force_schedule", doorForce);
 
         // Music volume — parse "N%" → int so the UI gets a clean number
         String volumeRaw = configService.getMusicVolumeRegular();
@@ -154,9 +161,6 @@ public class ConfigRestController {
         Map<String, Boolean> notifications = new LinkedHashMap<>();
         notifications.put("weather_enabled", configService.isWeatherInfoEnabled());
         config.put("notifications", notifications);
-
-        // Sun schedule extras (added to the sun_offsets map declared earlier).
-        sun.put("force_at_8", configService.isSunriseForceAt8());
 
         // Camera image quality
         Map<String, Integer> camera = new LinkedHashMap<>();
@@ -501,13 +505,38 @@ public class ConfigRestController {
         return ResponseEntity.ok("Weather info " + (enabled ? "enabled" : "disabled"));
     }
 
-    // ─── Sun schedule toggle ───────────────────────────────────────────────────
+    // ─── Door force-schedule overrides ─────────────────────────────────────────
+    //
+    // When enabled=true, the corresponding HH:mm value replaces the sunrise/sunset
+    // computation for door open / close. Every derived timer (light-on, door
+    // open/close protocol) shifts accordingly.
 
-    @Operation(summary = "Force door opening at 8 AM (clamps sunrise)")
-    @PutMapping("/sun/force-at-8")
-    public ResponseEntity<String> setSunriseForceAt8(@RequestParam boolean force) {
-        configService.setSunriseForceAt8(force);
-        return ResponseEntity.ok("Sunrise force-at-8 " + (force ? "enabled" : "disabled"));
+    @Operation(summary = "Enable/disable forced door opening time (overrides sunrise)")
+    @PutMapping("/scheduler/door/opening-force/enabled")
+    public ResponseEntity<String> setDoorOpeningForceEnabled(@RequestParam boolean enabled) {
+        configService.setDoorOpeningForceEnabled(enabled);
+        return ResponseEntity.ok("Door opening force " + (enabled ? "enabled" : "disabled"));
+    }
+
+    @Operation(summary = "Update forced door opening time (HH:mm)")
+    @PutMapping("/scheduler/door/opening-force/time")
+    public ResponseEntity<String> setDoorOpeningForceTime(@RequestParam String time) {
+        configService.setDoorOpeningForceTime(time);
+        return ResponseEntity.ok("Door opening force time set to " + time);
+    }
+
+    @Operation(summary = "Enable/disable forced door closing time (overrides sunset)")
+    @PutMapping("/scheduler/door/closing-force/enabled")
+    public ResponseEntity<String> setDoorClosingForceEnabled(@RequestParam boolean enabled) {
+        configService.setDoorClosingForceEnabled(enabled);
+        return ResponseEntity.ok("Door closing force " + (enabled ? "enabled" : "disabled"));
+    }
+
+    @Operation(summary = "Update forced door closing time (HH:mm)")
+    @PutMapping("/scheduler/door/closing-force/time")
+    public ResponseEntity<String> setDoorClosingForceTime(@RequestParam String time) {
+        configService.setDoorClosingForceTime(time);
+        return ResponseEntity.ok("Door closing force time set to " + time);
     }
 
     // ─── Camera (changes take effect after app reboot) ─────────────────────────

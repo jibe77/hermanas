@@ -75,7 +75,6 @@ export class ChartsComponent implements OnInit {
         light_on_minutes_before_sunset: 0,
         door_close_minutes_after_sunset: 0,
         door_open_minutes_after_sunrise: 0,
-        force_at_8: false,
     };
 
 
@@ -177,7 +176,6 @@ export class ChartsComponent implements OnInit {
             doorOpen: this.configService.setDoorOpenAfterSunrise(
                 this.sunOffsets.door_open_minutes_after_sunrise
             ),
-            forceAt8: this.configService.setSunriseForceAt8(this.sunOffsets.force_at_8),
         }).subscribe({
             next: () => {
                 this.savingSun = false;

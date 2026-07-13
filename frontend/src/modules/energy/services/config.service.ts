@@ -16,6 +16,7 @@ export interface AllConfig {
         eco_mode_forced: boolean;
     };
     sun_offsets: SunOffsets;
+    door_force_schedule: DoorForceSchedule;
     music_settings: MusicSettings;
     servo_positions: ServoPositions;
     audio_toggles: AudioToggles;
@@ -54,7 +55,17 @@ export interface SunOffsets {
     light_on_minutes_before_sunset: number;
     door_close_minutes_after_sunset: number;
     door_open_minutes_after_sunrise: number;
-    force_at_8: boolean;
+}
+
+/**
+ * Fixed HH:mm overrides that fully replace the sunrise/sunset computation when
+ * enabled. Configured from the /scheduler page.
+ */
+export interface DoorForceSchedule {
+    opening_enabled: boolean;
+    opening_time: string;
+    closing_enabled: boolean;
+    closing_time: string;
 }
 
 export interface MusicSettings {
@@ -219,12 +230,40 @@ export class ConfigService extends AbstractService {
         });
     }
 
-    setSunriseForceAt8(force: boolean): Observable<string> {
-        const params = new HttpParams().set('force', String(force));
-        return this.http.put(`${this.domainBase}/config/sun/force-at-8`, null, {
-            params,
-            responseType: 'text',
-        });
+    setDoorOpeningForceEnabled(enabled: boolean): Observable<string> {
+        const params = new HttpParams().set('enabled', String(enabled));
+        return this.http.put(
+            `${this.domainBase}/config/scheduler/door/opening-force/enabled`,
+            null,
+            { params, responseType: 'text' }
+        );
+    }
+
+    setDoorOpeningForceTime(time: string): Observable<string> {
+        const params = new HttpParams().set('time', time);
+        return this.http.put(
+            `${this.domainBase}/config/scheduler/door/opening-force/time`,
+            null,
+            { params, responseType: 'text' }
+        );
+    }
+
+    setDoorClosingForceEnabled(enabled: boolean): Observable<string> {
+        const params = new HttpParams().set('enabled', String(enabled));
+        return this.http.put(
+            `${this.domainBase}/config/scheduler/door/closing-force/enabled`,
+            null,
+            { params, responseType: 'text' }
+        );
+    }
+
+    setDoorClosingForceTime(time: string): Observable<string> {
+        const params = new HttpParams().set('time', time);
+        return this.http.put(
+            `${this.domainBase}/config/scheduler/door/closing-force/time`,
+            null,
+            { params, responseType: 'text' }
+        );
     }
 
     setCameraBrightness(brightness: number): Observable<string> {

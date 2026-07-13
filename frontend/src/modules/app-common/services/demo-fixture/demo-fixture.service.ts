@@ -721,7 +721,12 @@ export class DemoFixtureService {
                 light_on_minutes_before_sunset: 20,
                 door_close_minutes_after_sunset: 30,
                 door_open_minutes_after_sunrise: 0,
-                force_at_8: true,
+            },
+            door_force_schedule: {
+                opening_enabled: true,
+                opening_time: '08:00',
+                closing_enabled: false,
+                closing_time: '20:00',
             },
             music_settings: { volume_regular_percent: 78 },
             servo_positions: {

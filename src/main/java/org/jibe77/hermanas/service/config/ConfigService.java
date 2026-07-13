@@ -135,8 +135,17 @@ public class ConfigService {
 
     // ─── Sun schedule ────────────────────────────────────────────────────────────
 
-    @Value("${suntime.sunrise.force_at_8}")
-    private boolean sunriseForceAt8;
+    @Value("${door.opening.force.enabled}")
+    private boolean doorOpeningForceEnabled;
+
+    @Value("${door.opening.force.time}")
+    private String doorOpeningForceTime;
+
+    @Value("${door.closing.force.enabled}")
+    private boolean doorClosingForceEnabled;
+
+    @Value("${door.closing.force.time}")
+    private String doorClosingForceTime;
 
     @Value("${suntime.latitude}")
     private double latitude;
@@ -1019,21 +1028,67 @@ public class ConfigService {
     }
 
     // ============================================================================
-    // Sun Schedule Toggle
+    // Door force-schedule overrides
     // ============================================================================
     //
-    // When true, the door opening time is clamped to 8:00 AM even if the real
-    // sunrise is earlier — handy in summer so the chickens don't wake the
-    // neighbours at 5 AM.
+    // When enabled=true, the corresponding open/close time is used verbatim
+    // (HH:mm) and fully replaces the sunrise/sunset computation. Every derived
+    // schedule (door open, door close, light on) shifts accordingly since they
+    // all consume the values returned by SunTimeUtils.
+    // Leave enabled=false to fall back to the sun-based computation.
 
-    @Cacheable(value = "sunriseForceAt8")
-    public boolean isSunriseForceAt8() {
-        return getConfigValue("suntime.sunrise.force_at_8", sunriseForceAt8, Boolean::valueOf);
+    @Cacheable(value = "doorOpeningForceEnabled")
+    public boolean isDoorOpeningForceEnabled() {
+        return getConfigValue("door.opening.force.enabled", doorOpeningForceEnabled, Boolean::valueOf);
     }
 
-    @CacheEvict(value = {"sunriseForceAt8", "door-opening", "light-on"}, allEntries = true)
-    public void setSunriseForceAt8(boolean force) {
-        setConfigValue("suntime.sunrise.force_at_8", force, null);
+    @CacheEvict(value = {"doorOpeningForceEnabled", "door-opening", "light-on"}, allEntries = true)
+    public void setDoorOpeningForceEnabled(boolean enabled) {
+        setConfigValue("door.opening.force.enabled", enabled, null);
+    }
+
+    @Cacheable(value = "doorOpeningForceTime")
+    public String getDoorOpeningForceTime() {
+        return getConfigValue("door.opening.force.time", doorOpeningForceTime, s -> s);
+    }
+
+    @CacheEvict(value = {"doorOpeningForceTime", "door-opening", "light-on"}, allEntries = true)
+    public void setDoorOpeningForceTime(String time) {
+        parseHhmmOrThrow("door.opening.force.time", time);
+        setConfigValue("door.opening.force.time", time, null);
+    }
+
+    @Cacheable(value = "doorClosingForceEnabled")
+    public boolean isDoorClosingForceEnabled() {
+        return getConfigValue("door.closing.force.enabled", doorClosingForceEnabled, Boolean::valueOf);
+    }
+
+    @CacheEvict(value = {"doorClosingForceEnabled", "door-closing", "light-on"}, allEntries = true)
+    public void setDoorClosingForceEnabled(boolean enabled) {
+        setConfigValue("door.closing.force.enabled", enabled, null);
+    }
+
+    @Cacheable(value = "doorClosingForceTime")
+    public String getDoorClosingForceTime() {
+        return getConfigValue("door.closing.force.time", doorClosingForceTime, s -> s);
+    }
+
+    @CacheEvict(value = {"doorClosingForceTime", "door-closing", "light-on"}, allEntries = true)
+    public void setDoorClosingForceTime(String time) {
+        parseHhmmOrThrow("door.closing.force.time", time);
+        setConfigValue("door.closing.force.time", time, null);
+    }
+
+    private static void parseHhmmOrThrow(String key, String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid value for '" + key + "': null or empty");
+        }
+        try {
+            java.time.LocalTime.parse(value.trim());
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException(
+                    "Invalid value for '" + key + "': expected HH:mm, got '" + value + "'");
+        }
     }
 
     // ============================================================================
@@ -1320,9 +1375,15 @@ public class ConfigService {
     // Light email validation only: the JavaMail provider will raise the real error
     // upon send anyway, and stricter regex tends to reject perfectly legal addresses.
 
-    @Cacheable(value = "emailNotificationFrom")
+    // No @Cacheable here. The value is read at most a few times a day (once per
+    // door open/close notification and diagnostic sends), so the DB hit is negligible,
+    // and we saw in production that any cache indirection can leave a stale null in
+    // place until a manual /config/refresh — dropping mails silently for hours.
+    // Read straight from the source every time.
     public String getEmailNotificationFrom() {
+        logger.info("returning email, default value : {}", emailNotificationFrom);
         String resolved = getConfigValue("email.notification.from", emailNotificationFrom, s -> s);
+        logger.info("returning email, resolved value : {}", resolved);
         // Defensive trim: a value persisted with stray whitespace would pass
         // the !isEmpty() check inside getConfigValue but still fail the
         // !trim().isEmpty() check downstream in EmailService, producing the

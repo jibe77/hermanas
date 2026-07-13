@@ -1197,6 +1197,14 @@
                 <source>Adminer</source>
                 <target>Adminer</target>
             </trans-unit>
+            <trans-unit id="systemMonitoringLabel" datatype="html">
+                <source>Monitoring</source>
+                <target>Supervision</target>
+            </trans-unit>
+            <trans-unit id="systemMonitoringLink" datatype="html">
+                <source>Grafana</source>
+                <target>Grafana</target>
+            </trans-unit>
             <trans-unit id="systemShutdown" datatype="html">
                 <source>Shut down the machine</source>
                 <target>Éteindre la machine</target>
@@ -2040,9 +2048,53 @@
                 <source>Light on (min before sunset)</source>
                 <target>Allumage lumière (min avant coucher)</target>
             </trans-unit>
-            <trans-unit id="sunForceAt8Label" datatype="html">
-                <source>Do not open before 8 AM (summer)</source>
-                <target>Ne pas ouvrir avant 8h du matin (été)</target>
+            <trans-unit id="schedulerTitle" datatype="html">
+                <source>Scheduler</source>
+                <target>Minuteur</target>
+            </trans-unit>
+            <trans-unit id="schedulerMenu" datatype="html">
+                <source>Scheduler</source>
+                <target>Minuteur</target>
+            </trans-unit>
+            <trans-unit id="schedulerInfo" datatype="html">
+                <source>Force fixed opening and closing times for the coop door. When enabled, the fixed time fully replaces the sunrise/sunset computation — light and door protocols shift accordingly.</source>
+                <target>Force des heures fixes d'ouverture et de fermeture de la porte. Lorsqu'activée, l'heure fixée remplace complètement le calcul du lever et du coucher du soleil — la lumière et les autres minuteries suivent.</target>
+            </trans-unit>
+            <trans-unit id="schedulerForceTitle" datatype="html">
+                <source>Forced door schedule</source>
+                <target>Programmation forcée de la porte</target>
+            </trans-unit>
+            <trans-unit id="schedulerOpeningBlock" datatype="html">
+                <source>Opening</source>
+                <target>Ouverture</target>
+            </trans-unit>
+            <trans-unit id="schedulerClosingBlock" datatype="html">
+                <source>Closing</source>
+                <target>Fermeture</target>
+            </trans-unit>
+            <trans-unit id="schedulerOpeningForceLabel" datatype="html">
+                <source>Force opening time</source>
+                <target>Forcer l'heure d'ouverture</target>
+            </trans-unit>
+            <trans-unit id="schedulerClosingForceLabel" datatype="html">
+                <source>Force closing time</source>
+                <target>Forcer l'heure de fermeture</target>
+            </trans-unit>
+            <trans-unit id="schedulerOpeningTimeLabel" datatype="html">
+                <source>Opening time</source>
+                <target>Heure d'ouverture</target>
+            </trans-unit>
+            <trans-unit id="schedulerClosingTimeLabel" datatype="html">
+                <source>Closing time</source>
+                <target>Heure de fermeture</target>
+            </trans-unit>
+            <trans-unit id="schedulerSaved" datatype="html">
+                <source>Schedule saved</source>
+                <target>Programmation enregistrée</target>
+            </trans-unit>
+            <trans-unit id="schedulerToastTitle" datatype="html">
+                <source>Scheduler</source>
+                <target>Minuteur</target>
             </trans-unit>
             <!-- Service worker update -->
             <trans-unit id="swUpdateAvailableTitle" datatype="html">

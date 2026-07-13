@@ -56,6 +56,11 @@ export const APP_ROUTES: Routes = [
             import('modules/residents/residents-routing.module').then(m => m.ROUTES),
     },
     {
+        path: 'scheduler',
+        loadChildren: () =>
+            import('modules/scheduler/scheduler-routing.module').then(m => m.ROUTES),
+    },
+    {
         path: 'system',
         loadChildren: () => import('modules/system/system-routing.module').then(m => m.ROUTES),
     },
