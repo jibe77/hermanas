@@ -5,6 +5,7 @@ import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
@@ -48,8 +49,14 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
+    // @Lazy on configService: in 0.8.8 we discovered configService was being
+    // injected as null at construction time — likely a hidden circular dependency
+    // (ConfigService pulls EventService which pulls ... eventually EmailService?)
+    // that Spring 2.7 was silently resolving by handing us a null. A @Lazy proxy
+    // defers the actual bean lookup to the first method call, so the full context
+    // is up before we touch configService, breaking the cycle without a rewrite.
     public EmailService(JavaMailSender mailSender,
-                        org.jibe77.hermanas.service.config.ConfigService configService) {
+                        @Lazy org.jibe77.hermanas.service.config.ConfigService configService) {
         this.mailSender = mailSender;
         this.configService = configService;
     }
@@ -111,7 +118,8 @@ public class EmailService {
         // which had no chance to recover and left the morning mail dropped.
         String from = getEmailNotificationFrom();
         if (from == null || from.trim().isEmpty()) {
-            logger.warn("No 'From' address configured (email.notification.from); skipping mail '{}'.", subject);
+            logger.warn("Skipping mail '{}': email.notification.from is not set (resolved value is [{}]).",
+                    subject, from);
             return;
         }
         MimeMessagePreparator preparator = mimeMessage -> {
