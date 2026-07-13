@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Properties;
 
+import javax.annotation.PostConstruct;
 import javax.mail.AuthenticationFailedException;
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
@@ -59,6 +60,25 @@ public class EmailService {
                         @Lazy org.jibe77.hermanas.service.config.ConfigService configService) {
         this.mailSender = mailSender;
         this.configService = configService;
+    }
+
+    // Startup diagnostic: prints the resolved From address once the context is
+    // fully up. The @Lazy proxy on configService is safe to touch here — by
+    // the time @PostConstruct fires, Spring has finished wiring everything.
+    // Catches misconfigurations (missing application.properties, empty DB row)
+    // at boot time instead of at the first scheduled send several hours later.
+    @PostConstruct
+    void logResolvedFromAtStartup() {
+        try {
+            String from = getEmailNotificationFrom();
+            if (from == null || from.trim().isEmpty()) {
+                logger.warn("Email notification init: no 'From' address resolved — outgoing mails will be skipped until email.notification.from is set.");
+            } else {
+                logger.info("Email notification init: 'From' address resolved to '{}'.", from);
+            }
+        } catch (Exception e) {
+            logger.warn("Email notification init: failed to resolve 'From' address at startup.", e);
+        }
     }
 
     /**
