@@ -1564,6 +1564,14 @@
                 <source>Adjust the exact moment (in minutes) at which the door opens, closes and the light switches on, relative to sunrise and sunset. Useful for shifting a few minutes depending on the season.</source>
                 <target>Ajustează momentul precis (în minute) la care ușa se deschide, se închide și la care lumina se aprinde, raportat la răsărit și apus. Util pentru a decala câteva minute în funcție de anotimp.</target>
             </trans-unit>
+            <trans-unit id="sunOffsetsWhyDelay" datatype="html">
+                <source><strong>Why these delays?</strong> Sunrise and sunset are calculated moments — at those exact times the light is still very low. The chickens go to roost slightly after sunset and come out slightly after sunrise. The three offsets below let you match reality:<ul class="mb-0 mt-1"><li><strong>Door opening (after sunrise)</strong> — waits a few minutes so the chickens have real daylight when the door opens.</li><li><strong>Door closing (after sunset)</strong> — waits until every chicken is inside before the door closes, otherwise a straggler stays locked out for the night.</li><li><strong>Light on (before sunset)</strong> — lights up the interior in advance so the chickens can see their way in as dusk falls.</li></ul></source>
+                <target><strong>De ce aceste decalaje?</strong> Răsăritul și apusul sunt momente calculate — la acele ore exacte lumina este încă foarte slabă. Găinile se așază pe stinghie puțin după apus și ies puțin după răsărit. Cele trei decalaje de mai jos permit potrivirea cu realitatea:<ul class="mb-0 mt-1"><li><strong>Deschidere (după răsărit)</strong> — așteaptă câteva minute pentru ca găinile să aibă lumină reală la deschidere.</li><li><strong>Închidere (după apus)</strong> — așteaptă până când toate găinile sunt înăuntru înainte de închidere, altfel o întârziată rămâne închisă afară peste noapte.</li><li><strong>Lumină (înainte de apus)</strong> — aprinde interiorul în avans, ca găinile să-și vadă drumul când se lasă amurgul.</li></ul></target>
+            </trans-unit>
+            <trans-unit id="sunOffsetsForceNote" datatype="html">
+                <source><strong>Note.</strong> When a fixed time is forced above, the two door offsets are ignored — the door opens or closes at the exact time you set. The light offset still applies, so the interior can light up before the forced closing time.</source>
+                <target><strong>Notă.</strong> Când o oră fixă este forțată mai sus, cele două decalaje ale ușii sunt ignorate — ușa se deschide sau se închide la ora exactă stabilită. Decalajul luminii rămâne aplicat, pentru ca interiorul să se aprindă înainte de închiderea forțată.</target>
+            </trans-unit>
             <trans-unit id="sunDoorOpenLabel" datatype="html">
                 <source>Door opening (min after sunrise)</source>
                 <target>Deschidere ușă (min după răsărit)</target>

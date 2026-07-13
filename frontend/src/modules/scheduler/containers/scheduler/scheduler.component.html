@@ -135,11 +135,38 @@
                 <span i18n="@@sunOffsetsTitle">Sun-related time offsets</span>
             </div>
             <div class="card-body">
-                <p class="small text-muted" i18n="@@sunOffsetsHelp">
+                <p class="small text-muted mb-2" i18n="@@sunOffsetsHelp">
                     Adjust the exact moment (in minutes) at which the door opens, closes and the
                     light switches on, relative to sunrise and sunset. Useful for shifting a few
                     minutes depending on the season.
                 </p>
+                <div class="alert alert-info small mb-3" i18n="@@sunOffsetsWhyDelay">
+                    <strong>Why these delays?</strong> Sunrise and sunset are calculated moments —
+                    at those exact times the light is still very low. The chickens go to roost
+                    slightly after sunset and come out slightly after sunrise. The three offsets
+                    below let you match reality:
+                    <ul class="mb-0 mt-1">
+                        <li>
+                            <strong>Door opening (after sunrise)</strong> — waits a few minutes so
+                            the chickens have real daylight when the door opens.
+                        </li>
+                        <li>
+                            <strong>Door closing (after sunset)</strong> — waits until every
+                            chicken is inside before the door closes, otherwise a straggler stays
+                            locked out for the night.
+                        </li>
+                        <li>
+                            <strong>Light on (before sunset)</strong> — lights up the interior in
+                            advance so the chickens can see their way in as dusk falls.
+                        </li>
+                    </ul>
+                </div>
+                <div class="alert alert-warning small mb-3" i18n="@@sunOffsetsForceNote">
+                    <strong>Note.</strong> When a fixed time is forced above, the two door offsets
+                    are ignored — the door opens or closes at the exact time you set. The light
+                    offset still applies, so the interior can light up before the forced closing
+                    time.
+                </div>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="sunDoorOpen" class="form-label small" i18n="@@sunDoorOpenLabel"

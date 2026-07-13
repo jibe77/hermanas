@@ -1,11 +1,13 @@
 package org.jibe77.hermanas.client.email;
 
 import org.jibe77.hermanas.data.entity.HermanasUser;
+import org.jibe77.hermanas.data.entity.Parameter;
 import org.jibe77.hermanas.data.repository.HermanasUserRepository;
+import org.jibe77.hermanas.data.repository.ParameterRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
@@ -16,8 +18,6 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-
-import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 import javax.mail.AuthenticationFailedException;
@@ -39,10 +39,61 @@ public class EmailService {
 
     private List<MimeMessagePreparator> sendingQueue = new ArrayList<>();
 
-    private final org.jibe77.hermanas.service.config.ConfigService configService;
+    /**
+     * Optional direct handle on the {@code parameter} table. Chosen over
+     * {@link org.jibe77.hermanas.service.config.ConfigService} injection because,
+     * in prod we observed on Spring Boot 2.7 that a {@code @Lazy ConfigService}
+     * proxy was reliably resolved at {@code @PostConstruct} time but then
+     * silently reverted to a null-behaving stub several hours later — most
+     * likely a fallout of the circular chain
+     * {@code ConfigService → EventService → … → EmailService} combined with
+     * mixed constructor + field injection. Reading the DB row ourselves is
+     * simple, has no cache surface to invalidate, and removes the cycle
+     * entirely. Optional so the fallback keeps working in tests that don't
+     * bring the JPA context up.
+     */
+    @Autowired(required = false)
+    private ParameterRepository parameterRepository;
+
+    /**
+     * Static fallback pulled from application.properties. Used only when the
+     * DB row does not exist (or the repository is not available in tests) —
+     * matches the historical @Value pathway that was reachable through
+     * ConfigService.
+     */
+    @Value("${email.notification.from:}")
+    private String emailNotificationFromDefault;
 
     private String getEmailNotificationFrom() {
-        return configService == null ? null : configService.getEmailNotificationFrom();
+        String fromDb = readFromParameterRow();
+        if (fromDb != null) {
+            return fromDb;
+        }
+        if (emailNotificationFromDefault == null || emailNotificationFromDefault.trim().isEmpty()) {
+            return null;
+        }
+        return emailNotificationFromDefault.trim();
+    }
+
+    private String readFromParameterRow() {
+        if (parameterRepository == null) {
+            return null;
+        }
+        try {
+            Parameter row = parameterRepository.findByEntryKey("email.notification.from");
+            if (row == null) {
+                return null;
+            }
+            String value = row.getEntryValue();
+            if (value == null) {
+                return null;
+            }
+            String trimmed = value.trim();
+            return trimmed.isEmpty() ? null : trimmed;
+        } catch (Exception e) {
+            logger.warn("Failed to read 'email.notification.from' from the parameter table; falling back to application.properties.", e);
+            return null;
+        }
     }
 
     @Autowired(required = false)
@@ -50,23 +101,14 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    // @Lazy on configService: in 0.8.8 we discovered configService was being
-    // injected as null at construction time — likely a hidden circular dependency
-    // (ConfigService pulls EventService which pulls ... eventually EmailService?)
-    // that Spring 2.7 was silently resolving by handing us a null. A @Lazy proxy
-    // defers the actual bean lookup to the first method call, so the full context
-    // is up before we touch configService, breaking the cycle without a rewrite.
-    public EmailService(JavaMailSender mailSender,
-                        @Lazy org.jibe77.hermanas.service.config.ConfigService configService) {
+    public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
-        this.configService = configService;
     }
 
     // Startup diagnostic: prints the resolved From address once the context is
-    // fully up. The @Lazy proxy on configService is safe to touch here — by
-    // the time @PostConstruct fires, Spring has finished wiring everything.
-    // Catches misconfigurations (missing application.properties, empty DB row)
-    // at boot time instead of at the first scheduled send several hours later.
+    // fully up. Catches misconfigurations (missing application.properties,
+    // empty DB row) at boot time instead of at the first scheduled send
+    // several hours later.
     @PostConstruct
     void logResolvedFromAtStartup() {
         try {
@@ -82,38 +124,18 @@ public class EmailService {
     }
 
     /**
-     * Returns the JavaMailSender to use for the next send. Builds a fresh
-     * {@link JavaMailSenderImpl} from {@link org.jibe77.hermanas.service.config.ConfigService}
-     * whenever a host has been configured at runtime, so a change made through
-     * /api/v1/config/mail/* takes effect on the next send without restart.
-     * <p>Falls back to the injected Spring-Boot autoconfigured sender otherwise — that
-     * keeps tests (which mock JavaMailSender) and the historical application.properties
-     * path working unchanged.
+     * Returns the JavaMailSender to use for the next send.
+     *
+     * <p>Previously this rebuilt a fresh {@link JavaMailSenderImpl} on every call
+     * from ConfigService so a change made through /api/v1/config/mail/* took
+     * effect without restart. We dropped that path when we removed the
+     * ConfigService injection (see the class-level rationale) — the runtime
+     * mail settings now come straight from {@code spring.mail.*} in
+     * application.properties, honoured by Spring Boot's autoconfigured
+     * JavaMailSender. Changes still take effect on restart.</p>
      */
     private JavaMailSender resolveSender() {
-        if (configService == null) {
-            return mailSender;
-        }
-        String host = configService.getMailHost();
-        if (host == null || host.trim().isEmpty()) {
-            return mailSender;
-        }
-        JavaMailSenderImpl impl = new JavaMailSenderImpl();
-        impl.setHost(host);
-        impl.setPort(configService.getMailPort());
-        String username = configService.getMailUsername();
-        if (username != null && !username.isEmpty()) {
-            impl.setUsername(username);
-        }
-        String password = configService.getMailPassword();
-        if (password != null && !password.isEmpty()) {
-            impl.setPassword(password);
-        }
-        Properties props = impl.getJavaMailProperties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", String.valueOf(configService.isMailSmtpAuth()));
-        props.put("mail.smtp.starttls.enable", String.valueOf(configService.isMailStartTlsEnable()));
-        return impl;
+        return mailSender;
     }
 
     public void sendMail(String subject, String body, Optional<File>... filesToAttach)
