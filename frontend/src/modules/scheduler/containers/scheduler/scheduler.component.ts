@@ -17,6 +17,7 @@ import { LayoutDashboardComponent } from '../../../navigation/layouts/layout-das
 import {
     ConfigService,
     DoorForceSchedule,
+    SunOffsets,
 } from '@modules/energy/services/config.service';
 import { SystemTimeService } from '@modules/system/services';
 
@@ -42,6 +43,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
 
     loading = true;
     saving = false;
+    savingSun = false;
 
     /** Two-way bound model for the two force blocks. */
     force: DoorForceSchedule = {
@@ -49,6 +51,13 @@ export class SchedulerComponent implements OnInit, OnDestroy {
         opening_time: '08:00',
         closing_enabled: false,
         closing_time: '20:00',
+    };
+
+    /** Two-way bound model for the sun-relative offsets block. */
+    sunOffsets: SunOffsets = {
+        light_on_minutes_before_sunset: 0,
+        door_close_minutes_after_sunset: 0,
+        door_open_minutes_after_sunrise: 0,
     };
 
     /**
@@ -116,6 +125,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
         this.configService.getAll().subscribe({
             next: config => {
                 this.force = { ...config.door_force_schedule };
+                this.sunOffsets = { ...config.sun_offsets };
                 this.loading = false;
                 this.cdr.markForCheck();
             },
@@ -123,6 +133,41 @@ export class SchedulerComponent implements OnInit, OnDestroy {
                 this.loading = false;
                 this.toast.error(
                     err.error?.message || err.message || 'Cannot load scheduler state',
+                    `Scheduler — HTTP ${err.status}`
+                );
+                this.cdr.markForCheck();
+            },
+        });
+    }
+
+    saveSunOffsets(): void {
+        if (this.savingSun) {
+            return;
+        }
+        this.savingSun = true;
+        forkJoin({
+            lightOn: this.configService.setLightOnBeforeSunset(
+                this.sunOffsets.light_on_minutes_before_sunset
+            ),
+            doorClose: this.configService.setDoorCloseAfterSunset(
+                this.sunOffsets.door_close_minutes_after_sunset
+            ),
+            doorOpen: this.configService.setDoorOpenAfterSunrise(
+                this.sunOffsets.door_open_minutes_after_sunrise
+            ),
+        }).subscribe({
+            next: () => {
+                this.savingSun = false;
+                this.toast.success(
+                    $localize`:@@schedulerSunOffsetsSaved:Sun-related offsets saved`,
+                    $localize`:@@schedulerToastTitle:Scheduler`
+                );
+                this.cdr.markForCheck();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.savingSun = false;
+                this.toast.error(
+                    err.error?.message || err.message || 'Save failed',
                     `Scheduler — HTTP ${err.status}`
                 );
                 this.cdr.markForCheck();

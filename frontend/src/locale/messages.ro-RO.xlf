@@ -1692,7 +1692,7 @@
                 <source>Energy</source>
                 <target>Energie</target>
             </trans-unit>
-            <trans-unit id="energySunOffsetsSaved" datatype="html">
+            <trans-unit id="schedulerSunOffsetsSaved" datatype="html">
                 <source>Sun-related offsets saved</source>
                 <target>Decalaje solare salvate</target>
             </trans-unit>
