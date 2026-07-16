@@ -40,7 +40,7 @@ public class EmailService {
     private List<MimeMessagePreparator> sendingQueue = new ArrayList<>();
 
     /**
-     * Optional direct handle on the {@code parameter} table. Chosen over
+     * Direct handle on the {@code parameter} table. Chosen over
      * {@link org.jibe77.hermanas.service.config.ConfigService} injection because,
      * in prod we observed on Spring Boot 2.7 that a {@code @Lazy ConfigService}
      * proxy was reliably resolved at {@code @PostConstruct} time but then
@@ -49,23 +49,34 @@ public class EmailService {
      * {@code ConfigService → EventService → … → EmailService} combined with
      * mixed constructor + field injection. Reading the DB row ourselves is
      * simple, has no cache surface to invalidate, and removes the cycle
-     * entirely. Optional so the fallback keeps working in tests that don't
-     * bring the JPA context up.
+     * entirely.
+     *
+     * <p><strong>Constructor-injected on purpose.</strong> The previous attempt
+     * used field injection ({@code @Autowired(required = false)}) and the field
+     * was still observed as {@code null} at scheduler-fired send time — same
+     * class of Spring 2.7 issue that broke the ConfigService injection.
+     * Requiring it via the constructor makes Spring fail loudly at startup if
+     * the repository cannot be provided, which is what we want here — the
+     * whole email flow is useless without it.</p>
      */
-    @Autowired(required = false)
-    private ParameterRepository parameterRepository;
+    private final ParameterRepository parameterRepository;
 
     /**
      * Static fallback pulled from application.properties. Used only when the
-     * DB row does not exist (or the repository is not available in tests) —
-     * matches the historical @Value pathway that was reachable through
-     * ConfigService.
+     * DB row does not exist — matches the historical @Value pathway that was
+     * reachable through ConfigService.
      */
     @Value("${email.notification.from:}")
     private String emailNotificationFromDefault;
 
     private String getEmailNotificationFrom() {
+        // Verbose on purpose: this method is called at most a few times a day
+        // (sunrise/sunset notification + occasional diagnostic), and every past
+        // regression on the "From" address was invisible because it silently
+        // returned null. Trace every path once so root cause is obvious in log.
         String fromDb = readFromParameterRow();
+        logger.info("EmailService.getEmailNotificationFrom — DB value: [{}], @Value fallback: [{}].",
+                fromDb, emailNotificationFromDefault);
         if (fromDb != null) {
             return fromDb;
         }
@@ -76,9 +87,6 @@ public class EmailService {
     }
 
     private String readFromParameterRow() {
-        if (parameterRepository == null) {
-            return null;
-        }
         try {
             Parameter row = parameterRepository.findByEntryKey("email.notification.from");
             if (row == null) {
@@ -101,8 +109,9 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender, ParameterRepository parameterRepository) {
         this.mailSender = mailSender;
+        this.parameterRepository = parameterRepository;
     }
 
     // Startup diagnostic: prints the resolved From address once the context is

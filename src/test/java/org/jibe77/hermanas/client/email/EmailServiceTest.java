@@ -1,7 +1,9 @@
 package org.jibe77.hermanas.client.email;
 
 import org.jibe77.hermanas.data.entity.HermanasUser;
+import org.jibe77.hermanas.data.entity.Parameter;
 import org.jibe77.hermanas.data.repository.HermanasUserRepository;
+import org.jibe77.hermanas.data.repository.ParameterRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +30,18 @@ class EmailServiceTest {
     JavaMailSender javaMailSender;
 
     @MockBean
-    org.jibe77.hermanas.service.config.ConfigService configService;
+    ParameterRepository parameterRepository;
 
     @MockBean
     HermanasUserRepository userRepository;
 
     @org.junit.jupiter.api.BeforeEach
     void wireMocks() {
-        Mockito.when(configService.getEmailNotificationFrom()).thenReturn("test-from@example.com");
+        Parameter fromRow = new Parameter();
+        fromRow.setEntryKey("email.notification.from");
+        fromRow.setEntryValue("test-from@example.com");
+        Mockito.when(parameterRepository.findByEntryKey("email.notification.from"))
+                .thenReturn(fromRow);
 
         // Default: one opted-in user — sendMail will queue and send.
         // Tests that need the "no recipient" scenario override this themselves.
