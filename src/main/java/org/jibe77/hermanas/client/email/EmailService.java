@@ -69,6 +69,25 @@ public class EmailService {
     @Value("${email.notification.from:}")
     private String emailNotificationFromDefault;
 
+    /**
+     * Last-resort hard-coded From address. Kept intentionally as a code
+     * literal so that no injection mechanism can turn it into null.
+     *
+     * <p><strong>Known bug workaround.</strong> Since Spring Boot 2.7 upgrade
+     * (branch feat/session-2026-06-20) we chase a recurring regression where
+     * both the injected ConfigService proxy and the field-injected
+     * ParameterRepository resolve correctly at {@code @PostConstruct} time
+     * but silently start returning nulls a few hours later, dropping the
+     * sunrise/sunset notification mails. Diagnostic logs are in flight to
+     * find the root cause; in the meantime this literal guarantees that the
+     * scheduler-fired mails still ship, so an operator does not miss a door
+     * event because of an internal wiring issue. Update this value here if
+     * the coop's mail identity ever changes — it wins nothing (DB &amp;
+     * application.properties still take precedence), but it keeps the
+     * safety net accurate.</p>
+     */
+    private static final String EMERGENCY_FALLBACK_FROM = "info@hermanas.fr";
+
     private String getEmailNotificationFrom() {
         // Verbose on purpose: this method is called at most a few times a day
         // (sunrise/sunset notification + occasional diagnostic), and every past
@@ -80,10 +99,13 @@ public class EmailService {
         if (fromDb != null) {
             return fromDb;
         }
-        if (emailNotificationFromDefault == null || emailNotificationFromDefault.trim().isEmpty()) {
-            return null;
+        if (emailNotificationFromDefault != null && !emailNotificationFromDefault.trim().isEmpty()) {
+            return emailNotificationFromDefault.trim();
         }
-        return emailNotificationFromDefault.trim();
+        // Everything else came back null — see EMERGENCY_FALLBACK_FROM javadoc.
+        logger.warn("EmailService.getEmailNotificationFrom — falling back to the hard-coded emergency address '{}'. This means the DB row and application.properties both came back empty; investigate before it happens again.",
+                EMERGENCY_FALLBACK_FROM);
+        return EMERGENCY_FALLBACK_FROM;
     }
 
     private String readFromParameterRow() {
