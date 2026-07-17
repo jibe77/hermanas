@@ -371,12 +371,74 @@
                 >
             </div>
             <div class="mt-1">
-                <!-- Placeholder for a future monitoring dashboard (Grafana /
-                     Prometheus / actuator-driven UI). Same intent as the DB
-                     entry above: keep the i18n key + layout slot in place. -->
                 <span i18n="@@systemMonitoringLabel">Monitoring</span>{{ ' ' }}:{{ ' '
-                }}<span class="text-muted" i18n="@@systemMonitoringTodo">TODO</span>
+                }}<a
+                    href="https://grafana.r3n4.uk/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <fa-icon class="me-1" [icon]="['fas', 'chart-area']"></fa-icon
+                    ><span i18n="@@systemMonitoringLink">Grafana</span></a
+                >
             </div>
         </div></sb-card
     >
+
+    @if (isAdmin) {
+        <sb-card>
+            <div class="card-header">
+                <fa-icon class="me-1" [icon]="['fas', 'bug']"></fa-icon>
+                <span i18n="@@systemDebugTitle">Debug</span>
+                <div class="float-end">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-secondary me-2"
+                        [disabled]="debugLoading"
+                        (click)="toggleDebugPanel()"
+                    >
+                        @if (!debugVisible) {
+                            <span i18n="@@systemDebugShow">Show configuration</span>
+                        }
+                        @if (debugVisible) {
+                            <span i18n="@@systemDebugHide">Hide configuration</span>
+                        }
+                    </button>
+                    @if (debugVisible) {
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            [disabled]="debugLoading"
+                            (click)="reloadDebugConfig()"
+                            title="Reload"
+                            i18n-title="@@systemDebugReload"
+                        >
+                            <fa-icon [icon]="['fas', 'sync']"></fa-icon>
+                        </button>
+                    }
+                </div>
+            </div>
+            @if (debugVisible) {
+                <div class="card-body">
+                    <div class="text-muted small mb-2" i18n="@@systemDebugHelp">
+                        Live configuration values in memory, as returned by GET /api/v1/config.
+                        Secrets (passwords, API keys) are never exposed — only a "set" flag.
+                    </div>
+                    @if (debugLoading) {
+                        <div class="text-muted">
+                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            <span i18n="@@loading">Loading...</span>
+                        </div>
+                    }
+                    @if (debugError && !debugLoading) {
+                        <div class="text-muted" i18n="@@informationNotAvailable">
+                            Information not available
+                        </div>
+                    }
+                    @if (debugConfigJson && !debugLoading && !debugError) {
+                        <pre class="system-debug-pre">{{ debugConfigJson }}</pre>
+                    }
+                </div>
+            }
+        </sb-card>
+    }
 </sb-layout-dashboard>

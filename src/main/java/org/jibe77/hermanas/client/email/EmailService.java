@@ -10,21 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
-import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.mail.AuthenticationFailedException;
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -36,95 +29,12 @@ import java.util.stream.Collectors;
 public class EmailService {
 
     private final JavaMailSender mailSender;
-
-    private List<MimeMessagePreparator> sendingQueue = new ArrayList<>();
-
-    /**
-     * Direct handle on the {@code parameter} table. Chosen over
-     * {@link org.jibe77.hermanas.service.config.ConfigService} injection because,
-     * in prod we observed on Spring Boot 2.7 that a {@code @Lazy ConfigService}
-     * proxy was reliably resolved at {@code @PostConstruct} time but then
-     * silently reverted to a null-behaving stub several hours later — most
-     * likely a fallout of the circular chain
-     * {@code ConfigService → EventService → … → EmailService} combined with
-     * mixed constructor + field injection. Reading the DB row ourselves is
-     * simple, has no cache surface to invalidate, and removes the cycle
-     * entirely.
-     *
-     * <p><strong>Constructor-injected on purpose.</strong> The previous attempt
-     * used field injection ({@code @Autowired(required = false)}) and the field
-     * was still observed as {@code null} at scheduler-fired send time — same
-     * class of Spring 2.7 issue that broke the ConfigService injection.
-     * Requiring it via the constructor makes Spring fail loudly at startup if
-     * the repository cannot be provided, which is what we want here — the
-     * whole email flow is useless without it.</p>
-     */
     private final ParameterRepository parameterRepository;
 
-    /**
-     * Static fallback pulled from application.properties. Used only when the
-     * DB row does not exist — matches the historical @Value pathway that was
-     * reachable through ConfigService.
-     */
+    private final List<MimeMessagePreparator> sendingQueue = new ArrayList<>();
+
     @Value("${email.notification.from:}")
     private String emailNotificationFromDefault;
-
-    /**
-     * Last-resort hard-coded From address. Kept intentionally as a code
-     * literal so that no injection mechanism can turn it into null.
-     *
-     * <p><strong>Known bug workaround.</strong> Since Spring Boot 2.7 upgrade
-     * (branch feat/session-2026-06-20) we chase a recurring regression where
-     * both the injected ConfigService proxy and the field-injected
-     * ParameterRepository resolve correctly at {@code @PostConstruct} time
-     * but silently start returning nulls a few hours later, dropping the
-     * sunrise/sunset notification mails. Diagnostic logs are in flight to
-     * find the root cause; in the meantime this literal guarantees that the
-     * scheduler-fired mails still ship, so an operator does not miss a door
-     * event because of an internal wiring issue. Update this value here if
-     * the coop's mail identity ever changes — it wins nothing (DB &amp;
-     * application.properties still take precedence), but it keeps the
-     * safety net accurate.</p>
-     */
-    private static final String EMERGENCY_FALLBACK_FROM = "info@hermanas.fr";
-
-    private String getEmailNotificationFrom() {
-        // Verbose on purpose: this method is called at most a few times a day
-        // (sunrise/sunset notification + occasional diagnostic), and every past
-        // regression on the "From" address was invisible because it silently
-        // returned null. Trace every path once so root cause is obvious in log.
-        String fromDb = readFromParameterRow();
-        logger.info("EmailService.getEmailNotificationFrom — DB value: [{}], @Value fallback: [{}].",
-                fromDb, emailNotificationFromDefault);
-        if (fromDb != null) {
-            return fromDb;
-        }
-        if (emailNotificationFromDefault != null && !emailNotificationFromDefault.trim().isEmpty()) {
-            return emailNotificationFromDefault.trim();
-        }
-        // Everything else came back null — see EMERGENCY_FALLBACK_FROM javadoc.
-        logger.warn("EmailService.getEmailNotificationFrom — falling back to the hard-coded emergency address '{}'. This means the DB row and application.properties both came back empty; investigate before it happens again.",
-                EMERGENCY_FALLBACK_FROM);
-        return EMERGENCY_FALLBACK_FROM;
-    }
-
-    private String readFromParameterRow() {
-        try {
-            Parameter row = parameterRepository.findByEntryKey("email.notification.from");
-            if (row == null) {
-                return null;
-            }
-            String value = row.getEntryValue();
-            if (value == null) {
-                return null;
-            }
-            String trimmed = value.trim();
-            return trimmed.isEmpty() ? null : trimmed;
-        } catch (Exception e) {
-            logger.warn("Failed to read 'email.notification.from' from the parameter table; falling back to application.properties.", e);
-            return null;
-        }
-    }
 
     @Autowired(required = false)
     private HermanasUserRepository userRepository;
@@ -136,41 +46,18 @@ public class EmailService {
         this.parameterRepository = parameterRepository;
     }
 
-    // Startup diagnostic: prints the resolved From address once the context is
-    // fully up. Catches misconfigurations (missing application.properties,
-    // empty DB row) at boot time instead of at the first scheduled send
-    // several hours later.
-    @PostConstruct
-    void logResolvedFromAtStartup() {
-        try {
-            String from = getEmailNotificationFrom();
-            if (from == null || from.trim().isEmpty()) {
-                logger.warn("Email notification init: no 'From' address resolved — outgoing mails will be skipped until email.notification.from is set.");
-            } else {
-                logger.info("Email notification init: 'From' address resolved to '{}'.", from);
-            }
-        } catch (Exception e) {
-            logger.warn("Email notification init: failed to resolve 'From' address at startup.", e);
+    private String getEmailNotificationFrom() {
+        Parameter row = parameterRepository.findByEntryKey("email.notification.from");
+        if (row != null && row.getEntryValue() != null && !row.getEntryValue().trim().isEmpty()) {
+            return row.getEntryValue().trim();
         }
+        if (emailNotificationFromDefault != null && !emailNotificationFromDefault.trim().isEmpty()) {
+            return emailNotificationFromDefault.trim();
+        }
+        return null;
     }
 
-    /**
-     * Returns the JavaMailSender to use for the next send.
-     *
-     * <p>Previously this rebuilt a fresh {@link JavaMailSenderImpl} on every call
-     * from ConfigService so a change made through /api/v1/config/mail/* took
-     * effect without restart. We dropped that path when we removed the
-     * ConfigService injection (see the class-level rationale) — the runtime
-     * mail settings now come straight from {@code spring.mail.*} in
-     * application.properties, honoured by Spring Boot's autoconfigured
-     * JavaMailSender. Changes still take effect on restart.</p>
-     */
-    private JavaMailSender resolveSender() {
-        return mailSender;
-    }
-
-    public void sendMail(String subject, String body, Optional<File>... filesToAttach)
-    {
+    public void sendMail(String subject, String body, Optional<File>... filesToAttach) {
         sendMailTo(resolveRecipients(), subject, body, filesToAttach);
     }
 
@@ -186,13 +73,9 @@ public class EmailService {
             logger.info("No recipients for mail '{}' — skipping.", subject);
             return;
         }
-        // From address is required by SMTP; bailing here keeps a misconfigured
-        // ConfigService entry from crashing the scheduler's @Scheduled thread,
-        // which had no chance to recover and left the morning mail dropped.
         String from = getEmailNotificationFrom();
-        if (from == null || from.trim().isEmpty()) {
-            logger.warn("Skipping mail '{}': email.notification.from is not set (resolved value is [{}]).",
-                    subject, from);
+        if (from == null) {
+            logger.warn("Skipping mail '{}': email.notification.from is not set.", subject);
             return;
         }
         MimeMessagePreparator preparator = mimeMessage -> {
@@ -255,31 +138,13 @@ public class EmailService {
         Iterator<MimeMessagePreparator> it = sendingQueue.iterator();
         while (it.hasNext()) {
             try {
-                MimeMessagePreparator mimeMessagePreparator = it.next();
-                send(mimeMessagePreparator);
+                mailSender.send(it.next());
                 it.remove();
             } catch (MailException ex) {
                 logger.error("Can't send email", ex);
-            } catch (RuntimeException ex) {
-                // Defensive: a NullPointerException raised inside the preparator
-                // (e.g. invalid From address) used to escape this loop and crash
-                // the scheduler thread that had triggered the send. Drop the
-                // poisoned message so the queue keeps draining.
-                logger.error("Dropping email due to unexpected error", ex);
-                it.remove();
             }
         }
         logger.info("sending queue has been processed.");
-    }
-
-    @Retryable(
-            value = {MailSendException.class, MailException.class, IOException.class, AuthenticationFailedException.class},
-            maxAttempts = 5,
-            backoff = @Backoff(delay = 20000))
-    private synchronized void send(MimeMessagePreparator mimeMessagePreparator) {
-        logger.info("send mail now ...");
-        resolveSender().send(mimeMessagePreparator);
-        logger.info("mail has been sent.");
     }
 
     /**
@@ -322,7 +187,7 @@ public class EmailService {
             }
         };
         logger.info("Sending diagnostics test email to {}.", recipient);
-        resolveSender().send(preparator);
+        mailSender.send(preparator);
         logger.info("Diagnostics test email sent successfully.");
     }
 

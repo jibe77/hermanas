@@ -66,6 +66,11 @@ export class SystemComponent implements OnInit, OnDestroy {
     public powerActionInFlight = false;
     public configRefreshing = false;
 
+    public debugVisible = false;
+    public debugLoading = false;
+    public debugError = false;
+    public debugConfigJson?: string;
+
     public diskUsage?: DiskUsage;
     public diskUsageError = false;
     public diskUsageLoading = false;
@@ -332,6 +337,45 @@ export class SystemComponent implements OnInit, OnDestroy {
      * picks up changes made directly in the DB (e.g. someone edited a row
      * via mysql cli). Idempotent and very cheap.
      */
+    /**
+     * Opens/closes the Debug panel. First open triggers a fetch; subsequent
+     * opens keep the last snapshot until the user hits reload — GET /config
+     * is cheap but not free on the Pi Zero (touches the DB for every value).
+     */
+    public toggleDebugPanel(): void {
+        this.debugVisible = !this.debugVisible;
+        if (this.debugVisible && this.debugConfigJson === undefined) {
+            this.loadDebugConfig();
+        }
+        this.changeDetectorRef.detectChanges();
+    }
+
+    public reloadDebugConfig(): void {
+        this.loadDebugConfig();
+    }
+
+    private loadDebugConfig(): void {
+        this.debugLoading = true;
+        this.debugError = false;
+        this.changeDetectorRef.detectChanges();
+        this._configService
+            .getAll()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: cfg => {
+                    this.debugConfigJson = JSON.stringify(cfg, null, 2);
+                    this.debugLoading = false;
+                    this.debugError = false;
+                    this.changeDetectorRef.detectChanges();
+                },
+                error: () => {
+                    this.debugLoading = false;
+                    this.debugError = true;
+                    this.changeDetectorRef.detectChanges();
+                },
+            });
+    }
+
     public refreshConfigCaches(): void {
         if (this.configRefreshing) {
             return;
