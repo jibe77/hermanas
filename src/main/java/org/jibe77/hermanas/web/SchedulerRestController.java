@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jibe77.hermanas.scheduler.sun.ConsumptionModeController;
 import org.jibe77.hermanas.scheduler.sun.SunTimeManager;
 import org.jibe77.hermanas.scheduler.sun.model.NextEvents;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,8 +41,8 @@ public class SchedulerRestController {
             )
     })
     @GetMapping(value = "/doorClosingTime")
-    public String getNextDoorClosingTime() {
-        return sunTimeManager.getNextDoorClosingTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
+    public ResponseEntity<String> getNextDoorClosingTime() {
+        return noCache(sunTimeManager.getNextDoorClosingTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM)));
     }
 
     @Operation(
@@ -55,8 +57,8 @@ public class SchedulerRestController {
             )
     })
     @GetMapping(value = "/doorOpeningTime")
-    public String getNextDoorOpeningTime() {
-        return sunTimeManager.getNextDoorOpeningTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
+    public ResponseEntity<String> getNextDoorOpeningTime() {
+        return noCache(sunTimeManager.getNextDoorOpeningTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM)));
     }
 
     @Operation(
@@ -71,8 +73,8 @@ public class SchedulerRestController {
             )
     })
     @GetMapping(value = "/lightOnTime")
-    public String getNextLightOnTime() {
-        return sunTimeManager.getNextLightOnTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM));
+    public ResponseEntity<String> getNextLightOnTime() {
+        return noCache(sunTimeManager.getNextLightOnTime().format(DateTimeFormatter.ofPattern(SunTimeManager.HH_MM)));
     }
 
     @Operation(
@@ -87,7 +89,19 @@ public class SchedulerRestController {
             )
     })
     @GetMapping(value = "/nextEvents")
-    public NextEvents getNextEvents() {
-        return sunTimeManager.getNextEvents();
+    public ResponseEntity<NextEvents> getNextEvents() {
+        return noCache(sunTimeManager.getNextEvents());
+    }
+
+    // Belt-and-braces no-cache headers so Safari / the Angular service worker /
+    // any reverse proxy in front of the Pi does not serve a stale schedule after
+    // the operator flipped the force-open/close toggle. Same set of directives
+    // as ConfigRestController.getAllConfig — see the rationale over there.
+    private static <T> ResponseEntity<T> noCache(T body) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, max-age=0, must-revalidate, private")
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .header(HttpHeaders.VARY, HttpHeaders.COOKIE)
+                .body(body);
     }
 }
