@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, interval, throwError, timer } from 'rxjs';
-import { filter, map, retry, switchMap, takeWhile } from 'rxjs/operators';
+import { Observable, throwError, timer } from 'rxjs';
+import { map, retry } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { UserService } from '@modules/auth/services';
 
@@ -123,8 +123,8 @@ export class PhotosService {
 
     /**
      * Kicks an async capture + analysis pipeline on the backend. Returns the
-     * opaque capture id used to drive {@link captureImageUrl} and
-     * {@link pollCaptureStatus}.
+     * opaque capture id used to drive {@link captureImageUrl} and the STOMP
+     * subscription on {@code /topic/captures/{id}}.
      */
     startCapture(lang: 'fr' | 'en' | 'ro'): Observable<string> {
         const params = new HttpParams().set('lang', lang);
@@ -158,19 +158,16 @@ export class PhotosService {
     }
 
     /**
-     * Polls the capture status every second and emits every state change.
-     * Completes naturally once the backend reports {@code DONE} or {@code ERROR}.
+     * One-shot fetch of the current capture state. Used by the SPA right after
+     * {@link startCapture} resolves to seed the UI before the STOMP stream
+     * delivers the first frame — this covers the rare race where the backend
+     * finishes the pipeline (e.g. served from the AI vision cache) before the
+     * SPA subscribes to {@code /topic/captures/{id}}.
      */
-    pollCaptureStatus(captureId: string): Observable<CaptureState> {
-        return interval(1000).pipe(
-            switchMap(() =>
-                this.http.get<CaptureState>(
-                    `${environment.apiUrl}/captures/${captureId}/status`,
-                    { withCredentials: true }
-                )
-            ),
-            takeWhile(s => s.status === 'CAPTURING' || s.status === 'ANALYZING', true),
-            filter(s => s.status === 'DONE' || s.status === 'ERROR')
+    getCaptureStatus(captureId: string): Observable<CaptureState> {
+        return this.http.get<CaptureState>(
+            `${environment.apiUrl}/captures/${captureId}/status`,
+            { withCredentials: true }
         );
     }
 }

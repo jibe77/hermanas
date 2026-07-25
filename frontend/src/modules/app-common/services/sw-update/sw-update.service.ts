@@ -28,9 +28,13 @@ export class SwUpdateService {
                     'SwUpdateService'
                 );
                 this.toasts.info(
-                    $localize`:@@swUpdateAvailableBody:A new version of Hermanas is ready. Reload?`,
+                    $localize`:@@swUpdateAvailableBody:A new version of Hermanas is ready.`,
                     $localize`:@@swUpdateAvailableTitle:Update available`,
-                    0 // sticky — only dismissed by user
+                    0, // sticky — only dismissed by user or by clicking the action
+                    {
+                        label: $localize`:@@swUpdateReloadAction:Reload now`,
+                        handler: () => this.applyUpdate(),
+                    }
                 );
             });
     }

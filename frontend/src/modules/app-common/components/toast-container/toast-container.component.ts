@@ -54,6 +54,19 @@ export class ToastContainerComponent implements OnInit, OnDestroy {
     }
 
     /**
+     * Fire the toast action (used for the "Reload" link on the SW update
+     * notification) and dismiss the toast — otherwise the user sees the same
+     * "update available" message on the next page load.
+     */
+    public onActionClick(event: MouseEvent, toast: Toast): void {
+        event.preventDefault();
+        if (toast.action) {
+            toast.action.handler();
+        }
+        this.removeToast(toast.id);
+    }
+
+    /**
      * Get icon class for toast type
      */
     public getIconClass(type: Toast['type']): string {

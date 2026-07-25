@@ -2,6 +2,11 @@ import { Injectable, Injector, inject } from '@angular/core';
 import { Subject } from 'rxjs';
 import { UserService } from '@modules/auth/services/user.service';
 
+export interface ToastAction {
+    label: string;
+    handler: () => void;
+}
+
 export interface Toast {
     id: string;
     type: 'success' | 'error' | 'warning' | 'info';
@@ -9,6 +14,9 @@ export interface Toast {
     title?: string;
     duration?: number;
     timestamp: Date;
+    // Optional CTA rendered as a hyperlink inside the toast body. Used by
+    // SwUpdateService to offer a "Reload now" link on the update-available toast.
+    action?: ToastAction;
 }
 
 @Injectable({
@@ -36,29 +44,29 @@ export class ToastService {
     /**
      * Show a success toast notification
      */
-    public success(message: string, title?: string, duration?: number): void {
-        this.show('success', message, title, duration);
+    public success(message: string, title?: string, duration?: number, action?: ToastAction): void {
+        this.show('success', message, title, duration, action);
     }
 
     /**
      * Show an error toast notification
      */
-    public error(message: string, title?: string, duration?: number): void {
-        this.show('error', message, title, duration);
+    public error(message: string, title?: string, duration?: number, action?: ToastAction): void {
+        this.show('error', message, title, duration, action);
     }
 
     /**
      * Show a warning toast notification
      */
-    public warning(message: string, title?: string, duration?: number): void {
-        this.show('warning', message, title, duration);
+    public warning(message: string, title?: string, duration?: number, action?: ToastAction): void {
+        this.show('warning', message, title, duration, action);
     }
 
     /**
      * Show an info toast notification
      */
-    public info(message: string, title?: string, duration?: number): void {
-        this.show('info', message, title, duration);
+    public info(message: string, title?: string, duration?: number, action?: ToastAction): void {
+        this.show('info', message, title, duration, action);
     }
 
     /**
@@ -117,7 +125,13 @@ export class ToastService {
     /**
      * Show a toast notification
      */
-    private show(type: Toast['type'], message: string, title?: string, duration?: number): void {
+    private show(
+        type: Toast['type'],
+        message: string,
+        title?: string,
+        duration?: number,
+        action?: ToastAction
+    ): void {
         if (this.isSuppressedByDemoMode(type)) {
             return;
         }
@@ -128,6 +142,7 @@ export class ToastService {
             title,
             duration: duration ?? this.DEFAULT_DURATION,
             timestamp: new Date(),
+            action,
         };
 
         this.toastQueue.push(toast);

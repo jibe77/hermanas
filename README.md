@@ -6,6 +6,8 @@ The Angular SPA used to live in a separate repository — it is now bundled insi
 
 **Live Demo:** [http://www.hermanas.fr](http://www.hermanas.fr) (try the **Demo mode** button on the login screen — see the [Demo mode](#demo-mode) section).
 
+**Monitoring Dashboard:** [https://grafana.r3n4.uk](https://grafana.r3n4.uk) — live Grafana board for the production instance.
+
 ## Features
 
 ### Core Automation
@@ -861,6 +863,13 @@ java -jar hermanas-0.8.2.jar --spring.config.location=/etc/hermanas/application.
 
 ## Monitoring
 
+### Grafana Dashboard
+
+A live Grafana dashboard for the production instance is available at:
+**[https://grafana.r3n4.uk](https://grafana.r3n4.uk)**
+
+It exposes the Micrometer metrics published by the backend (door operations, sensor readings, appliance switches, camera activity).
+
 ### Health Checks
 ```bash
 # Overall health
@@ -1000,6 +1009,7 @@ This project is licensed under the MIT License.
 
 - **Issues**: [GitHub Issues](https://github.com/jibe77/hermanas/issues)
 - **Live Demo**: [http://www.hermanas.fr](http://www.hermanas.fr) — try the "Demo mode" button
+- **Monitoring**: [https://grafana.r3n4.uk](https://grafana.r3n4.uk) — Grafana dashboard
 
 ## Acknowledgments
 

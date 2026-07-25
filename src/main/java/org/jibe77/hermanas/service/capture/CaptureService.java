@@ -4,8 +4,10 @@ import org.jibe77.hermanas.client.ai.AiVisionCache;
 import org.jibe77.hermanas.client.ai.AiVisionClient;
 import org.jibe77.hermanas.client.ai.AiVisionException;
 import org.jibe77.hermanas.service.camera.CameraService;
+import org.jibe77.hermanas.websocket.CaptureNotificationController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,14 @@ public class CaptureService {
     private final AiVisionCache aiVisionCache;
     private final DetectionParser detectionParser;
 
+    /**
+     * STOMP publisher used to push state transitions to the SPA. Optional so the
+     * service stays trivially testable in unit tests that do not wire the
+     * WebSocket layer; in production it is always provided by Spring.
+     */
+    @Autowired(required = false)
+    private CaptureNotificationController notifier;
+
     public CaptureService(CameraService cameraService,
                           AiVisionClient aiVisionClient,
                           AiVisionCache aiVisionCache,
@@ -94,6 +104,7 @@ public class CaptureService {
             state.setStatus(CaptureStatus.ANALYZING);
             logger.info("Capture {} transition CAPTURING -> ANALYZING after {} ms.",
                     id, System.currentTimeMillis() - state.getCreatedAt());
+            publish(id, state);
         } catch (IOException | InterruptedException e) {
             logger.warn("Capture {} failed to take picture.", id, e);
             if (e instanceof InterruptedException) {
@@ -102,6 +113,7 @@ public class CaptureService {
             // Operator-facing message stays neutral; technical detail is
             // already in the preceding logger.warn("...", id, e) call.
             state.fail("CAMERA_ERROR", "The snapshot could not be captured. Please try again.");
+            publish(id, state);
             return;
         }
 
@@ -110,6 +122,7 @@ public class CaptureService {
             logger.info("Capture {} got cached analysis ({} chars, {} detections).",
                     id, cached.getBody().length(), cached.getDetections().size());
             state.complete(cached.getBody(), cached.getDetections());
+            publish(id, state);
             return;
         }
 
@@ -124,6 +137,18 @@ public class CaptureService {
             logger.warn("Capture {} analysis failed (code={}, msg={}).",
                     id, e.getCode(), e.getMessage());
             state.fail(e.getCode(), e.getPublicMessage());
+        }
+        publish(id, state);
+    }
+
+    /**
+     * Pushes the current state of a capture on its dedicated STOMP topic so the
+     * SPA can react without polling. No-op when the notifier is not wired (unit
+     * tests instantiating CaptureService by hand).
+     */
+    private void publish(String id, CaptureState state) {
+        if (notifier != null) {
+            notifier.notify(id, state.toDto());
         }
     }
 

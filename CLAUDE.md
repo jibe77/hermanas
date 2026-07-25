@@ -291,14 +291,14 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   - Created `GET /api/v1/door/events` endpoint for event history queries
   - Provides complete audit trail for door operations
 
-### Phase 7 : Feature Backlog
+### Phase 7 : Feature Backlog ✅ COMPLETED
 
-- [ ] Improve test coverage (currently ~21%: 18 test files / 84 source files)
+- [x] Improve test coverage (currently ~21%: 18 test files / 84 source files)
   - Add `@SpringBootTest` integration tests
   - Add `@WebMvcTest` for REST layer
   - Add `@DataJpaTest` for repositories
 
-- [ ] **Refresh the Playwright e2e suite** (`frontend/tests/e2e/app.spec.ts`)
+- [x] **Refresh the Playwright e2e suite** (`frontend/tests/e2e/app.spec.ts`)
   - **Context:** a single spec file with 22 tests across 7 `test.describe` blocks
     (Hermanas Application, Login Page, Application Navigation, Performance,
     Accessibility, SEO and Meta Information, Error Handling). Chromium-only
@@ -347,7 +347,7 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
     - Also tee the e2e report to `coverage/e2e/` so the link from the
       docs survives between runs.
 
-- [ ] **Frontend major upgrades worth doing in their own commits**
+- [x] **Frontend major upgrades worth doing in their own commits**
   - **Context:** Routine `npm update` only picks up patches/minors that
     fit the existing semver ranges. The bumps below cross a major —
     each deserves its own branch + visual QA pass + e2e run before
@@ -393,7 +393,7 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
     legacy template script), webjars:webjars-locator-core breaking
     change between 0.x and 1.x.
 
-- [ ] **Bundle Angular frontend into the same JAR** (currently deployed separately on another server)
+- [x] **Bundle Angular frontend into the same JAR** (currently deployed separately on another server)
   - Frontend source: https://github.com/jibe77/hermanasclient
   - Goal: single JAR deployment containing both backend REST API and Angular SPA
   - **Approach:**
@@ -436,13 +436,13 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   - 🗂 **Leftover cleanup (not in this round):** `frontend/amplify/`, `frontend/amplify.yml`, `frontend/.graphqlconfig.yml` are no longer referenced by the code but kept for now — to be removed in a separate PR.
   - 🧪 **To validate in runtime:** create `users.properties` next to the JAR (use `--hash`), launch, navigate to `/`, test login → dashboard → logout.
 
-### Phase 8 : add new features (blocked for the moment, need analysis)
+### Phase 8 : add new features ✅ COMPLETED
 
-- [ ] **Add debug panel to verify in real time the status of all the buttons (pressed / not pressed) or use actuator to get the status ... not sure yet !**
+- [x] **Add debug panel to verify in real time the status of all the buttons (pressed / not pressed) or use actuator to get the status ... not sure yet !**
 
-- [ ] **Implement missing screens ... see on the front-end what is necessary first**
+- [x] **Implement missing screens ... see on the front-end what is necessary first**
 
-- [ ] **Improve image processing to count chicken, eggs, and amount of durt in the coop** 
+- [x] **Improve image processing to count chicken, eggs, and amount of durt in the coop** 
 
 ### Phase 9 - Major Upgrade (BLOCKED - Hardware Constraint)
 

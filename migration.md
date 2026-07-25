@@ -93,13 +93,15 @@ Puis `sudo systemctl restart ssh`. À ne faire qu'après avoir **testé** la con
 
 ### 0.3 — Récupération des scripts custom depuis `poupou`
 
-Sur le Mac :
+Transfert **direct `poupou` → `pru`** (pull depuis `pru`, pas de détour par le Mac). Les deux machines doivent être branchées et joignables sur le LAN pendant cette étape. `poupou` écoute sur le port SSH `5722` (cf. étapes ultérieures 0.5/2.1/2.2 qui utilisent le même port).
+
+Sur `pru` (en tant que `jean-baptisterenaux`) :
 
 ```bash
 # Wrapper de démarrage Hermanas (pour référence — sera remplacé par la version adaptée ci-dessous)
 scp -P 5722 pi@poupou:/usr/local/bin/Hermanas.sh /tmp/Hermanas.sh.old
 
-# Unit systemd
+# Unit systemd (le sudo distant expose le contenu que systemctl cat lit dans /etc/systemd/system/)
 ssh -p 5722 pi@poupou "sudo systemctl cat Hermanas.service" > /tmp/Hermanas.service
 
 # Scripts USB
@@ -107,6 +109,8 @@ scp -P 5722 pi@poupou:/home/pi/usb_on.sh /tmp/
 scp -P 5722 pi@poupou:/home/pi/usb_off.sh /tmp/
 scp -P 5722 pi@poupou:/home/pi/usb_sleep_10.sh /tmp/
 ```
+
+> ⚠️ Ces fichiers restent dans `/tmp/` sur `pru` pour le moment — ils seront déplacés à leur place définitive lors des étapes suivantes (`Hermanas.sh` en 0.6, scripts USB en 0.8), une fois le user `hermanas` et l'arborescence `/var/lib/hermanas/` créés (0.4bis).
 
 **Nouvelle version de `Hermanas.sh` pour `pru`** (déjà adaptée Java 25 / SB3 / pi4j 4.x FFM / Zero 2 W 512 Mo — voir tableau des changements sous le script) :
 
@@ -229,11 +233,18 @@ Vérifications post-install :
 - [x] `ls /dev/gpiochip*` doit lister au moins `gpiochip0`. C'est le device kernel qu'utilise FFM. Fourni par le kernel Linux depuis 4.8, présent par défaut sur Trixie.
 - [x] Vérifier les permissions : `ls -la /dev/gpiochip0` doit afficher `crw-rw---- root gpio`. Le mode `rw` pour le groupe `gpio` permet aux users de ce groupe de piloter les GPIO sans être root.
 - [x] Vérifier `mysql --version` : noter la version (attendu ~11.x sur Trixie) et comparer avec `poupou` (10.3).
-- [ ] Augmenter le swap à 512 Mo (Java 25 + MariaDB + Hermanas sur 512 Mo RAM) :
+- [x] Augmenter le swap à 512 Mo (Java 25 + MariaDB + Hermanas sur 512 Mo RAM) :
   ```bash
-  sudo sed -i 's/^CONF_SWAPSIZE=.*/CONF_SWAPSIZE=512/' /etc/dphys-swapfile
-  sudo systemctl restart dphys-swapfile
+  sudo apt update                                                                                                                         
+  sudo apt install -y dphys-swapfile                                                                                                      
+  sudo sed -i 's/^#\?CONF_SWAPSIZE=.*/CONF_SWAPSIZE=512/' /etc/dphys-swapfile
+  sudo dphys-swapfile setup                                                                                                               
+  sudo dphys-swapfile swapon                                                                                                            
   ```
+  Vérifie :                                                                                                                               
+  free -h                                                                                                                               
+  swapon --show
+  
 
 ### 0.4bis — Créer le user système `hermanas`
 
@@ -284,19 +295,19 @@ FLUSH PRIVILEGES;
 EOF
 ```
 
-- [ ] Test rapide de connexion : `mysql -u <user> -p<password> -e "SELECT 1;"`.
+- [x] Test rapide de connexion : `mysql -u <user> -p<password> -e "SELECT 1;"`.
 
 ### 0.6 — Wrapper Hermanas.sh + unit systemd (user `hermanas`, pas root)
 
 > ✅ **Hermanas tourne sous le user système `hermanas`** (non-root) créé en Phase 0.4bis. Rendu possible par le passage à **pi4j-plugin-ffm** qui accède au GPIO via chardev `/dev/gpiochip0` — permission `crw-rw---- root:gpio`, donc n'importe quel membre du groupe `gpio` y accède sans root. Le user `hermanas` est aussi membre du groupe `audio` (pour `cvlc`/`amixer`) et `dialout` (série). **Bonus** : le hack VLC-en-root (crontab quotidienne `sed 's/geteuid/getppid/g' /usr/bin/vlc`) devient inutile — VLC refuse root mais accepte n'importe quel autre user.
 
-- [ ] Copier le wrapper adapté :
+- [x] Copier le wrapper adapté :
   ```bash
   sudo cp /tmp/Hermanas.sh /usr/local/bin/Hermanas.sh
   sudo chmod +x /usr/local/bin/Hermanas.sh
   ```
 
-- [ ] Créer le répertoire de PID `run` avec le bon owner (systemd le nettoie au reboot, mais on le crée d'abord) :
+- [x] Créer le répertoire de PID `run` avec le bon owner (systemd le nettoie au reboot, mais on le crée d'abord) :
   ```bash
   sudo mkdir -p /run/hermanas
   sudo chown hermanas:hermanas /run/hermanas
@@ -341,7 +352,7 @@ PrivateTmp=yes
 WantedBy=multi-user.target
 ```
 
-- [ ] Installer le unit :
+- [x] Installer le unit :
   ```bash
   sudo tee /etc/systemd/system/Hermanas.service > /dev/null << 'EOF'
   # ... coller le contenu ci-dessus ...
@@ -351,13 +362,13 @@ WantedBy=multi-user.target
   sudo systemctl daemon-reload
   sudo systemctl enable Hermanas.service
   ```
-- [ ] Vérifier la syntaxe : `sudo systemd-analyze verify /etc/systemd/system/Hermanas.service` (attendu : aucune sortie).
-- [ ] Vérifier que `Hermanas.service` cible bien le user `hermanas` :
+- [x] Vérifier la syntaxe : `sudo systemd-analyze verify /etc/systemd/system/Hermanas.service` (attendu : aucune sortie).
+- [x] Vérifier que `Hermanas.service` cible bien le user `hermanas` :
   ```bash
   sudo systemctl show Hermanas.service | grep -E "^(User|Group|SupplementaryGroups)="
   # attendu : User=hermanas, Group=hermanas, SupplementaryGroups=gpio audio dialout
   ```
-- [ ] **Ne pas démarrer** le service tout de suite (le JAR et `application.properties` sont installés en Phase 2/3).
+- [x] **Ne pas démarrer** le service tout de suite (le JAR et `application.properties` sont installés en Phase 2/3).
 
 **À propos du hardening** :
 - `ProtectHome=yes` : Hermanas ne voit pas `/home/*`. Cohérent : tout est dans `/var/lib/hermanas/`.
@@ -375,8 +386,8 @@ sudo apt install -y prometheus-node-exporter
 sudo systemctl enable --now prometheus-node-exporter
 ```
 
-- [ ] Vérifier : `curl -s http://localhost:9100/metrics | head -5`.
-- [ ] Récupérer la config custom de `poupou` si elle existe :
+- [x] Vérifier : `curl -s http://localhost:9100/metrics | head -5`.
+- [x] Récupérer la config custom de `poupou` si elle existe :
   ```bash
   scp -3 -P 5722 pi@poupou:/etc/default/prometheus-node-exporter /tmp/ne.poupou
   diff /tmp/ne.poupou /etc/default/prometheus-node-exporter
@@ -385,15 +396,62 @@ sudo systemctl enable --now prometheus-node-exporter
 
 ### 0.8 — Scripts USB
 
+Les scripts `usb_*.sh` ont été récupérés dans `/tmp/` sur `pru` en 0.3. Ils utilisent le sysfs `buspower` pour couper/allumer l'alim USB globale — mécanisme spécifique au chipset Broadcom des Pi.
+
+**⚠️ Adaptation nécessaire : adresse du contrôleur USB différente sur Pi Zero 2 W.**
+
+Sur `poupou` (Pi Zero, BCM2835), l'adresse était `20980000.usb`. Sur `pru` (Pi Zero 2 W, BCM2710), c'est `3f980000.usb` (ou proche). Vérifier :
+
 ```bash
-scp -P 5722 /tmp/usb_on.sh jean-baptisterenaux@pru.local:/home/jean-baptisterenaux/
-scp -P 5722 /tmp/usb_off.sh jean-baptisterenaux@pru.local:/home/jean-baptisterenaux/
-scp -P 5722 /tmp/usb_sleep_10.sh jean-baptisterenaux@pru.local:/home/jean-baptisterenaux/
-ssh -p 5722 jean-baptisterenaux@pru.local "chmod +x /home/jean-baptisterenaux/usb_*.sh"
+ls /sys/devices/platform/soc/ | grep usb
+# attendu : 3f980000.usb (ou similaire)
 ```
 
-- [ ] Si `usb_on.sh` utilise `uhubctl` : `sudo apt install -y uhubctl`.
-- [ ] Test manuel : `sudo /home/jean-baptisterenaux/usb_on.sh` — pas d'erreur.
+Contenu original des 3 scripts (récupérés de `poupou`) :
+
+```bash
+# usb_on.sh
+#!/bin/bash
+echo 1 | sudo tee /sys/devices/platform/soc/20980000.usb/buspower > /dev/null
+
+# usb_off.sh
+#!/bin/bash
+echo 0 | sudo tee /sys/devices/platform/soc/20980000.usb/buspower > /dev/null
+
+# usb_sleep_10.sh
+#!/bin/bash
+echo 0 | sudo tee /sys/devices/platform/soc/20980000.usb/buspower > /dev/null
+sleep 10
+echo 1 | sudo tee /sys/devices/platform/soc/20980000.usb/buspower > /dev/null
+```
+
+**Remplacer l'adresse dans les 3 scripts en une commande, puis les installer dans `/usr/local/bin/`** (emplacement standard pour les scripts admin, appelés par la crontab root en 0.9) :
+
+```bash
+# Remplacer 20980000 → 3f980000 dans les 3 fichiers (adapter si ls a montré une autre adresse)
+sed -i 's|20980000\.usb|3f980000.usb|g' /tmp/usb_on.sh /tmp/usb_off.sh /tmp/usb_sleep_10.sh
+
+# Vérifier
+grep buspower /tmp/usb_*.sh
+
+# Installer
+sudo mv /tmp/usb_on.sh /tmp/usb_off.sh /tmp/usb_sleep_10.sh /usr/local/bin/
+sudo chown root:root /usr/local/bin/usb_*.sh
+sudo chmod 755 /usr/local/bin/usb_*.sh
+```
+
+**Note sur le `sudo` interne** : les scripts contiennent `sudo tee ...` — inutile puisqu'ils sont eux-mêmes appelés en root (via crontab root ou `sudo`). On peut le laisser (ça marche), ou nettoyer :
+
+```bash
+sudo sed -i 's|| sudo tee || tee |g' /usr/local/bin/usb_*.sh
+```
+
+- [x] Test manuel : `sudo /usr/local/bin/usb_on.sh` — pas d'erreur, pas de sortie.
+- [x] Vérifier l'effet : `cat /sys/devices/platform/soc/3f980000.usb/buspower` doit afficher `1`.
+- [x] Test extinction : `sudo /usr/local/bin/usb_off.sh` puis re-cat → `0`.
+- [x] Rallumer avant de continuer : `sudo /usr/local/bin/usb_on.sh`.
+
+> ⚠️ **Cohérence avec 0.9** : la crontab root (0.9) référence désormais `/usr/local/bin/usb_on.sh` (déjà à jour).
 
 ### 0.9 — Crontab root (reproduite depuis `poupou`)
 
@@ -405,7 +463,7 @@ Contenu (adaptations Trixie : `iwconfig` → `iw`, sans la ligne tzupdater qui d
 
 ```cron
 # active le port USB au démarrage
-@reboot /home/jean-baptisterenaux/usb_on.sh
+@reboot /usr/local/bin/usb_on.sh
 
 # active la carte wifi au démarrage
 @reboot /usr/sbin/rfkill unblock 0 && /usr/sbin/iw dev wlan0 set txpower auto && /bin/sleep 5 && /usr/bin/timedatectl
@@ -446,8 +504,8 @@ EOF
 sudo systemctl disable hciuart bluetooth
 ```
 
-- [ ] **NE PAS** ajouter `maxcpus=1` (les 4 cœurs sont conservés).
-- [ ] **NE PAS** ajouter `disable-wifi`.
+- [x] **NE PAS** ajouter `maxcpus=1` (les 4 cœurs sont conservés).
+- [x] **NE PAS** ajouter `disable-wifi`.
 
 ### 0.11 — Nettoyage services inutiles
 
@@ -461,7 +519,52 @@ sudo systemctl disable rpi-display-backlight || true
 sudo systemctl disable smartd smartmontools || true
 ```
 
-- [ ] **Conserver** : `fake-hwclock`, `unattended-upgrades`, `dphys-swapfile`.
+- [x] **Conserver** : `fake-hwclock`, `unattended-upgrades`, `dphys-swapfile`.
+
+### 0.11bis — Configuration `unattended-upgrades` (mises à jour complètes)
+
+Par défaut, `unattended-upgrades` sur Debian n'applique que les **patches de sécurité**. Sur `pru`, on veut aussi les **updates normales** (bug fixes, versions mineures) pour éviter de laisser dériver les paquets. Décision utilisateur 2026-07-25 : Option A (étendre `unattended-upgrades`) plutôt qu'un cron `apt-get upgrade` manuel — plus propre, gère les locks apt et les prompts dpkg correctement.
+
+- [x] Installer le paquet (⚠️ pas fourni par défaut sur Trixie Lite, contrairement à ce que suggère la ligne "conserver" en 0.11) :
+  ```bash
+  sudo apt install -y unattended-upgrades
+  ```
+
+- [x] Vérifier que le service est enabled après install :
+  ```bash
+  systemctl is-enabled unattended-upgrades
+  # attendu : enabled
+  ```
+
+- [x] Étendre `unattended-upgrades` aux updates normales :
+  ```bash
+  sudo sed -i 's|^//\(\s*"origin=Debian,codename=\${distro_codename}-updates";\)|\1|' /etc/apt/apt.conf.d/50unattended-upgrades
+  ```
+
+- [x] Ajouter la config Hermanas (reboot auto, cleanup, périodicité). ⚠️ **Le marqueur `EOF` final doit être collé à gauche (colonne 0)**, sinon bash reste bloqué au prompt `>` en attendant la fin du heredoc :
+
+```bash
+sudo tee /etc/apt/apt.conf.d/51hermanas-upgrades > /dev/null << 'EOF'
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-Time "04:00";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";
+EOF
+```
+
+- [x] Test à blanc (aucun changement appliqué) :
+  ```bash
+  sudo unattended-upgrades --dry-run --debug 2>&1 | tail -30
+  ```
+  Attendu : lignes `Checking...` sans erreur, et éventuellement des paquets listés comme "would be upgraded".
+
+**Notes :**
+- Reboot à 04:00 : les poules dorment, pas de porte à ouvrir/fermer. Aligné avec le reboot hebdo du mercredi 16h (crontab root, cf. 0.9) — celui-ci reste maître pour les kernels qui exigent un reboot.
+- `Remove-Unused-Dependencies "true"` : équivalent d'un `apt autoremove` automatique.
+- Les logs atterrissent dans `/var/log/unattended-upgrades/`.
 
 ### 0.12 — Alias shell pour le user `pi`
 
@@ -486,9 +589,9 @@ EOF
 source ~/.bashrc
 ```
 
-- [ ] Test rapide : `alias | grep Hermanas` doit lister les 4 alias service.
-- [ ] `log` remplace le `tail -f /var/log/syslog` d'origine par `journalctl -u Hermanas.service -f` — plus ciblé, plus utile en debug (sur Bookworm systemd-journald ne remplit plus `/var/log/syslog` par défaut de toute façon).
-- [ ] `up`/`down` (scripts Python `servo_door_*.py`) : **non reproduits**, ces scripts appartiennent au bloat de `poupou`. Les endpoints REST `/api/v1/door/open` et `/api/v1/door/close` remplissent le même rôle.
+- [x] Test rapide : `alias | grep Hermanas` doit lister les 4 alias service.
+- [x] `log` remplace le `tail -f /var/log/syslog` d'origine par `journalctl -u Hermanas.service -f` — plus ciblé, plus utile en debug (sur Bookworm systemd-journald ne remplit plus `/var/log/syslog` par défaut de toute façon).
+- [x] `up`/`down` (scripts Python `servo_door_*.py`) : **non reproduits**, ces scripts appartiennent au bloat de `poupou`. Les endpoints REST `/api/v1/door/open` et `/api/v1/door/close` remplissent le même rôle.
 
 ### 0.13 — Reboot final + sanity check
 
@@ -505,14 +608,14 @@ ssh -p 5722 jean-baptisterenaux@pru.local
 
 Sur `pru` :
 
-- [ ] `vcgencmd measure_clock arm` → `600000000`.
-- [ ] `vcgencmd get_config int | grep -E "arm_freq|gpu_freq"` → 600 et 250.
-- [ ] `rfkill list wifi` → not blocked.
-- [ ] `iw dev wlan0 info` → txpower affiché.
-- [ ] `sudo crontab -l` → contenu attendu.
-- [ ] `systemctl is-enabled Hermanas.service prometheus-node-exporter mariadb` → tous enabled (pas de `pigpiod` : la lib est embarquée dans la JVM).
-- [ ] `java -version` → Java 25.
-- [ ] `mysql --version` → 10.11.x.
+- [x] `vcgencmd measure_clock arm` → `600000000`.
+- [x] `vcgencmd get_config int | grep -E "arm_freq|gpu_freq"` → 600 et 250.
+- [x] `rfkill list wifi` → not blocked.
+- [x] `iw dev wlan0 info` → txpower affiché.
+- [x] `sudo crontab -l` → contenu attendu.
+- [x] `systemctl is-enabled Hermanas.service prometheus-node-exporter mariadb` → tous enabled (pas de `pigpiod` : la lib est embarquée dans la JVM).
+- [x] `java -version` → Java 25.
+- [x] `mysql --version` → 10.11.x.
 
 **Fin de Phase 0** : `pru` prête, bootable, headless, économe, en attente. Peut rester éteinte jusqu'à la Phase 2.
 

@@ -66,13 +66,13 @@ public class ManageDoorOpeningEvent {
 
     public void manageDoorOpeningEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
-            // Use the strict closed check instead of the lax !doorIsOpened():
-            // both buttons can be released at once (door in transit or a faulty
-            // switch), and !doorIsOpened() would re-trigger the cocorico every
-            // minute in that situation. doorIsClosed() reads the bottom button
-            // and is the only signal that unambiguously says "still waiting to
-            // open the door this morning."
-            if (doorService.doorIsClosed()) {
+            // Open on !doorIsOpened() rather than the stricter doorIsClosed(): a
+            // hen leaning on the trap or a flaky bottom switch can release the bottom
+            // sensor overnight, leaving both buttons unpressed at sunrise. The old
+            // strict check silently skipped the morning opening in that case.
+            // reloadDoorOpeningTime() below pushes the next opening to J+1, so this
+            // block cannot re-fire the same day even if the sensor stays ambiguous.
+            if (!doorService.doorIsOpened()) {
                 logger.info("door opening event is starting now.");
                 if (configService.isCocoricoAtSunriseEnabled() && !consumptionModeController.isEcoMode(LocalDateTime.now())) {
                     logger.info("Triggering cocorico automatically at sunrise.");

@@ -21,6 +21,15 @@
             </div>
             <div class="hermanas-toast-body">
                 {{ toast.message }}
+                @if (toast.action) {
+                    <a
+                        href="#"
+                        class="hermanas-toast-action"
+                        (click)="onActionClick($event, toast)"
+                    >
+                        {{ toast.action.label }}
+                    </a>
+                }
             </div>
         </div>
     }

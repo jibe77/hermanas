@@ -17,6 +17,7 @@ import {
     PhotoListing,
     PhotosService,
 } from '@modules/camera/services/photos.service';
+import { CaptureWebsocketService } from '@modules/camera/services/capture-websocket.service';
 import { ConfigService } from '@modules/energy/services/config.service';
 import { UserService } from '@modules/auth/services';
 import { Subject, forkJoin } from 'rxjs';
@@ -52,6 +53,7 @@ interface PhotoFile extends PhotoEntry {
 })
 export class ChartsComponent implements OnInit, OnDestroy {
     private photos = inject(PhotosService);
+    private captureWs = inject(CaptureWebsocketService);
     private configService = inject(ConfigService);
     private userService = inject(UserService);
     private toast = inject(ToastService);
@@ -221,17 +223,35 @@ export class ChartsComponent implements OnInit, OnDestroy {
                         this.cdr.markForCheck();
                     },
                 });
-                this.photos.pollCaptureStatus(captureId).subscribe({
+                // One-shot status fetch to cover the race where the backend
+                // finishes the pipeline (cached analysis) before the STOMP
+                // subscription is up. Errors are intentionally swallowed: the
+                // STOMP stream below is the source of truth, and a 404 here
+                // would just mean the job is still booting.
+                this.photos.getCaptureStatus(captureId).subscribe({
                     next: state => this.applyCaptureState(state, captureId),
-                    error: (err: HttpErrorResponse) => {
-                        this.logger.error(
-                            'pollCaptureStatus: poll failed',
-                            { captureId, status: err.status, message: err.message },
-                            'Webcam'
-                        );
-                        this.applyCaptureError(err);
+                    error: () => {
+                        /* ignore — STOMP will deliver the real states */
                     },
                 });
+                this.captureWs
+                    .watch(captureId)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe({
+                        next: state => this.applyCaptureState(state, captureId),
+                        error: (err: Error) => {
+                            this.logger.error(
+                                'captureWs: subscription failed',
+                                { captureId, message: err.message },
+                                'Webcam'
+                            );
+                            this.applyCaptureError({
+                                error: { message: err.message },
+                                message: err.message,
+                                status: 0,
+                            } as HttpErrorResponse);
+                        },
+                    });
             },
             error: (err: HttpErrorResponse) => {
                 this.captureInFlight = false;
@@ -246,9 +266,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
     }
 
     private applyCaptureState(state: CaptureState, captureId?: string): void {
-        // No per-tick log here — pollCaptureStatus emits once per second while
-        // the backend works, and the LoggingInterceptor already records the
-        // raw HTTP poll at DEBUG. We only care about the terminal states below.
+        // We only care about terminal states for logging — intermediate
+        // ANALYZING frames are bookkeeping and don't change the UI surface.
         if (state.status === 'DONE') {
             this.aiAnalysisLoading = false;
             this.captureInFlight = false;
@@ -257,7 +276,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
             this.detections = state.detections ?? [];
             this.stopAiAnalysisAnimation();
             this.logger.info(
-                'pollCaptureStatus: DONE',
+                'captureState: DONE',
                 {
                     captureId,
                     messageLength: this.aiAnalysisResult.length,
@@ -273,7 +292,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
             this.aiAnalysisResultHtml = this.renderMarkdown(this.aiAnalysisResult);
             this.stopAiAnalysisAnimation();
             this.logger.warn(
-                'pollCaptureStatus: ERROR',
+                'captureState: ERROR',
                 { captureId, errorCode: state.errorCode, errorMessage: state.errorMessage },
                 'Webcam'
             );

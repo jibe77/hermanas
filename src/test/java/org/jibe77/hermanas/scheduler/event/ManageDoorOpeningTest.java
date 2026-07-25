@@ -66,10 +66,10 @@ class ManageDoorOpeningTest {
         when(sunTimeManager.getNextDoorClosingTime()).thenReturn(eventAlwaysInTheFutur);
         when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInThePast);
         when(sunTimeManager.getNextLightOnTime()).thenReturn(eventAlwaysInTheFutur);
-        // Stub the closed sensor explicitly — the scheduler now uses
-        // doorIsClosed() (strict) instead of !doorIsOpened() (lax) to decide
-        // whether to start the morning opening sequence.
-        when(doorService.doorIsClosed()).thenReturn(true);
+        // Scheduler opens as long as the door is not already up — covers the
+        // "bottom switch released overnight" case where doorIsClosed() would
+        // return false and used to silently skip the morning opening.
+        when(doorService.doorIsOpened()).thenReturn(false);
         manageDoorOpeningEvent.manageDoorOpeningEvent(LocalDateTime.now());
         verify(doorService, times(1)).openDoorWithUpButtonManagment(false, false);
     }

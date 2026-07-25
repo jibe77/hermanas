@@ -104,6 +104,21 @@
     line-height: 1.5;
 }
 
+.hermanas-toast-action {
+    display: inline-block;
+    margin-left: 8px;
+    font-weight: 600;
+    color: #17a2b8;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+        color: #117a8b;
+        text-decoration: underline;
+    }
+}
+
 @keyframes slideIn {
     from {
         transform: translateX(100%);

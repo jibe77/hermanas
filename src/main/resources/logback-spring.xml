@@ -72,6 +72,15 @@
          a glance without the stack trace clutter at INFO level. -->
     <logger name="org.apache.catalina.core.ContainerBase.[Tomcat].[localhost]" level="WARN"/>
 
+    <!-- Silence CookieTheftException stack traces raised by Spring Security's remember-me
+         filter. Two concurrent requests carrying the same remember-me cookie (typical on
+         SPA/PWA boot) hit token rotation: the second one arrives with the old token and
+         Spring flags it as theft. It's a false positive here — the user is just bounced
+         back to the login screen. The exception bubbles up to the dispatcher servlet
+         which logs it at ERROR. Setting this logger to OFF removes the noise; genuine
+         controller errors are still captured by GlobalExceptionHandler on its own logger. -->
+    <logger name="org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/].[dispatcherServlet]" level="OFF"/>
+
     <!-- Default root: keep Spring Boot's INFO console behaviour + write to spring.log. -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
