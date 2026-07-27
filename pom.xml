@@ -248,12 +248,13 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Resilience4j 2.4.0 (compatible SB 4.x). Note: l'artifactId reste
-		     "spring-boot3" côté resilience4j jusqu'à ce qu'un artifactId "-boot4"
-		     soit publié — pour l'instant 2.4.0 supporte SB 3.x et SB 4.x. -->
+		<!-- Resilience4j : l'artifactId encode la ligne Spring Boot ciblée, et le
+		     module refuse de démarrer si elle ne correspond pas — SpringBoot3Verifier
+		     lève "Module ... is only compatible with Spring Boot 3.x" au lancement.
+		     Un -spring-boot4 existe bien, en 2.4.0 également. -->
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>
-			<artifactId>resilience4j-spring-boot3</artifactId>
+			<artifactId>resilience4j-spring-boot4</artifactId>
 			<version>2.4.0</version>
 		</dependency>
 		<!-- Spring Boot 4 : spring-boot-starter-aop a été renommé spring-boot-starter-aspectj. -->

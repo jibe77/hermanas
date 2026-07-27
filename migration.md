@@ -774,7 +774,12 @@ git status    # doit être clean sauf éventuels WIP à commit avant
 - [x] `mvn versions:display-dependency-updates` exécuté au 2026-07-26. Bumps mineurs appliqués :
   - `mariadb-java-client` 3.5.8 → **3.5.9**
   - `commons-io` 2.20.0 → **2.22.0**
-  - `resilience4j-spring-boot2` 1.7.1 → **`resilience4j-spring-boot3` 2.4.0** (rename obligatoire dès SB3 ; l'artifactId reste `-spring-boot3` en 2.4.0, qui supporte SB 3.x et 4.x)
+  - `resilience4j-spring-boot2` 1.7.1 → **`resilience4j-spring-boot4` 2.4.0**.
+    ⚠️ L'artifactId encode la ligne Spring Boot ciblée, et le module **refuse de
+    démarrer** si elle ne correspond pas : `SpringBoot3Verifier` lève
+    « Module ... is only compatible with Spring Boot 3.x » au lancement. Une étape
+    intermédiaire en `-spring-boot3` compilait sans erreur mais échouait au runtime
+    (constaté 2026-07-27).
   - `h2` : inchangé, déjà géré par le BOM SB
 
 **Bumps supplémentaires imposés par SB 4 :**
@@ -1446,6 +1451,24 @@ souris, en produit très peu.
   -Djava.security.egd=file:/dev/./urandom
   ```
   ⚠️ Le `/./` est indispensable — sans lui la JVM ignore silencieusement l'option.
+
+#### ⚠️ Écueil rencontré : resilience4j vérifie la version de Spring Boot au démarrage
+
+```
+APPLICATION FAILED TO START
+Module 'io.github.resilience4j:resilience4j-spring-boot3' is only compatible
+with Spring Boot 3.x
+Action: Update your project to use 'io.github.resilience4j:resilience4j-spring-boot4'
+```
+
+L'artifactId de resilience4j encode la ligne Spring Boot ciblée, et le module
+embarque un `SpringBoot3Verifier` qui **échoue au démarrage** si elle ne correspond
+pas. Le projet compilait pourtant sans erreur avec `-spring-boot3` : rien ne se voit
+avant l'exécution.
+
+- [x] Corrigé : `resilience4j-spring-boot3` → **`resilience4j-spring-boot4`**, même
+  version 2.4.0. Aucun changement de code — l'annotation `@CircuitBreaker` de
+  `WeatherClient` conserve son package `io.github.resilience4j.circuitbreaker.annotation`.
 
 #### ⚠️ Écueil rencontré : le PWM FFM exige chip/channel, pas `.bcm()`
 
