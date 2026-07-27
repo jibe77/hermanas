@@ -930,7 +930,7 @@ javac --release 25 -cp "$(cat /tmp/cp.txt)" -d /tmp/out @/tmp/sources.txt 2>&1 |
 - [x] **Commit `e1df962`** sur `feat/pi-zero-2-migration` (67 fichiers, +692 / −292).
 - [x] Artefacts de test ajoutés au `.gitignore` (`LOG_FILE_IS_UNDEFINED`, `audit.txt`,
       `audit_config.txt` — logs applicatifs écrits dans le CWD pendant `mvn test`).
-- [ ] **Push** de la branche :
+- [x] **Push** de la branche (`ed7db4f..7782041`) :
       ```bash
       git push -u origin feat/pi-zero-2-migration
       ```
@@ -948,7 +948,19 @@ javac --release 25 -cp "$(cat /tmp/cp.txt)" -d /tmp/out @/tmp/sources.txt 2>&1 |
 ssh -p 5722 pi@poupou "sudo systemctl stop Hermanas.service"
 ```
 
-### 2.2 — Dump MariaDB (défensif, cross-version 10.3 → 10.11)
+### 2.2 — Dump MariaDB (défensif, cross-version 10.3 → 11.x)
+
+> ⚠️ **Trois pièges dans cette commande :**
+> 1. **`--set-gtid-purged=OFF` est une option MySQL, pas MariaDB.** Elle fait
+>    échouer `mysqldump` avec `unknown variable`. Retirée ci-dessous.
+> 2. **Quoter le mot de passe** : il contient des `/`, à protéger du shell —
+>    `-p'...'` collé au flag, sans espace.
+> 3. **Ne pas copier la commande à partir de `mysqldump`** : le `"` fermant
+>    appartient au `ssh`. Sans son `"` ouvrant, le shell reste bloqué à
+>    attendre la fin de la chaîne (prompt `>`). Faire `Ctrl+C` et repartir de
+>    la commande entière.
+
+**Depuis le Mac ou `pru`** (commande complète avec le `ssh`) :
 
 ```bash
 ssh -p 5722 pi@poupou "mysqldump \
@@ -957,37 +969,85 @@ ssh -p 5722 pi@poupou "mysqldump \
   --skip-lock-tables \
   --no-tablespaces \
   --default-character-set=utf8mb4 \
-  --set-gtid-purged=OFF \
-  -u <user> -p<password> hermanas" > /tmp/hermanas-$(date +%F).sql
+  -u pi -p'<password>' hermanas" > /tmp/hermanas-$(date +%F).sql
 ```
+
+**Ou directement depuis une session SSH ouverte sur `poupou`** (sans le `ssh`) :
+
+```bash
+mysqldump \
+  --single-transaction \
+  --routines --triggers --events \
+  --skip-lock-tables \
+  --no-tablespaces \
+  --default-character-set=utf8mb4 \
+  -u pi -p'<password>' hermanas \
+  > /tmp/hermanas-$(date +%F).sql
+```
+
+- [ ] Vérifier que le dump n'est pas vide et se termine proprement :
+  ```bash
+  ls -lh /tmp/hermanas-*.sql
+  tail -1 /tmp/hermanas-*.sql    # attendu : "-- Dump completed on ..."
+  grep -c "CREATE TABLE" /tmp/hermanas-*.sql   # attendu : au moins 4
+  ```
 
 Nettoyer les DEFINER absents sur `pru` :
 
 ```bash
+# macOS (BSD sed) — le '' après -i est obligatoire
 sed -i '' 's/DEFINER=`[^`]*`@`[^`]*` //g' /tmp/hermanas-*.sql
+
+# Linux (GNU sed), si le dump est déjà sur poupou ou pru
+sed -i 's/DEFINER=`[^`]*`@`[^`]*` //g' /tmp/hermanas-*.sql
 ```
 
 ### 2.3 — Restauration
 
+Si le dump a été généré **depuis une session ouverte sur `poupou`**, il s'y trouve
+déjà : le plus simple est de le tirer directement depuis `pru`, sans détour par le Mac.
+
+**Sur `pru`** :
+
 ```bash
-scp -P 5722 /tmp/hermanas-*.sql jean-baptisterenaux@pru.local:/tmp/
-ssh -p 5722 jean-baptisterenaux@pru.local "mysql -u <user> -p<password> hermanas < /tmp/hermanas-$(date +%F).sql"
+scp -P 5722 pi@poupou:/tmp/hermanas-$(date +%F).sql /tmp/
+
+# Nettoyer les DEFINER absents sur pru (GNU sed : pas de '' après -i)
+sed -i 's/DEFINER=`[^`]*`@`[^`]*` //g' /tmp/hermanas-$(date +%F).sql
+
+mysql -u pi -p'<password>' hermanas < /tmp/hermanas-$(date +%F).sql
 ```
+
+*(Variante si le dump est passé par le Mac : `scp -P 5722 /tmp/hermanas-*.sql
+jean-baptisterenaux@pru.local:/tmp/` puis la même restauration en SSH.)*
 
 ### 2.4 — Vérification counts
 
+> ⚠️ **Les deux machines n'ont pas le même user Linux** : `pi` sur `poupou`,
+> `jean-baptisterenaux` sur `pru`. En revanche le **user MariaDB reste `pi`**
+> des deux côtés (user applicatif, indépendant du user Linux — cf. Phase 0.5),
+> donc la requête ci-dessous est rigoureusement identique sur les deux machines.
+
+**À lancer localement sur chaque machine** (plus simple que d'imbriquer les
+guillemets dans un `ssh`) :
+
 ```bash
-for host in poupou pru.local; do
-  echo "=== $host ==="
-  ssh -p 5722 pi@$host "mysql -u <user> -p<password> hermanas -e \"
-    SELECT 'parameter' AS t, COUNT(*) FROM parameter UNION ALL
-    SELECT 'sensor',     COUNT(*) FROM sensor    UNION ALL
-    SELECT 'event',      COUNT(*) FROM event     UNION ALL
-    SELECT 'picture',    COUNT(*) FROM picture;\""
-done
+mysql -u pi -p'<password>' hermanas -e "
+  SELECT 'parameter' AS t, COUNT(*) AS n FROM parameter UNION ALL
+  SELECT 'sensor',         COUNT(*)      FROM sensor    UNION ALL
+  SELECT 'event',          COUNT(*)      FROM event     UNION ALL
+  SELECT 'picture',        COUNT(*)      FROM picture;"
 ```
 
-- [ ] Les 4 counts sont **identiques** entre `poupou` et `pru`.
+*Variante en une passe depuis le Mac, si les deux machines sont joignables —
+noter le user Linux qui diffère selon l'hôte :*
+
+```bash
+ssh -p 5722 pi@poupou "mysql -u pi -p'<password>' hermanas -e \"SELECT COUNT(*) FROM event;\""
+ssh -p 5722 jean-baptisterenaux@pru.local "mysql -u pi -p'<password>' hermanas -e \"SELECT COUNT(*) FROM event;\""
+```
+
+- [x] Les 4 counts sont **identiques** entre `poupou` et `pru` (vérifié 2026-07-27 : parameter 26, sensor 27999, event 22075, picture 37329).
 
 ### 2.5 — Migration photos + music via Samba
 
@@ -1069,21 +1129,25 @@ EOF
 
 Copie via `/tmp/` puis placement dans `/var/lib/hermanas/` avec l'ownership `hermanas:hermanas` :
 
+**À lancer sur `pru`** (transfert direct `poupou` → `pru`, sans détour par le Mac) :
+
 ```bash
 for f in application.properties users.properties keystore.p12 email; do
-  scp -3 -P 5722 pi@poupou:/home/pi/$f jean-baptisterenaux@pru.local:/tmp/
+  scp -P 5722 pi@poupou:/home/pi/$f /tmp/
 done
 
-ssh -p 5722 jean-baptisterenaux@pru.local << 'EOF'
 sudo mv /tmp/application.properties /tmp/users.properties /tmp/keystore.p12 /tmp/email /var/lib/hermanas/
-sudo chown hermanas:hermanas /var/lib/hermanas/application.properties /var/lib/hermanas/users.properties /var/lib/hermanas/keystore.p12 /var/lib/hermanas/email
-sudo chmod 640 /var/lib/hermanas/application.properties /var/lib/hermanas/users.properties /var/lib/hermanas/keystore.p12 /var/lib/hermanas/email
-EOF
+sudo chown hermanas:hermanas /var/lib/hermanas/{application.properties,users.properties,keystore.p12,email}
+sudo chmod 640 /var/lib/hermanas/{application.properties,users.properties,keystore.p12,email}
 ```
+
+*(Variante depuis le Mac, si `poupou` et `pru` ne se voient pas directement :
+`scp -3 -P 5722 pi@poupou:/home/pi/$f jean-baptisterenaux@pru.local:/tmp/` — l'option
+`-3` fait transiter le flux par la machine locale.)*
 
 `640` (owner rw, group r) : Hermanas peut lire, aucun autre user.
 
-- [ ] **Ajuster les chemins dans `application.properties`** pour pointer vers `/var/lib/hermanas/` au lieu de `/home/pi/` :
+- [x] **Ajuster les chemins dans `application.properties`** pour pointer vers `/var/lib/hermanas/` au lieu de `/home/pi/` :
   ```bash
   ssh -p 5722 jean-baptisterenaux@pru.local
   sudo sed -i 's|/home/pi/|/var/lib/hermanas/|g' /var/lib/hermanas/application.properties
@@ -1091,16 +1155,94 @@ EOF
   sudo grep -E "camera\.path|music\.path|hermanas\.security\.users-file" /var/lib/hermanas/application.properties
   ```
   Attention : cette commande remplace TOUS les `/home/pi/` du fichier. À valider avant, il peut y avoir des cas de bord (chemins qui doivent rester en `/home/pi/` par erreur historique).
-- [ ] `keystore.p12` conservé tel quel : Hermanas continue de servir en HTTPS interne sur `:8443` pour l'instant. Basculer Hermanas en HTTP simple (et laisser `shannen` terminer TLS) est un chantier séparé, hors migration matérielle.
+- [x] ✅ **`door.servo.gpio.address` : rien à corriger ici** (vérifié 2026-07-27).
+  La clé est **absente** de l'`application.properties` externe hérité de `poupou`.
+  C'est donc la valeur embarquée dans le JAR qui s'applique, et elle vaut déjà **12**
+  (corrigée en Phase 1.5bis). Elle est injectée par `@Value` dans `ServoMotorService`
+  et `ElectronicsRestController` — aucune valeur codée en dur dans le code.
+  ```bash
+  # Contrôle : ne doit RIEN renvoyer
+  sudo grep "door.servo.gpio.address" /var/lib/hermanas/application.properties
+  ```
+  ⚠️ Si cette clé venait à être ajoutée au fichier externe, elle **surchargerait** le
+  JAR : il faudrait alors y écrire `12`, jamais `25`.
+  *(Ne pas confondre avec `SERVO_OPENING_MAX_POSITION = 25` dans `ServoMotorService` :
+  c'est une position angulaire du servo, pas un numéro de broche.)*
+- [x] `keystore.p12` conservé tel quel : Hermanas continue de servir en HTTPS interne sur `:8443` pour l'instant. Basculer Hermanas en HTTP simple (et laisser `shannen` terminer TLS) est un chantier séparé, hors migration matérielle.
 
 ### 2.7 — Config MariaDB custom (optionnel)
 
 ```bash
-ssh -p 5722 pi@poupou "ls /etc/mysql/mariadb.conf.d/"
-# S'il y a des fichiers autres que 50-server.cnf par défaut :
-scp -3 -P 5722 pi@poupou:/etc/mysql/mariadb.conf.d/<file>.cnf jean-baptisterenaux@pru.local:/tmp/
+ls /etc/mysql/mariadb.conf.d/
+# S'il y a des fichiers autres que les 50-*.cnf par défaut :
+scp -P 5722 pi@poupou:/etc/mysql/mariadb.conf.d/<file>.cnf /tmp/    # depuis pru
 # Diff avant d'écraser sur pru
 ```
+
+- [x] ✅ **Rien à migrer** (vérifié 2026-07-27). `poupou` ne contient que les quatre
+  fichiers livrés par le paquet Debian — `50-client.cnf`, `50-mysql-clients.cnf`,
+  `50-mysqld_safe.cnf`, `50-server.cnf` — sans aucun ajout custom.
+- [x] *Contrôle complémentaire* : `50-server.cnf` de `poupou` inspecté (2026-07-27).
+  Deux directives s'écartent du défaut Debian, **aucune des deux n'est à reproduire** :
+
+  | Directive sur `poupou` | Décision pour `pru` | Raison |
+  |---|---|---|
+  | `bind-address = 0.0.0.0` | ✅ **à reproduire** (décision utilisateur 2026-07-27) | La base est administrée via **Adminer** depuis le LAN. Un tunnel SSH serait contraignant pour un usage d'admin régulier. |
+  | `query_cache_size = 16M` | ❌ **ne pas reproduire** | Le query cache est déprécié depuis MariaDB 10.1 et **supprimé en 10.6+**. Sur MariaDB 11.x la directive est ignorée, voire refusée au démarrage. |
+
+  Le reste (`expire_logs_days`, `character-set-server = utf8mb4`, `collation-server`)
+  est standard et déjà couvert par les défauts de MariaDB 11.
+
+  ```bash
+  # Sur pru : ouvrir MariaDB au LAN pour Adminer
+  sudo sed -i 's|^bind-address.*|bind-address            = 0.0.0.0|' \
+    /etc/mysql/mariadb.conf.d/50-server.cnf
+  sudo systemctl restart mariadb
+  ss -tlnp | grep 3306    # attendu : 0.0.0.0:3306
+  ```
+
+- [x] ⚠️ **User MariaDB pour l'accès distant.** `bind-address = 0.0.0.0` ne suffit pas :
+  le user créé en Phase 0.5 est `'pi'@'localhost'` et refuse toute connexion venant
+  d'une autre machine. `poupou` déclare en plus un **`pi@192.168.1.%`** (constaté
+  2026-07-27) — c'est lui qu'utilise Adminer. À reproduire sur `pru` :
+  ```bash
+  sudo mysql <<'SQL'
+  CREATE USER IF NOT EXISTS 'pi'@'192.168.1.%' IDENTIFIED BY '<password>';
+  GRANT ALL PRIVILEGES ON hermanas.* TO 'pi'@'192.168.1.%';
+  FLUSH PRIVILEGES;
+  SQL
+  ```
+  Le masque `'192.168.1.%'` restreint au LAN — le conserver plutôt que d'élargir à `'%'`.
+
+  **Comment le diagnostic a été mené** — sur `poupou`, `pi` n'a pas le privilège de lire
+  `mysql.user` (`ERROR 1142`), et `sudo mysql` échoue en 10.3 qui n'active pas
+  l'authentification `unix_socket` pour root (contrairement à MariaDB 11 sur `pru`).
+  Contournement : se connecter depuis `pru` et demander au serveur quel compte a matché.
+  ```bash
+  # Sur pru
+  mysql --skip-ssl -h poupou -u pi -p'<password>' -e "SELECT CURRENT_USER();"
+  # → pi@192.168.1.%
+  ```
+
+- [x] ⚠️ **TLS : le client MariaDB 11 exige SSL par défaut.** Depuis la 11.4, une
+  connexion vers un serveur sans TLS échoue avec
+  `TLS/SSL error: SSL is required, but the server does not support it`.
+  C'est une exigence **du client**, pas un refus d'authentification — d'où le
+  `--skip-ssl` ci-dessus pour interroger `poupou` (MariaDB 10.3).
+  **À anticiper pour Adminer → `pru`** : selon la version de son client, il faudra soit
+  activer TLS sur `pru`, soit désactiver l'exigence côté Adminer.
+
+- [x] Test croisé après configuration ✅ (2026-07-27, `poupou` → `pru` renvoie `pi@192.168.1.%`) :
+  ```bash
+  # Depuis poupou (client 10.3, pas d'exigence TLS)
+  mysql -h pru.local -u pi -p'<password>' -e "SELECT CURRENT_USER();"
+  # attendu : pi@192.168.1.%
+  ```
+
+  ℹ️ **Collation** : `poupou` est en `utf8mb4_general_ci`, MariaDB 11 utilise
+  `utf8mb4_uca1400_ai_ci` par défaut. Le dump restauré conserve les collations
+  d'origine table par table — pas de casse. Seule une table créée *ex nihilo* par
+  Hibernate prendrait la collation moderne ; sans impact ici, le schéma étant figé.
 
 ---
 
