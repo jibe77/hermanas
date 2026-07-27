@@ -1671,20 +1671,101 @@ mvn versions:display-plugin-updates
 ```bash
 cd frontend
 npm outdated
+npm audit
 ```
 
-Points ouverts (cf. CLAUDE.md Phase 7) :
+> ℹ️ **État constaté le 2026-07-27.** Cette section a été réécrite : elle listait
+> encore Angular 21 → 22 comme chantier à venir et `uuid` comme dépendance directe,
+> alors que le projet est déjà en Angular 22 et que `uuid` n'apparaît plus dans
+> `package.json`. Les points ci-dessous sont vérifiés.
 
-- [ ] `@angular/cdk` + `@angular/material` 21 → 22 (Material 3 tokens, casse potentielle thème).
-- [ ] `uuid` 9 → 14 (vérifier si encore présent dans `package.json`).
-- [ ] **Reporter Angular 21 → 22 à début 2027** (posture définie dans CLAUDE.md).
+**Versions en place** : Angular 22.0.2, CDK/Material 22.0.2, TypeScript 6.0.3,
+zone.js 0.16.2, Vitest 4.1.8, ESLint 10.5.0, ng-bootstrap 21.0.0-rc.0.
 
-Chaque major bump = branche dédiée + tests visuels + Playwright e2e (`npm run e2e`).
+#### A. Dépréciations signalées à chaque `npm ci`
+
+- [ ] **`@angular-devkit/build-angular` → `@angular/build`** — le support Webpack
+  d'Angular est déprécié. `angular.json` utilise encore le builder
+  `@angular-devkit/build-angular:browser`, à remplacer par `@angular/build:application`.
+  C'est le chantier frontend le plus lourd : nouveau système de build (esbuild + Vite),
+  configuration à reprendre, et le `--localize` sur trois locales doit être revalidé.
+  Gain attendu : build nettement plus rapide.
+  Voir https://angular.dev/tools/cli/build-system-migration
+- [ ] **`@angular/platform-browser-dynamic` déprécié** — remplacé par
+  `@angular/platform-browser`. Changement d'import, peu risqué.
+- [ ] **`@angular/animations` déprécié** — remplacé par `animate.enter` /
+  `animate.leave` (nouvelle API Angular 22). Touche toutes les animations existantes.
+- [ ] **`flag-icon-css@3.5.0` → `flag-icons`** — projet renommé. Utilisé dans
+  `top-nav-lang.component.html` (drapeaux gb/fr/ro). Changement de nom de paquet et
+  probablement de préfixe CSS (`flag-icon-*` → `fi-*`), donc retouche du template.
+
+#### B. Sass : `@import` déprécié
+
+- [ ] **33 fichiers `.scss`** utilisent `@import`, supprimé dans Dart Sass 3.0.
+  Tous font `@import 'styles/variables.scss'`, à convertir en `@use`.
+  Un migrateur automatique existe : https://sass-lang.com/d/import
+  Attention : `@use` a une portée différente d'`@import` (pas de fuite globale des
+  variables), donc à vérifier visuellement après conversion.
+
+#### C. Vulnérabilités npm
+
+`npm audit` remonte **24 vulnérabilités** (5 low, 7 moderate, 11 high, 1 critical).
+
+- [ ] Les analyser avant d'agir : la chaîne principale est
+  `webpack-dev-server → sockjs → uuid <11.1.1`, soit du **outillage de développement**,
+  absent du bundle de production. Le risque réel est donc faible.
+- [ ] `undici` est également signalé (Set-Cookie SameSite, cache partagé).
+- [ ] ⚠️ **Ne pas lancer `npm audit fix --force`** : il applique des changements de
+  version majeure sans discernement et casserait probablement le build Angular.
+  Traiter au cas par cas, en vérifiant si le paquet finit dans le bundle livré.
+- [ ] La migration vers `@angular/build` (point A) supprimerait `webpack-dev-server`
+  et donc l'essentiel de ces alertes.
+
+#### D. Points mineurs
+
+- [ ] **Browserslist** : la configuration cible des navigateurs qu'Angular ne supporte
+  plus (`kaios`, `op_mini`, `chrome 109`, `samsung 29`…). Sans effet sur le build, mais
+  génère du bruit à chaque compilation. À resserrer.
+- [ ] **`@stomp/rx-stomp` en CommonJS** — provoque un « optimization bailout » signalé
+  au build. Cosmétique tant que la taille du bundle reste acceptable.
+- [ ] **`@ng-bootstrap/ng-bootstrap` en `21.0.0-rc.0`** — version *release candidate*
+  en production. À basculer sur la GA dès sa sortie.
+- [ ] **Node local** : `node.version` du `pom.xml` est `v24.17.0`. Garder
+  l'environnement de développement aligné sur cette version (un `.nvmrc` à `24` dans
+  `frontend/` documenterait le choix).
+
+Chaque bump majeur = branche dédiée + validation visuelle + Playwright e2e
+(`npm run e2e`).
+
+#### E. i18n — dette structurelle corrigée le 2026-07-27
+
+`messages.xlf` n'avait pas été régénéré depuis six semaines : 101 unités
+enregistrées contre 630 dans le code, d'où une trentaine de « No translation found »
+à chaque build. Deux causes, toutes deux traitées :
+
+1. Extraction jamais relancée après ajout de nouveaux textes → `npm run i18n` puis
+   41 clés traduites en `fr-FR` et `ro-RO`.
+2. `sunOffsetsWhyDelay` et `sunOffsetsForceNote` contenaient du HTML brut
+   (`<strong>`, `<ul>`) dans leur `<source>` au lieu des placeholders
+   `<x id="START_TAG_STRONG"/>` attendus par Angular. Le source ne correspondant pas
+   à celui extrait du code, la traduction était **ignorée silencieusement**.
+
+- [ ] **Pour éviter la récidive** : lancer `npm run i18n` après tout ajout de texte
+  traduisible, et vérifier qu'aucun « No translation found » n'apparaît au build.
+  Un contrôle en CI serait plus fiable :
+  ```bash
+  npm run i18n && git diff --exit-code src/locale/messages.xlf
+  ```
+  (échoue si l'extraction n'était pas à jour)
+- [ ] **Ne jamais écrire de HTML brut** dans un `<source>` de fichier `.xlf` : toujours
+  repartir de l'unité générée dans `messages.xlf`.
 
 ### 6.3 — Validation
 
-- [ ] `mvn test` : 71+ tests OK.
+- [ ] `mvn test` : **66 tests** OK (le chiffre « 71+ » de la roadmap initiale était
+  erroné — la suite en compte 66 depuis la migration SB 4).
 - [ ] `cd frontend && npm test && npm run e2e` : suites vertes.
+- [ ] `mvn clean package` : **aucun** « No translation found », aucun avertissement.
 - [ ] Redéploiement complet via `deploy.sh`.
 - [ ] Cycle 24 h d'observation.
 
