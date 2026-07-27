@@ -1205,7 +1205,11 @@ sudo chmod 640 /var/lib/hermanas/{application.properties,users.properties,keysto
   JAR : il faudrait alors y écrire `12`, jamais `25`.
   *(Ne pas confondre avec `SERVO_OPENING_MAX_POSITION = 25` dans `ServoMotorService` :
   c'est une position angulaire du servo, pas un numéro de broche.)*
-- [x] `keystore.p12` conservé tel quel : Hermanas continue de servir en HTTPS interne sur `:8443` pour l'instant. Basculer Hermanas en HTTP simple (et laisser `shannen` terminer TLS) est un chantier séparé, hors migration matérielle.
+- [x] `keystore.p12` **non migré** — décision confirmée par la configuration :
+  `application.properties` fixe `server.port = 8080` et ne déclare aucune propriété
+  `server.ssl.*`. Hermanas sert donc en **HTTP simple**, le TLS étant terminé par
+  `shannen`. Le basculement redouté comme « chantier séparé » était en réalité déjà
+  effectif.
 
 ### 2.7 — Config MariaDB custom (optionnel)
 
@@ -1367,17 +1371,54 @@ pour MariaDB 11.
 
 ### 3.3 — Sanity check applicatif
 
+> ⚠️ **HTTP sur le port 8080**, pas HTTPS sur 8443 : `application.properties` fixe
+> `server.port = 8080` et ne déclare aucune propriété `server.ssl.*` — le TLS est
+> terminé par `shannen`.
+
 ```bash
-curl -k https://pru.local:8443/actuator/health
-curl -k -c /tmp/cookies.txt -X POST https://pru.local:8443/api/v1/auth/login \
+curl http://pru.local:8080/actuator/health
+curl -c /tmp/cookies.txt -X POST http://pru.local:8080/api/v1/auth/login \
   -d "username=<user>&password=<password>"
-curl -k -b /tmp/cookies.txt https://pru.local:8443/api/v1/sensor/info
+curl -b /tmp/cookies.txt http://pru.local:8080/api/v1/sensor/info
 ```
 
 - [ ] `/actuator/health` : `UP` (porte `DOWN` accepté en `gpio-fake`).
 - [ ] Login OK, session valide.
 - [ ] `/sensor/info` renvoie l'historique restauré.
-- [ ] Frontend charge dans un navigateur (`https://pru.local:8443/`).
+- [ ] Frontend charge dans un navigateur (`http://pru.local:8080/`).
+
+#### Vérification JMX
+
+La configuration JMX de `Hermanas.sh` a été corrigée en Phase 0.3 mais **jamais
+exécutée** — `local.only=true` empêchait le connecteur de démarrer, remplacé par
+`jmxremote.host=127.0.0.1`. Premier test réel ici.
+
+- [ ] Le connecteur écoute, et **seulement sur la boucle locale** :
+  ```bash
+  ss -tlnp | grep 9010
+  # attendu : 127.0.0.1:9010 — surtout PAS 0.0.0.0:9010
+  ```
+- [ ] Aucune erreur JMX au démarrage :
+  ```bash
+  sudo journalctl -u Hermanas.service | grep -iE "jmx|rmi|9010"
+  ```
+- [ ] Connexion depuis le Mac via tunnel SSH :
+  ```bash
+  ssh -p 5722 -L 9010:localhost:9010 jean-baptisterenaux@pru.local
+  # puis, dans une autre session : jconsole localhost:9010
+  ```
+
+> ℹ️ **`PrivateTmp=yes` dans le unit systemd** isole le `/tmp` du service. Le fichier
+> de découverte JVM (`/tmp/hsperfdata_hermanas/`) n'est donc pas visible depuis ta
+> session SSH : `jcmd -l` et `jps` ne listeront pas le process, et l'attachement local
+> de `jconsole` ne fonctionnera pas. **La connexion par le port 9010 reste opérationnelle** —
+> c'est la voie à utiliser.
+
+> ℹ️ **`authenticate=false`** est acceptable *uniquement* parce que le connecteur est
+> restreint à `127.0.0.1` : il faut déjà un accès SSH à la machine pour l'atteindre. À
+> garder en tête : quiconque obtient un shell sur `pru` peut alors invoquer des MBeans,
+> donc modifier la configuration à chaud voire arrêter l'application. Compromis assumé
+> pour une machine mono-service en réseau domestique.
 
 ### 3.4 — Arrêt propre
 
@@ -1532,7 +1573,7 @@ ssh -p 5722 pi@poupou "sudo journalctl -u Hermanas.service -f"
 | Source | Port | Couvre | Fourni par |
 |---|---|---|---|
 | `prometheus-node-exporter` | `:9100/metrics` | Système : CPU, RAM, disque, réseau, température SoC | Paquet apt (Phase 0.7) |
-| `/actuator/prometheus` | `:8443` (Hermanas) | Applicatif : `hermanas.door.*`, `hermanas.sensor.*`, JVM, HTTP | `micrometer-registry-prometheus` |
+| `/actuator/prometheus` | `:8080` (Hermanas, HTTP) | Applicatif : `hermanas.door.*`, `hermanas.sensor.*`, JVM, HTTP | `micrometer-registry-prometheus` |
 
 > ⚠️ **Bug latent corrigé pendant la migration.** `application.properties` exposait
 > `prometheus` dans `management.endpoints.web.exposure.include`, mais la dépendance
@@ -1556,17 +1597,9 @@ ssh -p 5722 pi@poupou "sudo journalctl -u Hermanas.service -f"
   # attendu : hermanas_door_..., hermanas_sensor_... — et surtout PAS un 404
   ```
 - [ ] **Prometheus scrape bien les deux cibles** — vérifier côté `shannen` que le job
-  Hermanas existe dans `prometheus.yml`. Si seul le `:9100` y figure, ajouter la cible
-  applicative :
-  ```yaml
-  - job_name: 'hermanas-app'
-    metrics_path: '/actuator/prometheus'
-    scheme: https
-    tls_config:
-      insecure_skip_verify: true   # keystore.p12 auto-signé
-    static_configs:
-      - targets: ['poupou:8443']
-  ```
+  Hermanas existe dans `prometheus.yml`. Si seul le `:9100` (node-exporter) y figure,
+  ajouter la cible applicative décrite ci-dessous.
+
   ⚠️ **L'endpoint est protégé** : `/actuator/**` exige `ROLE_ADMIN` hors `/health` et
   `/info` (cf. `SecurityConfig`) — le scrape recevra un **401** sans authentification.
 
@@ -1584,7 +1617,7 @@ ssh -p 5722 pi@poupou "sudo journalctl -u Hermanas.service -f"
       - targets: ['poupou:8080']
   ```
   *(L'alternative — rendre `/actuator/prometheus` public — a été écartée. L'endpoint
-  n'expose que des compteurs et jauges, sans secret, et le port 8443 n'est pas routé
+  n'expose que des compteurs et jauges, sans secret, et le port 8080 n'est pas routé
   depuis Internet ; mais les noms d'URI renseignent sur la structure de l'API et les
   métriques JVM sur le dimensionnement de la machine. Aucune raison de s'en priver
   quand `basic_auth` ne coûte rien.)*
@@ -1782,7 +1815,9 @@ Fenêtre de conservation : **1 semaine post-Phase 5**.
 - **CPU bridé à 600 MHz** (`arm_freq=600`) — à ajuster si démarrage Spring trop lent.
 - **SSH par clé** depuis le Mac (Phase 0.2bis), plus de mot de passe à taper.
 - **Hermanas tourne sous le user système `hermanas`** (non-root), membre des groupes `gpio`, `audio`, `dialout`. Rendu possible par le passage à pi4j FFM + chardev (`/dev/gpiochip0` accessible au groupe `gpio`). Bonus : élimine le hack VLC-en-root de `poupou`. Fichiers applicatifs dans `/var/lib/hermanas/` (owner `hermanas:hermanas`, mode 640/750). Unit systemd durci : `ProtectHome=yes`, `ProtectSystem=strict`, `NoNewPrivileges=yes`, `PrivateTmp=yes`.
-- **Certificats TLS gérés par `shannen`** — plus de Let's Encrypt côté `pru`. Le `keystore.p12` local est conservé tel quel pour l'HTTPS interne (`:8443`), sa gestion long terme est un chantier séparé.
+- **Certificats TLS gérés par `shannen`** — plus de Let's Encrypt côté `pru`, et
+  `keystore.p12` n'est même pas migré : Hermanas sert en HTTP simple sur `:8080`
+  (`server.port=8080`, aucune propriété `server.ssl.*`), `shannen` termine le TLS.
 - **Camera + player audio traités en dernier** (Phase 7), après stabilisation et update libs.
 - **Photos migrées via Samba** (share temporaire sur `pru`, monté sur `poupou`, purgé après).
 - **Prometheus + Grafana restent sur `shannen`** — juste `prometheus-node-exporter` à réinstaller sur `pru`.
