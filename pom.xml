@@ -44,10 +44,13 @@
         <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <!--
             CycloneDX SBOM plugin — emits target/bom.json + target/bom.xml at every
-            `mvn package`. 2.9.x is the last 2.x line and stays Java 11 compatible,
-            which the Pi Zero deployment requires. Bumping to 3.x needs Java 17.
+            `mvn package`. 2.9.2 is the latest release; there is no 3.x line.
+            (The former Java 11 constraint no longer applies since the Java 25 move.)
+            Note: the "Unknown keyword meta:enum / deprecated" warnings at build time
+            come from the bundled JSON-schema validator, which predates those
+            CycloneDX 1.6 keywords. Cosmetic only — the SBOM itself is valid.
         -->
-        <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
+        <cyclonedx-maven-plugin.version>2.9.2</cyclonedx-maven-plugin.version>
 
 		<!-- Frontend build (Angular) -->
 		<frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
@@ -387,6 +390,17 @@
 				<artifactId>cyclonedx-maven-plugin</artifactId>
 				<version>${cyclonedx-maven-plugin.version}</version>
 				<executions>
+					<!--
+						Le plugin déclare sa propre exécution 'default' liée au cycle de
+						vie. Sans cette neutralisation elle s'ajoute à 'build-sbom'
+						ci-dessous et produit un second SBOM JSON identique
+						(application.cdx.json en plus de bom.json), soit ~500 Ko
+						dupliqués dans le JAR.
+					-->
+					<execution>
+						<id>default</id>
+						<phase>none</phase>
+					</execution>
 					<execution>
 						<id>build-sbom</id>
 						<phase>package</phase>
