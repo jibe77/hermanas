@@ -261,6 +261,13 @@ Objectif : faire tourner l'application sous un user dédié non-root, cohérent 
 ```bash
 sudo useradd -r -s /usr/sbin/nologin -c "Hermanas service user" hermanas
 sudo usermod -aG gpio  hermanas     # accès à /dev/gpiochip*
+# ⚠️ i2c et spi sont indispensables même si le projet n'utilise ni l'un ni l'autre :
+# le plugin pi4j FFM initialise TOUS ses providers d'un bloc, et FFMI2CProviderImpl
+# vérifie l'appartenance au groupe i2c. L'échec de ce contrôle fait tomber le plugin
+# entier — les providers ffm-digital-* ne sont alors jamais enregistrés, et toute
+# création de sortie GPIO échoue sur ProviderNotFoundException (constaté 2026-07-27).
+sudo usermod -aG i2c   hermanas     # exigé par FFMI2CProviderImpl
+sudo usermod -aG spi   hermanas     # idem côté SPI
 sudo usermod -aG audio hermanas     # accès à /dev/snd/* pour cvlc/amixer
 sudo usermod -aG dialout hermanas   # accès aux périphériques série éventuels (utile pour DHT22 via UART si besoin un jour)
 ```
@@ -268,7 +275,8 @@ sudo usermod -aG dialout hermanas   # accès aux périphériques série éventue
 Vérifier :
 ```bash
 id hermanas
-# attendu : uid=... groups=...(hermanas),20(dialout),29(audio),997(gpio) (numéros indicatifs)
+# attendu : uid=... groups=...(hermanas),20(dialout),29(audio),997(gpio),998(i2c),999(spi)
+# (numéros indicatifs — ce sont les NOMS de groupes qui comptent)
 ```
 
 Créer le répertoire de travail applicatif (plus propre que `/home/jean-baptisterenaux/`) :
@@ -334,7 +342,7 @@ Requires=mariadb.service
 Type=forking
 User=hermanas
 Group=hermanas
-SupplementaryGroups=gpio audio dialout
+SupplementaryGroups=gpio i2c spi audio dialout
 
 # systemd crée /run/hermanas automatiquement à chaque démarrage,
 # avec les bons owner/group, et le supprime à l'arrêt.
@@ -374,7 +382,7 @@ WantedBy=multi-user.target
 - [x] Vérifier que `Hermanas.service` cible bien le user `hermanas` :
   ```bash
   sudo systemctl show Hermanas.service | grep -E "^(User|Group|SupplementaryGroups)="
-  # attendu : User=hermanas, Group=hermanas, SupplementaryGroups=gpio audio dialout
+  # attendu : User=hermanas, Group=hermanas, SupplementaryGroups=gpio i2c spi audio dialout
   ```
 - [x] **Ne pas démarrer** le service tout de suite (le JAR et `application.properties` sont installés en Phase 2/3).
 
