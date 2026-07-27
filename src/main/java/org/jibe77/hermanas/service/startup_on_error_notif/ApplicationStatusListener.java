@@ -65,7 +65,18 @@ public class ApplicationStatusListener implements ApplicationListener<ContextClo
         preloadShutdownCriticalClasses();
         Event lastEvent = findLastStartupOrShutdown();
         if (lastEvent != null && lastEvent.getEventType() == EventType.STARTUP) {
-            sendShutdownErrorNotification(lastEvent.getDateTime());
+            // Cette notification est un confort, pas une condition de démarrage : elle
+            // signale qu'un arrêt s'est mal passé. La laisser propager empêchait toute
+            // l'application de démarrer quand la caméra manquait — un UnsatisfiedLinkError
+            // remontait jusqu'ici et faisait échouer le bean. On attrape donc Throwable :
+            // les Error (édition native absente, mémoire) doivent être traitées comme le
+            // reste, la porte et les capteurs n'ayant pas à en souffrir.
+            try {
+                sendShutdownErrorNotification(lastEvent.getDateTime());
+            } catch (Throwable t) {
+                logger.error("Could not send the incorrect-shutdown notification. "
+                        + "Startup continues — this alert is not critical.", t);
+            }
         }
         logger.info("Save startup time in Event Table.");
         Event event = new Event();

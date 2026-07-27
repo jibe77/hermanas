@@ -35,6 +35,13 @@ public class GpioHermanasRpiService implements GpioHermanasService {
 
     private Context pi4j;
 
+    /**
+     * Vrai si {@code System.load(picamJniImplementation)} a réussi. Permet de refuser
+     * les captures sans déclencher d'{@link UnsatisfiedLinkError}, que les appelants
+     * ne rattrapent pas (c'est une {@link Error}, pas une {@link Exception}).
+     */
+    private boolean picamLibraryLoaded = false;
+
     private final CameraConfiguration cameraConfiguration;
 
     private static final Logger logger = LoggerFactory.getLogger(GpioHermanasRpiService.class);
@@ -74,6 +81,7 @@ public class GpioHermanasRpiService implements GpioHermanasService {
         try {
             logger.info("Load picam JNI implementation from .so file {}.", picamJniImplementation);
             System.load(picamJniImplementation);
+            picamLibraryLoaded = true;
         } catch (UnsatisfiedLinkError e) {
             logger.warn("Can't load picam native library from {} — camera endpoints "
                     + "will fail, the rest of the application is unaffected.",
@@ -95,6 +103,16 @@ public class GpioHermanasRpiService implements GpioHermanasService {
 
     @Async
     public CompletableFuture<Void> takePictureAsync(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
+        // Sans la librairie native, tout appel à picam lève un UnsatisfiedLinkError —
+        // une Error, donc non rattrapée par les catch (Exception) des appelants.
+        // C'est ainsi que l'absence de caméra faisait échouer le démarrage complet
+        // via ApplicationStatusListener, qui tente une photo pour son mail d'alerte.
+        // On échoue ici en IOException, que les appelants savent traiter.
+        if (!picamLibraryLoaded) {
+            throw new IOException("Camera unavailable: picam native library not loaded from "
+                    + picamJniImplementation);
+        }
+
         uk.co.caprica.picam.CameraConfiguration picamConfig = highQuality
                 ? cameraConfiguration.buildHighQuality()
                 : cameraConfiguration.buildRegularQuality();
@@ -104,6 +122,10 @@ public class GpioHermanasRpiService implements GpioHermanasService {
             throw new IOException("Can't capture a picture.", e);
         } catch (Exception e) {
             throw new IOException(e);
+        } catch (UnsatisfiedLinkError e) {
+            // Filet de sécurité : le drapeau ci-dessus devrait déjà avoir court-circuité,
+            // mais picam peut charger d'autres symboles natifs à l'exécution.
+            throw new IOException("Camera unavailable: missing native symbol.", e);
         }
         return CompletableFuture.completedFuture(null);
     }
