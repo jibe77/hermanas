@@ -1724,6 +1724,32 @@ Défaut : 60 — le noyau swappe volontiers. À 10, il ne le fait qu'en dernier 
   `pcmanfm`, `gvfs` et `polkit` tournaient en permanence sur une machine headless.
   Gain modeste en RAM (~10 Mo résidents), mais surtout du cache disque récupéré.
 
+#### g. Mémoire GPU réduite — +48 Mo de RAM
+
+Le SoC Broadcom partage sa RAM entre le processeur ARM et le VideoCore. La part
+allouée au GPU est réservée par le firmware **avant** que Linux ne démarre : elle
+n'apparaît donc jamais dans `free -h`. C'est pourquoi le Pi Zero 2 W, annoncé à
+512 Mo, n'en expose que 415.
+
+```bash
+vcgencmd get_mem gpu    # gpu=64M sur pru (2026-07-27)
+```
+
+64 Mo pour un GPU qu'une machine headless n'utilise pas.
+
+- [x] Réduire au plancher firmware :
+  ```bash
+  echo "gpu_mem=16" | sudo tee -a /boot/firmware/config.txt
+  sudo reboot
+  vcgencmd get_mem gpu    # attendu : gpu=16M
+  free -h                 # total : 415 → ~463 Mo
+  ```
+
+⚠️ **À rouvrir en Phase 7.** `rpicam-still` réclame typiquement 64 Mo de mémoire
+GPU. Il faudra remonter `gpu_mem` quand la caméra sera remise en service — la
+caméra étant de toute façon hors service jusque-là, ces 48 Mo sont un gain
+immédiat, à rendre plus tard.
+
 #### f. Swapfile SD supprimé — zram seul ✅
 
 `swapon --show` liste deux espaces : `/dev/zram0` (415 Mo, compressé en RAM,
