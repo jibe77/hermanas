@@ -1691,10 +1691,20 @@ zone.js 0.16.2, Vitest 4.1.8, ESLint 10.5.0, ng-bootstrap 21.0.0-rc.0.
   configuration à reprendre, et le `--localize` sur trois locales doit être revalidé.
   Gain attendu : build nettement plus rapide.
   Voir https://angular.dev/tools/cli/build-system-migration
-- [ ] **`@angular/platform-browser-dynamic` déprécié** — remplacé par
-  `@angular/platform-browser`. Changement d'import, peu risqué.
+- [x] ✅ **`@angular/platform-browser-dynamic` : code déjà migré, paquet à retirer.**
+  Vérifié le 2026-07-27 : `src/main.ts` utilise déjà `bootstrapApplication` depuis
+  `@angular/platform-browser`, et **aucun fichier du projet n'importe
+  `platform-browser-dynamic`**. Le paquet n'apparaît plus que dans `package.json` —
+  c'est un reliquat. Il suffit de l'y supprimer :
+  ```bash
+  npm uninstall @angular/platform-browser-dynamic
+  ```
+  ⚠️ Vérifier ensuite que `npm test` passe (Vitest peut s'en servir indirectement).
 - [ ] **`@angular/animations` déprécié** — remplacé par `animate.enter` /
-  `animate.leave` (nouvelle API Angular 22). Touche toutes les animations existantes.
+  `animate.leave` (nouvelle API Angular 22). **4 composants concernés**, tous dans
+  `app-common` : `toast-container`, `offline-banner`, `loading-spinner`,
+  `pwa-install-banner`. Ils utilisent `trigger`/`style`/`transition`/`animate`.
+  Périmètre restreint, donc migration abordable — mais validation visuelle nécessaire.
 - [ ] **`flag-icon-css@3.5.0` → `flag-icons`** — projet renommé. Utilisé dans
   `top-nav-lang.component.html` (drapeaux gb/fr/ro). Changement de nom de paquet et
   probablement de préfixe CSS (`flag-icon-*` → `fi-*`), donc retouche du template.
@@ -1702,7 +1712,9 @@ zone.js 0.16.2, Vitest 4.1.8, ESLint 10.5.0, ng-bootstrap 21.0.0-rc.0.
 #### B. Sass : `@import` déprécié
 
 - [ ] **33 fichiers `.scss`** utilisent `@import`, supprimé dans Dart Sass 3.0.
-  Tous font `@import 'styles/variables.scss'`, à convertir en `@use`.
+  Détail vérifié : **31** font `@import 'styles/variables.scss'` (cas trivial,
+  mécanisable), les autres importent des partiels de `styles/` (`navigation/`,
+  `layout/`). Aucun `@use` n'est encore employé dans le projet.
   Un migrateur automatique existe : https://sass-lang.com/d/import
   Attention : `@use` a une portée différente d'`@import` (pas de fuite globale des
   variables), donc à vérifier visuellement après conversion.
@@ -1714,7 +1726,9 @@ zone.js 0.16.2, Vitest 4.1.8, ESLint 10.5.0, ng-bootstrap 21.0.0-rc.0.
 - [ ] Les analyser avant d'agir : la chaîne principale est
   `webpack-dev-server → sockjs → uuid <11.1.1`, soit du **outillage de développement**,
   absent du bundle de production. Le risque réel est donc faible.
-- [ ] `undici` est également signalé (Set-Cookie SameSite, cache partagé).
+- [ ] `undici` est également signalé (Set-Cookie SameSite, cache partagé). Vérifié :
+  il ne provient que de `@angular/cli` (via `pacote → node-gyp`) et de `jsdom`, donc
+  **outillage uniquement** — jamais dans le bundle livré.
 - [ ] ⚠️ **Ne pas lancer `npm audit fix --force`** : il applique des changements de
   version majeure sans discernement et casserait probablement le build Angular.
   Traiter au cas par cas, en vérifiant si le paquet finit dans le bundle livré.
@@ -1723,16 +1737,28 @@ zone.js 0.16.2, Vitest 4.1.8, ESLint 10.5.0, ng-bootstrap 21.0.0-rc.0.
 
 #### D. Points mineurs
 
-- [ ] **Browserslist** : la configuration cible des navigateurs qu'Angular ne supporte
-  plus (`kaios`, `op_mini`, `chrome 109`, `samsung 29`…). Sans effet sur le build, mais
-  génère du bruit à chaque compilation. À resserrer.
+- [ ] **Browserslist** : la configuration vit dans le fichier `frontend/browserslist`
+  (et non dans `package.json`). Elle contient `> 0.5%`, `last 2 versions`,
+  `Firefox ESR`, `not dead`, plus une ligne `not IE 9-11` devenue sans objet. C'est le
+  `> 0.5%` qui fait entrer des navigateurs qu'Angular ne supporte plus (`kaios`,
+  `op_mini`, `chrome 109`, `samsung 29`…), d'où le bruit à chaque build. Sans effet
+  sur le résultat. Piste : remplacer par `defaults` ou resserrer à `> 1%`.
 - [ ] **`@stomp/rx-stomp` en CommonJS** — provoque un « optimization bailout » signalé
   au build. Cosmétique tant que la taille du bundle reste acceptable.
-- [ ] **`@ng-bootstrap/ng-bootstrap` en `21.0.0-rc.0`** — version *release candidate*
-  en production. À basculer sur la GA dès sa sortie.
-- [ ] **Node local** : `node.version` du `pom.xml` est `v24.17.0`. Garder
-  l'environnement de développement aligné sur cette version (un `.nvmrc` à `24` dans
-  `frontend/` documenterait le choix).
+- [ ] ⚠️ **`@ng-bootstrap/ng-bootstrap` en `21.0.0-rc.0` alors que la GA `21.0.0`
+  est publiée** (vérifié le 2026-07-27). Une *release candidate* tourne donc en
+  production sans raison. Bump simple, à faire en priorité dans ce lot :
+  ```bash
+  npm install @ng-bootstrap/ng-bootstrap@21.0.0
+  ```
+- [ ] **Node local** : `node.version` du `pom.xml` est `v24.17.0`, et il n'existe
+  aucun `.nvmrc` dans `frontend/` (vérifié le 2026-07-27). Rien ne documente donc la
+  version attendue, alors qu'Angular 22 exige au minimum v22.22.3 — un Node trop
+  ancien fait échouer toute commande `npm` lancée à la main, sans que le build Maven
+  ne le signale (il télécharge son propre Node).
+  ```bash
+  echo "24" > frontend/.nvmrc
+  ```
 
 Chaque bump majeur = branche dédiée + validation visuelle + Playwright e2e
 (`npm run e2e`).
