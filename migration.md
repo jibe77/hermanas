@@ -1909,6 +1909,74 @@ Utile pour rédiger un guide d'installation ; chaque point renvoie à sa section
 | 13 | `gpu_mem` 64 → 16 Mo | 3.2bis g — +48 Mo sur une machine headless |
 | 14 | `ExecStartPre=/bin/sleep 45`, `Nice=10` | 0.6 — évite la concurrence mémoire au boot |
 | 15 | Chemins absolus dans `application.properties` | 2.6 — `./photos` → `/var/lib/hermanas/photos` |
+| 16 | `navigationUrls` explicites dans `ngsw-config.json` | 3.5bis — le service worker détournait `/actuator/*` vers `/fr-FR/actuator/*` |
+| 17 | `NoResourceFoundException` traitée en 404 | 3.5bis — évitait une trace de 150 lignes en ERROR par fichier absent |
+
+### 3.5bis — 404 en boucle sur `/fr-FR/actuator/*` ✅
+
+**Symptôme.** Les logs se remplissaient de traces de 150 lignes en `ERROR` :
+
+```
+GlobalExceptionHandler : Unexpected error occurred
+org.springframework.web.servlet.resource.NoResourceFoundException:
+  No static resource fr-FR/actuator/health for request '/fr-FR/actuator/health'
+  No static resource fr-FR/actuator/info   for request '/fr-FR/actuator/info'
+```
+
+**Fausse piste.** Le code Angular n'est pas en cause : `actuator-info.service.ts`
+appelle bien `/actuator/info` en absolu, et `HttpClient` ne préfixe jamais par le
+`<base href>`.
+
+**Cause réelle — le service worker.** Trois faits qui se combinent :
+
+1. `provideServiceWorker('ngsw-worker.js', …)` utilise un chemin **relatif**. Sous
+   le `<base href="/fr-FR/">` que le build `--localize` place dans chaque
+   `index.html`, le navigateur le résout en `/fr-FR/ngsw-worker.js` : le worker
+   obtient donc un **scope `/fr-FR/`**.
+2. Par défaut, `navigationUrls` vaut `^\/.*$` moins les URLs contenant un point
+   ou `__`. `/actuator/health` n'a ni l'un ni l'autre : le SW la classe en
+   **navigation**.
+3. Les `dataGroups` ne listent que `/api/v1/**` — rien n'attrape `/actuator/**`.
+
+Le worker sert donc son index pour ces requêtes, et comme il ne peut agir que
+dans son scope, l'URL ressort préfixée en `/fr-FR/actuator/health`.
+
+**Correctif (`frontend/ngsw-config.json`).** Rendre `navigationUrls` explicite :
+les quatre premières entrées reproduisent le défaut d'Angular — les omettre le
+ferait perdre — les cinq suivantes excluent les chemins servis par Spring.
+
+```json
+"navigationUrls": [
+  "/**",
+  "!/**/*.*",
+  "!/**/*__*",
+  "!/**/*__*/**",
+  "!/actuator/**",
+  "!/api/**",
+  "!/v3/**",
+  "!/swagger-ui/**",
+  "!/stomp/**"
+]
+```
+
+Vérification sur le manifeste généré après `ng build` :
+
+```bash
+python3 -c "import json; [print(n) for n in \
+  json.load(open('frontend/dist/hermanas-client/fr-FR/ngsw.json'))['navigationUrls']]"
+```
+
+Les cinq regex négatives (`^\/actuator\/.*$`, etc.) doivent apparaître.
+
+**Correctif complémentaire (`GlobalExceptionHandler`).** Indépendamment de la
+cause, une ressource statique absente ne mérite pas une trace complète en
+`ERROR`. Un `@ExceptionHandler(NoResourceFoundException.class)` renvoie
+désormais un 404 et journalise en `DEBUG`.
+
+> ⚠️ **Après déploiement**, les navigateurs ayant déjà enregistré l'ancien
+> worker gardent son comportement jusqu'à la mise à jour du SW. Forcer si
+> besoin : DevTools → Application → Service Workers → *Unregister*, puis
+> rechargement forcé.
 
 #### Réglages restants (mineurs, sans urgence)
 
