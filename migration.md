@@ -1724,23 +1724,57 @@ Défaut : 60 — le noyau swappe volontiers. À 10, il ne le fait qu'en dernier 
   `pcmanfm`, `gvfs` et `polkit` tournaient en permanence sur une machine headless.
   Gain modeste en RAM (~10 Mo résidents), mais surtout du cache disque récupéré.
 
-#### f. Piste non appliquée : supprimer le swapfile SD
+#### f. Swapfile SD supprimé — zram seul ✅
 
 `swapon --show` liste deux espaces : `/dev/zram0` (415 Mo, compressé en RAM,
 priorité 100) et `/var/swap` (850 Mo, **sur la carte SD**, priorité -2). Le noyau
 remplit zram d'abord, puis déborde sur le fichier — c'est ce débordement qui use
 le support.
 
-```bash
-sudo swapoff /var/swap
-sudo systemctl disable --now dphys-swapfile
-sudo rm -f /var/swap
+**Mesure décisive (2026-07-27)** — `zramctl` révèle un taux de compression bien
+meilleur qu'attendu sur le heap Java :
+
 ```
+NAME       ALGORITHM DISKSIZE   DATA COMPR TOTAL
+/dev/zram0 zstd        207.5M 162.2M 35.1M  38.5M     → ratio 4,6:1
+```
+
+162 Mo de pages swappées n'occupaient que 38 Mo de RAM réelle. Mais zram était
+**saturé** (204,4 Mo utilisés sur 207,5) et sa taille mal calibrée — d'où le
+débordement sur `/var/swap`, où 209 Mo étaient écrits sur la carte.
+
+- [x] **Agrandir zram à 2× la RAM.** Avec le ratio constaté, 830 Mo de pages ne
+  coûtent qu'environ 180 Mo de mémoire réelle au pire.
+  ```bash
+  sudo tee /etc/systemd/zram-generator.conf > /dev/null <<'EOF'
+  [zram0]
+  zram-size = ram * 2
+  compression-algorithm = zstd
+  EOF
+  sudo systemctl daemon-reload
+  sudo reboot
+  ```
+- [x] **Supprimer le swapfile disque** :
+  ```bash
+  sudo swapoff /var/swap
+  sudo systemctl disable --now dphys-swapfile
+  sudo rm -f /var/swap
+  sudo sed -i '/\/var\/swap/d' /etc/fstab   # sinon il revient au boot
+  swapon --show                              # ne doit lister que /dev/zram0
+  ```
+  ⚠️ **Ordre important** : agrandir zram **avant** de retirer le swapfile, sinon il
+  ne reste que 207 Mo de swap total.
+  ⚠️ `swapoff` échoue avec `Cannot allocate memory` s'il n'y a pas assez de RAM libre
+  pour rapatrier le contenu du fichier — arrêter Hermanas d'abord, ou simplement
+  redémarrer (le reboot purge le swapfile).
+
+**Résultat : `/dev/zram0` 830 Mo, aucun swap disque. Plus une seule écriture de swap
+sur la carte SD.**
 
 ⚠️ Sans filet disque, un dépassement mémoire déclenche un `OOM kill` au lieu d'un
 ralentissement. Combiné à `-XX:+ExitOnOutOfMemoryError` et au `Restart=on-failure`
-du unit systemd, cela donne un redémarrage propre plutôt qu'une usure continue.
-**À évaluer après avoir mesuré l'effet des points a à e.**
+du unit, cela donne un redémarrage propre plutôt qu'une usure continue — c'est le
+compromis voulu.
 
 ### 3.3 — Sanity check applicatif
 
