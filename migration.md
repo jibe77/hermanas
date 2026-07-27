@@ -130,14 +130,16 @@ JVM_OPTS="-Xmx256m -Xms128m \
     -Djava.net.preferIPv4Stack=true \
     --enable-native-access=ALL-UNNAMED"
 
-# JMX localhost uniquement — accès via SSH tunnel :
-# ssh -p 5722 -L 9010:localhost:9010 pi@poupou
+# JMX restreint à la boucle locale via jmxremote.host — accès par tunnel SSH :
+#   ssh -p 5722 -L 9010:localhost:9010 jean-baptisterenaux@pru.local
+# NE PAS utiliser local.only=true : incompatible avec un port déclaré, la JVM
+# refuse alors de démarrer le connecteur (cf. correction du 2026-07-27).
 JMX_OPTS="-Dcom.sun.management.jmxremote \
-    -Dcom.sun.management.jmxremote.local.only=true \
     -Dcom.sun.management.jmxremote.port=9010 \
     -Dcom.sun.management.jmxremote.rmi.port=9010 \
     -Dcom.sun.management.jmxremote.authenticate=false \
     -Dcom.sun.management.jmxremote.ssl=false \
+    -Dcom.sun.management.jmxremote.host=127.0.0.1 \
     -Djava.rmi.server.hostname=127.0.0.1"
 
 case $1 in
@@ -157,7 +159,7 @@ case $1 in
         echo "Starting $SERVICE_NAME (debug) ..."
         if [ ! -f $PID_PATH_NAME ]; then
             nohup $JAVA_BIN $JVM_OPTS $JMX_OPTS \
-                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 \
+                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:5005 \
                 -jar $PATH_TO_JAR \
                 --spring.config.location=$CONFIG_LOCATION \
                 & echo $! > $PID_PATH_NAME
@@ -189,7 +191,7 @@ esac
 | Pas de GC choisi | `-XX:+UseSerialGC` | GC single-thread, économe en mémoire, adapté aux petits heaps sur ARM |
 | Pas de FFM autorisation | `--enable-native-access=ALL-UNNAMED` | Requis pour `pi4j-plugin-ffm` — sans ça, warning restricted method à chaque appel GPIO |
 | `java.rmi.server.hostname=10.0.0.20` | `=127.0.0.1` | L'IP `10.0.0.20` était un vestige non fonctionnel (LAN Freebox = 192.168.1.0/24) |
-| `local.only=false` | `local.only=true` | JMX exposé sans auth ni TLS = trou de sécu. Désormais accessible via SSH tunnel uniquement |
+| `local.only=false` | `jmxremote.host=127.0.0.1` | JMX exposé sans auth ni TLS = trou de sécu. `local.only=true` avait d'abord été retenu, mais ce paramètre est **incompatible avec un port déclaré** et empêche la JVM de démarrer le connecteur. `jmxremote.host` fait ce qu'on attendait : le connecteur n'écoute que sur la boucle locale, l'accès passe par tunnel SSH |
 | Pas de `--spring.config.location` | Explicit `file:/var/lib/hermanas/application.properties` | Ne dépend plus du CWD au moment du démarrage |
 | `-Dcom.sun.management.jmxremote=true` (en `debug`) | Retiré | Redondant, l'activation JMX est déjà impliquée par la présence du port |
 
@@ -1129,6 +1131,16 @@ EOF
 
 Copie via `/tmp/` puis placement dans `/var/lib/hermanas/` avec l'ownership `hermanas:hermanas` :
 
+> ✅ **Décision utilisateur 2026-07-27 : seul `application.properties` est migré.**
+> Les trois autres fichiers de la liste d'origine sont devenus inutiles — vérifié
+> dans le code avant de les écarter :
+>
+> | Fichier | Pourquoi il est inutile |
+> |---|---|
+> | `users.properties` | L'authentification est passée en base. `DbUserDetailsService` ne lit ce fichier que si la table `hermanas_user` est **vide**, en mécanisme de reprise pour les anciennes installations. La base restaurée depuis `poupou` contient les users, le fichier n'est jamais ouvert. |
+> | `keystore.p12` | Aucune propriété `server.ssl.*` dans `application.properties` : l'application sert en HTTP simple. Le TLS est terminé par le reverse-proxy sur `shannen`. |
+> | `email` | Plus aucune référence dans la configuration ni dans le code. |
+
 **À lancer sur `pru`** (transfert direct `poupou` → `pru`, sans détour par le Mac) :
 
 ```bash
@@ -1493,9 +1505,29 @@ ssh -p 5722 pi@poupou "sudo journalctl -u Hermanas.service -f"
     static_configs:
       - targets: ['poupou:8443']
   ```
-  ⚠️ L'endpoint est protégé : `/actuator/**` exige `ROLE_ADMIN` hors `/health` et `/info`
-  (cf. `SecurityConfig`). Prévoir `basic_auth` dans le job Prometheus, ou ajouter
-  `/actuator/prometheus` aux chemins publics.
+  ⚠️ **L'endpoint est protégé** : `/actuator/**` exige `ROLE_ADMIN` hors `/health` et
+  `/info` (cf. `SecurityConfig`) — le scrape recevra un **401** sans authentification.
+
+  **Décision : ajouter `basic_auth` au job Prometheus, ne pas ouvrir l'endpoint.**
+  Le fichier `prometheus.yml` est déjà sur `shannen` en accès root ; y placer un
+  identifiant admin coûte moins que d'élargir la surface exposée par l'application.
+  ```yaml
+  - job_name: 'hermanas-app'
+    metrics_path: '/actuator/prometheus'
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true   # keystore.p12 auto-signé
+    basic_auth:
+      username: '<admin>'
+      password: '<password>'
+    static_configs:
+      - targets: ['poupou:8443']
+  ```
+  *(L'alternative — rendre `/actuator/prometheus` public — a été écartée. L'endpoint
+  n'expose que des compteurs et jauges, sans secret, et le port 8443 n'est pas routé
+  depuis Internet ; mais les noms d'URI renseignent sur la structure de l'API et les
+  métriques JVM sur le dimensionnement de la machine. Aucune raison de s'en priver
+  quand `basic_auth` ne coûte rien.)*
 - [ ] Grafana (https://grafana.r3n4.uk) :
   - Dashboards **système** (CPU, RAM, disque, réseau) : points récents, pas de trou > 5 min.
   - Dashboards **Hermanas** (`hermanas.door.*`, `hermanas.sensor.*`) : points récents.
