@@ -2036,14 +2036,22 @@
                 <source>Adjust the exact moment (in minutes) at which the door opens, closes and the light switches on, relative to sunrise and sunset. Useful for shifting a few minutes depending on the season.</source>
                 <target>Ajuste le moment précis (en minutes) où la porte s'ouvre, se ferme et où la lumière s'allume, relativement au lever et coucher du soleil. Utile pour décaler de quelques minutes selon la saison.</target>
             </trans-unit>
-            <trans-unit id="sunOffsetsWhyDelay" datatype="html">
-                <source><strong>Why these delays?</strong> Sunrise and sunset are calculated moments — at those exact times the light is still very low. The chickens go to roost slightly after sunset and come out slightly after sunrise. The three offsets below let you match reality:<ul class="mb-0 mt-1"><li><strong>Door opening (after sunrise)</strong> — waits a few minutes so the chickens have real daylight when the door opens.</li><li><strong>Door closing (after sunset)</strong> — waits until every chicken is inside before the door closes, otherwise a straggler stays locked out for the night.</li><li><strong>Light on (before sunset)</strong> — lights up the interior in advance so the chickens can see their way in as dusk falls.</li></ul></source>
-                <target><strong>Pourquoi ces décalages ?</strong> Le lever et le coucher du soleil sont des instants calculés — à ces heures exactes, la lumière est encore très faible. Les poules rentrent se percher un peu après le coucher et sortent un peu après le lever. Les trois décalages ci-dessous permettent de coller à la réalité :<ul class="mb-0 mt-1"><li><strong>Ouverture (après le lever)</strong> — attend quelques minutes pour que les poules aient une vraie lumière du jour à l'ouverture.</li><li><strong>Fermeture (après le coucher)</strong> — attend que toutes les poules soient rentrées, sinon une retardataire reste enfermée dehors la nuit.</li><li><strong>Lumière (avant le coucher)</strong> — allume l'intérieur en avance pour que les poules voient où aller quand le jour baisse.</li></ul></target>
-            </trans-unit>
-            <trans-unit id="sunOffsetsForceNote" datatype="html">
-                <source><strong>Note.</strong> When a fixed time is forced above, the two door offsets are ignored — the door opens or closes at the exact time you set. The light offset still applies, so the interior can light up before the forced closing time.</source>
-                <target><strong>Note.</strong> Quand une heure fixe est forcée ci-dessus, les deux décalages de porte sont ignorés — la porte s'ouvre ou se ferme à l'heure exacte définie. Le décalage de lumière reste appliqué, pour que l'intérieur s'allume avant la fermeture forcée.</target>
-            </trans-unit>
+<trans-unit id="sunOffsetsWhyDelay" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Why these delays?<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Sunrise and sunset are calculated moments — at those exact times the light is still very low. The chickens go to roost slightly after sunset and come out slightly after sunrise. The three offsets below let you match reality: <x id="START_UNORDERED_LIST" ctype="x-ul" equiv-text="&lt;ul class=&quot;mb-0 mt-1&quot;&gt;"/><x id="START_LIST_ITEM" ctype="x-li" equiv-text="&lt;li&gt;"/><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Door opening (after sunrise)<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — waits a few minutes so the chickens have real daylight when the door opens. <x id="CLOSE_LIST_ITEM" ctype="x-li" equiv-text="&lt;/li&gt;"/><x id="START_LIST_ITEM" ctype="x-li" equiv-text="&lt;li&gt;"/><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Door closing (after sunset)<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — waits until every chicken is inside before the door closes, otherwise a straggler stays locked out for the night. <x id="CLOSE_LIST_ITEM" ctype="x-li" equiv-text="&lt;/li&gt;"/><x id="START_LIST_ITEM" ctype="x-li" equiv-text="&lt;li&gt;"/><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Light on (before sunset)<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — lights up the interior in advance so the chickens can see their way in as dusk falls. <x id="CLOSE_LIST_ITEM" ctype="x-li" equiv-text="&lt;/li&gt;"/><x id="CLOSE_UNORDERED_LIST" ctype="x-ul" equiv-text="&lt;/ul&gt;"/></source>
+        <target xml:space="preserve" state="translated"><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Pourquoi ces délais ?<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Le lever et le coucher du soleil sont des instants calculés — à ces moments précis, la lumière est encore très faible. Les poules rentrent se percher un peu après le coucher du soleil et sortent un peu après le lever. Les trois décalages ci-dessous permettent de coller à la réalité : <x id="START_UNORDERED_LIST" ctype="x-ul" equiv-text="&lt;ul&gt;"/><x id="START_LIST_ITEM" ctype="x-li" equiv-text="&lt;li&gt;"/><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Ouverture de la porte (après le lever)<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — attend quelques minutes pour que les poules aient une vraie lumière du jour à l'ouverture. <x id="CLOSE_LIST_ITEM" ctype="x-li" equiv-text="&lt;/li&gt;"/><x id="START_LIST_ITEM" ctype="x-li" equiv-text="&lt;li&gt;"/><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Fermeture de la porte (après le coucher)<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — attend que toutes les poules soient rentrées avant de fermer, sinon une retardataire reste dehors pour la nuit. <x id="CLOSE_LIST_ITEM" ctype="x-li" equiv-text="&lt;/li&gt;"/><x id="START_LIST_ITEM" ctype="x-li" equiv-text="&lt;li&gt;"/><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Allumage de la lumière (avant le coucher)<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — éclaire l'intérieur à l'avance pour que les poules voient où rentrer à la tombée du jour. <x id="CLOSE_LIST_ITEM" ctype="x-li" equiv-text="&lt;/li&gt;"/><x id="CLOSE_UNORDERED_LIST" ctype="x-ul" equiv-text="&lt;/ul&gt;"/></target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/scheduler/containers/scheduler/scheduler.component.html</context>
+          <context context-type="linenumber">144,162</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="sunOffsetsForceNote" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Note.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> When a fixed time is forced above, the two door offsets are ignored — the door opens or closes at the exact time you set. The light offset still applies, so the interior can light up before the forced closing time. </source>
+        <target xml:space="preserve" state="translated"><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Note.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Quand une heure fixe est forcée ci-dessus, les deux décalages de porte sont ignorés — la porte s'ouvre ou se ferme à l'heure exacte que vous avez définie. Le décalage de la lumière reste appliqué, afin que l'intérieur puisse s'éclairer avant l'heure de fermeture forcée. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/scheduler/containers/scheduler/scheduler.component.html</context>
+          <context context-type="linenumber">165,169</context>
+        </context-group>
+      </trans-unit>
             <trans-unit id="sunDoorOpenLabel" datatype="html">
                 <source>Door opening (min after sunrise)</source>
                 <target>Ouverture porte (min après lever)</target>
@@ -2481,6 +2489,359 @@
                 <source>Timeouts &amp; retry saved (effective on next reboot).</source>
                 <target>Délais et nouvelles tentatives sauvegardés (effectif au prochain redémarrage).</target>
             </trans-unit>
+        
+<trans-unit id="audioActionsMenu" datatype="html">
+        <source>Actions</source>
+        <target xml:space="preserve" state="translated">Actions</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/music/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="brandHenAriaLabel" datatype="html">
+        <source>Hermanas — home</source>
+        <target xml:space="preserve" state="translated">Hermanas — accueil</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/containers/top-nav/top-nav.component.html</context>
+          <context context-type="linenumber">7</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="cameraHighQuality" datatype="html">
+        <source>Webcam page JPEG quality</source>
+        <target xml:space="preserve" state="translated">Qualité JPEG de la page Webcam</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">266</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="cameraRegularQuality" datatype="html">
+        <source>Dashboard JPEG quality</source>
+        <target xml:space="preserve" state="translated">Qualité JPEG du tableau de bord</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">250</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="emailFromInvalid" datatype="html">
+        <source>Please provide a valid sender address before saving.</source>
+        <target xml:space="preserve" state="translated">Veuillez indiquer une adresse d'expéditeur valide avant d'enregistrer.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.ts</context>
+          <context context-type="linenumber">470</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="error404HenAriaLabel" datatype="html">
+        <source>A confused-looking chicken</source>
+        <target xml:space="preserve" state="translated">Une poule à l'air perplexe</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/error/containers/error-404/error-404.component.html</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="error404Punch1" datatype="html">
+        <source>Cot cot ? Cette page s&apos;est fait la malle…</source>
+        <target xml:space="preserve" state="translated">Cot cot ? Cette page s'est fait la malle…</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/error/containers/error-404/error-404.component.html</context>
+          <context context-type="linenumber">79</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="error404Punch2" datatype="html">
+        <source>Pas de page ici, mais j&apos;ai pondu un œuf !</source>
+        <target xml:space="preserve" state="translated">Pas de page ici, mais j'ai pondu un œuf !</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/error/containers/error-404/error-404.component.html</context>
+          <context context-type="linenumber">82</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="error404Punch3" datatype="html">
+        <source>La poule a perdu votre URL dans la paille.</source>
+        <target xml:space="preserve" state="translated">La poule a perdu votre URL dans la paille.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/error/containers/error-404/error-404.component.html</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="error404Title" datatype="html">
+        <source>404 — Page introuvable</source>
+        <target xml:space="preserve" state="translated">404 — Page introuvable</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/error/containers/error-404/error-404.component.html</context>
+          <context context-type="linenumber">89</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="logsDownload" datatype="html">
+        <source>Download</source>
+        <target xml:space="preserve" state="translated">Télécharger</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/logs/containers/logs/logs.component.html</context>
+          <context context-type="linenumber">317</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="logsDownloadTitle" datatype="html">
+        <source>Download the full file</source>
+        <target xml:space="preserve" state="translated">Télécharger le fichier complet</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/logs/containers/logs/logs.component.html</context>
+          <context context-type="linenumber">314</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="musicCocorico" datatype="html">
+        <source>Cocorico</source>
+        <target xml:space="preserve" state="translated">Cocorico</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/music/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="musicCocoricoPlayed" datatype="html">
+        <source>Cocorico !</source>
+        <target xml:space="preserve" state="translated">Cocorico !</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/music/containers/charts/charts.component.ts</context>
+          <context context-type="linenumber">407</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="passwordMismatch" datatype="html">
+        <source> The two password fields do not match. </source>
+        <target xml:space="preserve" state="translated"> Les deux mots de passe ne correspondent pas. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">70,72</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">196,198</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">438,440</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.ts</context>
+          <context context-type="linenumber">220</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.ts</context>
+          <context context-type="linenumber">293</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.ts</context>
+          <context context-type="linenumber">347</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="registerButton" datatype="html">
+        <source>Inscription</source>
+        <target xml:space="preserve" state="translated">Inscription</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/navigation/components/top-nav-user/top-nav-user.component.html</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackApp" datatype="html">
+        <source>Application</source>
+        <target xml:space="preserve" state="translated">Application</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">246</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackBytecode" datatype="html">
+        <source>Bytecode target</source>
+        <target xml:space="preserve" state="translated">Cible bytecode</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">286</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackEncoding" datatype="html">
+        <source>Encoding</source>
+        <target xml:space="preserve" state="translated">Encodage</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">293</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackHeap" datatype="html">
+        <source>JVM heap</source>
+        <target xml:space="preserve" state="translated">Tas JVM</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">308</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackHttpRequests" datatype="html">
+        <source>HTTP requests</source>
+        <target xml:space="preserve" state="translated">Requêtes HTTP</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">325</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackJavaBuild" datatype="html">
+        <source>Java build-time JVM</source>
+        <target xml:space="preserve" state="translated">JVM de compilation</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">274</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackJavaRuntime" datatype="html">
+        <source>Java runtime (JVM)</source>
+        <target xml:space="preserve" state="translated">Runtime Java (JVM)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">257</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackLoading" datatype="html">
+        <source>Loading…</source>
+        <target xml:space="preserve" state="translated">Chargement…</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">235</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackThreads" datatype="html">
+        <source>JVM threads</source>
+        <target xml:space="preserve" state="translated">Threads JVM</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">319</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackTitle" datatype="html">
+        <source>Software stack</source>
+        <target xml:space="preserve" state="translated">Pile logicielle</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">229</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="softwareStackUptime" datatype="html">
+        <source>Uptime</source>
+        <target xml:space="preserve" state="translated">Temps de fonctionnement</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">302</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="swUpdateReloadAction" datatype="html">
+        <source>Reload now</source>
+        <target xml:space="preserve" state="translated">Recharger maintenant</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/app-common/services/sw-update/sw-update.service.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemCpu" datatype="html">
+        <source>CPU</source>
+        <target xml:space="preserve" state="translated">Processeur</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">187</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemCpuCores" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ cpuUsage.coreCount }}"/> cores</source>
+        <target xml:space="preserve" state="translated">{$INTERPOLATION} cœurs</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">205</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemCpuLoad" datatype="html">
+        <source>load <x id="INTERPOLATION" equiv-text="{{ cpuUsage.loadAverage1m }}"/></source>
+        <target xml:space="preserve" state="translated">charge {$INTERPOLATION}</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">209</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemDebugHelp" datatype="html">
+        <source> Live configuration values in memory, as returned by GET /api/v1/config. Secrets (passwords, API keys) are never exposed — only a &quot;set&quot; flag. </source>
+        <target xml:space="preserve" state="translated"> Valeurs de configuration en mémoire, telles que renvoyées par GET /api/v1/config. Les secrets (mots de passe, clés d'API) ne sont jamais exposés — seul un indicateur « défini » est affiché. </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">422,425</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemDebugHide" datatype="html">
+        <source>Hide configuration</source>
+        <target xml:space="preserve" state="translated">Masquer la configuration</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">403</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemDebugReload" datatype="html">
+        <source>Reload</source>
+        <target xml:space="preserve" state="translated">Recharger</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">412</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemDebugShow" datatype="html">
+        <source>Show configuration</source>
+        <target xml:space="preserve" state="translated">Afficher la configuration</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">400</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemDebugTitle" datatype="html">
+        <source>Debug</source>
+        <target xml:space="preserve" state="translated">Débogage</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">391</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemMemory" datatype="html">
+        <source>RAM</source>
+        <target xml:space="preserve" state="translated">Mémoire vive</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemSwap" datatype="html">
+        <source>Swap</source>
+        <target xml:space="preserve" state="translated">Swap</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">168</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="systemUptime" datatype="html">
+        <source>Uptime</source>
+        <target xml:space="preserve" state="translated">Temps de fonctionnement</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/system/containers/system/system.component.html</context>
+          <context context-type="linenumber">217</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="usersConfirmPasswordPlaceholder" datatype="html">
+        <source>Confirm new password</source>
+        <target xml:space="preserve" state="translated">Confirmer le nouveau mot de passe</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">429</context>
+        </context-group>
+      </trans-unit>
+<trans-unit id="usersConfirmPasswordPlaceholder2" datatype="html">
+        <source>Confirm password</source>
+        <target xml:space="preserve" state="translated">Confirmer le mot de passe</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/notification/containers/charts/charts.component.html</context>
+          <context context-type="linenumber">190</context>
+        </context-group>
+      </trans-unit>
         </body>
     </file>
 </xliff>
