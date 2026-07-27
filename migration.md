@@ -1911,6 +1911,7 @@ Utile pour rédiger un guide d'installation ; chaque point renvoie à sa section
 | 15 | Chemins absolus dans `application.properties` | 2.6 — `./photos` → `/var/lib/hermanas/photos` |
 | 16 | `navigationUrls` explicites dans `ngsw-config.json` | 3.5bis — le service worker détournait `/actuator/*` vers `/fr-FR/actuator/*` |
 | 17 | `NoResourceFoundException` traitée en 404 | 3.5bis — évitait une trace de 150 lignes en ERROR par fichier absent |
+| 18 | `TimeoutStartSec=900`, `TimeoutStopSec=180` | 3.5 — 90 s par défaut : `SIGKILL` avant `pi4j.shutdown()`, servo laissé alimenté |
 
 ### 3.5bis — 404 en boucle sur `/fr-FR/actuator/*` ✅
 
@@ -1980,15 +1981,25 @@ désormais un 404 et journalise en `DEBUG`.
 
 #### Réglages restants (mineurs, sans urgence)
 
-- [ ] **Timeouts systemd** — 90 s ne suffisent pas à l'arrêt sur cette machine, d'où
-  un `SIGKILL` qui laisse les GPIO dans un état indéterminé (le servo pourrait
-  rester alimenté) :
+- [x] **Timeouts systemd** ✅ *(appliqué le 2026-07-27)* — les 90 s par défaut ne
+  suffisent ni au démarrage (265 s mesurés) ni à l'arrêt, d'où un `SIGKILL` qui
+  laisse les GPIO dans un état indéterminé : `pi4j.shutdown()` n'a pas le temps
+  de remettre les sorties à `LOW` ni le PWM à 0, et le servo peut rester
+  alimenté contre sa butée — il force en continu et tire du courant, ce qui
+  compte sur une alimentation solaire.
   ```bash
   sudo tee -a /etc/systemd/system/Hermanas.service.d/10-boot-delay.conf > /dev/null <<'EOF'
   TimeoutStartSec=900
   TimeoutStopSec=180
   EOF
   sudo systemctl daemon-reload
+  ```
+  Pas besoin de redémarrer le service : `daemon-reload` suffit pour que les
+  valeurs s'appliquent au prochain arrêt. Vérification :
+  ```bash
+  systemctl show Hermanas -p TimeoutStartUSec -p TimeoutStopUSec
+  # TimeoutStartUSec=15min
+  # TimeoutStopUSec=3min
   ```
 - [ ] **Avertissements Spring récurrents** — à ajouter dans
   `/var/lib/hermanas/application.properties` :
