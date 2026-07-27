@@ -75,31 +75,48 @@ echo -e "${GREEN}Fichier détecté: $VERSION ($JAR_SIZE)${NC}"
 echo -e "${YELLOW}[3/6] Transfert du fichier vers ${REMOTE_HOST}...${NC}"
 scp -P "$REMOTE_PORT" "$JAR_FILE" "${REMOTE_USER}@${REMOTE_HOST}:/tmp/"
 
-# ─── Étape 4: Arrêt du service ──────────────────────────────────────────────
-echo -e "${YELLOW}[4/6] Arrêt du service...${NC}"
-ssh -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \
-    "sudo systemctl stop $SERVICE_NAME || true"
+# Contrôle de taille : un transfert interrompu passerait sinon inaperçu et le
+# service échouerait au démarrage sur un JAR tronqué.
+LOCAL_BYTES=$(wc -c < "$JAR_FILE" | tr -d ' ')
+REMOTE_BYTES=$(ssh -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" \
+    "stat -c %s /tmp/${VERSION} 2>/dev/null || echo 0")
+if [ "$LOCAL_BYTES" != "$REMOTE_BYTES" ]; then
+    echo -e "${RED}Erreur: transfert incomplet (${REMOTE_BYTES} octets reçus sur ${LOCAL_BYTES}).${NC}"
+    exit 1
+fi
+echo -e "${GREEN}Transfert vérifié: ${REMOTE_BYTES} octets.${NC}"
 
-# ─── Étape 5: Installation avec le bon propriétaire ─────────────────────────
-echo -e "${YELLOW}[5/6] Installation du JAR et mise à jour du lien symbolique...${NC}"
-ssh -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" bash -s <<EOF
+# Les étapes suivantes appellent sudo sur la machine distante. Il faut donc un
+# TTY (ssh -t) pour que la demande de mot de passe s'affiche dans ce terminal.
+#
+# ⚠️ ssh -t et un heredoc sont incompatibles : le heredoc occupe stdin, que sudo
+# utilise pour lire le mot de passe — la demande partirait dans le vide et le
+# script resterait bloqué. Les commandes sont donc passées en argument.
+#
+# Une seule session SSH pour les étapes 4 à 6 : sudo met son authentification en
+# cache quelques minutes, le mot de passe n'est demandé qu'une fois.
+
+echo -e "${YELLOW}[4-6/6] Arrêt, installation et redémarrage du service...${NC}"
+echo -e "${YELLOW}      (le mot de passe sudo de ${REMOTE_HOST} peut être demandé)${NC}"
+
+ssh -t -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" "
 set -e
+echo '--- [4/6] Arrêt du service'
+sudo systemctl stop ${SERVICE_NAME} || true
+
+echo '--- [5/6] Installation du JAR et du lien symbolique'
 sudo mv /tmp/${VERSION} ${REMOTE_PATH}/
 sudo chown ${SERVICE_USER}:${SERVICE_USER} ${REMOTE_PATH}/${VERSION}
 sudo chmod 640 ${REMOTE_PATH}/${VERSION}
 sudo ln -sfn ${REMOTE_PATH}/${VERSION} ${REMOTE_PATH}/hermanas.jar
 sudo chown -h ${SERVICE_USER}:${SERVICE_USER} ${REMOTE_PATH}/hermanas.jar
-EOF
 
-# ─── Étape 6: Redémarrage et vérification ───────────────────────────────────
-echo -e "${YELLOW}[6/6] Redémarrage du service...${NC}"
-ssh -p "$REMOTE_PORT" "${REMOTE_USER}@${REMOTE_HOST}" bash -s <<EOF
-set -e
+echo '--- [6/6] Redémarrage du service'
 sudo systemctl start ${SERVICE_NAME}
-echo "Attente du démarrage du service..."
+echo 'Attente du démarrage...'
 sleep 5
 sudo systemctl status ${SERVICE_NAME} --no-pager || true
-EOF
+"
 
 echo -e "${GREEN}=== Déploiement terminé ! ===${NC}"
 echo -e "${GREEN}Version déployée: ${VERSION} sur ${TARGET}${NC}"
