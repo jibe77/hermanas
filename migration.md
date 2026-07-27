@@ -402,6 +402,57 @@ sudo systemctl enable --now prometheus-node-exporter
   # Si différences intentionnelles : sudo cp /tmp/ne.poupou /etc/default/prometheus-node-exporter && sudo systemctl restart prometheus-node-exporter
   ```
 
+### 0.7bis — ⚠️ Script Python du capteur DHT22 (oubli de la roadmap initiale)
+
+> **Trou identifié le 2026-07-27.** `application.properties` pilote le capteur de
+> température/humidité par un script Python externe :
+> ```
+> sensor.python.command = /usr/bin/python
+> sensor.python.script  = /home/pi/AdafruitDHT.py
+> ```
+> Ce script n'apparaissait **nulle part** dans la roadmap, et la note de projet le
+> rangeait même parmi les « anciens scripts Python de prototypage » à ne pas migrer,
+> au même titre que `servo_door_*.py` ou `button.py`. C'est une erreur : ceux-là sont
+> effectivement obsolètes, mais **`AdafruitDHT.py` est toujours utilisé en production**.
+> Le laisser derrière casse la lecture température/humidité.
+
+- [ ] Vérifier sa présence et sa dépendance sur `poupou` :
+  ```bash
+  ls -la /home/pi/AdafruitDHT.py
+  head -20 /home/pi/AdafruitDHT.py
+  python3 -c "import Adafruit_DHT; print('module présent')"
+  ```
+- [ ] Le migrer vers `/var/lib/hermanas/` :
+  ```bash
+  # depuis pru
+  scp -P 5722 pi@poupou:/home/pi/AdafruitDHT.py /tmp/
+  sudo mv /tmp/AdafruitDHT.py /var/lib/hermanas/
+  sudo chown hermanas:hermanas /var/lib/hermanas/AdafruitDHT.py
+  sudo chmod 750 /var/lib/hermanas/AdafruitDHT.py
+  ```
+- [ ] ⚠️ **Installer la dépendance Python.** `Adafruit_DHT` est **archivée depuis 2020**
+  et n'est plus installable via pip sur les distributions récentes. Successeur :
+  `adafruit-circuitpython-dht`, dont l'API diffère — le script devra probablement être
+  réécrit.
+  ```bash
+  sudo apt install -y python3-pip
+  pip3 install --break-system-packages adafruit-circuitpython-dht
+  ```
+- [ ] ⚠️ **`sensor.python.command = /usr/bin/python`** : sur Trixie, `/usr/bin/python`
+  n'existe pas forcément (seul `python3` est fourni). Vérifier et adapter :
+  ```bash
+  ls -la /usr/bin/python /usr/bin/python3
+  ```
+- [ ] Corriger les deux propriétés dans `/var/lib/hermanas/application.properties`
+  (chemin du script, et `python3` si nécessaire).
+- [ ] Tester le script seul avant de démarrer l'application :
+  ```bash
+  sudo -u hermanas python3 /var/lib/hermanas/AdafruitDHT.py 22 4
+  ```
+- [ ] *Alternative si la migration s'avère lourde* : le noyau Linux expose le DHT22 via
+  `dtoverlay=dht11,gpiopin=4` et le sysfs `/sys/bus/iio/devices/`. Cela supprimerait
+  totalement la dépendance Python — chantier à évaluer, hors bascule.
+
 ### 0.8 — Scripts USB
 
 Les scripts `usb_*.sh` ont été récupérés dans `/tmp/` sur `pru` en 0.3. Ils utilisent le sysfs `buspower` pour couper/allumer l'alim USB globale — mécanisme spécifique au chipset Broadcom des Pi.
