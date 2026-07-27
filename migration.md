@@ -633,7 +633,27 @@ Objectif : le repo compile et passe les tests avec Java 25 + **Spring Boot 4** +
 > ci-dessous : ce qui a été fait pour SB3 reste valable, SB4 ajoute une
 > couche supplémentaire de renommages liés à sa modularisation.
 
-**État final : `mvn clean package` → BUILD SUCCESS, 66/66 tests, JAR 102 Mo avec SPA bundlée (3 locales).**
+### ✅ Phase 1 terminée (2026-07-27)
+
+`mvn clean package` → **BUILD SUCCESS**, **66/66 tests**, JAR **102 Mo** avec la SPA
+bundlée (`fr-FR`, `en-US`, `ro-RO`). Commit **`e1df962`** sur `feat/pi-zero-2-migration`
+(67 fichiers, +692 / −292).
+
+Tout ce qui était réalisable sur le Mac est fait. Les 7 items encore décochés plus bas
+ne sont **pas des oublis** — ils dépendent tous d'une machine qui tourne ou du matériel :
+
+| Item | Reporté en | Pourquoi |
+|---|---|---|
+| Bloc `picam` dans `GpioHermanasRpiService` (3 items) | **Phase 7** | Dette assumée dès la conception de la roadmap : le chantier caméra est traité en dernier |
+| Warnings properties `spring.*` | **Phase 3** | Visibles seulement au démarrage de l'application |
+| `spring.quartz.*` | **Phase 3** | idem |
+| Renommages Micrometer sur Grafana | **Phase 5** | Nécessite les métriques réelles remontées en production |
+| Recâblage servo broche 22 → 32 | **Phase 5.1** | Manipulation physique, au montage sur le coop |
+| « Ne pas merger sur master » | **Phase 5** | Garde-fou volontaire jusqu'à validation runtime |
+
+**Seule action encore possible ici :** `git push` de la branche (cf. 1.8).
+
+➡️ **La suite est la Phase 2**, qui ouvre la fenêtre de downtime du poulailler.
 
 ### 1.1 — Branche + snapshot
 
@@ -763,10 +783,9 @@ une erreur serveur.
 - [ ] Properties `spring.*` : lire les warnings au démarrage.
 - [ ] Actuator : renommages Micrometer à surveiller sur Grafana en Phase 5.
 - [ ] Quartz : vérifier `spring.quartz.*`.
-- [ ] ⚠️ **`<executable>true</executable>` du `spring-boot-maven-plugin` n'existe plus en SB 4**
-  (`Parameter 'executable' is unknown` au build). Le JAR n'est plus directement exécutable
-  (`./hermanas.jar`). Sans impact ici puisque `Hermanas.sh` lance `java -jar`, mais à retirer
-  du `pom.xml` pour faire taire le warning.
+- [x] **`<executable>true</executable>` retiré du `spring-boot-maven-plugin`** — option
+  supprimée en SB 4 (`Parameter 'executable' is unknown` au build). Le JAR n'est plus
+  directement exécutable (`./hermanas.jar`), sans impact puisque `Hermanas.sh` lance `java -jar`.
 
 ### 1.5bis — Refactor GPIO : pi4j 2.x pigpio → pi4j 4.x FFM
 
@@ -908,12 +927,13 @@ javac --release 25 -cp "$(cat /tmp/cp.txt)" -d /tmp/out @/tmp/sources.txt 2>&1 |
 
 ### 1.8 — Commit sur la branche
 
-```bash
-git add -A
-git commit -m "feat: migrate to Java 25 + Spring Boot 4 + Jakarta EE + pi4j 4.x FFM (arm64)"
-git push -u origin feat/pi-zero-2-migration
-```
-
+- [x] **Commit `e1df962`** sur `feat/pi-zero-2-migration` (67 fichiers, +692 / −292).
+- [x] Artefacts de test ajoutés au `.gitignore` (`LOG_FILE_IS_UNDEFINED`, `audit.txt`,
+      `audit_config.txt` — logs applicatifs écrits dans le CWD pendant `mvn test`).
+- [ ] **Push** de la branche :
+      ```bash
+      git push -u origin feat/pi-zero-2-migration
+      ```
 - [ ] **Ne pas merger sur master** — attendre la validation runtime en Phase 5.
 
 ---
@@ -1430,7 +1450,7 @@ Fenêtre de conservation : **1 semaine post-Phase 5**.
 | Phase | Sur | Durée | Downtime coop |
 |---|---|---|---|
 | 0. Prépa `pru` headless | pru | 1-2 h | 0 |
-| 1. Migration code Java 25 + SB4 + pi4j 4.x FFM | Mac | 6-10 h dev | 0 |
+| ~~1. Migration code Java 25 + SB4 + pi4j 4.x FFM~~ | Mac | ~~6-10 h dev~~ **✅ fait (2026-07-27)** | 0 |
 | 2. Bascule données + Samba photos | poupou→pru | 30-60 min | **✓ démarre** |
 | 3. Test à vide sur banc | pru | 30 min | ✓ |
 | 4. Bascule réseau (Freebox) | Freebox | 10 min | ✓ |
