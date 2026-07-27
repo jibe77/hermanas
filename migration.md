@@ -1912,6 +1912,7 @@ Utile pour rédiger un guide d'installation ; chaque point renvoie à sa section
 | 16 | `navigationUrls` explicites dans `ngsw-config.json` | 3.5bis — le service worker détournait `/actuator/*` vers `/fr-FR/actuator/*` |
 | 17 | `NoResourceFoundException` traitée en 404 | 3.5bis — évitait une trace de 150 lignes en ERROR par fichier absent |
 | 18 | `TimeoutStartSec=900`, `TimeoutStopSec=180` | 3.5 — 90 s par défaut : `SIGKILL` avant `pi4j.shutdown()`, servo laissé alimenté |
+| 19 | `open-in-view=false` + Hikari resserré | 3.5 — `max-lifetime` sous le `wait_timeout` MariaDB ; pool à 5 (mono-utilisateur) |
 
 ### 3.5bis — 404 en boucle sur `/fr-FR/actuator/*` ✅
 
@@ -2001,7 +2002,7 @@ désormais un 404 et journalise en `DEBUG`.
   # TimeoutStartUSec=15min
   # TimeoutStopUSec=3min
   ```
-- [ ] **Avertissements Spring récurrents** — à ajouter dans
+- [x] **Avertissements Spring récurrents** ✅ *(appliqué le 2026-07-27)* — ajouté dans
   `/var/lib/hermanas/application.properties` :
   ```properties
   # Évite que des requêtes SQL partent pendant le rendu de la vue.
@@ -2012,10 +2013,17 @@ désormais un 404 et journalise en `DEBUG`.
   # le wait_timeout serveur règle le problème. maximum-pool-size=5 au lieu de 10
   # réduit aussi l'empreinte — l'application est mono-utilisateur.
   spring.datasource.hikari.max-lifetime=240000
-  spring.datasource.hikari.idle-timeout=120000
   spring.datasource.hikari.minimum-idle=2
   spring.datasource.hikari.maximum-pool-size=5
   ```
+  > `open-in-view=false` **n'est pas qu'un silence d'avertissement** : les entités
+  > JPA ne sont plus chargeables paresseusement pendant le rendu de la vue. Sans
+  > effet ici — API REST renvoyant des DTOs (`SensorMapper`), aucune vue serveur —
+  > mais si une `LazyInitializationException` apparaît un jour sur un getter
+  > d'entité, c'est cette ligne qu'il faut regarder en premier.
+  >
+  > `idle-timeout` n'a volontairement pas été posé : le défaut Hikari (600 s) suffit,
+  > `max-lifetime=240000` recyclant les connexions bien avant.
 - [ ] **SpringDoc en production** — `/v3/api-docs` et `/swagger-ui.html` sont exposés
   par défaut. Ils sont protégés par `SecurityConfig`, mais peuvent être coupés :
   ```properties
