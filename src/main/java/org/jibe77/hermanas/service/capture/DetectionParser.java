@@ -1,8 +1,8 @@
 package org.jibe77.hermanas.service.capture;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -176,9 +176,9 @@ public class DetectionParser {
                 }
             }
             return out;
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             logger.warn("Detection JSON could not be parsed ({}): {}",
-                    e.getOriginalMessage(), truncate(json, 200));
+                    e.getMessage(), truncate(json, 200));
             return Collections.emptyList();
         }
     }

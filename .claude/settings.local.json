@@ -186,7 +186,8 @@
       "Bash(mvn *)",
       "WebSearch",
       "Bash(xargs -n1 basename)",
-      "Bash(sort -rn -k1)"
+      "Bash(sort -rn -k1)",
+      "Bash(bash -n deploy.sh)"
     ],
     "deny": [],
     "ask": []

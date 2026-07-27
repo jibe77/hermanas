@@ -699,7 +699,32 @@ git status    # doit être clean sauf éventuels WIP à commit avant
 
 **Pas fait volontairement :**
 - jquery 4 (held back, risque de casse visuelle — cf. CLAUDE.md)
-- **Doublon Jackson 2 / Jackson 3 accepté** : SB 4 est sur Jackson 3, mais `swagger-core-jakarta` (dépendance amont de springdoc, y compris en 3.0.3) est encore sur Jackson 2. Le doublon (~4 Mo) persistera tant que Swagger n'aura pas migré. Alternative écartée : retirer springdoc et perdre la doc API interactive.
+- **Doublon Jackson 2 / Jackson 3 accepté** (réexaminé 2026-07-27). SB 4 est sur
+  Jackson 3 (`tools.jackson.*`), mais `swagger-core-jakarta` — dépendance amont de
+  springdoc — reste sur Jackson 2 (`com.fasterxml.jackson.*`).
+
+  **Aucune version ne corrige cela** : il n'existe pas de ligne 3.x de Swagger, et
+  la plus récente (2.2.52) dépend toujours de `com.fasterxml.jackson.core:jackson-databind`.
+  Bumper depuis la 2.2.47 tirée par springdoc n'apporterait donc rien sur ce point.
+
+  **Ce n'est pas un conflit** : groupId, packages racine et modules JPMS sont distincts,
+  aucune classe n'est homonyme. C'est précisément la cohabitation que le renommage de
+  groupId de Jackson 3 visait à permettre. Coût : ~4 Mo de JAR et quelques Mo de metaspace.
+
+  Alternatives écartées : retirer springdoc (perte de la doc API interactive et des
+  annotations OpenAPI de 46 endpoints), ou forcer une override de version (risque
+  d'incompatibilité pour un gain nul). À réévaluer quand Swagger migrera.
+
+  ⚠️ **Le code applicatif, lui, est intégralement sur Jackson 3.** `DetectionParser`
+  utilisait `com.fasterxml.jackson.databind.ObjectMapper`, disponible seulement par
+  transitivité via Swagger — migré vers `tools.jackson.databind.ObjectMapper` :
+  - `JsonProcessingException` → `JacksonException` (renommée, et devenue *unchecked*)
+  - `getOriginalMessage()` → `getMessage()` (supprimée en Jackson 3)
+
+  Les `@JsonIgnoreProperties` de `Sensor` et `WeatherInfo` **restent en
+  `com.fasterxml.jackson.annotation`** et c'est correct : Jackson 3 dépend lui-même de
+  `com.fasterxml.jackson.core:jackson-annotations`, le module d'annotations n'ayant pas
+  été renommé. Ne pas chercher à les « migrer ».
 
 **Bump version applicative** : `0.8.11` → **`0.9.1`** (jalon migration all-in-one).
 
@@ -1302,7 +1327,43 @@ sudo -u hermanas /usr/lib/jvm/java-25-openjdk-arm64/bin/java \
 - [ ] `MusicService` peut throw (cvlc absent) : **normal**.
 - [ ] Si `> 90 s` : envisager `arm_freq=800` au lieu de 600.
 
-**Corrections attendues** : properties SB2→SB4 renommées, Hibernate dialect MariaDB 10.11.
+#### ⚠️ Risque principal : `ddl-auto=update` avec Hibernate 7
+
+`application.properties` (hérité de `poupou`) contient
+`spring.jpa.hibernate.ddl-auto=update`. Au démarrage, Hibernate 7 compare le schéma
+restauré — généré par **Hibernate 5.6** sous Spring Boot 2.7 — avec ce qu'il attend,
+et **modifie la base** pour combler les écarts. Or la génération de types a changé
+entre les deux versions.
+
+C'est le risque le plus sérieux de ce premier démarrage : la base vient d'être
+restaurée et contient 87 000 lignes de données réelles.
+
+- [ ] **Surveiller les DDL émises** pendant le démarrage :
+  ```bash
+  sudo journalctl -u Hermanas.service -f | grep -iE "alter table|drop |create table|hbm2ddl"
+  ```
+- [ ] Un `alter table` isolé sur un type de colonne est acceptable. **Un `drop` ne l'est
+  jamais** — couper immédiatement et repasser en `validate`.
+- [ ] *Option prudente pour ce premier lancement* : forcer `validate` en ligne de
+  commande, qui vérifie sans rien modifier. Si le schéma est conforme, remettre
+  `update` ensuite.
+  ```bash
+  # ajouter à la commande de démarrage manuel
+  --spring.jpa.hibernate.ddl-auto=validate
+  ```
+  ⚠️ En `validate`, l'application **refuse de démarrer** si le schéma diverge — c'est
+  précisément l'intérêt : on voit l'écart au lieu de le subir.
+
+**Autres corrections attendues** : properties SB2→SB4 renommées, dialecte Hibernate
+pour MariaDB 11.
+
+> ℹ️ **Propriétés vérifiées avant migration (2026-07-27)** — aucune ne casse en SB4 :
+> `spring.mail.*`, `spring.datasource.*`, `spring.jpa.hibernate.ddl-auto`,
+> `spring.mvc.servlet.load-on-startup`, `server.port`, `server.forward-headers-strategy`.
+>
+> À noter : **`server.port = 8080`** et aucune propriété `server.ssl.*` — l'application
+> sert en **HTTP simple**, le TLS étant terminé par `shannen`. Les commandes de test
+> doivent donc viser `http://…:8080`, pas `https://…:8443`.
 
 ### 3.3 — Sanity check applicatif
 
@@ -1489,8 +1550,9 @@ ssh -p 5722 pi@poupou "sudo journalctl -u Hermanas.service -f"
   ```
 - [ ] **Endpoint applicatif** répond au format Prometheus (texte, pas JSON) :
   ```bash
-  # Depuis pru
-  curl -sk https://localhost:8443/actuator/prometheus | grep -E "^hermanas_" | head
+  # Depuis pru — HTTP sur 8080 (server.port=8080, pas de keystore : TLS terminé par shannen)
+  curl -s -u '<admin>:<password>' http://localhost:8080/actuator/prometheus \
+    | grep -E "^hermanas_" | head
   # attendu : hermanas_door_..., hermanas_sensor_... — et surtout PAS un 404
   ```
 - [ ] **Prometheus scrape bien les deux cibles** — vérifier côté `shannen` que le job
@@ -1514,14 +1576,12 @@ ssh -p 5722 pi@poupou "sudo journalctl -u Hermanas.service -f"
   ```yaml
   - job_name: 'hermanas-app'
     metrics_path: '/actuator/prometheus'
-    scheme: https
-    tls_config:
-      insecure_skip_verify: true   # keystore.p12 auto-signé
+    scheme: http          # server.port=8080, pas de TLS local
     basic_auth:
       username: '<admin>'
       password: '<password>'
     static_configs:
-      - targets: ['poupou:8443']
+      - targets: ['poupou:8080']
   ```
   *(L'alternative — rendre `/actuator/prometheus` public — a été écartée. L'endpoint
   n'expose que des compteurs et jauges, sans secret, et le port 8443 n'est pas routé
