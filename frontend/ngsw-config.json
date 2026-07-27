@@ -59,5 +59,16 @@
         "strategy": "performance"
       }
     }
+  ],
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/*__*",
+    "!/**/*__*/**",
+    "!/actuator/**",
+    "!/api/**",
+    "!/v3/**",
+    "!/swagger-ui/**",
+    "!/stomp/**"
   ]
 }
