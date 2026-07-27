@@ -38,7 +38,7 @@ class SunTimeUtilsTest {
     Logger logger = LoggerFactory.getLogger(SunTimeUtilsTest.class);
 
     @BeforeEach
-    private void init() {
+    void init() {
         // SunTimeUtils now reads coordinates through ConfigService instead of its own
         // @Value fields, so route the mock to the same property values the test
         // properties file already provides (Tokyo for these expectations).

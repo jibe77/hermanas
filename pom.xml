@@ -349,7 +349,29 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<excludedGroups>image_processing</excludedGroups>
+					<!--
+						Mockito s'auto-attache comme agent Java pour son inline mock-maker,
+						ce que le JDK interdira par défaut dans une prochaine version
+						("Dynamic loading of agents will be disallowed"). On le déclare
+						explicitement en -javaagent : le chemin du JAR est fourni par
+						dependency:properties, lié à la phase initialize ci-dessous.
+						@{argLine} préserve l'argLine posée par l'agent JaCoCo.
+					-->
+					<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>resolve-dependency-paths</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>properties</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<!--
 				CycloneDX SBOM generation. Produces target/bom.json and target/bom.xml
