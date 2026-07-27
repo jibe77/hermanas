@@ -140,14 +140,20 @@ JAVA_BIN=/usr/lib/jvm/java-25-openjdk-arm64/bin/java
 #                   par paliers, et chaque agrandissement recopie des pages.
 #  MaxMetaspace   : Spring Boot 4 charge beaucoup de classes ; sans plafond ce
 #                   poste devient le deuxième plus lourd après le heap.
+#                   ⚠️ 96m était TROP BAS : OutOfMemoryError: Metaspace en boucle
+#                   au démarrage, systématiquement à l'initialisation GPIO quand
+#                   pi4j et ses providers s'ajoutent aux classes Spring. 192m
+#                   laisse de la marge — l'objectif est de borner la croissance,
+#                   pas de comprimer au maximum. Mesurer le besoin réel avec
+#                   `jcmd <pid> VM.native_memory summary` avant de resserrer.
 #  ReservedCode   : le défaut réserve 240 Mo d'espace d'adressage pour le JIT.
 #  Xss512k        : 512 Ko par thread au lieu de 1 Mo (~40 threads Tomcat).
 #  ExitOnOOM      : arrêt net + redémarrage systemd, plutôt qu'une JVM qui
 #                   agonise en swappant.
 JVM_OPTS="-Xmx160m -Xms160m \
     -XX:+UseSerialGC \
-    -XX:MaxMetaspaceSize=96m \
-    -XX:ReservedCodeCacheSize=24m \
+    -XX:MaxMetaspaceSize=192m \
+    -XX:ReservedCodeCacheSize=48m \
     -XX:MaxDirectMemorySize=16m \
     -Xss512k \
     -XX:+ExitOnOutOfMemoryError \
@@ -354,7 +360,11 @@ EOF
 ```ini
 [Unit]
 Description=Hermanas Service
-After=network.target mariadb.service
+# multi-user.target est atteint quand tous les services système sont lancés.
+# Sans cette contrainte, Hermanas démarre en concurrence avec le reste du boot
+# et la JVM réclame ses ~300 Mo au pire moment — d'où le pic de swap constaté
+# (450 Mo écrits sur la carte SD, cf. 3.2bis).
+After=network.target mariadb.service multi-user.target
 Requires=mariadb.service
 
 [Service]
@@ -362,6 +372,19 @@ Type=forking
 User=hermanas
 Group=hermanas
 SupplementaryGroups=gpio i2c spi audio dialout
+
+# Laisse le système se stabiliser avant de réclamer la mémoire : les services de
+# boot terminent leur initialisation et libèrent leurs allocations temporaires.
+# Sur une machine où le démarrage prend déjà 8 minutes, 45 s de plus ne coûtent
+# rien face à l'usure de carte SD évitée.
+ExecStartPre=/bin/sleep 45
+
+# Priorité basse : Hermanas cède le CPU et les I/O aux services système pendant
+# qu'ils démarrent. Sans effet une fois le système au repos, l'application étant
+# alors seule à travailler.
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=6
 
 # systemd crée /run/hermanas automatiquement à chaque démarrage,
 # avec les bons owner/group, et le supprime à l'arrêt.
