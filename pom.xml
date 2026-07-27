@@ -78,6 +78,17 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
+		<!--
+			Implémente /actuator/prometheus, que application.properties expose déjà
+			via management.endpoints.web.exposure.include. Sans cette dépendance
+			l'endpoint renvoie 404 et les métriques de HermanasMetrics (porte,
+			capteurs, caméra) ne sont scrapables par personne — node-exporter ne
+			couvre que le système. Version gérée par le BOM Spring Boot.
+		-->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>

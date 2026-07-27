@@ -1454,12 +1454,55 @@ ssh -p 5722 pi@poupou "sudo journalctl -u Hermanas.service -f"
 
 ### 5.4 — Vérifications monitoring
 
+**Deux sources de métriques distinctes**, à ne pas confondre :
+
+| Source | Port | Couvre | Fourni par |
+|---|---|---|---|
+| `prometheus-node-exporter` | `:9100/metrics` | Système : CPU, RAM, disque, réseau, température SoC | Paquet apt (Phase 0.7) |
+| `/actuator/prometheus` | `:8443` (Hermanas) | Applicatif : `hermanas.door.*`, `hermanas.sensor.*`, JVM, HTTP | `micrometer-registry-prometheus` |
+
+> ⚠️ **Bug latent corrigé pendant la migration.** `application.properties` exposait
+> `prometheus` dans `management.endpoints.web.exposure.include`, mais la dépendance
+> `micrometer-registry-prometheus` n'était **pas** déclarée dans le `pom.xml` :
+> l'endpoint renvoyait donc **404**, et les métriques de `HermanasMetrics` (compteurs
+> de porte, températures, sessions caméra) n'étaient scrapables par personne. Elles
+> n'existaient qu'en JSON sur `/actuator/metrics/hermanas.*`, que Prometheus ne lit pas.
+> La dépendance a été ajoutée au `pom.xml` (version gérée par le BOM Spring Boot).
+
 - [ ] `https://www.hermanas.fr/` charge depuis Internet.
 - [ ] Login public OK.
+- [ ] **node-exporter** répond, depuis `shannen` :
+  ```bash
+  curl -s http://poupou:9100/metrics | head -3
+  ```
+- [ ] **Endpoint applicatif** répond au format Prometheus (texte, pas JSON) :
+  ```bash
+  # Depuis pru
+  curl -sk https://localhost:8443/actuator/prometheus | grep -E "^hermanas_" | head
+  # attendu : hermanas_door_..., hermanas_sensor_... — et surtout PAS un 404
+  ```
+- [ ] **Prometheus scrape bien les deux cibles** — vérifier côté `shannen` que le job
+  Hermanas existe dans `prometheus.yml`. Si seul le `:9100` y figure, ajouter la cible
+  applicative :
+  ```yaml
+  - job_name: 'hermanas-app'
+    metrics_path: '/actuator/prometheus'
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true   # keystore.p12 auto-signé
+    static_configs:
+      - targets: ['poupou:8443']
+  ```
+  ⚠️ L'endpoint est protégé : `/actuator/**` exige `ROLE_ADMIN` hors `/health` et `/info`
+  (cf. `SecurityConfig`). Prévoir `basic_auth` dans le job Prometheus, ou ajouter
+  `/actuator/prometheus` aux chemins publics.
 - [ ] Grafana (https://grafana.r3n4.uk) :
   - Dashboards **système** (CPU, RAM, disque, réseau) : points récents, pas de trou > 5 min.
   - Dashboards **Hermanas** (`hermanas.door.*`, `hermanas.sensor.*`) : points récents.
-- [ ] `curl -s http://poupou:9100/metrics | head -3` depuis `shannen` : node-exporter OK.
+  - ⚠️ **Renommages Micrometer** : la migration saute Micrometer 1.9 → 1.17. Certaines
+    métriques JVM et HTTP ont pu changer de nom (`http_server_requests_*`,
+    `jvm_memory_*`). Si un panel se vide alors que l'endpoint répond, comparer les noms
+    exposés avec ceux des requêtes PromQL du dashboard.
 
 ### 5.5 — Cycle complet observé
 
