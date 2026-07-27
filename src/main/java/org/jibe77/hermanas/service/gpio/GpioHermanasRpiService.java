@@ -54,18 +54,31 @@ public class GpioHermanasRpiService implements GpioHermanasService {
     @PostConstruct
     private void initialiseGpioPins() {
         logger.info("Initialise GPIO ...");
-        try {
-            logger.info("Load picam JNI implementation from .so file {}.", picamJniImplementation);
 
-            // Loading native implementation doesn't work from spring boot fatjarù
-            // PicamNativeLibrary.installTempLibrary();
-            // Here is a workaround, consisting in charging extracted .so from filesystem.
-            System.load(picamJniImplementation);
+        // Deux initialisations indépendantes, volontairement dans des try séparés.
+        // Elles partageaient auparavant le même bloc : l'absence de la librairie
+        // picam empêchait alors pi4j de s'initialiser, et tout le GPIO tombait —
+        // porte, lumière, ventilateur — pour un problème de caméra. La caméra est
+        // pourtant explicitement acceptée KO jusqu'au chantier dédié (Phase 7).
+        try {
             logger.info("Init pi4j context.");
             pi4j = Pi4J.newAutoContext();
-        } catch (UnsatisfiedLinkError e) {
-            logger.error("Can't find wiringpi, is it installed on your machine ?", e);
+        } catch (Exception | UnsatisfiedLinkError e) {
+            logger.error("Can't initialise pi4j context — GPIO will be unavailable.", e);
         }
+
+        // Chargement natif de picam : le fat jar ne sait pas extraire le .so lui-même
+        // (PicamNativeLibrary.installTempLibrary() ne fonctionne pas), d'où ce
+        // chargement depuis le filesystem. Un échec ici ne dégrade que la caméra.
+        try {
+            logger.info("Load picam JNI implementation from .so file {}.", picamJniImplementation);
+            System.load(picamJniImplementation);
+        } catch (UnsatisfiedLinkError e) {
+            logger.warn("Can't load picam native library from {} — camera endpoints "
+                    + "will fail, the rest of the application is unaffected.",
+                    picamJniImplementation);
+        }
+
         logger.info("... initialisation done.");
     }
 
@@ -96,6 +109,13 @@ public class GpioHermanasRpiService implements GpioHermanasService {
 
     @PreDestroy
     private void tearDown() {
+        // pi4j reste null si son initialisation a échoué. Sans ce garde, l'arrêt
+        // du contexte lève une NullPointerException qui masque l'erreur d'origine
+        // dans les logs.
+        if (pi4j == null) {
+            logger.info("No pi4j context to shut down.");
+            return;
+        }
         logger.info("Shutdown gpio instance.");
         pi4j.shutdown();
     }

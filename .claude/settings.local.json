@@ -187,7 +187,19 @@
       "WebSearch",
       "Bash(xargs -n1 basename)",
       "Bash(sort -rn -k1)",
-      "Bash(bash -n deploy.sh)"
+      "Bash(bash -n deploy.sh)",
+      "Bash(tar xzf *)",
+      "Bash(/tmp/node24/bin/node --version)",
+      "Bash(sed -i '' 's/\"version\": \"0.8.11\"/\"version\": \"0.9.1\"/' package.json)",
+      "Bash(sed -i '' 's/\"version\": \"0.8.11\"/\"version\": \"0.9.1\"/' package-lock.json)",
+      "Bash(wc -l)",
+      "Bash(echo \"\")",
+      "Bash(echo \"=== builder utilisé ===\")",
+      "Bash(echo \"=== audit npm ===\")",
+      "Bash(export PATH=/tmp/node24/bin:\\\\$PATH)",
+      "Bash(PATH=/tmp/node24/bin:__TRACKED_VAR__ npm audit)",
+      "Bash(PATH=/tmp/node24/bin:__TRACKED_VAR__ npm ls undici)",
+      "Bash(PATH=/tmp/node24/bin:__TRACKED_VAR__ npm view @ng-bootstrap/ng-bootstrap versions --json)"
     ],
     "deny": [],
     "ask": []

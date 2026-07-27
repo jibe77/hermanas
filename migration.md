@@ -125,9 +125,15 @@ CONFIG_LOCATION=file:/var/lib/hermanas/application.properties
 JAVA_BIN=/usr/lib/jvm/java-25-openjdk-arm64/bin/java
 
 # --enable-native-access=ALL-UNNAMED : requis pour pi4j-plugin-ffm (FFM API restricted)
+# -Djava.security.egd : sans cette option la JVM lit /dev/random, qui bloque
+# quand le pool d'entropie est vide — cas courant sur un Pi headless. Constaté
+# le 2026-07-27 : entropy_avail à 256, démarrage de plus de 5 minutes avec un
+# CPU quasi inactif (la JVM attendait, elle ne calculait pas). Le "/./" est
+# indispensable, sans lui l'option est silencieusement ignorée.
 JVM_OPTS="-Xmx256m -Xms128m \
     -XX:+UseSerialGC \
     -Djava.net.preferIPv4Stack=true \
+    -Djava.security.egd=file:/dev/./urandom \
     --enable-native-access=ALL-UNNAMED"
 
 # JMX restreint à la boucle locale via jmxremote.host — accès par tunnel SSH :
@@ -1330,6 +1336,56 @@ sudo -u hermanas /usr/lib/jvm/java-25-openjdk-arm64/bin/java \
 - [ ] `UnsatisfiedLinkError` sur `picam-2.0.1.so` : **normal** (catché par le service GPIO).
 - [ ] `MusicService` peut throw (cvlc absent) : **normal**.
 - [ ] Si `> 90 s` : envisager `arm_freq=800` au lieu de 600.
+
+#### ⚠️ Écueil rencontré : entropie insuffisante → démarrage de 5 minutes
+
+Symptôme trompeur : démarrage extrêmement lent alors que `htop` montre un **CPU
+quasi inactif**. L'application n'est pas en train de calculer, elle *attend*.
+
+```bash
+cat /proc/sys/kernel/random/entropy_avail
+# 256 le 2026-07-27 — très bas
+```
+
+La JVM et Tomcat réclament de l'aléatoire sécurisé au démarrage (`SecureRandom`),
+et `/dev/random` bloque tant que le pool est vide. Un Pi headless, sans clavier ni
+souris, en produit très peu.
+
+- [ ] Alimenter le pool avec `haveged` :
+  ```bash
+  sudo apt install -y haveged
+  sudo systemctl enable --now haveged
+  cat /proc/sys/kernel/random/entropy_avail   # doit passer à plusieurs milliers
+  ```
+- [ ] Ajouter l'option JVM dans `Hermanas.sh` (cf. Phase 0.3) :
+  ```
+  -Djava.security.egd=file:/dev/./urandom
+  ```
+  ⚠️ Le `/./` est indispensable — sans lui la JVM ignore silencieusement l'option.
+
+#### ⚠️ Écueil rencontré : la caméra faisait tomber tout le GPIO
+
+`GpioHermanasRpiService.initialiseGpioPins()` chargeait la librairie native picam
+**et** initialisait le contexte pi4j dans le même bloc `try`. Le `.so` étant absent
+sur `pru` (chemin `/home/pi/` hérité de `poupou`), l'`UnsatisfiedLinkError`
+interrompait le bloc avant `Pi4J.newAutoContext()` — `pi4j` restait `null`, et le
+premier service GPIO à démarrer échouait :
+
+```
+NullPointerException: Cannot invoke "com.pi4j.context.Context.create(...)"
+  because "this.pi4j" is null
+    at LightService.init(LightService.java:66)
+```
+
+Autrement dit : porte, lumière et ventilateur tombaient à cause d'un problème de
+**caméra**, alors que celle-ci est explicitement acceptée KO jusqu'à la Phase 7.
+
+- [x] Corrigé : les deux initialisations sont désormais dans des `try` séparés, et
+  `tearDown()` vérifie que `pi4j` n'est pas `null` avant d'appeler `shutdown()`
+  (la NPE masquait l'erreur d'origine dans les logs).
+- [ ] Vérifier la propriété `camera.picam.jni.implementation` dans
+  `/var/lib/hermanas/application.properties` : si elle pointe encore vers
+  `/home/pi/`, la corriger ou la retirer. Le chemin n'existe pas sur `pru`.
 
 #### ⚠️ Écueil rencontré : `config.location` vs `config.additional-location`
 
