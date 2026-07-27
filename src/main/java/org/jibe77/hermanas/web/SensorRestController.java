@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/sensor")
 @Tag(name = "Sensor", description = "Temperature and humidity sensor endpoints for real-time data and historical records")

@@ -28,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.context.annotation.Lazy;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -35,6 +36,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Path;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/camera")
 @Tag(name = "Camera", description = "Camera control endpoints for taking pictures, streaming video, and monitoring door closing")

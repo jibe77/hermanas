@@ -130,8 +130,27 @@ JAVA_BIN=/usr/lib/jvm/java-25-openjdk-arm64/bin/java
 # le 2026-07-27 : entropy_avail à 256, démarrage de plus de 5 minutes avec un
 # CPU quasi inactif (la JVM attendait, elle ne calculait pas). Le "/./" est
 # indispensable, sans lui l'option est silencieusement ignorée.
-JVM_OPTS="-Xmx256m -Xms128m \
+# Empreinte mémoire plafonnée poste par poste. Le heap seul ne suffit pas :
+# mesuré sur pru, la JVM occupait 324 Mo (133 en RAM + 191 swappés) alors que
+# -Xmx valait 192m — les ~130 Mo restants sont hors heap (metaspace, code JIT,
+# piles de threads). Sur 415 Mo partagés avec MariaDB, chaque poste doit être
+# borné, sans quoi le noyau swappe sur la carte SD et l'use prématurément.
+#
+#  -Xms = -Xmx    : heap alloué d'emblée à sa taille finale. Sinon il grandit
+#                   par paliers, et chaque agrandissement recopie des pages.
+#  MaxMetaspace   : Spring Boot 4 charge beaucoup de classes ; sans plafond ce
+#                   poste devient le deuxième plus lourd après le heap.
+#  ReservedCode   : le défaut réserve 240 Mo d'espace d'adressage pour le JIT.
+#  Xss512k        : 512 Ko par thread au lieu de 1 Mo (~40 threads Tomcat).
+#  ExitOnOOM      : arrêt net + redémarrage systemd, plutôt qu'une JVM qui
+#                   agonise en swappant.
+JVM_OPTS="-Xmx160m -Xms160m \
     -XX:+UseSerialGC \
+    -XX:MaxMetaspaceSize=96m \
+    -XX:ReservedCodeCacheSize=24m \
+    -XX:MaxDirectMemorySize=16m \
+    -Xss512k \
+    -XX:+ExitOnOutOfMemoryError \
     -Djava.net.preferIPv4Stack=true \
     -Djava.security.egd=file:/dev/./urandom \
     --enable-native-access=ALL-UNNAMED"
@@ -1604,6 +1623,101 @@ pour MariaDB 11.
 > À noter : **`server.port = 8080`** et aucune propriété `server.ssl.*` — l'application
 > sert en **HTTP simple**, le TLS étant terminé par `shannen`. Les commandes de test
 > doivent donc viser `http://…:8080`, pas `https://…:8443`.
+
+### 3.2bis — Empreinte mémoire : préserver la carte SD
+
+> **Contraintes du site (décision utilisateur 2026-07-27), par ordre de priorité :**
+> 1. **Éviter le swap** — chaque écriture use la carte SD, dont le remplacement
+>    impose un déplacement physique.
+> 2. **Limiter la consommation** — la machine est alimentée par panneau solaire.
+>    Le bridage `arm_freq=600` est donc **maintenu** : le remonter accélérerait le
+>    démarrage mais consommerait davantage, à contre-emploi.
+> 3. **La vitesse de démarrage est secondaire** — elle ne pèse qu'au redémarrage
+>    hebdomadaire du mercredi.
+
+**Diagnostic (2026-07-27).** `vmstat` pendant le démarrage montrait `wa` à 90-100 %
+et `us` à 0 % : le CPU n'était pas sollicité, il attendait la carte SD. 538 Mo
+swappés, dont 191 pour la seule JVM.
+
+La cause est structurelle : Spring Boot 4 + Hibernate 7 + Tomcat 11 sont
+sensiblement plus lourds que la pile SB 2.7 d'origine, sur une machine dont la RAM
+n'a pas changé (415 Mo, partagés avec MariaDB).
+
+#### a. MariaDB — le plus gros gisement
+
+```bash
+sudo tee /etc/mysql/mariadb.conf.d/60-low-memory.cnf > /dev/null <<'EOF'
+[mysqld]
+innodb_buffer_pool_size = 32M
+key_buffer_size         = 8M
+max_connections         = 20
+table_open_cache        = 64
+performance_schema      = OFF
+EOF
+sudo systemctl restart mariadb
+```
+
+`performance_schema = OFF` libère à lui seul plusieurs dizaines de Mo.
+**Résultat mesuré : swap 526 Mo → 178 Mo au repos.**
+
+#### b. JVM — plafonner chaque poste, pas seulement le heap
+
+Le heap ne représente que la moitié de l'empreinte. Mesuré avec `-Xmx192m` :
+
+```
+VmRSS  : 133 Mo      VmSwap : 191 Mo      → 324 Mo au total
+```
+
+Les ~130 Mo hors heap se répartissent entre metaspace (Spring Boot 4 charge
+énormément de classes), cache de code JIT, piles de threads et buffers directs.
+Réduire le seul `-Xmx` les laisse intacts. Voir le bloc `JVM_OPTS` de la Phase 0.3
+pour les plafonds retenus.
+
+#### c. Beans lazy — mais sélectivement
+
+- [x] **`spring.main.lazy-initialization=true` global : à ne PAS utiliser.**
+  17 classes portent un `@PostConstruct`, dont `LightService`, `ServoMotorService`,
+  les boutons de porte et `SunTimeUtils`. En lazy global, ces initialisations
+  n'ont lieu qu'au premier accès HTTP — sans visiteur sur l'interface, **la porte
+  ne s'ouvrirait jamais au lever du soleil**.
+- [x] **`@Lazy` appliqué aux 23 contrôleurs REST**, aucun n'ayant de
+  `@PostConstruct` : ils ne servent qu'aux requêtes HTTP. Les automatismes
+  (porte, lumière, capteurs, scheduler solaire) restent initialisés au démarrage.
+  Le premier appel à un endpoint est un peu plus lent, une seule fois.
+
+#### d. vm.swappiness
+
+```bash
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
+sudo sysctl -p /etc/sysctl.d/99-swappiness.conf
+```
+
+Défaut : 60 — le noyau swappe volontiers. À 10, il ne le fait qu'en dernier recours.
+
+#### e. Session graphique retirée
+
+- [x] `sudo systemctl set-default multi-user.target` — l'image installée était une
+  **Desktop** alors que la roadmap prévoyait une **Lite**. `labwc`, `wf-panel-pi`,
+  `pcmanfm`, `gvfs` et `polkit` tournaient en permanence sur une machine headless.
+  Gain modeste en RAM (~10 Mo résidents), mais surtout du cache disque récupéré.
+
+#### f. Piste non appliquée : supprimer le swapfile SD
+
+`swapon --show` liste deux espaces : `/dev/zram0` (415 Mo, compressé en RAM,
+priorité 100) et `/var/swap` (850 Mo, **sur la carte SD**, priorité -2). Le noyau
+remplit zram d'abord, puis déborde sur le fichier — c'est ce débordement qui use
+le support.
+
+```bash
+sudo swapoff /var/swap
+sudo systemctl disable --now dphys-swapfile
+sudo rm -f /var/swap
+```
+
+⚠️ Sans filet disque, un dépassement mémoire déclenche un `OOM kill` au lieu d'un
+ralentissement. Combiné à `-XX:+ExitOnOutOfMemoryError` et au `Restart=on-failure`
+du unit systemd, cela donne un redémarrage propre plutôt qu'une usure continue.
+**À évaluer après avoir mesuré l'effet des points a à e.**
 
 ### 3.3 — Sanity check applicatif
 

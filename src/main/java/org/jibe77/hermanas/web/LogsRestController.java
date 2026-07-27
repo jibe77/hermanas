@@ -19,12 +19,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.io.IOException;
 import java.util.List;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/logs")
 @Tag(name = "Logs", description = "Read application log files (admin only)")

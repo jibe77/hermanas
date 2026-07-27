@@ -14,6 +14,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Map;
  *
  * @see org.jibe77.hermanas.service.config.ConfigService
  */
+@Lazy
 @RestController
 @RequestMapping("/api/v1/config")
 @Tag(name = "Configuration", description = "Admin endpoints for viewing and modifying system configuration")

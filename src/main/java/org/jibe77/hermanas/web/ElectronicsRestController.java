@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -20,6 +21,7 @@ import java.util.Map;
  * coop, which is set once when the box is assembled. A wiring change requires a
  * restart anyway because Pi4j provisions each pin at startup and never reopens it.
  */
+@Lazy
 @RestController
 @RequestMapping("/api/v1/electronics")
 @Tag(name = "Electronics", description = "Read-only view of the GPIO wiring (BCM numbering)")

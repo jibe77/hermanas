@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Map;
  * operator gets immediate feedback on whether the credentials work without
  * persisting them first.
  */
+@Lazy
 @RestController
 @RequestMapping("/api/v1/weather")
 @Tag(name = "Weather", description = "Diagnostics for the external weather provider")

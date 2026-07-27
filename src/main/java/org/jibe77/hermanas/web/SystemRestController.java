@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/system")
 @Tag(name = "System", description = "System control endpoints for shutdown and reboot operations")

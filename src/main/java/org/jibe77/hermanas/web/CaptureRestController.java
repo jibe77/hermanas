@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.Collections;
 import java.util.Map;
@@ -40,6 +41,7 @@ import java.util.Map;
  * analysis is done so the operator sees the photo while the LLM is still
  * thinking.</p>
  */
+@Lazy
 @RestController
 @RequestMapping("/api/v1/captures")
 @Tag(name = "Captures",

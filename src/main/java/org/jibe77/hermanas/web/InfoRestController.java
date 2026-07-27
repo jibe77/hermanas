@@ -11,7 +11,9 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/info")
 @Tag(name = "Info", description = "Application information endpoints for version and build details")

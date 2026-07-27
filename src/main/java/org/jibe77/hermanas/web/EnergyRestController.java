@@ -21,9 +21,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.Map;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/energy")
 @Tag(name = "Energy", description = "Energy management endpoints for WiFi control and consumption modes")

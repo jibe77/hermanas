@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.context.annotation.Lazy;
 
 import jakarta.validation.Valid;
 import java.io.IOException;
@@ -39,6 +40,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/residents")
 @Tag(name = "Residents", description = "CRUD des pensionnaires (poules) du poulailler")

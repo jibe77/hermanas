@@ -14,10 +14,12 @@ import org.jibe77.hermanas.websocket.ButtonStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.Arrays;
 import java.util.List;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/buttons")
 @Tag(name = "Buttons", description = "End-stop button (limit switch) status endpoints for diagnostics")

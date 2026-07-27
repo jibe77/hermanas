@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
  *   <li>everything else — restricted to {@link SecurityConfig#ROLE_ADMIN}.</li>
  * </ul>
  */
+@Lazy
 @RestController
 @RequestMapping("/api/v1/users")
 @Tag(name = "Users", description = "User accounts: self-service profile (/me) and admin CRUD")

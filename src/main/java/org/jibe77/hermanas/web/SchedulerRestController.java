@@ -14,9 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
 import java.time.format.DateTimeFormatter;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/scheduler")
 @Tag(name = "Scheduler", description = "Scheduled events endpoints based on sunrise/sunset times")

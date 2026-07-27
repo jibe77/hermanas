@@ -3,6 +3,7 @@ package org.jibe77.hermanas.web;
 import org.springframework.boot.webmvc.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.context.annotation.Lazy;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * which already return JSON with the right status code. We only intercept the
  * generic {@code /error} forward that Spring uses for non-API browser hits.</p>
  */
+@Lazy
 @Controller
 public class SpaErrorController implements ErrorController {
 

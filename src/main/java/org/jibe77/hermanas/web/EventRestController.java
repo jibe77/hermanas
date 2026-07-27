@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.List;
  * <p>Both endpoints accept a {@code from}/{@code to} time window (ISO-8601
  * datetimes) and a {@code limit} (capped at 1000 in the service).</p>
  */
+@Lazy
 @RestController
 @RequestMapping("/api/v1/events")
 @Tag(name = "Journal", description = "Business and authentication event log (the Journalisation page)")

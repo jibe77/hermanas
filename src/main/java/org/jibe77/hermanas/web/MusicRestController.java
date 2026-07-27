@@ -18,12 +18,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/music")
 @Tag(name = "Music", description = "Music player control endpoints for playing sounds in the coop")

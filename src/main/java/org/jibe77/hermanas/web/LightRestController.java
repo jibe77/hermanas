@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.context.annotation.Lazy;
 
+@Lazy
 @RestController
 @RequestMapping("/api/v1/light")
 @Tag(name = "Light", description = "Light control endpoints for switching and status monitoring")
