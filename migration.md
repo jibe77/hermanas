@@ -148,7 +148,7 @@ case $1 in
         if [ ! -f $PID_PATH_NAME ]; then
             nohup $JAVA_BIN $JVM_OPTS $JMX_OPTS \
                 -jar $PATH_TO_JAR \
-                --spring.config.location=$CONFIG_LOCATION \
+                --spring.config.additional-location=$CONFIG_LOCATION \
                 & echo $! > $PID_PATH_NAME
             echo "$SERVICE_NAME started ..."
         else
@@ -161,7 +161,7 @@ case $1 in
             nohup $JAVA_BIN $JVM_OPTS $JMX_OPTS \
                 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:5005 \
                 -jar $PATH_TO_JAR \
-                --spring.config.location=$CONFIG_LOCATION \
+                --spring.config.additional-location=$CONFIG_LOCATION \
                 & echo $! > $PID_PATH_NAME
             echo "$SERVICE_NAME started (debug) ..."
         else
@@ -192,7 +192,7 @@ esac
 | Pas de FFM autorisation | `--enable-native-access=ALL-UNNAMED` | Requis pour `pi4j-plugin-ffm` — sans ça, warning restricted method à chaque appel GPIO |
 | `java.rmi.server.hostname=10.0.0.20` | `=127.0.0.1` | L'IP `10.0.0.20` était un vestige non fonctionnel (LAN Freebox = 192.168.1.0/24) |
 | `local.only=false` | `jmxremote.host=127.0.0.1` | JMX exposé sans auth ni TLS = trou de sécu. `local.only=true` avait d'abord été retenu, mais ce paramètre est **incompatible avec un port déclaré** et empêche la JVM de démarrer le connecteur. `jmxremote.host` fait ce qu'on attendait : le connecteur n'écoute que sur la boucle locale, l'accès passe par tunnel SSH |
-| Pas de `--spring.config.location` | Explicit `file:/var/lib/hermanas/application.properties` | Ne dépend plus du CWD au moment du démarrage |
+| Pas de `--spring.config.location` | `--spring.config.additional-location=file:/var/lib/hermanas/application.properties` | Ne dépend plus du CWD au démarrage. ⚠️ **`additional-location` et non `location`** : `location` *remplace* la configuration embarquée dans le JAR, `additional-location` la *complète*. Le fichier externe hérité de `poupou` ne contient qu'une soixantaine de propriétés sur les 165 du JAR — avec `location`, tout le reste disparaît et l'application échoue au démarrage sur `Could not resolve placeholder` (constaté le 2026-07-27 avec `light.security.timer.delay.eco`). |
 | `-Dcom.sun.management.jmxremote=true` (en `debug`) | Retiré | Redondant, l'activation JMX est déjà impliquée par la présence du port |
 
 - [x] Créer le script sur `pru` avec ce contenu, puis :
@@ -1321,7 +1321,7 @@ sudo -u hermanas /usr/lib/jvm/java-25-openjdk-arm64/bin/java \
   --enable-native-access=ALL-UNNAMED \
   -jar /var/lib/hermanas/hermanas.jar \
   --spring.profiles.active=gpio-fake \
-  --spring.config.location=file:/var/lib/hermanas/application.properties
+  --spring.config.additional-location=file:/var/lib/hermanas/application.properties
 ```
 
 **Attendus :**
@@ -1330,6 +1330,37 @@ sudo -u hermanas /usr/lib/jvm/java-25-openjdk-arm64/bin/java \
 - [ ] `UnsatisfiedLinkError` sur `picam-2.0.1.so` : **normal** (catché par le service GPIO).
 - [ ] `MusicService` peut throw (cvlc absent) : **normal**.
 - [ ] Si `> 90 s` : envisager `arm_freq=800` au lieu de 600.
+
+#### ⚠️ Écueil rencontré : `config.location` vs `config.additional-location`
+
+Premier démarrage soldé par un échec (2026-07-27) :
+
+```
+Could not resolve placeholder 'light.security.timer.delay.eco'
+```
+
+`Hermanas.sh` utilisait `--spring.config.location`, qui **remplace** la configuration
+embarquée dans le JAR au lieu de la compléter. Or l'`application.properties` hérité de
+`poupou` ne contient qu'une soixantaine de propriétés, contre **165** dans le JAR :
+tout le reste disparaissait, et l'application échouait sur la première propriété
+introuvable.
+
+- [x] Corrigé en `--spring.config.additional-location` :
+  ```bash
+  sudo sed -i 's|--spring.config.location=|--spring.config.additional-location=|' \
+    /usr/local/bin/Hermanas.sh
+  ```
+
+Le fichier externe ne doit contenir que ce qui diffère du JAR — identifiants de base,
+chemins, coordonnées GPS, clés SMTP — et surcharge alors ponctuellement les défauts
+embarqués.
+
+- [ ] Contrôle après correction : le fichier externe est bien plus court que celui
+  du JAR, c'est normal et voulu.
+  ```bash
+  sed -nE 's/^([a-zA-Z][a-zA-Z0-9._-]*) *=.*/\1/p' \
+    /var/lib/hermanas/application.properties | sort -u | wc -l
+  ```
 
 #### ⚠️ Risque principal : `ddl-auto=update` avec Hibernate 7
 
@@ -1718,6 +1749,12 @@ zone.js 0.16.2, Vitest 4.1.8, ESLint 10.5.0, ng-bootstrap 21.0.0-rc.0.
   Un migrateur automatique existe : https://sass-lang.com/d/import
   Attention : `@use` a une portée différente d'`@import` (pas de fuite globale des
   variables), donc à vérifier visuellement après conversion.
+
+  ⚠️ **Ordre conseillé : traiter le point A avant celui-ci.** Ces avertissements sont
+  émis par `sass-loader`, un composant de la chaîne Webpack. La migration vers
+  `@angular/build` (esbuild/Vite) change de moteur Sass et fera probablement
+  disparaître ce bruit — ou le présentera autrement. Migrer les 33 fichiers d'abord
+  risquerait un double travail.
 
 #### C. Vulnérabilités npm
 
