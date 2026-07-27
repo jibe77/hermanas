@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
@@ -214,6 +215,28 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ClientAbortException.class)
     public void handleClientAbortException(ClientAbortException ex) {
         logger.debug("Client aborted connection: {}", ex.getMessage());
+    }
+
+    /**
+     * Ressource statique introuvable — un simple 404, pas une anomalie applicative.
+     *
+     * <p>Sans ce handler, ces requêtes tombaient sur le {@code @ExceptionHandler(Exception.class)}
+     * générique et produisaient une trace de 150 lignes en ERROR pour un fichier absent.
+     * Le cas le plus fréquent vient du {@code <base href="/fr-FR/">} que le build
+     * {@code --localize} d'Angular place dans chaque index.html : le navigateur résout
+     * alors {@code /actuator/health} en {@code /fr-FR/actuator/health}, qui n'existe pas.</p>
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<Map<String, Object>> handleNoResourceFound(NoResourceFoundException ex) {
+        Map<String, Object> errors = new HashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", HttpStatus.NOT_FOUND.value());
+        errors.put("error", "Not Found");
+        errors.put("message", "Resource not found");
+
+        logger.debug("Static resource not found: {}", ex.getResourcePath());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
 
     /**
