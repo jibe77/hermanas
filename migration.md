@@ -1853,6 +1853,97 @@ exécutée** — `local.only=true` empêchait le connecteur de démarrer, rempla
 > donc modifier la configuration à chaud voire arrêter l'application. Compromis assumé
 > pour une machine mono-service en réseau domestique.
 
+### 3.5 — Bilan de la phase 3 ✅
+
+**Application démarrée et stable le 2026-07-27** — `Started HermanasApplication in
+264.798 seconds`, plus aucun `Thread starvation`, aucune écriture de swap sur la
+carte SD.
+
+#### Résultats mesurés
+
+| Indicateur | Au départ | Après optimisation |
+|---|---|---|
+| Écritures swap sur la carte SD | continues | **zéro** (zram seul) |
+| `wa` (attente disque) | 90-100 % | **0-1 %** |
+| `us` (CPU utile) | 0-7 % | 22-38 % |
+| Durée de démarrage | 494 s | **265 s** |
+| `Thread starvation` Hikari | 2-3 par démarrage | **aucun** |
+| RAM totale visible | 415 Mo | **463 Mo** |
+| Ratio de compression zram | — | **4:1 à 5:1** (zstd sur heap Java) |
+
+#### Ce qui fonctionne
+
+- **GPIO complet** : relais lumière (BCM 14) et ventilateur (BCM 23) commutés,
+  servo actionné sur PWM0 (BCM 12), trois entrées à débounce (BCM 15, 18, 24).
+  Tout passe par le chardev `/dev/gpiochip0` via `pi4j-plugin-ffm`.
+- **Scheduler solaire** : ouverture, fermeture et allumage calculés.
+- **Base** : 87 000 lignes migrées, utilisateurs lus, événements écrits.
+- **Météo, WebSockets, Quartz, Tomcat, métriques** : opérationnels.
+
+#### Ce qui reste en attente (normal à ce stade)
+
+- **Caméra** — `picam` absent, échoue proprement en `IOException` sans affecter le
+  reste. Chantier Phase 7.
+- **Capteur DHT22** — le script Python s'exécute correctement (`Failed to get
+  reading`, exit 1) : c'est le **matériel** qui manque, pas la dépendance.
+  Validation en Phase 5, capteur branché.
+
+#### Correctifs appliqués pendant la phase — récapitulatif
+
+Utile pour rédiger un guide d'installation ; chaque point renvoie à sa section.
+
+| # | Correctif | Détail |
+|---|---|---|
+| 1 | `config.location` → `config.additional-location` | 3.2 — `location` remplace la config du JAR au lieu de la compléter |
+| 2 | Groupes `i2c` et `spi` pour `hermanas` | 0.4bis — le plugin FFM initialise tous ses providers d'un bloc |
+| 3 | PWM par `chip`/`channel`, pas `.bcm()` | 3.2 — incohérence de l'API pi4j entre providers |
+| 4 | Overlay `dtoverlay=pwm,pin=12,func=4` | 3.2 — sans lui `/sys/class/pwm/` est vide |
+| 5 | Caméra découplée du GPIO | 3.2 — `UnsatisfiedLinkError` est une `Error`, pas une `Exception` |
+| 6 | `resilience4j-spring-boot4` | 3.2 — l'artifactId encode la ligne SB et le module vérifie au démarrage |
+| 7 | MariaDB allégé | 3.2bis a — `performance_schema=OFF` et buffers réduits |
+| 8 | Plafonds JVM par poste | 3.2bis b — le heap ne fait que la moitié de l'empreinte |
+| 9 | `@Lazy` sur 23 contrôleurs REST | 3.2bis c — le lazy **global** casserait les automatismes |
+| 10 | `vm.swappiness=10` | 3.2bis d |
+| 11 | Session graphique retirée | 3.2bis e — image Desktop au lieu de Lite |
+| 12 | zram 2× RAM, swapfile SD supprimé | 3.2bis f — **le correctif décisif** |
+| 13 | `gpu_mem` 64 → 16 Mo | 3.2bis g — +48 Mo sur une machine headless |
+| 14 | `ExecStartPre=/bin/sleep 45`, `Nice=10` | 0.6 — évite la concurrence mémoire au boot |
+| 15 | Chemins absolus dans `application.properties` | 2.6 — `./photos` → `/var/lib/hermanas/photos` |
+
+#### Réglages restants (mineurs, sans urgence)
+
+- [ ] **Timeouts systemd** — 90 s ne suffisent pas à l'arrêt sur cette machine, d'où
+  un `SIGKILL` qui laisse les GPIO dans un état indéterminé (le servo pourrait
+  rester alimenté) :
+  ```bash
+  sudo tee -a /etc/systemd/system/Hermanas.service.d/10-boot-delay.conf > /dev/null <<'EOF'
+  TimeoutStartSec=900
+  TimeoutStopSec=180
+  EOF
+  sudo systemctl daemon-reload
+  ```
+- [ ] **Avertissements Spring récurrents** — à ajouter dans
+  `/var/lib/hermanas/application.properties` :
+  ```properties
+  # Évite que des requêtes SQL partent pendant le rendu de la vue.
+  spring.jpa.open-in-view=false
+
+  # MariaDB ferme les connexions inactives avant que Hikari ne s'en aperçoive, d'où
+  # des "Failed to validate connection" périodiques. Un maxLifetime plus court que
+  # le wait_timeout serveur règle le problème. maximum-pool-size=5 au lieu de 10
+  # réduit aussi l'empreinte — l'application est mono-utilisateur.
+  spring.datasource.hikari.max-lifetime=240000
+  spring.datasource.hikari.idle-timeout=120000
+  spring.datasource.hikari.minimum-idle=2
+  spring.datasource.hikari.maximum-pool-size=5
+  ```
+- [ ] **SpringDoc en production** — `/v3/api-docs` et `/swagger-ui.html` sont exposés
+  par défaut. Ils sont protégés par `SecurityConfig`, mais peuvent être coupés :
+  ```properties
+  springdoc.api-docs.enabled=false
+  springdoc.swagger-ui.enabled=false
+  ```
+
 ### 3.4 — Arrêt propre
 
 Ctrl+C. **Ne pas démarrer le service systemd encore.**
@@ -2338,6 +2429,8 @@ Fenêtre de conservation : **1 semaine post-Phase 5**.
 |---|---|---|---|
 | 0. Prépa `pru` headless | pru | 1-2 h | 0 |
 | ~~1. Migration code Java 25 + SB4 + pi4j 4.x FFM~~ | Mac | ~~6-10 h dev~~ **✅ fait (2026-07-27)** | 0 |
+| ~~2. Bascule données + fichiers~~ | poupou→pru | **✅ fait (2026-07-27)** | — |
+| ~~3. Test à vide + optimisation mémoire~~ | pru | **✅ fait (2026-07-27)** | — |
 | 2. Bascule données + Samba photos | poupou→pru | 30-60 min | **✓ démarre** |
 | 3. Test à vide sur banc | pru | 30 min | ✓ |
 | 4. Bascule réseau (Freebox) | Freebox | 10 min | ✓ |
