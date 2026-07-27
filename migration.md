@@ -445,9 +445,14 @@ Deux blocages pour `pru` :
 
 - [ ] Installer la dépendance sur `pru` :
   ```bash
-  sudo apt install -y python3-pip libgpiod2
+  sudo apt install -y python3-pip libgpiod3 python3-libgpiod
   pip3 install --break-system-packages adafruit-circuitpython-dht
+  python3 -c "import adafruit_dht, board; print('modules OK')"
   ```
+  ⚠️ **`libgpiod3` et non `libgpiod2`** : Trixie est passé à libgpiod 2.x et a
+  renommé le paquet. `apt-cache search libgpiod` pour vérifier si le nom change
+  encore. `python3-libgpiod` fournit les bindings Python en paquet Debian, ce qui
+  évite de les faire compiler par pip.
 - [ ] Déposer le script :
   ```bash
   # depuis le Mac
