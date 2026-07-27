@@ -1447,6 +1447,48 @@ souris, en produit très peu.
   ```
   ⚠️ Le `/./` est indispensable — sans lui la JVM ignore silencieusement l'option.
 
+#### ⚠️ Écueil rencontré : le PWM FFM exige chip/channel, pas `.bcm()`
+
+```
+IllegalArgumentException: PWM Chip and Channel are needed for hardware PWM
+                          with the FFM I/O provider
+```
+
+Le provider PWM du plugin FFM **refuse `.bcm()`**. Il attend l'adressage sysfs du
+kernel (`/sys/class/pwm/pwmchipN/pwmM`), soit un couple `chip` + `channel`, et non
+une numérotation GPIO — contrairement aux providers digital input/output qui, eux,
+acceptent `.bcm()`.
+
+- [x] Corrigé dans `GpioHermanasRpiService.provisionPwm()` : une table
+  `BCM_TO_PWM_CHANNEL` traduit la broche en canal. La signature de l'interface reste
+  inchangée (`provisionPwm(id, name, gpioAddress)`), la traduction étant un détail
+  d'implémentation du provider.
+
+  | BCM | Canal | Remarque |
+  |---|---|---|
+  | 12 | PWM0 | **retenu pour le servo** (broche physique 32) |
+  | 18 | PWM0 | occupé par `door.button.up` |
+  | 13 | PWM1 | libre, repli possible |
+  | 19 | PWM1 | libre, repli possible |
+
+  Le Pi Zero 2 W n'expose qu'un seul contrôleur, donc `chip = 0`. Une broche hors de
+  cette table lève désormais une `IllegalArgumentException` explicite plutôt qu'un
+  message du plugin.
+
+- [ ] ⚠️ **Activer le PWM matériel dans `/boot/firmware/config.txt`.** Sans overlay,
+  `/sys/class/pwm/` est vide et aucun chip n'existe — le provider échouera même avec
+  le bon couple chip/channel.
+  ```bash
+  # Vérifier d'abord
+  ls -la /sys/class/pwm/
+  grep -E "^dtoverlay=pwm" /boot/firmware/config.txt
+
+  # Activer PWM0 sur GPIO 12 (func=4 = ALT0)
+  echo "dtoverlay=pwm,pin=12,func=4" | sudo tee -a /boot/firmware/config.txt
+  sudo reboot
+  ```
+  Après redémarrage, `/sys/class/pwm/pwmchip0/` doit exister.
+
 #### ⚠️ Écueil rencontré : la caméra faisait tomber tout le GPIO
 
 `GpioHermanasRpiService.initialiseGpioPins()` chargeait la librairie native picam

@@ -21,6 +21,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -148,16 +149,51 @@ public class GpioHermanasRpiService implements GpioHermanasService {
         return digitalOutput;
     }
 
-    // NOTE : le plugin FFM ne supporte QUE PwmType.HARDWARE. Le PWM logiciel de
-    // pi4j 2.x/pigpio n'existe plus. Sur Pi Zero 2 W, seuls GPIO 12, 13, 18 et 19
-    // exposent du PWM matériel — le servo est donc câblé sur GPIO 12 (broche
-    // physique 32) au lieu de GPIO 25 (broche 22) qui n'en fait pas partie.
-    // GPIO 18 est déjà pris par door.button.up. Cf. door.servo.gpio.address.
+    /**
+     * Correspondance entre broche BCM et canal PWM matériel du BCM2710 (Pi Zero 2 W).
+     *
+     * <p>Le plugin FFM ne gère que {@link PwmType#HARDWARE} — le PWM logiciel de
+     * pi4j 2.x/pigpio n'existe plus — et son provider refuse {@code .bcm()} :
+     * « PWM Chip and Channel are needed for hardware PWM with the FFM I/O provider ».
+     * Il attend l'adressage sysfs du kernel ({@code /sys/class/pwm/pwmchipN/pwmM}),
+     * pas une numérotation GPIO.</p>
+     *
+     * <p>Le SoC n'expose que deux canaux, chacun accessible depuis deux broches :
+     * PWM0 sur GPIO 12 et 18, PWM1 sur GPIO 13 et 19. Toute autre broche — dont
+     * GPIO 25, utilisé jusqu'ici — est hors de portée. D'où le recâblage du servo
+     * vers GPIO 12 (broche physique 32), GPIO 18 étant déjà pris par
+     * {@code door.button.up}.</p>
+     */
+    private static final Map<Integer, Integer> BCM_TO_PWM_CHANNEL = Map.of(
+            12, 0,   // PWM0
+            18, 0,   // PWM0 (alternative)
+            13, 1,   // PWM1
+            19, 1);  // PWM1 (alternative)
+
+    /**
+     * Le Pi Zero 2 W n'expose qu'un seul contrôleur PWM, donc chip 0. Les modèles
+     * plus récents (Pi 5) en ont plusieurs, d'où la constante nommée plutôt qu'un
+     * littéral disséminé.
+     */
+    private static final int PWM_CHIP = 0;
+
     public Pwm provisionPwm(String id, String name, int gpioAddress) {
+        Integer channel = BCM_TO_PWM_CHANNEL.get(gpioAddress);
+        if (channel == null) {
+            throw new IllegalArgumentException(
+                    "GPIO " + gpioAddress + " n'expose pas de PWM matériel sur ce modèle. "
+                    + "Broches possibles : " + BCM_TO_PWM_CHANNEL.keySet()
+                    + ". Adapter door.servo.gpio.address et le câblage.");
+        }
+
+        logger.info("Provision PWM on BCM {} -> chip {}, channel {}.",
+                gpioAddress, PWM_CHIP, channel);
+
         PwmConfig pwmConfig = Pwm.newConfigBuilder(pi4j)
                 .id(id)
                 .name(name)
-                .bcm(gpioAddress)
+                .chip(PWM_CHIP)
+                .channel(channel)
                 .pwmType(PwmType.HARDWARE)
                 .initial(0)
                 .shutdown(0)
