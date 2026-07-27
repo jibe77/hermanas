@@ -11,6 +11,7 @@ import com.pi4j.io.gpio.digital.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class DefaultGpioPinDigitalOutput implements DigitalOutput {
 
@@ -107,12 +108,12 @@ public class DefaultGpioPinDigitalOutput implements DigitalOutput {
     }
 
     @Override
-    public Object initialize(Context context) throws InitializeException {
+    public DigitalOutput initialize(Context context) throws InitializeException {
         return null;
     }
 
     @Override
-    public Object shutdown(Context context) throws ShutdownException {
+    public DigitalOutput shutdownInternal(Context context) throws ShutdownException {
         return null;
     }
 
@@ -129,5 +130,20 @@ public class DefaultGpioPinDigitalOutput implements DigitalOutput {
     @Override
     public DigitalOutput unbind(DigitalBinding... binding) {
         return null;
+    }
+
+    @Override
+    public void close() {
+        // no-op stub
+    }
+
+    @Override
+    public Consumer<Boolean> addConsumer(Consumer<Boolean> consumer) {
+        return consumer;
+    }
+
+    @Override
+    public DigitalOutput removeConsumer(Consumer<Boolean> consumer) {
+        return this;
     }
 }

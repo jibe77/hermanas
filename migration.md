@@ -1,6 +1,6 @@
 # Migration `poupou` (Pi Zero) → `pru` (Pi Zero 2 W)
 
-Checklist opérationnelle. Stratégie all-in-one : hardware + OS 64 bits (Trixie arm64) + **Java 25** + Spring Boot 3 + Jakarta EE + **pi4j 4.x avec FFM** dans une seule bascule. Camera + player audio traités en dernier.
+Checklist opérationnelle. Stratégie all-in-one : hardware + OS 64 bits (Trixie arm64) + **Java 25** + Spring Boot 4 + Jakarta EE + **pi4j 4.x avec FFM** dans une seule bascule. Camera + player audio traités en dernier.
 
 **Décision GPIO stack (2026-07-04)** : passage direct à `pi4j-plugin-ffm` (Foreign Function & Memory API de Java 22+, requiert Java 25 LTS). Élimine la dette technique `pigpio` (archivé 2021, retiré de Trixie) **et** la dette technique intermédiaire `libgpiod`/`gpiod` (déprécié dans pi4j 4.1). Voie officielle définitive de pi4j.
 
@@ -13,7 +13,7 @@ Checklist opérationnelle. Stratégie all-in-one : hardware + OS 64 bits (Trixie
 ## 📚 Sommaire
 
 - [Phase 0 — Préparation `pru` headless (hors ligne)](#phase-0--préparation-pru-headless-hors-ligne)
-- [Phase 1 — Migration code Java 25 / Spring Boot 3 / Jakarta EE / pi4j 4.x](#phase-1--migration-code-java-25--spring-boot-3--jakarta-ee--pi4j-4x)
+- [Phase 1 — Migration code Java 25 / Spring Boot 4 / Jakarta EE / pi4j 4.x](#phase-1--migration-code-java-25--spring-boot-4--jakarta-ee--pi4j-4x)
 - [Phase 2 — Bascule des données et fichiers](#phase-2--bascule-des-données-et-fichiers)
 - [Phase 3 — Test à vide sur banc](#phase-3--test-à-vide-sur-banc)
 - [Phase 4 — Bascule réseau](#phase-4--bascule-réseau)
@@ -112,7 +112,7 @@ scp -P 5722 pi@poupou:/home/pi/usb_sleep_10.sh /tmp/
 
 > ⚠️ Ces fichiers restent dans `/tmp/` sur `pru` pour le moment — ils seront déplacés à leur place définitive lors des étapes suivantes (`Hermanas.sh` en 0.6, scripts USB en 0.8), une fois le user `hermanas` et l'arborescence `/var/lib/hermanas/` créés (0.4bis).
 
-**Nouvelle version de `Hermanas.sh` pour `pru`** (déjà adaptée Java 25 / SB3 / pi4j 4.x FFM / Zero 2 W 512 Mo — voir tableau des changements sous le script) :
+**Nouvelle version de `Hermanas.sh` pour `pru`** (déjà adaptée Java 25 / SB4 / pi4j 4.x FFM / Zero 2 W 512 Mo — voir tableau des changements sous le script) :
 
 ```sh
 #!/bin/sh
@@ -185,7 +185,7 @@ esac
 | Ancien | Nouveau | Pourquoi |
 |---|---|---|
 | `java` (via PATH) | `$JAVA_BIN` (chemin absolu apt vers Java 25) | Fiabilité au démarrage systemd (le PATH de root peut ne pas être ce que tu crois selon la session) |
-| Pas de `-Xmx` | `-Xmx256m -Xms128m` | Plafonner la heap : SB3 est plus lourd que SB2, la RAM Zero 2 W reste à 512 Mo |
+| Pas de `-Xmx` | `-Xmx256m -Xms128m` | Plafonner la heap : SB4 est plus lourd que SB2, la RAM Zero 2 W reste à 512 Mo |
 | Pas de GC choisi | `-XX:+UseSerialGC` | GC single-thread, économe en mémoire, adapté aux petits heaps sur ARM |
 | Pas de FFM autorisation | `--enable-native-access=ALL-UNNAMED` | Requis pour `pi4j-plugin-ffm` — sans ça, warning restricted method à chaque appel GPIO |
 | `java.rmi.server.hostname=10.0.0.20` | `=127.0.0.1` | L'IP `10.0.0.20` était un vestige non fonctionnel (LAN Freebox = 192.168.1.0/24) |
@@ -621,9 +621,19 @@ Sur `pru` :
 
 ---
 
-## Phase 1 — Migration code Java 25 / Spring Boot 3 / Jakarta EE / pi4j 4.x
+## Phase 1 — Migration code Java 25 / Spring Boot 4 / Jakarta EE / pi4j 4.x
 
-Objectif : le repo compile et passe les tests avec Java 25 + Spring Boot 3 + Jakarta EE + pi4j 4.x FFM. Sur le Mac uniquement. Branche dédiée. Aucun impact sur `poupou` ni `pru`.
+Objectif : le repo compile et passe les tests avec Java 25 + **Spring Boot 4** + Jakarta EE + pi4j 4.x FFM. Sur le Mac uniquement. Branche dédiée. Aucun impact sur `poupou` ni `pru`.
+
+> **Décision utilisateur 2026-07-27 — Spring Boot 4 au lieu de 3.5.x.** La roadmap
+> initiale visait SB 3.5.x. La migration a d'abord été menée jusqu'à un
+> `BUILD SUCCESS` sur **SB 3.5.3**, puis poussée jusqu'à **SB 4.1.0** (GA du
+> 2026-06-10) pour partir sur les dernières versions plutôt que de devoir
+> refaire le chantier dans quelques mois. Les deux paliers sont documentés
+> ci-dessous : ce qui a été fait pour SB3 reste valable, SB4 ajoute une
+> couche supplémentaire de renommages liés à sa modularisation.
+
+**État final : `mvn clean package` → BUILD SUCCESS, 66/66 tests, JAR 102 Mo avec SPA bundlée (3 locales).**
 
 ### 1.1 — Branche + snapshot
 
@@ -634,12 +644,12 @@ git status    # doit être clean sauf éventuels WIP à commit avant
 
 ### 1.2 — `pom.xml` : bumps de version
 
-- [ ] `<java.version>11</java.version>` → `<java.version>25</java.version>`.
-- [ ] `<maven.compiler.source>` et `<maven.compiler.target>` → `25` si présents.
-- [ ] `spring-boot-starter-parent` : `2.7.x` → dernière `3.5.x+` compatible Java 25 (SB 3.4+ recommandé, vérifier Maven Central).
-- [ ] `<pi4j.version>2.4.0</pi4j.version>` → `4.0.0` (ou dernière 4.x stable).
-- [ ] **Retirer** les artefacts `pi4j-plugin-raspberrypi` et `pi4j-plugin-pigpio` du bloc `<dependencies>`.
-- [ ] **Ajouter** la nouvelle dépendance :
+- [x] `<java.version>11</java.version>` → `<java.version>25</java.version>`.
+- [x] `<maven.compiler.source>` et `<maven.compiler.target>` → `25` si présents. *(Non présents dans le pom, hérités du parent SB.)*
+- [x] `spring-boot-starter-parent` : `2.7.18` → `3.5.3` → **`4.1.0`** (GA du 2026-06-10).
+- [x] `<pi4j.version>2.4.0</pi4j.version>` → **`4.0.2`** (release 2026-06-08, dernière 4.x stable).
+- [x] **Retirer** les artefacts `pi4j-plugin-raspberrypi` et `pi4j-plugin-pigpio` du bloc `<dependencies>`.
+- [x] **Ajouter** la nouvelle dépendance :
   ```xml
   <dependency>
       <groupId>com.pi4j</groupId>
@@ -647,80 +657,260 @@ git status    # doit être clean sauf éventuels WIP à commit avant
       <version>${pi4j.version}</version>
   </dependency>
   ```
-- [ ] Laisser `<picam.version>` inchangé (retiré en Phase 7).
-- [ ] `mvn versions:display-dependency-updates` pour voir les autres bumps.
+- [x] Laisser `<picam.version>` inchangé (retiré en Phase 7).
+- [x] **Fixer manuellement `org.apache.httpcomponents:httpclient` en 4.5.14** — Spring Boot 3 a retiré `httpclient` (v4) de son BOM (migration vers httpclient5). `web-push` 5.1.2 tire encore `httpasyncclient` 4.1.5, on garde donc la génération v4 pour compat API (`HttpResponse` exposé par `PushService.send`).
+- [x] `mvn versions:display-dependency-updates` exécuté au 2026-07-26. Bumps mineurs appliqués :
+  - `mariadb-java-client` 3.5.8 → **3.5.9**
+  - `commons-io` 2.20.0 → **2.22.0**
+  - `resilience4j-spring-boot2` 1.7.1 → **`resilience4j-spring-boot3` 2.4.0** (rename obligatoire dès SB3 ; l'artifactId reste `-spring-boot3` en 2.4.0, qui supporte SB 3.x et 4.x)
+  - `h2` : inchangé, déjà géré par le BOM SB
 
-### 1.3 — Refactor `javax.*` → `jakarta.*` (~70 imports)
+**Bumps supplémentaires imposés par SB 4 :**
+
+- [x] **`spring-boot-starter-aop` → `spring-boot-starter-aspectj`** — le starter a été renommé.
+- [x] **`spring-boot-starter-restclient` ajouté** — `RestTemplateBuilder` / `RestClient.Builder` ne sont plus fournis par `spring-boot-starter-web`.
+- [x] **`spring-boot-starter-data-jpa-test` + `spring-boot-starter-webmvc-test` ajoutés** — l'infra de test est modularisée (`@DataJpaTest`, `@WebMvcTest` ne sont plus dans `spring-boot-test-autoconfigure`). Ces starters tirent `spring-boot-starter-test` transitivement.
+- [x] **`spring-retry` : version fixée manuellement à `2.0.9`** — retiré du BOM SB 4, la déclaration sans version ne résout plus.
+- [x] **`jacoco-maven-plugin` 0.8.12 → `0.8.15`** — les versions ≤ 0.8.12 ne savent pas instrumenter le bytecode Java 25 (`IllegalClassFormatException` sur chaque classe, tests inexploitables).
+- [x] **`springdoc-openapi-ui` 1.8.0 → `springdoc-openapi-starter-webmvc-ui` 3.0.3** — la ligne 1.x est SB 2, la 2.x est SB 3, la **3.x est la ligne SB 4**. Aucun changement de code applicatif nécessaire (annotations `io.swagger.v3.*` inchangées).
+- [x] **`<fork>true</fork>` sur `maven-compiler-plugin`** — voir 1.6, contourne un crash de la compilation in-process.
+
+**Pas fait volontairement :**
+- jquery 4 (held back, risque de casse visuelle — cf. CLAUDE.md)
+- **Doublon Jackson 2 / Jackson 3 accepté** : SB 4 est sur Jackson 3, mais `swagger-core-jakarta` (dépendance amont de springdoc, y compris en 3.0.3) est encore sur Jackson 2. Le doublon (~4 Mo) persistera tant que Swagger n'aura pas migré. Alternative écartée : retirer springdoc et perdre la doc API interactive.
+
+**Bump version applicative** : `0.8.11` → **`0.9.1`** (jalon migration all-in-one).
+
+### 1.3 — Refactor `javax.*` → `jakarta.*` (37 fichiers)
+
+Commande one-shot exécutée depuis la racine du projet :
 
 ```bash
-find src -name "*.java" -exec sed -i '' \
-  -e 's/javax\.persistence\./jakarta.persistence./g' \
-  -e 's/javax\.annotation\.PostConstruct/jakarta.annotation.PostConstruct/g' \
-  -e 's/javax\.annotation\.PreDestroy/jakarta.annotation.PreDestroy/g' \
-  -e 's/javax\.servlet\./jakarta.servlet./g' \
-  -e 's/javax\.validation\./jakarta.validation./g' \
-  -e 's/javax\.mail\./jakarta.mail./g' \
-  {} \;
+grep -rl -E "javax\.(persistence|annotation|servlet|validation|mail)" src/ | \
+  xargs sed -i '' -E 's|javax\.(persistence\|annotation\|servlet\|validation\|mail)|jakarta.\1|g'
 ```
 
-- [ ] **NE PAS toucher** `javax.imageio.*` (JDK standard, pas Jakarta).
-- [ ] Vérifier avec `grep -rn "javax\." src/main/java` que seul `javax.imageio` reste.
+- [x] 37 fichiers refactorés en une passe.
+- [x] **NE PAS toucher** `javax.imageio.*` (JDK standard, pas Jakarta) — respecté par le regex `-E`.
+- [x] Vérifier avec `grep -rn "javax\." src/main/java` — restent uniquement `javax.sql.DataSource` (JDK) et `javax.imageio.ImageIO` (JDK). ✅
+- [x] Résultat : de **100 → 12 erreurs de compilation**.
 
-### 1.4 — SecurityConfig
+### 1.4 — SecurityConfig (Spring Security 6 puis 7)
 
-- [ ] `@EnableGlobalMethodSecurity(prePostEnabled = true)` → `@EnableMethodSecurity`.
-- [ ] Vérifier que `SecurityFilterChain` (déjà en place) compile avec Spring Security 6.
+- [x] `@EnableGlobalMethodSecurity(prePostEnabled = true)` → **`@EnableMethodSecurity`**.
+- [x] Vérifier que `SecurityFilterChain` (déjà en place) compile. ✅
+- [x] **`antMatchers(...)` → `requestMatchers(...)`** (18 occurrences) — supprimé dans Spring Security 6 :
+  ```bash
+  sed -i '' 's|\.antMatchers(|.requestMatchers(|g' \
+    src/main/java/org/jibe77/hermanas/security/SecurityConfig.java
+  ```
+- [x] **`AntPathRequestMatcher` → `PathPatternRequestMatcher.pathPattern(...)`** — supprimé en Security 7, nouveau package `org.springframework.security.web.servlet.util.matcher`.
+- [x] **`new DaoAuthenticationProvider()` + `setUserDetailsService(uds)` → `new DaoAuthenticationProvider(uds)`** — le constructeur no-arg et le setter ont disparu en Security 7.
+- [x] **Toute la chaîne fluide convertie en DSL lambda** — en Security 7 les surcharges no-arg (`headers()`, `csrf()`, `formLogin()`, `rememberMe()`, `logout()`, `exceptionHandling()`) et les `.and()` sont supprimées. Chaque bloc devient un `Customizer` :
+  ```java
+  // Avant (Security 5/6)
+  .headers().frameOptions().disable()
+  .and()
+  .csrf().csrfTokenRepository(...)
+  .and()
+  .authorizeRequests()
+      .requestMatchers(...).permitAll()
+      .anyRequest().permitAll()
+  .and()
 
-### 1.5 — Autres points SB 2 → 3
+  // Après (Security 7)
+  .headers(h -> h.frameOptions(fo -> fo.disable()))
+  .csrf(csrf -> csrf.csrfTokenRepository(...))
+  .authorizeHttpRequests(auth -> auth
+      .requestMatchers(...).permitAll()
+      .anyRequest().permitAll())
+  ```
+- [x] **`authorizeRequests()` → `authorizeHttpRequests()`**.
 
-- [ ] Properties `spring.*` : lire les warnings au premier `mvn compile`.
-- [ ] Actuator : renommages Micrometer 1.10 → 1.13 à surveiller sur Grafana en Phase 5.
-- [ ] Quartz : compatible SB3, vérifier `spring.quartz.*`.
-- [ ] `authorizeRequests()` → `authorizeHttpRequests()` si présent.
+### 1.4bis — Durcissement `GlobalExceptionHandler` (effet de bord utile)
+
+Découvert en corrigeant les tests : `AuthenticationCredentialsNotFoundException` et
+`AccessDeniedException` tombaient sur le handler générique `@ExceptionHandler(Exception.class)`
+et ressortaient en **HTTP 500**. En production la chaîne de filtres Security les intercepte
+avant, ce qui masquait le problème — mais dès que la chaîne est absente (slice `@WebMvcTest`)
+ou que l'exception remonte de plus profond, un défaut d'authentification se présentait comme
+une erreur serveur.
+
+- [x] Handler `AuthenticationCredentialsNotFoundException` → **401 Unauthorized**.
+- [x] Handler `AccessDeniedException` → **403 Forbidden**.
+
+### 1.5 — Autres points SB 2 → 3 → 4
+
+**Packages déplacés par la modularisation SB 4** (le gros du travail) :
+
+| Avant | Après |
+|---|---|
+| `org.springframework.boot.web.client.RestTemplateBuilder` | `org.springframework.boot.restclient.RestTemplateBuilder` |
+| `org.springframework.boot.web.servlet.error.ErrorController` | `org.springframework.boot.webmvc.error.ErrorController` |
+| `org.springframework.boot.actuate.health.*` (`Health`, `HealthIndicator`, `Status`) | `org.springframework.boot.health.contributor.*` |
+| `org.springframework.boot.actuate.system.DiskSpaceHealthIndicator` | `org.springframework.boot.health.application.DiskSpaceHealthIndicator` |
+| `org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest` | `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest` |
+| `org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest` | `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest` |
+| `org.springframework.boot.test.mock.mockito.MockBean` | `org.springframework.test.context.bean.override.mockito.MockitoBean` |
+
+**Méthodes renommées :**
+- [x] `RestTemplateBuilder.setConnectTimeout(...)` → **`connectTimeout(...)`**, `setReadTimeout(...)` → **`readTimeout(...)`**.
+  ⚠️ Piège : un `sed` global sur `setConnectTimeout` touche aussi `HttpURLConnection` dans
+  `CameraRestController`, dont les setters n'ont **pas** changé. Vérifier le diff après coup.
+- [x] `HealthIndicator.getHealth(boolean)` → **`health(boolean)`**.
+
+**Restant à valider au runtime (Phase 3) :**
+- [ ] Properties `spring.*` : lire les warnings au démarrage.
+- [ ] Actuator : renommages Micrometer à surveiller sur Grafana en Phase 5.
+- [ ] Quartz : vérifier `spring.quartz.*`.
+- [ ] ⚠️ **`<executable>true</executable>` du `spring-boot-maven-plugin` n'existe plus en SB 4**
+  (`Parameter 'executable' is unknown` au build). Le JAR n'est plus directement exécutable
+  (`./hermanas.jar`). Sans impact ici puisque `Hermanas.sh` lance `java -jar`, mais à retirer
+  du `pom.xml` pour faire taire le warning.
 
 ### 1.5bis — Refactor GPIO : pi4j 2.x pigpio → pi4j 4.x FFM
 
-Fichiers principaux touchés : `GpioHermanasRpiService.java`, `DefaultGpioPinDigitalOutput.java`, `DefaultGpioPinDigitalInput.java`, `DefaultGpioPwm.java`, `BirdhouseButtonService.java`, `LightService.java`, `FanService.java`.
+Fichiers touchés : `GpioHermanasRpiService.java`, `DefaultGpioPinDigitalOutput.java`, `DefaultGpioPinDigitalInput.java`, `DefaultGpioPwm.java`.
 
-**Suppressions dans `GpioHermanasRpiService.java`** :
-- [ ] Import `uk.co.caprica.picam.*` (déjà prévu Phase 7 — peut rester en dette temporaire ici).
+**Suppressions dans `GpioHermanasRpiService.java`** (retirées en Phase 7, gardées en dette pour le moment) :
+- [ ] Import `uk.co.caprica.picam.*` (Phase 7).
 - [ ] Bloc `System.load(picamJniImplementation)` + try/catch `UnsatisfiedLinkError` (Phase 7).
 - [ ] Annotation `@Value("${camera.picam.jni.implementation}")` et field `picamJniImplementation` (Phase 7).
 
-**Adaptations pi4j 2.x → 4.x** :
-- [ ] `Pi4J.newAutoContext()` : garder tel quel (auto-détection choisira FFM comme seul plugin présent).
-- [ ] Vérifier les signatures d'appel `DigitalOutputConfigBuilder`, `DigitalInputConfigBuilder` — API stabilisée mais des detail methods peuvent avoir changé.
-- [ ] Callbacks événements bouton (`BirdhouseButtonService.onDigitalStateChangeEvent`) : signature `DigitalStateChangeEvent<T>` peut varier entre 2.x et 4.x.
+**Adaptations API pi4j 2.x → 4.x — signatures réelles vérifiées via `javap` sur `pi4j-core-4.0.2.jar`** :
 
-**Point critique — PWM du servo porte (`DefaultGpioPwm.java`)** :
-- [ ] Vérifier que le PWM logiciel est supporté par `pi4j-plugin-ffm` sur GPIO 25 (broche 22).
-- [ ] Si **non supporté** : deux options :
-  - **Option 1 (recommandée)** : basculer sur PWM matériel via GPIO 18 (broche 12). Nécessite un **recâblage physique du fil de servo** de broche 22 vers broche 12. Mettre à jour `door.servo.gpio.address=18` dans `application.properties` et le tableau GPIO de Phase 5.1.
-  - **Option 2** : implémenter le PWM logiciel via `ScheduledExecutorService` en pur Java. Moins précis pour un servo, à éviter.
-- [ ] Si **supporté** sur GPIO 25 : rien à changer, garder `door.servo.gpio.address=25`.
+- [x] `Pi4J.newAutoContext()` : gardé tel quel (auto-détection choisira FFM comme seul plugin présent).
+- [x] **`.address(int)` → `.bcm(int)`** sur `DigitalInputConfigBuilder`, `DigitalOutputConfigBuilder`, `PwmConfigBuilder`. `address(int)` a été renommé pour clarifier le mode de numérotation.
+- [x] **Providers `pigpio-*` → `ffm-*`** :
+  - `"pigpio-digital-input"` → `"ffm-digital-input"`
+  - `"pigpio-digital-output"` → `"ffm-digital-output"`
+  - `"pigpio-pwm"` → `"ffm-pwm"`
+- [x] **`event.source().getAddress()` → `event.source().bcm()`** dans le listener de `provisionOutput`.
+- [x] **`Lifecycle.shutdown(Context)` → `shutdownInternal(Context)`** avec type de retour concret (plus `Object`) — impacte les 3 stubs `Default*`.
+- [x] **`Pwm.getDutyCycle()` retourne `Integer`** (pas `float` ni `double` comme l'Explore l'avait dit initialement) — validé par `javap`.
+- [x] **`Pwm.setDutyCycle(Integer)`** (pas `Number`) — idem.
+- [x] **`IO.close()`** ajouté (nouvelle méthode de l'interface).
+- [x] **`ListenableOnOffRead.addConsumer/removeConsumer(Consumer<Boolean>)`** ajoutés dans les stubs Digital (nouvelle méthode 4.x).
+
+**Point critique — PWM du servo porte : PWM logiciel NON supporté par FFM ⚠️** :
+
+Confirmé par l'inspection du code source `pi4j-v2/plugins/pi4j-plugin-ffm/.../FFMPwmProviderImpl.java` : le plugin FFM lève une `IOException` si `PwmType.SOFTWARE` est demandé. Il ne parle qu'à l'API PWM matérielle du kernel Linux via chardev.
+
+- [x] `.pwmType(PwmType.SOFTWARE)` → `.pwmType(PwmType.HARDWARE)` dans `GpioHermanasRpiService.provisionPwm()`.
+**Choix de la nouvelle broche (décision utilisateur 2026-07-27) :**
+
+La roadmap prévoyait GPIO 18, mais **GPIO 18 est déjà occupé par `door.button.up`**.
+Les broches PWM matériel du Pi Zero 2 W sont GPIO **12, 13, 18, 19** ; parmi elles,
+12, 13 et 19 sont libres. Retenu : **GPIO 12 (broche physique 32, canal PWM0)** —
+un seul fil à déplacer, le bouton haut de porte ne bouge pas.
+
+- [x] **`application.properties` adapté** : `door.servo.gpio.address` **25 → 12**
+  (dans `src/main/resources/` et `src/test/resources/`).
+- [ ] ⚠️ **Recâblage physique à faire au moment du montage sur le coop (Phase 5.1)** :
+  déplacer le fil de signal du servo de la **broche 22** (GPIO 25) vers la **broche 32** (GPIO 12).
+  L'alimentation et la masse du servo ne bougent pas.
+
+**Plan GPIO après migration :**
+
+| GPIO | Broche physique | Usage | Remarque |
+|---|---|---|---|
+| 12 | 32 | `door.servo` | ⚠️ **nouveau** — PWM0 matériel |
+| 14 | 8 | `light.relay` | inchangé |
+| 15 | 10 | `door.button.bottom` | inchangé |
+| 18 | 12 | `door.button.up` | inchangé |
+| 23 | 16 | `fan.relay` | inchangé |
+| 24 | 18 | `birdhouse.button` | inchangé |
+| ~~25~~ | ~~22~~ | — | **libéré** (ancien servo) |
+
+**Résultat de la compilation** : **BUILD SUCCESS** ✅ (0 erreur).
 
 ### 1.6 — Compilation itérative
 
+> ⚠️ **Piège Maven / zsh** : le profil `with-frontend` est actif par défaut. Pour le
+> désactiver il faut **quoter le `!`**, sinon zsh l'interprète comme une history expansion :
+> `-P'!with-frontend'` (et non `-P!with-frontend`, ni `-Pfrontend` qui n'existe pas).
+
 ```bash
-mvn clean compile 2>&1 | tee /tmp/compile.log
-# Corriger les erreurs une par une :
-#   1. imports javax restants
-#   2. APIs supprimées Spring Security 6
-#   3. APIs supprimées Pi4j (si bump)
-#   4. warnings config SB3
-mvn clean package    # test + fat JAR final
+# Itérer sans re-builder le frontend (npm ci + build Angular coûtent ~1 min)
+mvn clean compile -P'!with-frontend' 2>&1 | tail -40
+
+# Build complet une fois tout OK
+mvn clean package    # tests + fat JAR (déclenche npm ci + Angular build)
 ```
+
+#### ⚠️ Blocage majeur rencontré : `Cannot load from object array because "this.hashes" is null`
+
+Symptôme : `mvn compile` échoue immédiatement avec ce message, **sans jamais lister
+d'erreur applicative**. Le build s'arrête avant d'avoir analysé le code.
+
+Fausses pistes explorées (~1 h perdue) :
+- ❌ Ce n'est **pas** un bug de `javac` Temurin 25 : `javac --release 25` en ligne de
+  commande directe compile parfaitement et affiche les vraies erreurs.
+- ❌ Ce n'est **pas** lié à Maven 3 vs 4 : reproduit à l'identique sur Maven 3.9.11 et 4.0.0-rc-5.
+- ❌ Ce n'est **pas** lié à `maven-compiler-plugin` 3.15.0 vs 3.14.0, ni à `plexus-utils` 4.0.1 vs 3.6.0.
+- ❌ Ce n'est **pas** spécifique à Java 25 : le bug est rapporté dès Java 17.
+
+Cause réelle : bug de **`plexus-compiler-javac`**, la couche qui invoque `javac`
+*in-process* via l'API `javax.tools`. Rien à voir avec le code du projet.
+
+**Fix** — forcer la compilation dans un process séparé :
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <fork>true</fork>
+    </configuration>
+</plugin>
+```
+Références : [maven-compiler-plugin#554](https://github.com/apache/maven-compiler-plugin/issues/554), [plexus-compiler#66](https://github.com/codehaus-plexus/plexus-compiler/issues/66).
+
+**Astuce de diagnostic** : quand Maven masque les erreurs, court-circuiter le plugin pour
+obtenir la vraie liste :
+```bash
+mvn dependency:build-classpath -Dmdep.outputFile=/tmp/cp.txt -P'!with-frontend' -q
+find src/main/java -name "*.java" > /tmp/sources.txt
+javac --release 25 -cp "$(cat /tmp/cp.txt)" -d /tmp/out @/tmp/sources.txt 2>&1 | head -40
+```
+
+#### Progression des erreurs de compilation
+
+| Étape | Erreurs restantes |
+|---|---|
+| Bump `pom.xml` (SB 4 + Java 25 + pi4j 4) | 100 |
+| Après refactor `javax.*` → `jakarta.*` | 12 |
+| Après `antMatchers` → `requestMatchers` + pi4j 4.x FFM | 66 *(SB 3 → 4)* |
+| Après packages déplacés SB 4 (health, restclient, webmvc) | 8 |
+| Après API Security 7 (DSL lambda, DaoAuthenticationProvider, PathPatternRequestMatcher) | **0** ✅ |
+
+- [x] `mvn clean compile -P'!with-frontend'` → **BUILD SUCCESS**
+- [x] `mvn clean package` complet (frontend inclus) → **BUILD SUCCESS**, JAR **102 Mo**
+  (SPA bundlée : 3284 fichiers statiques, locales `fr-FR` / `en-US` / `ro-RO`).
+  *(L'erreur `ENOTEMPTY` sur `frontend/node_modules/@fortawesome/*` rencontrée une fois s'est
+  résolue d'elle-même au build suivant ; en cas de récidive :
+  `rm -rf frontend/node_modules && cd frontend && npm ci`.)*
 
 ### 1.7 — Tests
 
-- [ ] `mvn test` : 71+ tests backend passent.
-- [ ] Frontend inchangé (npm build tel quel).
+- [x] `mvn test` : **66/66 tests backend passent** ✅
+- [x] Frontend inchangé (npm build tel quel).
+
+**Corrections nécessaires côté tests (SB 4) :**
+
+| Problème | Cause | Fix |
+|---|---|---|
+| `@MockBean` introuvable (39 occurrences, 9 fichiers) | Supprimé en SB 4 (déprécié depuis 3.4) | → `@MockitoBean` |
+| `@DataJpaTest` / `@WebMvcTest` introuvables | Infra de test modularisée | Starters + packages dédiés (cf. 1.2 et 1.5) |
+| `PictureRepositoryTest` : `NoSuchBeanDefinitionException: CacheManager` | Slices SB 4 plus strictes ; `@EnableCaching` exige un `CacheManager` que `@DataJpaTest` ne charge pas | `@ImportAutoConfiguration(CacheAutoConfiguration.class)` |
+| `IllegalClassFormatException` sur **toutes** les classes | JaCoCo 0.8.12 ne lit pas le bytecode Java 25 | JaCoCo → 0.8.15 |
+| `ApplicationStatusListenerTest` : `sendMail` jamais invoqué | Mockito 5.23 a durci le matching des **varargs** : `any()` ne matche plus un appel `EventType...` | → `any(EventType[].class)` |
+| `ConfigRestControllerTest` : 401 attendu, 200 puis 500 obtenu | `@WebMvcTest` ne charge plus `SecurityConfig` → les `@PreAuthorize` du contrôleur sont inertes | Config imbriquée `@EnableMethodSecurity` importée dans le test + handlers 401/403 (cf. 1.4bis) |
 
 ### 1.8 — Commit sur la branche
 
 ```bash
 git add -A
-git commit -m "feat: migrate to Java 25 + Spring Boot 3 + Jakarta EE + pi4j 4.x FFM (arm64)"
+git commit -m "feat: migrate to Java 25 + Spring Boot 4 + Jakarta EE + pi4j 4.x FFM (arm64)"
 git push -u origin feat/pi-zero-2-migration
 ```
 
@@ -896,7 +1086,7 @@ scp -3 -P 5722 pi@poupou:/etc/mysql/mariadb.conf.d/<file>.cnf jean-baptisterenau
 
 ## Phase 3 — Test à vide sur banc
 
-Objectif : `pru` démarre le JAR Java 25 / SB3 / pi4j 4.x avec les vraies données, en profil `gpio-fake`, sans être branchée au coop.
+Objectif : `pru` démarre le JAR Java 25 / SB4 / pi4j 4.x avec les vraies données, en profil `gpio-fake`, sans être branchée au coop.
 
 ### 3.1 — Build + déploiement du JAR
 
@@ -938,7 +1128,7 @@ sudo -u hermanas /usr/lib/jvm/java-25-openjdk-arm64/bin/java \
 - [ ] `MusicService` peut throw (cvlc absent) : **normal**.
 - [ ] Si `> 90 s` : envisager `arm_freq=800` au lieu de 600.
 
-**Corrections attendues** : properties SB2→SB3 renommées, Hibernate dialect MariaDB 10.11.
+**Corrections attendues** : properties SB2→SB4 renommées, Hibernate dialect MariaDB 10.11.
 
 ### 3.3 — Sanity check applicatif
 
@@ -1017,13 +1207,61 @@ ssh -p 5722 pi@poupou # doit se connecter à pru
 
 | GPIO (BCM) | Broche physique | Composant | Direction |
 |:---:|:---:|---|---|
-| 25 | 22 | Servomoteur de la porte | output (PWM) |
+| **12** | **32** | **Servomoteur de la porte** | **output (PWM matériel)** |
 | 18 | 12 | Bouton de fin de course haut de la porte | input |
 | 15 | 10 | Bouton de fin de course bas de la porte | input |
 | 24 | 18 | Bouton poussoir inversé de la lumière du nichoir | input |
 | 14 | 8 | Relais de l'éclairage | output |
 | 23 | 16 | Relais du ventilateur | output |
 | 4 | 7 | Capteur de température et d'humidité (DHT22) | input (1-wire) |
+
+#### 🔧 Recâblage : UN SEUL fil à déplacer
+
+Tous les fils se rebranchent à l'identique **sauf un** : le fil de **signal du
+servomoteur** (le fil de commande, généralement **orange** ou **jaune** sur un servo
+type SG90/MG996R — pas le rouge ni le marron/noir).
+
+| | Avant (`poupou`) | Après (`pru`) |
+|---|---|---|
+| **Fil concerné** | Signal servo (orange/jaune) | idem |
+| **Broche physique** | **22** | **32** |
+| **GPIO (BCM)** | 25 | 12 |
+| **Repère visuel** | 11ᵉ broche, rangée intérieure | 16ᵉ broche, rangée extérieure |
+
+**Les deux autres fils du servo ne bougent pas :**
+
+| Fil servo | Broche | Rôle |
+|---|---|---|
+| Rouge | 2 ou 4 (5 V) | alimentation — **inchangé** |
+| Marron / noir | 6, 9, 14, 20… (GND) | masse — **inchangé** |
+
+**Repérage de la broche 32 sur le header 40 pins** — les broches paires sont sur la
+rangée extérieure (côté bord de carte), les impaires sur la rangée intérieure. La
+broche 32 est la **16ᵉ paire** en partant du connecteur d'alimentation :
+
+```
+        rangée intérieure (impaires)          rangée extérieure (paires)
+                 ...                                    ...
+        21 ─────────────────────                22 ────────  ← ANCIENNE (GPIO 25)
+        23 ─────────────────────                24
+        25 ─────────────────────                26
+        27 ─────────────────────                28
+        29 ─────────────────────                30
+        31 ─────────────────────                32 ────────  ← NOUVELLE (GPIO 12)
+        33 ─────────────────────                34
+                 ...                                    ...
+```
+
+- [ ] **Débrancher** le fil de signal du servo de la broche 22.
+- [ ] **Rebrancher** ce même fil sur la broche 32.
+- [ ] Vérifier que rien d'autre n'a bougé (comparer avec la table de câblage ci-dessus).
+- [ ] ⚠️ Faire ce déplacement **`pru` hors tension**, puis rebrancher l'alimentation.
+
+> **Pourquoi ce changement ?** `pi4j-plugin-ffm` (pi4j 4.x) ne gère que le PWM
+> **matériel** — le PWM logiciel de pigpio n'existe plus. Sur Pi Zero 2 W, seuls
+> GPIO 12, 13, 18 et 19 exposent un canal PWM matériel ; GPIO 25 n'en fait pas
+> partie. GPIO 18 étant déjà pris par le bouton haut de porte, le servo va sur
+> GPIO 12. Cf. Phase 1.5bis.
 
 - [ ] Attendre le boot complet (~1 min).
 - [ ] `ping poupou` (= `pru`) répond.
@@ -1040,6 +1278,11 @@ ssh -p 5722 pi@poupou "sudo journalctl -u Hermanas.service -f"
 ### 5.3 — Tests hardware manuels
 
 - [ ] Porte : `/api/v1/door/open` puis `/api/v1/door/close` → mouvement servo vérifié.
+      ⚠️ **Premier test du PWM matériel sur GPIO 12** — c'est le changement le plus
+      risqué de la migration. Si le servo ne bouge pas ou vibre : vérifier que le fil
+      est bien sur la broche 32, puis tester GPIO 13 (broche 33) ou GPIO 19 (broche 35),
+      les deux autres canaux PWM matériel libres. Ajuster `door.servo.gpio.range` si la
+      course est incorrecte — la résolution PWM matérielle diffère de l'ancien PWM logiciel.
 - [ ] Lumière : `/api/v1/light/switch` → relais entendu, lumière visible.
 - [ ] Ventilateur : `/api/v1/fan/switch`.
 - [ ] Capteur T°/humidité : `/api/v1/sensor/info` → valeurs cohérentes.
@@ -1087,9 +1330,9 @@ mvn versions:display-plugin-updates
 
 À passer en revue, une lib à la fois, `mvn test` entre chaque, commit dédié :
 
-- [ ] `spring-boot-starter-parent` : minor bumps SB3.
+- [ ] `spring-boot-starter-parent` : minor bumps SB4.
 - [ ] `pi4j` : dernière 2.x.
-- [ ] `mariadb-java-client` : dernière compatible SB3.
+- [ ] `mariadb-java-client` : dernière compatible SB4.
 - [ ] `micrometer-*` : dernière.
 - [ ] `commons-io`, `commons-lang3`, `lib-sunrise-sunset` : dernières.
 
@@ -1187,7 +1430,7 @@ Fenêtre de conservation : **1 semaine post-Phase 5**.
 | Phase | Sur | Durée | Downtime coop |
 |---|---|---|---|
 | 0. Prépa `pru` headless | pru | 1-2 h | 0 |
-| 1. Migration code Java 25 + SB3 + pi4j 4.x FFM | Mac | 6-10 h dev | 0 |
+| 1. Migration code Java 25 + SB4 + pi4j 4.x FFM | Mac | 6-10 h dev | 0 |
 | 2. Bascule données + Samba photos | poupou→pru | 30-60 min | **✓ démarre** |
 | 3. Test à vide sur banc | pru | 30 min | ✓ |
 | 4. Bascule réseau (Freebox) | Freebox | 10 min | ✓ |
@@ -1205,7 +1448,7 @@ Fenêtre de conservation : **1 semaine post-Phase 5**.
 - **Hostname interne `pru`** (pas `poulailler`), pour marquer la différence avec l'ancien matériel.
 - **Alias externe `poupou`** conservé, résolu par IP fixe `192.168.1.35` côté `shannen` — rien à toucher côté résolution de nom.
 - **OS `pru` = Raspberry Pi OS Lite 64-bit Bookworm** (arm64).
-- **Runtime = Java 25 LTS + Spring Boot 3 + Jakarta EE + pi4j 4.x FFM** dès le départ. Le passage direct à FFM élimine les dettes techniques `pigpio` et `libgpiod`/`gpiod` en une bascule.
+- **Runtime = Java 25 LTS + Spring Boot 4 + Jakarta EE + pi4j 4.x FFM** dès le départ. Le passage direct à FFM élimine les dettes techniques `pigpio` et `libgpiod`/`gpiod` en une bascule.
 - **4 cœurs Zero 2 W conservés** (pas de `maxcpus=1`).
 - **Wi-Fi conservé** (pas de `disable-wifi`).
 - **CPU bridé à 600 MHz** (`arm_freq=600`) — à ajuster si démarrage Spring trop lent.

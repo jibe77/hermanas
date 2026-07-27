@@ -2,8 +2,8 @@ package org.jibe77.hermanas.health;
 
 import org.jibe77.hermanas.data.entity.Sensor;
 import org.jibe77.hermanas.data.repository.SensorRepository;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;

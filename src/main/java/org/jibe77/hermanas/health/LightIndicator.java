@@ -2,8 +2,8 @@ package org.jibe77.hermanas.health;
 
 import org.jibe77.hermanas.service.abstract_model.StatusEnum;
 import org.jibe77.hermanas.web.LightRestController;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 @Component

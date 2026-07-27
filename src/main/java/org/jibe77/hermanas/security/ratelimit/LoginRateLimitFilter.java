@@ -8,10 +8,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,7 +79,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         return request.getRemoteAddr();
     }
 
-    /** HTTP 429 — not exposed as a constant on javax.servlet.http.HttpServletResponse (Servlet 4). */
+    /** HTTP 429 — not exposed as a constant on jakarta.servlet.http.HttpServletResponse (Servlet 4). */
     private static final int HTTP_TOO_MANY_REQUESTS = 429;
 
     private void writeTooManyRequests(HttpServletResponse response) throws IOException {

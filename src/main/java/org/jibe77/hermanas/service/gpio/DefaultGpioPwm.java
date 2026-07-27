@@ -29,13 +29,18 @@ public class DefaultGpioPwm implements Pwm {
     }
 
     @Override
-    public float getDutyCycle() throws IOException {
+    public Integer getDutyCycle() throws IOException {
         return 0;
     }
 
     @Override
-    public void setDutyCycle(Number dutyCycle) throws IOException {
+    public void setDutyCycle(Integer dutyCycle) throws IOException {
 
+    }
+
+    @Override
+    public void close() {
+        // no-op stub
     }
 
     @Override
@@ -119,12 +124,12 @@ public class DefaultGpioPwm implements Pwm {
     }
 
     @Override
-    public Object initialize(Context context) throws InitializeException {
+    public Pwm initialize(Context context) throws InitializeException {
         return null;
     }
 
     @Override
-    public Object shutdown(Context context) throws ShutdownException {
+    public Pwm shutdownInternal(Context context) throws ShutdownException {
         return null;
     }
 }

@@ -4,8 +4,10 @@ import org.jibe77.hermanas.client.ai.AiVisionCache;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,21 +22,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Tests HTTP request/response handling with mocked service layer.
  */
 @WebMvcTest(ConfigRestController.class)
+// Spring Boot 4 : la slice @WebMvcTest ne charge plus SecurityConfig, donc les
+// @PreAuthorize du contrôleur seraient inertes et les tests d'accès anonyme
+// passeraient au travers. On réactive juste la method security ici — importer
+// SecurityConfig en entier obligerait à mocker toute sa chaîne de dépendances.
+@Import(ConfigRestControllerTest.MethodSecurityTestConfig.class)
 class ConfigRestControllerTest {
+
+    @EnableMethodSecurity
+    static class MethodSecurityTestConfig {
+    }
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ConfigService configService;
 
-    @MockBean
+    @MockitoBean
     private CacheManager cacheManager;
 
-    @MockBean
+    @MockitoBean
     private AiVisionCache aiVisionCache;
 
-    @MockBean
+    @MockitoBean
     private org.jibe77.hermanas.service.camera.CameraService cameraService;
 
     // ============================================================================

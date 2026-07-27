@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -25,25 +25,25 @@ class MusicControllerTest {
     @Autowired
     MusicService musicService;
 
-    @MockBean
+    @MockitoBean
     ProcessLauncher processLauncher;
 
-    @MockBean
+    @MockitoBean
     ConsumptionModeController consumptionModeController;
 
-    @MockBean
+    @MockitoBean
     GpioHermanasService gpioHermanasService;
 
-    @MockBean
+    @MockitoBean
     SoundCardService soundCardService;
 
-    @MockBean
+    @MockitoBean
     NotificationController notificationController;
 
-    @MockBean
+    @MockitoBean
     ConfigService configService;
 
-    @MockBean
+    @MockitoBean
     EventService eventService;
 
     @Test

@@ -7,6 +7,8 @@ import com.pi4j.exception.ShutdownException;
 import com.pi4j.io.binding.DigitalBinding;
 import com.pi4j.io.gpio.digital.*;
 
+import java.util.function.Consumer;
+
 public class DefaultGpioPinDigitalInput implements DigitalInput {
 
     @Override
@@ -89,12 +91,27 @@ public class DefaultGpioPinDigitalInput implements DigitalInput {
     }
 
     @Override
-    public Object initialize(Context context) throws InitializeException {
+    public DigitalInput initialize(Context context) throws InitializeException {
         return null;
     }
 
     @Override
-    public Object shutdown(Context context) throws ShutdownException {
+    public DigitalInput shutdownInternal(Context context) throws ShutdownException {
         return null;
+    }
+
+    @Override
+    public void close() {
+        // no-op stub
+    }
+
+    @Override
+    public Consumer<Boolean> addConsumer(Consumer<Boolean> consumer) {
+        return consumer;
+    }
+
+    @Override
+    public DigitalInput removeConsumer(Consumer<Boolean> consumer) {
+        return this;
     }
 }

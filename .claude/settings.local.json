@@ -180,7 +180,13 @@
       "Bash(export PATH=\"$HOME/.nvm/versions/node/v24.17.0/bin:$PATH\")",
       "Bash(mvn -q -DskipTests -pl . -am compile)",
       "Bash(mvn -q test -Dtest=EmailServiceTest -DexcludedGroups=image_processing)",
-      "Bash(npx --no-install tsc --noEmit -p tsconfig.json)"
+      "Bash(npx --no-install tsc --noEmit -p tsconfig.json)",
+      "Bash(jar tf *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(mvn *)",
+      "WebSearch",
+      "Bash(xargs -n1 basename)",
+      "Bash(sort -rn -k1)"
     ],
     "deny": [],
     "ask": []

@@ -47,7 +47,7 @@ class ApplicationStatusListenerTest {
     void testInitWithoutShutdownError(){
         Event event = new Event();
         event.setEventType(EventType.SHUTDOWN);
-        Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any())).thenReturn(event);
+        Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any(EventType[].class))).thenReturn(event);
 
         applicationStatusListener.init();
 
@@ -59,7 +59,7 @@ class ApplicationStatusListenerTest {
     void testInitWithShutdownError(){
         Event event = new Event();
         event.setEventType(EventType.STARTUP);
-        Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any())).thenReturn(event);
+        Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any(EventType[].class))).thenReturn(event);
         Optional<File> o = Optional.of(new File(""));
         Mockito.when(cameraService.takePictureNoException(true)).thenReturn(o);
 
@@ -73,7 +73,7 @@ class ApplicationStatusListenerTest {
     void testInitWithShutdownErrorWithoutCameraPicture(){
         Event event = new Event();
         event.setEventType(EventType.STARTUP);
-        Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any())).thenReturn(event);
+        Mockito.when(eventRepository.findTopByEventTypeInOrderByDateTimeDesc(any(EventType[].class))).thenReturn(event);
         Optional<File> o = Optional.ofNullable(null);
         Mockito.when(cameraService.takePictureNoException(false)).thenReturn(o);
 

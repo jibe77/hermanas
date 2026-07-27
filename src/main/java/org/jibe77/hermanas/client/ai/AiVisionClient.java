@@ -3,7 +3,7 @@ package org.jibe77.hermanas.client.ai;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -67,8 +67,8 @@ public class AiVisionClient {
                 connectTimeoutMs, readTimeoutMs, maxAttempts, initialBackoffMs, maxBackoffMs);
 
         this.restTemplate = builder
-                .setConnectTimeout(Duration.ofMillis(connectTimeoutMs))
-                .setReadTimeout(Duration.ofMillis(readTimeoutMs))
+                .connectTimeout(Duration.ofMillis(connectTimeoutMs))
+                .readTimeout(Duration.ofMillis(readTimeoutMs))
                 .build();
 
         // Retry policy: only CONNECT-phase failures are retried. We refuse

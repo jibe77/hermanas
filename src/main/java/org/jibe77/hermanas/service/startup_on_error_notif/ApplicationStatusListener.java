@@ -14,7 +14,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;

@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(classes = {DoorService.class})
 class ServoControllerTest {
@@ -22,28 +22,28 @@ class ServoControllerTest {
     @Autowired
     DoorService doorService;
 
-    @MockBean
+    @MockitoBean
     ServoMotorService servoMotorService;
 
-    @MockBean
+    @MockitoBean
     GpioHermanasService gpioHermanasService;
 
-    @MockBean
+    @MockitoBean
     BottomButtonService bottomButtonService;
 
-    @MockBean
+    @MockitoBean
     UpButtonService upButtonService;
 
-    @MockBean
+    @MockitoBean
     SunTimeManager sunTimeManager;
 
-    @MockBean
+    @MockitoBean
     DigitalInput gpioPinDigitalInput;
 
-    @MockBean
+    @MockitoBean
     NotificationController notificationController;
 
-    @MockBean
+    @MockitoBean
     ConfigService configService;
 
     Logger logger = LoggerFactory.getLogger(ServoControllerTest.class);

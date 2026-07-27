@@ -1,6 +1,6 @@
 package org.jibe77.hermanas.data.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 

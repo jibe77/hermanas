@@ -88,3 +88,8 @@ frontend/amplify-gradle-config.json
 frontend/amplifytools.xcconfig
 frontend/.secret-*
 migration.md
+
+# Artefacts générés par les tests (logs applicatifs écrits dans le CWD)
+LOG_FILE_IS_UNDEFINED
+audit.txt
+audit_config.txt

@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 
 import uk.co.caprica.picam.*;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -104,10 +104,10 @@ public class GpioHermanasRpiService implements GpioHermanasService {
         DigitalInputConfigBuilder d = DigitalInput.newConfigBuilder(pi4j)
                 .id(id)
                 .name(name)
-                .address(gpioAddress)
+                .bcm(gpioAddress)
                 .pull(PullResistance.PULL_DOWN)
                 .debounce(3000L)
-                .provider("pigpio-digital-input");
+                .provider("ffm-digital-input");
         return pi4j.create(d);
     }
 
@@ -116,29 +116,32 @@ public class GpioHermanasRpiService implements GpioHermanasService {
         DigitalOutputConfigBuilder d = DigitalOutput.newConfigBuilder(pi4j)
                 .id(id)
                 .name(name)
-                .address(gpioAddress)
+                .bcm(gpioAddress)
                 .initial(DigitalState.LOW)
                 .shutdown(DigitalState.LOW)
-                .provider("pigpio-digital-output"); // or raspberrypi-digital-output
+                .provider("ffm-digital-output");
         DigitalOutput digitalOutput = pi4j.create(d);
         digitalOutput.addListener(event -> {
             logger.info("Event on {} on address {}, state is now {}",
-                    event.source().getId(), event.source().getAddress(), event.state());
+                    event.source().getId(), event.source().bcm(), event.state());
         });
         return digitalOutput;
     }
 
+    // NOTE : le plugin FFM ne supporte QUE PwmType.HARDWARE. Le PWM logiciel de
+    // pi4j 2.x/pigpio n'existe plus. Sur Pi Zero 2 W, seuls GPIO 12, 13, 18 et 19
+    // exposent du PWM matériel — le servo est donc câblé sur GPIO 12 (broche
+    // physique 32) au lieu de GPIO 25 (broche 22) qui n'en fait pas partie.
+    // GPIO 18 est déjà pris par door.button.up. Cf. door.servo.gpio.address.
     public Pwm provisionPwm(String id, String name, int gpioAddress) {
-        //Set the PinNumber pin to be a PWM pin, with values changing from 0 to 250
-        //this will give enough resolution to the servo motor
         PwmConfig pwmConfig = Pwm.newConfigBuilder(pi4j)
                 .id(id)
                 .name(name)
-                .address(gpioAddress)
-                .pwmType(PwmType.SOFTWARE)
+                .bcm(gpioAddress)
+                .pwmType(PwmType.HARDWARE)
                 .initial(0)
                 .shutdown(0)
-                .provider("pigpio-pwm")
+                .provider("ffm-pwm")
                 .build();
         return pi4j.create(pwmConfig);
     }

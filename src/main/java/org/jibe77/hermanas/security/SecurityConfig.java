@@ -11,7 +11,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,13 +25,13 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 
 @Configuration
 @EnableAutoConfiguration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig
 {
     public static final String ROLE_USER = "USER";
@@ -94,44 +94,43 @@ public class SecurityConfig
                 // standard auth machinery runs, so they bypass the form-login flow and inherit
                 // the matching authorizeRequests rules (ROLE_USER).
                 .addFilterBefore(siriTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .headers().frameOptions().disable()
-                .and()
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
                 // CSRF protection relies on the SPA echoing a cookie value in a header — Shortcuts
                 // cannot do that, so requests carrying the Siri token are exempt. The token itself
                 // (sent in X-Siri-Token, never in a cookie) is the CSRF defence for those calls.
-                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .requireCsrfProtectionMatcher(req ->
-                        org.springframework.security.web.csrf.CsrfFilter.DEFAULT_CSRF_MATCHER.matches(req)
-                                && req.getHeader(SiriTokenAuthenticationFilter.HEADER_NAME) == null)
-                .and()
-                .authorizeRequests()
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .requireCsrfProtectionMatcher(req ->
+                                org.springframework.security.web.csrf.CsrfFilter.DEFAULT_CSRF_MATCHER.matches(req)
+                                        && req.getHeader(SiriTokenAuthenticationFilter.HEADER_NAME) == null))
+                .authorizeHttpRequests(auth -> auth
 
                 // ─── Authentication endpoints (must stay reachable unauthenticated) ───────────
-                .antMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout",
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout",
                         "/api/v1/auth/register").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/v1/auth/me").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").permitAll()
 
                 // ─── Push notifications: VAPID public key is public (the browser needs it before
                 // logging in to set up the SW subscription), but subscribe/unsubscribe/test must
                 // be authenticated so we can associate a row with a user and gate the test
                 // broadcast. ─────────────────────────────────────────────────────────────────
-                .antMatchers(HttpMethod.GET, "/api/v1/push/vapid-public-key").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/v1/push/test").hasRole(ROLE_ADMIN)
+                .requestMatchers(HttpMethod.GET, "/api/v1/push/vapid-public-key").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/push/test").hasRole(ROLE_ADMIN)
 
                 // ─── Actuator: keep /health and /info reachable for external monitoring,
                 // restrict everything else to administrators (env/configprops/heapdump can
                 // leak credentials and memory snapshots) ─────────────────────────────────────
-                .antMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**",
+                .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**",
                         "/actuator/info").permitAll()
-                .antMatchers("/actuator/**").hasRole(ROLE_ADMIN)
+                .requestMatchers("/actuator/**").hasRole(ROLE_ADMIN)
 
                 // ─── Logs: admin only — log content may contain sensitive data ────────────────
-                .antMatchers("/api/v1/logs/**").hasRole(ROLE_ADMIN)
+                .requestMatchers("/api/v1/logs/**").hasRole(ROLE_ADMIN)
 
                 // ─── Journal / auth event feed: admin only. The /business sibling stays
                 //     public (covered by .anyRequest().permitAll() below). Listing failed
                 //     login attempts to anonymous visitors would leak account existence. ───
-                .antMatchers("/api/v1/events/auth/**").hasRole(ROLE_ADMIN)
+                .requestMatchers("/api/v1/events/auth/**").hasRole(ROLE_ADMIN)
 
                 // ─── Diagnostics: admin only — exposes hardware state and SMTP test ──────────
                 // /api/v1/buttons/status is intentionally NOT listed here. It only reports the
@@ -139,24 +138,24 @@ public class SecurityConfig
                 // on the public STOMP topic /topic/buttons. Falls through to .permitAll() below so
                 // the Electronics page can render the live state for any visitor (including the
                 // anonymous showcase view).
-                .antMatchers("/api/v1/email/**").hasRole(ROLE_ADMIN)
+                .requestMatchers("/api/v1/email/**").hasRole(ROLE_ADMIN)
 
                 // ─── Camera photo archive: authenticated users only — the historical
                 //     /photos/** tree is private. The live dashboard endpoints
                 //     (takePicture, stream, closingRate) stay public so unauthenticated
                 //     visitors can still see the current chicken-coop view. ───────────────
-                .antMatchers("/api/v1/camera/photos/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                .requestMatchers("/api/v1/camera/photos/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
                 // AI analysis hits an external inference server (Alyssa) and is rate-limited
                 // at the controller level; restricting it to authenticated visitors keeps an
                 // anonymous crowd from hammering the LLM and burning GPU time.
-                .antMatchers(HttpMethod.GET, "/api/v1/camera/analyze").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                .requestMatchers(HttpMethod.GET, "/api/v1/camera/analyze").hasAnyRole(ROLE_USER, ROLE_ADMIN)
                 // Async capture pipeline: open to anonymous visitors so the public Webcam
                 // showcase can trigger AI analyses. Abuse is contained by @RateLimited
                 // (5 req / 60 s per IP) on the controller method itself, and the
                 // AiVisionCache further deduplicates concurrent requests for the same
                 // language within its TTL window.
-                .antMatchers(HttpMethod.POST, "/api/v1/captures").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/v1/captures/*/image",
+                .requestMatchers(HttpMethod.POST, "/api/v1/captures").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/captures/*/image",
                         "/api/v1/captures/*/status").permitAll()
 
                 // ─── Protected: every mutating call ───────────────────────────────────────────
@@ -164,15 +163,15 @@ public class SecurityConfig
                 // Use hasAnyRole(USER, ADMIN) — Spring Security does NOT give admins the USER
                 // role automatically (no role hierarchy is configured), so hasRole(USER) on its
                 // own would 403 every admin call.
-                .antMatchers(HttpMethod.POST, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
-                .antMatchers(HttpMethod.PUT, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
-                .antMatchers(HttpMethod.DELETE, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
-                .antMatchers(HttpMethod.PATCH, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                .requestMatchers(HttpMethod.POST, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                .requestMatchers(HttpMethod.PUT, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/**").hasAnyRole(ROLE_USER, ROLE_ADMIN)
 
                 // ─── Protected: GET endpoints that actually mutate state ──────────────────────
                 // Legacy GET handlers that should have been POST/PUT but are kept for back-compat.
                 // Calibration / debug actions on the servo motor.
-                .antMatchers(HttpMethod.GET,
+                .requestMatchers(HttpMethod.GET,
                         "/api/v1/door/turnClockwise",
                         "/api/v1/door/turnCounterClockwise",
                         "/api/v1/door/turnServo",
@@ -189,23 +188,22 @@ public class SecurityConfig
 
                 // ─── Everything else (SPA shell, static assets, GET status endpoints, swagger,
                 // websockets, API GET reads, deep-link SPA routes) is public ──────────────────
-                .anyRequest().permitAll()
+                .anyRequest().permitAll())
 
-                .and()
                 // API calls must get a clean 401 JSON, not an HTML redirect to /auth/login —
                 // otherwise Angular's HttpClient parses the HTML body and surfaces a useless
                 // "Http failure during parsing" error. For non-API paths we fall back to the
                 // default behaviour so deep links into the SPA still hit the login page.
-                .exceptionHandling()
+                .exceptionHandling(ex -> ex
                     .defaultAuthenticationEntryPointFor(
-                            (req, res, ex) -> {
+                            (req, res, e) -> {
                                 res.setStatus(401);
                                 res.setContentType("application/json");
                                 res.getWriter().write("{\"error\":\"UNAUTHENTICATED\"}");
                             },
-                            new org.springframework.security.web.util.matcher.AntPathRequestMatcher("/api/v1/**"))
-                .and()
-                .formLogin()
+                            org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher
+                                    .pathPattern("/api/v1/**")))
+                .formLogin(form -> form
                     // Declaring a custom loginPage disables Spring's DefaultLoginPageGeneratingFilter,
                     // which would otherwise serve an HTML form on GET /login and cause empty-file
                     // downloads when the Angular SPA is the real login UI.
@@ -237,13 +235,11 @@ public class SecurityConfig
                                             + PendingValidationUserDetailsChecker.PENDING_VALIDATION_MESSAGE
                                             + "\"}");
                         }
-                    })
-                .and()
-                .rememberMe()
+                    }))
+                .rememberMe(remember -> remember
                     .rememberMeServices(rememberMeServices)
-                    .key(rememberMeKey)
-                .and()
-                .logout()
+                    .key(rememberMeKey))
+                .logout(logout -> logout
                     .logoutUrl("/api/v1/auth/logout")
                     // Remove the remember-me cookie alongside the session on logout, otherwise
                     // the next request would silently reauthenticate the user.
@@ -253,7 +249,7 @@ public class SecurityConfig
                             eventService.record(EventType.LOGOUT, "login=" + auth.getName());
                         }
                         res.setStatus(204);
-                    });
+                    }));
 
         return http.build();
     }
@@ -287,8 +283,9 @@ public class SecurityConfig
     public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
                                                             PasswordEncoder passwordEncoder,
                                                             PendingValidationUserDetailsChecker pendingChecker) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        // Spring Security 7 : le constructeur no-arg et setUserDetailsService()
+        // ont disparu, le UserDetailsService passe par le constructeur.
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         provider.setPreAuthenticationChecks(pendingChecker);
         return provider;

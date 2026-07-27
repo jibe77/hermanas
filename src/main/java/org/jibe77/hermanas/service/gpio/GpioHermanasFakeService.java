@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import uk.co.caprica.picam.FilePictureCaptureHandler;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.io.IOException;
 
 @Controller

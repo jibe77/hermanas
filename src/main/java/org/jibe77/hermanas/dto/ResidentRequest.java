@@ -2,8 +2,8 @@ package org.jibe77.hermanas.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
 @Schema(description = "Payload pour créer ou mettre à jour un pensionnaire")

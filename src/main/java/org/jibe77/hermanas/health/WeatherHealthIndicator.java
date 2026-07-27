@@ -2,8 +2,8 @@ package org.jibe77.hermanas.health;
 
 import org.jibe77.hermanas.client.weather.WeatherClient;
 import org.jibe77.hermanas.client.weather.WeatherInfo;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 import static org.jibe77.hermanas.client.weather.WeatherClient.DEFAULT_VALUE_IF_DISABLED;

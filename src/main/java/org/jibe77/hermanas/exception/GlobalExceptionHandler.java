@@ -8,13 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -164,6 +166,44 @@ public class GlobalExceptionHandler {
 
         logger.warn("Rate limit exceeded: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errors);
+    }
+
+    /**
+     * A method-level {@code @PreAuthorize} rejected an anonymous caller. In production the
+     * Security filter chain usually converts this into a 401 before it reaches us, but the
+     * exception still surfaces here when the chain is absent (e.g. {@code @WebMvcTest} slices)
+     * or when it is raised deeper than the entry point. Without this handler it would fall
+     * through to the generic 500 below and mask an authentication problem as a server error.
+     */
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<Map<String, Object>> handleAuthenticationCredentialsNotFound(
+            AuthenticationCredentialsNotFoundException ex) {
+        Map<String, Object> errors = new HashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", HttpStatus.UNAUTHORIZED.value());
+        errors.put("error", "Unauthorized");
+        errors.put("message", "Authentication required");
+
+        logger.warn("Unauthenticated access attempt: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errors);
+    }
+
+    /**
+     * An authenticated caller lacks the role required by {@code @PreAuthorize}. Mirrors the
+     * handler above but yields 403 — the caller is known, they simply are not allowed.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
+        Map<String, Object> errors = new HashMap<>();
+        errors.put("timestamp", LocalDateTime.now());
+        errors.put("status", HttpStatus.FORBIDDEN.value());
+        errors.put("error", "Forbidden");
+        errors.put("message", "Access denied");
+
+        logger.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors);
     }
 
     /**

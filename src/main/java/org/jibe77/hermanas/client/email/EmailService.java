@@ -15,8 +15,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
 
-import javax.mail.Message;
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.Message;
+import jakarta.mail.internet.InternetAddress;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,7 +83,7 @@ public class EmailService {
                     .map(address -> {
                         try {
                             return new InternetAddress(address);
-                        } catch (javax.mail.internet.AddressException e) {
+                        } catch (jakarta.mail.internet.AddressException e) {
                             logger.warn("Skipping invalid recipient address '{}'.", address);
                             return null;
                         }

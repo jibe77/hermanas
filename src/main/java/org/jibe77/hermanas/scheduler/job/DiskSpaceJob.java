@@ -3,9 +3,9 @@ package org.jibe77.hermanas.scheduler.job;
 import org.jibe77.hermanas.client.email.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
-import org.springframework.boot.actuate.system.DiskSpaceHealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
+import org.springframework.boot.health.application.DiskSpaceHealthIndicator;
 import org.springframework.context.MessageSource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -39,7 +39,7 @@ public class DiskSpaceJob {
 
     @Scheduled(fixedDelayString = "${diskspace.scheduler.delay.in.milliseconds}")
     public void verifyDiskSpace() {
-        Health health = diskSpaceHealthIndicator.getHealth(true);
+        Health health = diskSpaceHealthIndicator.health(true);
         if (health.getStatus().equals(Status.UP)) {
             return;
         }
