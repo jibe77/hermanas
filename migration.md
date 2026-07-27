@@ -416,42 +416,62 @@ sudo systemctl enable --now prometheus-node-exporter
 > effectivement obsolètes, mais **`AdafruitDHT.py` est toujours utilisé en production**.
 > Le laisser derrière casse la lecture température/humidité.
 
-- [ ] Vérifier sa présence et sa dépendance sur `poupou` :
+**Constaté sur `poupou` (2026-07-27) :**
+
+```
+/usr/bin/python -> python2                 # le script tourne en Python 2
+Adafruit_DHT : présent en python2 uniquement
+sudo /usr/bin/python AdafruitDHT.py 22 4 → Temp=26.7*  Humidity=99.9%
+sans sudo                                → Failed to get reading
+```
+
+Deux blocages pour `pru` :
+1. **Python 2 est absent de Trixie.** Le script ne peut pas être repris tel quel.
+2. **`Adafruit_DHT` exige root** — elle accède à `/dev/mem`. Or Hermanas tourne sous
+   le user `hermanas`, non privilégié : le script échouerait silencieusement.
+
+**Solution retenue (décision utilisateur) : réécriture en Python 3 avec
+`adafruit-circuitpython-dht`.** Cette bibliothèque parle au chardev
+`/dev/gpiochip0` via libgpiod plutôt qu'à `/dev/mem` — l'appartenance au groupe
+`gpio` suffit, ce que `hermanas` a déjà. C'est le même mécanisme que
+`pi4j-plugin-ffm`, donc cohérent avec le reste de la migration.
+
+- [x] Script réécrit : **`scripts/read_dht22.py`** (versionné dans le dépôt).
+  Le format de sortie est **conservé à l'identique** — `Temp=26.7*  Humidity=99.9%` —
+  car `SensorService.parseSensorReturnedValue()` découpe cette chaîne sur les espaces
+  et cherche les préfixes `Temp=` et `Humidity=`. Aucun code Java à modifier.
+  Il reproduit aussi le comportement de `read_retry()` (15 tentatives espacées de 2 s),
+  le DHT22 échouant fréquemment sur une lecture isolée.
+
+- [ ] Installer la dépendance sur `pru` :
   ```bash
-  ls -la /home/pi/AdafruitDHT.py
-  head -20 /home/pi/AdafruitDHT.py
-  python3 -c "import Adafruit_DHT; print('module présent')"
-  ```
-- [ ] Le migrer vers `/var/lib/hermanas/` :
-  ```bash
-  # depuis pru
-  scp -P 5722 pi@poupou:/home/pi/AdafruitDHT.py /tmp/
-  sudo mv /tmp/AdafruitDHT.py /var/lib/hermanas/
-  sudo chown hermanas:hermanas /var/lib/hermanas/AdafruitDHT.py
-  sudo chmod 750 /var/lib/hermanas/AdafruitDHT.py
-  ```
-- [ ] ⚠️ **Installer la dépendance Python.** `Adafruit_DHT` est **archivée depuis 2020**
-  et n'est plus installable via pip sur les distributions récentes. Successeur :
-  `adafruit-circuitpython-dht`, dont l'API diffère — le script devra probablement être
-  réécrit.
-  ```bash
-  sudo apt install -y python3-pip
+  sudo apt install -y python3-pip libgpiod2
   pip3 install --break-system-packages adafruit-circuitpython-dht
   ```
-- [ ] ⚠️ **`sensor.python.command = /usr/bin/python`** : sur Trixie, `/usr/bin/python`
-  n'existe pas forcément (seul `python3` est fourni). Vérifier et adapter :
+- [ ] Déposer le script :
   ```bash
-  ls -la /usr/bin/python /usr/bin/python3
+  # depuis le Mac
+  scp -P 5722 scripts/read_dht22.py jean-baptisterenaux@pru.local:/tmp/
+  # sur pru
+  sudo mv /tmp/read_dht22.py /var/lib/hermanas/
+  sudo chown hermanas:hermanas /var/lib/hermanas/read_dht22.py
+  sudo chmod 750 /var/lib/hermanas/read_dht22.py
   ```
-- [ ] Corriger les deux propriétés dans `/var/lib/hermanas/application.properties`
-  (chemin du script, et `python3` si nécessaire).
-- [ ] Tester le script seul avant de démarrer l'application :
+- [ ] Adapter `/var/lib/hermanas/application.properties` :
+  ```properties
+  sensor.python.command = /usr/bin/python3
+  sensor.python.script  = /var/lib/hermanas/read_dht22.py
+  ```
+  ⚠️ **`python3` et non `python`** : Trixie ne fournit pas `/usr/bin/python`.
+- [ ] Tester **sous le user `hermanas`**, pour valider que root n'est plus nécessaire :
   ```bash
-  sudo -u hermanas python3 /var/lib/hermanas/AdafruitDHT.py 22 4
+  sudo -u hermanas /usr/bin/python3 /var/lib/hermanas/read_dht22.py 22 4
+  # attendu : Temp=XX.X*  Humidity=XX.X%
   ```
-- [ ] *Alternative si la migration s'avère lourde* : le noyau Linux expose le DHT22 via
-  `dtoverlay=dht11,gpiopin=4` et le sysfs `/sys/bus/iio/devices/`. Cela supprimerait
-  totalement la dépendance Python — chantier à évaluer, hors bascule.
+  Ce test ne peut réussir qu'une fois le capteur physiquement branché (Phase 5).
+- [ ] *Alternative si la bibliothèque pose problème* : le noyau expose le DHT22 via
+  `dtoverlay=dht11,gpiopin=4` et le sysfs `/sys/bus/iio/devices/`, ce qui supprimerait
+  toute dépendance Python. Demande d'adapter `SensorService` — à évaluer hors bascule.
 
 ### 0.8 — Scripts USB
 
