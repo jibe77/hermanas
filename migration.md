@@ -1520,6 +1520,37 @@ Chaque major bump = branche dédiée + tests visuels + Playwright e2e (`npm run 
 - [ ] Redéploiement complet via `deploy.sh`.
 - [ ] Cycle 24 h d'observation.
 
+### 6.4 — Renommer le compte MariaDB `pi` → `hermanas_app`
+
+> **Volontairement reporté après la bascule** (décision 2026-07-27). Le gain est
+> cosmétique : `pi@localhost` fonctionne exactement comme `hermanas_app@localhost`.
+> L'introduire pendant la Phase 2/3 aurait ajouté une variable inutile au chemin
+> critique — en cas d'échec au démarrage, on veut suspecter Spring Boot 4, Hibernate 7
+> ou pi4j FFM, pas un renommage de compte SQL.
+
+**Pourquoi le faire** : le compte MariaDB s'appelle `pi` pour des raisons purement
+historiques — il reprend le nom du user Linux de `poupou`. Or les deux notions sont
+indépendantes, et sur `pru` le user Linux `pi` n'existe même plus (le service tourne
+sous `hermanas`, l'humain est `jean-baptisterenaux`). Garder `pi` entretient une
+homonymie trompeuse et traîne un vestige de l'ancienne machine.
+
+- [ ] Renommer les deux comptes (l'applicatif et celui d'Adminer) :
+  ```bash
+  sudo mysql <<'SQL'
+  RENAME USER 'pi'@'localhost'   TO 'hermanas_app'@'localhost';
+  RENAME USER 'pi'@'192.168.1.%' TO 'hermanas_app'@'192.168.1.%';
+  FLUSH PRIVILEGES;
+  SQL
+  ```
+- [ ] Mettre à jour `spring.datasource.username` dans `/var/lib/hermanas/application.properties`.
+- [ ] `sudo systemctl restart Hermanas.service` puis vérifier la connexion en base dans les logs.
+- [ ] Mettre à jour la configuration d'Adminer.
+- [ ] Vérifier :
+  ```bash
+  sudo mysql -e "SELECT User, Host FROM mysql.user WHERE User LIKE 'hermanas%' OR User='pi';"
+  # attendu : hermanas_app@localhost et hermanas_app@192.168.1.%, plus aucun 'pi'
+  ```
+
 ---
 
 ## Phase 7 — Chantier camera + player audio
