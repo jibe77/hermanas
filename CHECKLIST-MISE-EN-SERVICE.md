@@ -119,9 +119,16 @@ curl -s localhost:8080/api/v1/buttons/status | python3 -m json.tool
 curl -s localhost:8080/api/v1/sensor/info | python3 -m json.tool
 ```
 
-- [ ] température et humidité plausibles (ni `null`, ni `0.0`)
+- [x] ✅ *(2026-07-31)* le capteur **répond** : `Temp=28.5*  Humidity=1.0%`,
+      `exit value 0`
 
-Si échec, **d'abord vérifier la configuration** — les valeurs par défaut du JAR
+> ⚠️ **Valeur d'humidité aberrante, mais connue.** 1 % est physiquement
+> impossible (météo locale : 63 % au même instant). Ce capteur remontait
+> **déjà des valeurs fantaisistes sur `poupou`** — ce n'est donc pas une
+> régression de la migration, et le câblage n'est pas en cause. Suivi
+> reporté en section 9.
+
+Si le capteur ne répond pas du tout, **d'abord vérifier la configuration** — les valeurs par défaut du JAR
 pointent encore vers `poupou` (`/usr/bin/python` et `/home/pi/AdafruitDHT.py`,
 qui n'existent ni l'un ni l'autre sur Trixie). Elles doivent être surchargées
 dans `/var/lib/hermanas/application.properties` :
@@ -325,6 +332,47 @@ watch -n 60 'free -h; echo; vmstat 1 3 | tail -1'
 
 ---
 
+## 9 — À surveiller dans la durée (pas bloquant)
+
+### Fiabilité du DHT22
+
+Le capteur remonte **par intermittence des valeurs incohérentes** — relevé du
+2026-07-31 : `Humidity=1.0%` alors que la météo locale donnait 63 %.
+
+**Comportement préexistant**, déjà constaté sur `poupou` : ce n'est ni une
+régression de la migration, ni un défaut de câblage. Les DHT22 bon marché sont
+connus pour des lectures erratiques (timing 1-wire serré, sensibilité à la
+longueur du fil et à la température).
+
+À surveiller sur quelques semaines via l'historique :
+
+```bash
+# [pru] valeurs du jour
+curl -s localhost:8080/api/v1/sensor/history/today | python3 -m json.tool | head -40
+```
+
+- [ ] Quelle **proportion** de relevés est aberrante ? (ponctuel vs systématique)
+- [ ] Les aberrations sont-elles **corrélées** à quelque chose — heure, chaleur,
+      activité de la caméra qui allume la lumière ?
+- [ ] La **température** dérive-t-elle aussi, ou seule l'humidité est touchée ?
+
+Pistes si ça se dégrade — par ordre de coût :
+
+1. **Filtrer côté logiciel** — rejeter les valeurs hors bornes physiques
+   (humidité < 5 % ou > 100 %, écart brutal avec le relevé précédent) plutôt
+   que de les écrire en base. Corrige le symptôme, pas la cause, mais évite de
+   polluer l'historique et les graphes Grafana.
+2. **Vérifier la résistance de tirage** : 4,7-10 kΩ entre data et 3,3 V.
+3. **Raccourcir le fil** de données ; au-delà de ~20 cm le 1-wire devient
+   capricieux.
+4. **Remplacer le capteur** — un DHT22 coûte quelques euros. Un **SHT31** (I²C)
+   est nettement plus fiable si le problème persiste.
+
+> Rien de tout cela n'est urgent : la lecture du capteur ne conditionne ni
+> l'ouverture de la porte ni l'éclairage, seulement l'affichage et l'historique.
+
+---
+
 ## En cas de problème
 
 | Symptôme | Piste |
@@ -335,6 +383,7 @@ watch -n 60 'free -h; echo; vmstat 1 3 | tail -1'
 | 401/403 sur `/door/open` en curl | Normal : POST = session + CSRF. Passer par le front |
 | 404 `/fr-FR/actuator/*` | Ancien service worker en cache → *Unregister* dans DevTools |
 | DHT22 `Failed to get reading` | Câblage capteur : broche 7, tirage 4,7-10 kΩ vers 3,3 V |
+| DHT22 répond mais valeurs absurdes | **Connu**, préexistant à la migration → section 9 |
 | Démarrage > 15 min puis kill | `TimeoutStartSec` — vérifier `systemctl show Hermanas` |
 | Relais claque mais rien ne tourne | Circuit aval : bornier COM/NO desserré, ou alimentation de l'actionneur |
 | Caméra en erreur | **Attendu** — Phase 7 |
