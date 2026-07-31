@@ -700,6 +700,37 @@ EOF
 - `Remove-Unused-Dependencies "true"` : équivalent d'un `apt autoremove` automatique.
 - Les logs atterrissent dans `/var/log/unattended-upgrades/`.
 
+### 0.11ter — Désactiver la veille de la carte wifi ✅ *(appliqué le 2026-07-31)*
+
+Sans cela, `pru` devient injoignable après quelques minutes d'inactivité : la carte
+wifi passe en économie d'énergie et ne répond plus aux sollicitations entrantes.
+Gênant sur une machine administrée uniquement en SSH, et pour un service web censé
+répondre à tout moment.
+
+```bash
+sudo tee /etc/NetworkManager/conf.d/wifi-powersave.conf > /dev/null <<'EOF'
+[connection]
+wifi.powersave = 2
+EOF
+sudo systemctl restart NetworkManager
+```
+
+`2` = désactivé (`3` = activé, valeur par défaut sur Raspberry Pi OS).
+
+Vérification :
+
+```bash
+iw dev wlan0 get power_save     # doit afficher : Power save: off
+```
+
+> Un *keepalive* par ping périodique vers la passerelle a été envisagé puis écarté :
+> il ne traiterait que le symptôme, et `power_save: off` confirme que le réglage
+> suffit. Si le problème réapparaissait malgré tout, la piste suivante serait
+> `connection.autoconnect-retries = 0` dans NetworkManager (essais de reconnexion
+> illimités après coupure du point d'accès), plutôt qu'un ping.
+
+---
+
 ### 0.12 — Alias shell pour le user `pi`
 
 Reproduction des alias utiles de `poupou`, moins ceux qui pointent vers des scripts Python legacy (`servo_door_down.py`, `servo_door_up.py`) qu'on ne migre pas.
@@ -2212,6 +2243,86 @@ broche 32 est la **16ᵉ paire** en partant du connecteur d'alimentation :
         33 ─────────────────────                34
                  ...                                    ...
 ```
+
+---
+
+### 5.4 — ⚠️ À ÉLUCIDER : polarité des boutons de fin de course
+
+**Statut au 2026-07-31 : non résolu, à diagnostiquer.** La porte fonctionne, mais
+la lecture des interrupteurs est suspecte.
+
+#### Observation
+
+| Action physique | Log attendu | Log réellement observé |
+|---|---|---|
+| **Appui** sur le bouton | `Door has reached the up…` | `Up button is not pressed anymore.` |
+| **Relâchement** | `… is not pressed anymore.` | **rien** |
+
+Autrement dit : l'événement arrive à l'appui mais avec l'état *inverse*, et la
+transition de relâchement n'est jamais journalisée.
+
+#### Hypothèse principale — montage en pull-up
+
+Le code déclare `PullResistance.PULL_DOWN` et interprète `HIGH` comme « pressé »
+(`GpioHermanasRpiService.provisionInput`, `UpButtonService.manageEvent`). Si le
+câblage physique est en **pull-up** (bouton tirant vers la masse), alors
+**pressé = LOW** et toute la logique est inversée.
+
+Indice à charge : le tableau de câblage ci-dessus décrit déjà le bouton du nichoir
+comme *« bouton poussoir **inversé** »*. Au moins un bouton du montage est donc
+câblé à l'envers de la convention supposée par le code.
+
+> **Pourquoi cela n'apparaissait pas sur `poupou` ?** pi4j 2.x / pigpio gérait les
+> résistances de rappel autrement, et `PULL_DOWN` pouvait être ignoré au profit du
+> niveau imposé par le montage. Le passage au plugin FFM (chardev) applique la
+> configuration déclarée, ce qui expose l'écart.
+
+#### Hypothèse secondaire — debounce démesuré
+
+`provisionInput` pose `.debounce(3000L)`, que pi4j interprète en **microsecondes** :
+les logs de démarrage affichent `debouncePeriodUs=3000000`, soit **3 secondes**.
+C'est considérable pour un anti-rebond mécanique (10-50 ms suffisent) et cela peut
+absorber la transition de relâchement — ce qui expliquerait le second symptôme.
+
+Les deux hypothèses ne s'excluent pas : la polarité expliquerait le premier
+symptôme, le debounce le second.
+
+#### Diagnostic à faire (application arrêtée)
+
+```bash
+sudo systemctl stop Hermanas          # libère les lignes GPIO
+sudo apt install -y gpiod
+
+gpioget gpiochip0 18                  # bouton HAUT — au repos
+gpioget gpiochip0 18                  # … puis en MAINTENANT l'appui
+gpioget gpiochip0 15                  # bouton BAS
+gpioget gpiochip0 24                  # bouton maisonnette
+```
+
+| Au repos | Pressé | Conclusion |
+|---|---|---|
+| `0` | `1` | pull-down — le code est correct, chercher ailleurs |
+| `1` | `0` | **pull-up** — inverser la lecture |
+
+#### Correctif si pull-up confirmé
+
+Dans `GpioHermanasRpiService.provisionInput` : `PULL_DOWN` → `PULL_UP`, et
+`.debounce(50000L)` (50 ms). Dans `UpButtonService` / `BottomButtonService` /
+`BirdhouseButtonService` : `event.state().isHigh()` → `isLow()`.
+
+⚠️ Vérifier bouton par bouton — ils ne sont pas nécessairement câblés pareil,
+comme le suggère la mention « inversé » pour le nichoir.
+
+#### Ce qui marche déjà malgré ce défaut
+
+- Ouverture et fermeture commandées depuis le front
+- Arrêt sur fin de course haut (`Door has reached the up, stop servomotor now !`)
+- Réouverture automatique de sécurité quand la position basse n'est pas confirmée
+  (`Bottom position not reached correctly. The door is reopened now.`)
+
+> Ce dernier point est probablement une **conséquence** du défaut : si l'état du
+> bouton bas est lu à l'envers, la fermeture ne peut jamais être validée. À
+> revérifier une fois la polarité corrigée.
 
 - [ ] **Débrancher** le fil de signal du servo de la broche 22.
 - [ ] **Rebrancher** ce même fil sur la broche 32.
