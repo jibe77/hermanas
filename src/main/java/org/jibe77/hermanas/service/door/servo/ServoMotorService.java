@@ -34,13 +34,6 @@ public class ServoMotorService
     private Pwm pwm;
 
     /**
-     * Last frequency used by {@link #moveServo}; needed to issue a deterministic
-     * zero-duty-cycle pulse train in {@link #stop()}. Volatile so the end-stop button
-     * listener (Pi4j thread) sees the value written by the door command thread.
-     */
-    private volatile int lastFrequency;
-
-    /**
      * Set by {@link #stop()} so that a thread currently sleeping inside
      * {@link #setPosition} wakes up immediately instead of letting the motor coast
      * to the end of its planned duration after the limit switch has already stopped it.
@@ -86,28 +79,31 @@ public class ServoMotorService
     }
 
     /**
-     * Turn the servo off as deterministically as possible.
+     * Coupe le servo.
      *
-     * <p>{@code Pwm.off()} alone is not always sufficient on the Pi4j 2.4 / pigpio
-     * software-PWM stack: the pin can be left at the last commanded duty cycle, which
-     * keeps the servo receiving valid pulses and moving. Sending an explicit zero-
-     * duty-cycle pulse train first forces the signal low before disabling PWM
-     * generation entirely. This is the call path triggered by the bottom / up
-     * end-stop button listeners.</p>
+     * <p><b>Ne pas réintroduire le {@code pwm.on(0, lastFrequency)} qui précédait
+     * l'appel à {@code off()}.</b> Il datait de pi4j 2.4 / pigpio, où le PWM était
+     * <em>logiciel</em> : {@code off()} seul pouvait laisser la broche au dernier
+     * rapport cyclique commandé, et une trame à zéro forçait la ligne bas.</p>
+     *
+     * <p>Sur pi4j 4.x avec le plugin FFM, le PWM est <em>matériel</em> et piloté par
+     * sysfs ({@code /sys/class/pwm/pwmchipN/pwmM}). Là, {@code on(0, …)} <b>réactive</b>
+     * le canal : le couple on/off régénérait le signal au lieu de le couper, et le
+     * servo continuait de tourner malgré le fin de course — d'où les
+     * {@code PWM is already disabled} en rafale dans les logs, chaque nouvel appui du
+     * bouton relançant un arrêt sans effet.</p>
+     *
+     * <p>Chemin d'appel critique : les écouteurs des boutons de fin de course haut et
+     * bas. Un servo qui ne s'arrête pas force contre sa butée, chauffe et consomme.</p>
      */
     public void stop() {
         stopRequested = true;
-        logger.info("servomotor stop requested (forcing duty cycle to 0).");
-        if (lastFrequency > 0) {
-            // explicit zero-duty pulse train to release the servo deterministically.
-            pwm.on(0, lastFrequency);
-        }
+        logger.info("servomotor stop requested.");
         pwm.off();
     }
 
     public void moveServo(int dutyCycle, int frequency) {
         //send the value to the motor.
-        lastFrequency = frequency;
         pwm.on(dutyCycle, frequency);
     }
 
