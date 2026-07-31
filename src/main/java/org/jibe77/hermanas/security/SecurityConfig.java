@@ -24,6 +24,7 @@ import org.springframework.security.web.authentication.rememberme.JdbcTokenRepos
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
@@ -100,6 +101,22 @@ public class SecurityConfig
                 // (sent in X-Siri-Token, never in a cookie) is the CSRF defence for those calls.
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        // Spring Security 6+ charge le CsrfToken paresseusement (DeferredCsrfToken) :
+                        // le cookie XSRF-TOKEN n'est écrit que si quelqu'un *lit* le token pendant la
+                        // requête. Or personne ne le lit ici — le SPA se contente de renvoyer le
+                        // cookie. Résultat après la migration depuis Spring Security 5 : aucun cookie
+                        // n'était jamais émis, le SPA n'avait rien à échoer, et tout POST partait en
+                        // 403 (y compris /auth/login, pourtant permitAll : le CsrfFilter s'exécute
+                        // avant les règles d'autorisation).
+                        //
+                        // CsrfTokenRequestAttributeHandler avec setCsrfRequestAttributeName(null)
+                        // désactive ce report et matérialise le token à chaque requête.
+                        //
+                        // Handler *simple* et non XorCsrfTokenRequestAttributeHandler (le défaut
+                        // depuis 6.0) : Angular renvoie la valeur du cookie telle quelle dans
+                        // X-XSRF-TOKEN, sans savoir la déchiffrer. Avec la variante XOR, le cookie
+                        // est encodé et la comparaison échouerait.
+                        .csrfTokenRequestHandler(csrfTokenRequestHandler())
                         .requireCsrfProtectionMatcher(req ->
                                 org.springframework.security.web.csrf.CsrfFilter.DEFAULT_CSRF_MATCHER.matches(req)
                                         && req.getHeader(SiriTokenAuthenticationFilter.HEADER_NAME) == null))
@@ -325,5 +342,22 @@ public class SecurityConfig
         // (prod via reverse-proxy), so we let Spring auto-detect from the request scheme.
         services.setUseSecureCookie(false);
         return services;
+    }
+
+    /**
+     * Force l'émission du cookie {@code XSRF-TOKEN} à chaque requête.
+     *
+     * <p>Passer {@code null} à {@code setCsrfRequestAttributeName} désactive le chargement
+     * différé introduit en Spring Security 6 : le token est matérialisé pendant la requête,
+     * donc {@link CookieCsrfTokenRepository} écrit effectivement le cookie. Sans cela, le
+     * cookie n'apparaît jamais et le SPA n'a rien à renvoyer dans {@code X-XSRF-TOKEN}.</p>
+     *
+     * <p>Volontairement {@link CsrfTokenRequestAttributeHandler} et non la variante XOR :
+     * le client Angular réémet la valeur brute du cookie, sans la décoder.</p>
+     */
+    private static CsrfTokenRequestAttributeHandler csrfTokenRequestHandler() {
+        CsrfTokenRequestAttributeHandler handler = new CsrfTokenRequestAttributeHandler();
+        handler.setCsrfRequestAttributeName(null);
+        return handler;
     }
 }
