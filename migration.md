@@ -1913,6 +1913,80 @@ Utile pour rédiger un guide d'installation ; chaque point renvoie à sa section
 | 17 | `NoResourceFoundException` traitée en 404 | 3.5bis — évitait une trace de 150 lignes en ERROR par fichier absent |
 | 18 | `TimeoutStartSec=900`, `TimeoutStopSec=180` | 3.5 — 90 s par défaut : `SIGKILL` avant `pi4j.shutdown()`, servo laissé alimenté |
 | 19 | `open-in-view=false` + Hikari resserré | 3.5 — `max-lifetime` sous le `wait_timeout` MariaDB ; pool à 5 (mono-utilisateur) |
+| 20 | Resynchroniser les 7 séquences Hibernate | 3.5ter — `AUTO` = séquence en Hibernate 7, plus `IDENTITY` : ids repartaient de 1 |
+| 21 | picam → `rpicam-still` | 7.1 — MMAL retiré d'arm64 ; le `.so` ARMv6 n'avait plus de pile derrière lui |
+| 22 | `#dtoverlay=vc4-kms-v3d` | 7.1 — le KMS monopolisait l'interface caméra du firmware |
+| 23 | `usermod -aG video,render hermanas` | 7.1 — `/dev/media*` appartient à `root:video` ; même schéma qu'`i2c`/`spi` |
+
+### 3.5ter — `Duplicate entry` : `GenerationType.AUTO` change de sens en Hibernate 6+ ✅
+
+**Piège de fond de la migration, indépendant de la caméra.** Il touche les
+**7 entités** du projet, pas seulement `Picture`.
+
+**Symptôme.** Toute insertion échoue, alors que le reste fonctionne :
+
+```
+Duplicate entry '1' for key 'PRIMARY'
+[insert into picture (chicken,eggs,path,id) values (?,?,?,?)]
+```
+
+Les ids repartent de 1, 2, 3… alors que la table contient 500 546 lignes.
+
+**Cause.** `@GeneratedValue(strategy = GenerationType.AUTO)` — utilisé sur les
+7 entités — **ne produit pas la même stratégie selon la version d'Hibernate** :
+
+| | Hibernate 5 (SB 2.7, `poupou`) | Hibernate 7 (SB 4, `pru`) |
+|---|---|---|
+| `AUTO` sur MariaDB | `IDENTITY` (auto-incrément de la base) | **table de séquence par entité** |
+| Mécanisme | colonne `AUTO_INCREMENT` | `picture_seq`, `sensor_seq`, … |
+
+Au premier démarrage, Hibernate 7 a créé sept nouvelles séquences **vides**
+(`picture_seq`, `sensor_seq`, `event_seq`, `parameter_seq`,
+`hermanas_user_seq`, `resident_seq`, `push_subscription_seq`), qui démarrent à
+1. L'ancienne `hibernate_sequence` d'Hibernate 5 est toujours là, correctement
+positionnée à 501001 — mais plus personne ne la lit.
+
+> Seule `picture` levait l'erreur pendant les tests, parce que c'est la table
+> qui insérait le plus à ce moment-là. `sensor` et `event` l'auraient rencontrée
+> tout aussi sûrement.
+
+**Correctif.** Resynchroniser les sept séquences au-dessus du plus grand id
+existant (maximum constaté : 500 564) :
+
+```bash
+sudo mysql hermanas -e "
+  ALTER SEQUENCE picture_seq           RESTART WITH 501000;
+  ALTER SEQUENCE sensor_seq            RESTART WITH 501000;
+  ALTER SEQUENCE event_seq             RESTART WITH 501000;
+  ALTER SEQUENCE parameter_seq         RESTART WITH 501000;
+  ALTER SEQUENCE hermanas_user_seq     RESTART WITH 501000;
+  ALTER SEQUENCE resident_seq          RESTART WITH 501000;
+  ALTER SEQUENCE push_subscription_seq RESTART WITH 501000;
+"
+sudo systemctl restart Hermanas
+```
+
+Le **redémarrage est obligatoire** : Hibernate met en cache un lot d'ids
+(`allocationSize`) dans le processus, qui garde donc les anciennes valeurs.
+
+Vérification :
+
+```bash
+sudo mysql hermanas -e "SELECT id, path FROM picture ORDER BY id DESC LIMIT 3;"
+```
+
+Les nouveaux ids doivent être ≥ 501000.
+
+> **Pourquoi ne pas repasser en `IDENTITY` ?** Ce serait le comportement de
+> `poupou`, mais cela suppose que les colonnes `id` aient conservé leur
+> `AUTO_INCREMENT` après le `mysqldump` — non garanti. Les séquences existent
+> déjà et sont le mécanisme natif d'Hibernate 7 : les resynchroniser ne demande
+> ni changement de code ni redéploiement.
+
+**À refaire à chaque reprise de dump depuis `poupou`** — c'est le point à
+retenir pour le guide d'installation.
+
+---
 
 ### 3.5bis — 404 en boucle sur `/fr-FR/actuator/*` ✅
 
@@ -2449,16 +2523,95 @@ homonymie trompeuse et traîne un vestige de l'ancienne machine.
 
 Objectif : restaurer les endpoints `/api/v1/camera/*` et `/api/v1/music/*` avec des stacks modernes.
 
-### 7.1 — Snapshot camera : `rpicam-still`
+### 7.1 — Snapshot camera : `rpicam-still` ✅ *(fait le 2026-07-31)*
 
-- [ ] `sudo apt install -y rpicam-apps` sur `pru`.
-- [ ] Refactor Java :
-  - Supprimer dépendance Maven `uk.co.caprica:picam` dans `pom.xml`.
-  - Supprimer `src/main/resources/native/picam-2.0.1.so`.
-  - Supprimer `CameraConfiguration.java`.
-  - Dans `GpioHermanasRpiService.java` : virer `System.load()` + imports `uk.co.caprica.picam.*`, remplacer `takePicture()` par `ProcessBuilder("rpicam-still", "-o", tempFile, "--width", ..., "--height", ..., "--quality", ...)`.
-- [ ] `application.properties` : remplacer `camera.picam.jni.implementation` par `camera.snapshot.command`.
-- [ ] Test `/api/v1/camera/takePicture` → JPEG valide.
+**Pourquoi picam ne pouvait pas survivre.** picam reposait sur **MMAL**, la pile
+Broadcom retirée de Raspberry Pi OS arm64 au profit de libcamera. Le `.so`
+compilé pour ARMv6/Buster n'était pas mal chargé : ce qu'il appelait n'existait
+plus. Aucune configuration ne pouvait le rattraper.
+
+#### Côté système — trois obstacles successifs
+
+**1. `rpicam-apps` était déjà installé** (1.12.0, libcamera 0.7.1) mais répondait :
+
+```
+ERROR: rpicam-apps currently only supports the Raspberry Pi platforms.
+```
+
+Message **trompeur** : il sort aussi quand aucune caméra n'est trouvée, sur un Pi
+parfaitement reconnu. Confirmé sur le forum Raspberry Pi ([thread de 2024](https://forums.raspberrypi.com/viewtopic.php?t=366100)) :
+*« if no camera found it will show the same error message even if it is running
+on RPI ».*
+
+**2. Le coupable : `dtoverlay=vc4-kms-v3d`.** Le KMS monopolise l'interface caméra
+du firmware. Le commenter suffit — sans risque sur une machine headless, où il ne
+sert qu'à l'affichage graphique :
+
+```bash
+sudo sed -i 's/^dtoverlay=vc4-kms-v3d/#dtoverlay=vc4-kms-v3d/' /boot/firmware/config.txt
+sudo reboot
+```
+
+Après quoi `rpicam-still` capture : `Still capture image received`.
+
+**3. Permissions.** L'application tourne sous `hermanas`, absent du groupe
+`video` — d'où `Failed to open media device at /dev/media0: Permission denied`
+puis `Could not open any dma-buf provider`. Même schéma que l'ajout d'`i2c`/`spi`
+pour le plugin FFM en Phase 3 :
+
+```bash
+sudo usermod -aG video,render hermanas
+sudo systemctl restart Hermanas          # obligatoire : les groupes sont fixés à l'ouverture de session
+```
+
+Test préalable sans redémarrer le service, qui simule la session du service :
+
+```bash
+sudo -u hermanas rpicam-still -o /tmp/t.jpg --width 960 --height 540 --nopreview --timeout 2000
+```
+
+#### Fausses pistes écartées (pour ne pas les refaire)
+
+| Piste | Verdict |
+|---|---|
+| `camera_auto_detect=1` absent | **Déjà présent** |
+| `disable_fw_kms_setup=1` | Commenté, **sans effet** |
+| `gpu_mem=16` trop bas | Monté à 64, **sans effet** — sur libcamera le traitement passe par l'ISP, pas par le firmware VideoCore. **À reteste à 16 pour récupérer les 48 Mo.** |
+| `vcgencmd get_camera` | **Obsolète** sur libcamera : renvoie toujours `interfaces=0`, même caméra fonctionnelle. Ne pas s'y fier. |
+| `bcm2835_unicam_legacy` | Nom trompeur : désigne la pile VC4, pas un mode dégradé. libcamera l'utilise bien (compteur d'usage > 0). |
+
+#### Côté Java
+
+- `GpioHermanasService.takePicture` prend un **`File`** au lieu d'un
+  `FilePictureCaptureHandler` : `rpicam-still` écrit lui-même le fichier, et le
+  contrat ne dépend plus de picam.
+- `CameraConfiguration` **conservée** (contrairement au plan initial) mais vidée
+  de picam : elle expose des valeurs brutes que l'appelant traduit en options.
+  Qualité, rotation et luminosité restent relues depuis `ConfigService` à chaque
+  appel — le hot-reload continue de fonctionner.
+- Conversion de la **luminosité** : échelle picam `0..100` → rpicam `-1.0..1.0`.
+- **Rotation filtrée** : rpicam n'accepte que 0/90/180/270, toute autre valeur
+  ferait échouer la commande entière.
+- Lecture du flux **avant** `waitFor` : rpicam-still est bavard, un tube plein
+  bloquerait le processus et provoquerait un faux timeout.
+- Vérification que le fichier existe et n'est pas vide — rpicam-still peut sortir
+  en 0 sans rien écrire si la caméra est occupée.
+- Dépendance `uk.co.caprica:picam` retirée du `pom.xml`.
+- Propriété `camera.picam.jni.implementation` → **`camera.rpicam.still.path`**
+  (défaut `/usr/bin/rpicam-still`).
+
+Commit `8744a41`, tests 66/66.
+
+#### Reste à ajuster (cosmétique)
+
+- [ ] **Qualité « normale » à 5** — image très dégradée. Valeur en base,
+      modifiable depuis l'écran de configuration sans redéployer. La haute
+      qualité est à 50, correcte.
+- [ ] **Délai de capture** : `camera.regular.delay = 750` ms est court pour
+      l'auto-exposition en intérieur.
+- [ ] **Retester `gpu_mem=16`** : les 48 Mo donnés au GPU n'ont probablement
+      servi à rien (voir tableau ci-dessus), et la priorité affichée reste la
+      RAM disponible.
 
 ### 7.2 — Streaming camera : `rpicam-vid | ffmpeg`
 
