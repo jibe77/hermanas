@@ -3,17 +3,19 @@ package org.jibe77.hermanas.service.gpio;
 import org.jibe77.hermanas.service.config.ConfigService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.co.caprica.picam.enums.Encoding;
-
-import static uk.co.caprica.picam.CameraConfiguration.cameraConfiguration;
 
 /**
- * Builds picam {@link uk.co.caprica.picam.CameraConfiguration} objects on demand.
+ * Expose les réglages de prise de vue, que l'appelant traduit en options
+ * {@code rpicam-still}.
  *
- * <p>Width/height/encoding come from {@code application.properties} (they are
- * not exposed to the admin UI). Quality, brightness and rotation are read from
- * {@link ConfigService} at every call so a hot-reload (via {@code @CacheEvict}
- * on the setters) takes effect on the very next picture — no app restart needed.
+ * <p>Cette classe construisait auparavant des objets picam ; picam reposait sur
+ * MMAL, absent de Raspberry Pi OS arm64. Elle ne fournit plus que des valeurs
+ * brutes, sans dépendance à une librairie de capture.</p>
+ *
+ * <p>Largeur, hauteur et encodage viennent d'{@code application.properties} (non
+ * exposés dans l'admin). Qualité, luminosité et rotation sont relues depuis
+ * {@link ConfigService} à chaque appel, pour qu'un changement à chaud (via
+ * {@code @CacheEvict} sur les setters) s'applique dès la photo suivante.</p>
  */
 @Component
 public class CameraConfiguration {
@@ -39,23 +41,36 @@ public class CameraConfiguration {
         this.configService = configService;
     }
 
-    public uk.co.caprica.picam.CameraConfiguration buildHighQuality() {
-        return cameraConfiguration()
-                .width(photoHighWidth)
-                .height(photoHighHeight)
-                .encoding(Encoding.valueOf(photoEncoding))
-                .quality(configService.getCameraHighQuality())
-                .rotation(configService.getCameraRotation())
-                .brightness(configService.getCameraBrightness());
+    /** Largeur en pixels selon le profil demandé. */
+    public int width(boolean highQuality) {
+        return highQuality ? photoHighWidth : photoRegularWidth;
     }
 
-    public uk.co.caprica.picam.CameraConfiguration buildRegularQuality() {
-        return cameraConfiguration()
-                .width(photoRegularWidth)
-                .height(photoRegularHeight)
-                .encoding(Encoding.valueOf(photoEncoding))
-                .quality(configService.getCameraRegularQuality())
-                .rotation(configService.getCameraRotation())
-                .brightness(configService.getCameraBrightness());
+    /** Hauteur en pixels selon le profil demandé. */
+    public int height(boolean highQuality) {
+        return highQuality ? photoHighHeight : photoRegularHeight;
     }
+
+    /** Qualité JPEG (0-100), relue à chaque appel pour suivre les changements à chaud. */
+    public int quality(boolean highQuality) {
+        return highQuality
+                ? configService.getCameraHighQuality()
+                : configService.getCameraRegularQuality();
+    }
+
+    /** Rotation en degrés, relue à chaque appel. */
+    public int rotation() {
+        return configService.getCameraRotation();
+    }
+
+    /** Luminosité sur l'échelle historique 0-100, relue à chaque appel. */
+    public int brightness() {
+        return configService.getCameraBrightness();
+    }
+
+    /** Encodage configuré ({@code JPEG}). Conservé pour information. */
+    public String encoding() {
+        return photoEncoding;
+    }
+
 }

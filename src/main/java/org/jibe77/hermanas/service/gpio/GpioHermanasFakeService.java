@@ -12,7 +12,6 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
-import uk.co.caprica.picam.FilePictureCaptureHandler;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -44,7 +43,7 @@ public class GpioHermanasFakeService implements GpioHermanasService {
     }
 
     @Override
-    public void takePicture(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
+    public void takePicture(java.io.File destination, boolean highQuality) throws IOException {
         logger.info("Fake GPIO : take picture ");
         if (!cameraIsInitialised) {
             throw new IllegalStateException("Fake GPIO : can't hasn't been initialised before taking picture !");

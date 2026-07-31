@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.co.caprica.picam.FilePictureCaptureHandler;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -79,7 +78,7 @@ public class CameraService {
         File pictureFile = generateUniqueFilename(localDateTime, fileRoot);
         logger.info("Taking a picture now in {} ...", pictureFile.getAbsolutePath());
         try {
-            gpioHermanasService.takePicture(new FilePictureCaptureHandler(pictureFile), highQuality);
+            gpioHermanasService.takePicture(pictureFile, highQuality);
             logger.info("Save picture path in db.");
             pictureRepository.save(new Picture(relativePath + File.separator + pictureFile.getName()));
             logger.info("... done.");

@@ -15,18 +15,19 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import uk.co.caprica.picam.*;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
@@ -36,11 +37,11 @@ public class GpioHermanasRpiService implements GpioHermanasService {
     private Context pi4j;
 
     /**
-     * Vrai si {@code System.load(picamJniImplementation)} a réussi. Permet de refuser
-     * les captures sans déclencher d'{@link UnsatisfiedLinkError}, que les appelants
-     * ne rattrapent pas (c'est une {@link Error}, pas une {@link Exception}).
+     * Marge accordée au processus de capture au-delà de {@code --timeout} : encodage
+     * JPEG et écriture sur la carte SD, lents sur un Zero 2 W et très variables selon
+     * la charge.
      */
-    private boolean picamLibraryLoaded = false;
+    private static final int CAPTURE_GRACE_MS = 15000;
 
     private final CameraConfiguration cameraConfiguration;
 
@@ -52,8 +53,8 @@ public class GpioHermanasRpiService implements GpioHermanasService {
     @Value("${camera.high.delay}")
     private int photoHighDelay;
 
-    @Value("${camera.picam.jni.implementation}")
-    private String picamJniImplementation;
+    @Value("${camera.rpicam.still.path:/usr/bin/rpicam-still}")
+    private String rpicamStillPath;
 
     public GpioHermanasRpiService(CameraConfiguration cameraConfiguration) {
         this.cameraConfiguration = cameraConfiguration;
@@ -63,11 +64,9 @@ public class GpioHermanasRpiService implements GpioHermanasService {
     private void initialiseGpioPins() {
         logger.info("Initialise GPIO ...");
 
-        // Deux initialisations indépendantes, volontairement dans des try séparés.
-        // Elles partageaient auparavant le même bloc : l'absence de la librairie
-        // picam empêchait alors pi4j de s'initialiser, et tout le GPIO tombait —
-        // porte, lumière, ventilateur — pour un problème de caméra. La caméra est
-        // pourtant explicitement acceptée KO jusqu'au chantier dédié (Phase 7).
+        // Isolé dans son propre try : une erreur ici ne doit pas empêcher le reste
+        // du démarrage. La caméra, elle, n'a plus rien à initialiser — rpicam-still
+        // est un exécutable système, invoqué à chaque capture.
         try {
             logger.info("Init pi4j context.");
             pi4j = Pi4J.newAutoContext();
@@ -75,59 +74,98 @@ public class GpioHermanasRpiService implements GpioHermanasService {
             logger.error("Can't initialise pi4j context — GPIO will be unavailable.", e);
         }
 
-        // Chargement natif de picam : le fat jar ne sait pas extraire le .so lui-même
-        // (PicamNativeLibrary.installTempLibrary() ne fonctionne pas), d'où ce
-        // chargement depuis le filesystem. Un échec ici ne dégrade que la caméra.
-        try {
-            logger.info("Load picam JNI implementation from .so file {}.", picamJniImplementation);
-            System.load(picamJniImplementation);
-            picamLibraryLoaded = true;
-        } catch (UnsatisfiedLinkError e) {
-            logger.warn("Can't load picam native library from {} — camera endpoints "
-                    + "will fail, the rest of the application is unaffected.",
-                    picamJniImplementation);
-        }
-
         logger.info("... initialisation done.");
     }
 
+    /**
+     * Capture via {@code rpicam-still}.
+     *
+     * <p>picam reposait sur MMAL, la pile Broadcom retirée de Raspberry Pi OS arm64
+     * (Trixie) au profit de libcamera. Le {@code .so} compilé pour ARMv6/Buster ne
+     * peut donc plus fonctionner : ce n'est pas un défaut de chargement, ce qu'il
+     * appelle n'existe plus. On délègue à l'outil système, comme le fait déjà le
+     * streaming avec {@code ProcessLauncher}.</p>
+     *
+     * <p>Le timeout du processus est calé sur {@code camera.*.delay} + une marge :
+     * {@code --timeout} est le temps laissé à l'auto-exposition avant déclenchement,
+     * auquel s'ajoutent l'encodage JPEG et l'écriture, lents sur un Zero 2 W.</p>
+     */
     @Override
-    public void takePicture(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
-        CompletableFuture<Void> future = takePictureAsync(filePictureCaptureHandler, highQuality);
+    public void takePicture(File destination, boolean highQuality) throws IOException {
+        int delay = highQuality ? photoHighDelay : photoRegularDelay;
+        List<String> command = buildCaptureCommand(destination, highQuality, delay);
+
+        logger.info("Capture via {}", String.join(" ", command));
+        Process process;
         try {
-            future.get(10, SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            throw new IOException(e);
+            process = new ProcessBuilder(command).redirectErrorStream(true).start();
+        } catch (IOException e) {
+            throw new IOException("Can't launch " + rpicamStillPath
+                    + ". Is rpicam-apps installed ?", e);
         }
+
+        String output;
+        boolean finished;
+        try (InputStream in = process.getInputStream()) {
+            // Lire le flux AVANT waitFor : rpicam-still est bavard et un tube plein
+            // bloquerait le processus, provoquant un faux timeout.
+            output = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            finished = process.waitFor(delay + CAPTURE_GRACE_MS, MILLISECONDS);
+        } catch (InterruptedException e) {
+            process.destroyForcibly();
+            Thread.currentThread().interrupt();
+            throw new IOException("Capture interrupted.", e);
+        }
+
+        if (!finished) {
+            process.destroyForcibly();
+            throw new IOException("Capture timed out after " + (delay + CAPTURE_GRACE_MS) + " ms.");
+        }
+        if (process.exitValue() != 0) {
+            throw new IOException("rpicam-still failed (exit " + process.exitValue() + ") : " + output);
+        }
+        // rpicam-still peut sortir en 0 sans rien écrire si la caméra est occupée.
+        if (!destination.isFile() || destination.length() == 0) {
+            throw new IOException("rpicam-still reported success but produced no image at "
+                    + destination.getAbsolutePath());
+        }
+        logger.info("Picture captured ({} bytes).", destination.length());
     }
 
-    @Async
-    public CompletableFuture<Void> takePictureAsync(FilePictureCaptureHandler filePictureCaptureHandler, boolean highQuality) throws IOException {
-        // Sans la librairie native, tout appel à picam lève un UnsatisfiedLinkError —
-        // une Error, donc non rattrapée par les catch (Exception) des appelants.
-        // C'est ainsi que l'absence de caméra faisait échouer le démarrage complet
-        // via ApplicationStatusListener, qui tente une photo pour son mail d'alerte.
-        // On échoue ici en IOException, que les appelants savent traiter.
-        if (!picamLibraryLoaded) {
-            throw new IOException("Camera unavailable: picam native library not loaded from "
-                    + picamJniImplementation);
+    /**
+     * Traduit la configuration Hermanas en options {@code rpicam-still}. Qualité,
+     * rotation et luminosité viennent de {@code ConfigService} via
+     * {@link CameraConfiguration}, donc un changement à chaud reste pris en compte
+     * dès la photo suivante.
+     */
+    private List<String> buildCaptureCommand(File destination, boolean highQuality, int delay) {
+        List<String> command = new ArrayList<>(List.of(
+                rpicamStillPath,
+                "--output", destination.getAbsolutePath(),
+                "--width", Integer.toString(cameraConfiguration.width(highQuality)),
+                "--height", Integer.toString(cameraConfiguration.height(highQuality)),
+                "--quality", Integer.toString(cameraConfiguration.quality(highQuality)),
+                // Délai avant capture : laisse l'auto-exposition converger.
+                "--timeout", Integer.toString(delay),
+                "--nopreview"));
+
+        // rpicam-still n'accepte que 0/90/180/270 ; toute autre valeur ferait
+        // échouer la commande entière.
+        int rotation = cameraConfiguration.rotation();
+        if (rotation == 90 || rotation == 180 || rotation == 270) {
+            command.add("--rotation");
+            command.add(Integer.toString(rotation));
+        } else if (rotation != 0) {
+            logger.warn("Rotation {} non supportée par rpicam-still (0/90/180/270), ignorée.",
+                    rotation);
         }
 
-        uk.co.caprica.picam.CameraConfiguration picamConfig = highQuality
-                ? cameraConfiguration.buildHighQuality()
-                : cameraConfiguration.buildRegularQuality();
-        try (Camera camera = new Camera(picamConfig)) {
-            camera.takePicture(filePictureCaptureHandler, highQuality ? photoHighDelay : photoRegularDelay);
-        } catch (CaptureFailedException e) {
-            throw new IOException("Can't capture a picture.", e);
-        } catch (Exception e) {
-            throw new IOException(e);
-        } catch (UnsatisfiedLinkError e) {
-            // Filet de sécurité : le drapeau ci-dessus devrait déjà avoir court-circuité,
-            // mais picam peut charger d'autres symboles natifs à l'exécution.
-            throw new IOException("Camera unavailable: missing native symbol.", e);
-        }
-        return CompletableFuture.completedFuture(null);
+        // La luminosité picam est en 0..100, celle de rpicam-still en -1.0..1.0.
+        command.add("--brightness");
+        command.add(String.format(Locale.ROOT, "%.2f",
+                (cameraConfiguration.brightness() - 50) / 50.0));
+
+        return command;
     }
 
     @PreDestroy
