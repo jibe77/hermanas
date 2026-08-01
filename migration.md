@@ -2288,7 +2288,7 @@ retiré. Un commentaire dans le code interdit explicitement de réintroduire l'a
 
 ---
 
-### 5.4 — ⚠️ À ÉLUCIDER : polarité des boutons de fin de course
+### 5.4 — ⚠️ Boutons de fin de course : le bouton BAS est en panne
 
 **Statut au 2026-07-31 : non résolu, à diagnostiquer.** La porte fonctionne, mais
 la lecture des interrupteurs est suspecte.
@@ -2328,6 +2328,81 @@ absorber la transition de relâchement — ce qui expliquerait le second symptô
 
 Les deux hypothèses ne s'excluent pas : la polarité expliquerait le premier
 symptôme, le debounce le second.
+
+#### 📊 Résultats du diagnostic (2026-08-01) — hypothèse pull-up ÉCARTÉE
+
+| Bouton | BCM | Au repos | Pressé | Verdict |
+|---|:---:|---|---|---|
+| **Haut** | 18 | `inactive` | `active` | ✅ **pull-down — le code est correct** |
+| **Bas** | 15 | `inactive` | `inactive` | ❌ **aucun signal : panne électrique** |
+| Maisonnette | 24 | *(non mesuré)* | | |
+
+Deux conclusions, qui remplacent l'hypothèse initiale :
+
+**1. La polarité n'est pas en cause.** Le bouton haut se comporte exactement comme
+le code le suppose (`PULL_DOWN` + `isHigh()` = pressé). Pas de correctif logiciel
+à faire de ce côté.
+
+**2. Le bouton bas ne renvoie aucun signal.** Le niveau ne bouge pas à l'appui : le
+contact n'atteint jamais le GPIO. C'est **électrique, pas logiciel**, et cela
+explique directement les `Bottom position not reached correctly. The door is
+reopened now.` — la fermeture ne peut jamais être confirmée.
+
+##### Pistes pour le bouton bas, par ordre de probabilité
+
+D'abord écarter une **erreur de broche** : BCM 15 = broche physique **10**, voisine
+immédiate de la 8 (relais lumière) et de la 12 (bouton haut). Une inversion d'un
+cran lors du recâblage du servo est plausible.
+
+```bash
+# surveiller les trois entrées à la fois, puis presser le bouton BAS
+gpiomon -c gpiochip0 15 18 24
+```
+
+Si une transition apparaît sur **18 ou 24**, le fil est sur la mauvaise broche.
+
+Sinon, dans l'ordre :
+
+1. **Bornier / connecteur desserré** — panne la plus fréquente, d'autant que la
+   carte vient d'être manipulée pour le recâblage du servo. Tirer doucement sur le
+   fil des deux côtés.
+2. **Second fil du bouton** (3,3 V en montage pull-down) — sans lui, l'appui ne
+   peut rien tirer vers le haut.
+3. **Contact HS** — un fin de course mécanique s'oxyde avec les années. Tester hors
+   circuit au multimètre en position continuité.
+
+**Test sans multimètre** : débrancher le fil de signal de la broche 10 et toucher
+brièvement la **broche 1 (3,3 V)** avec, pendant que `gpiomon -c gpiochip0 15`
+tourne. Une transition = le GPIO est sain, le défaut est dans le bouton ou son
+câblage.
+
+> ⚠️ **Broche 1 uniquement.** Les broches 2 et 4 sont en 5 V et endommageraient
+> l'entrée GPIO.
+
+##### Ce qui reste inexpliqué
+
+L'**ouverture automatique silencieuse** (voir plus bas) supposait un bouton haut lu
+à tort comme pressé. Or il répond correctement. À reprendre une fois le bouton bas
+réparé : `statusInfo()` combine les deux lectures, et un bas défaillant peut fausser
+l'état global de la porte.
+
+##### Hypothèse toujours ouverte — le debounce de 3 secondes
+
+Elle survit au diagnostic : `gpioget` lit un niveau instantané et ne dit rien du
+filtrage appliqué par pi4j aux **événements**. Avec une fenêtre de 3 s, des
+transitions légitimes sont absorbées — ce qui correspond aux logs manquants au
+relâchement.
+
+```bash
+gpiomon -c gpiochip0 18        # appuyer/relâcher plusieurs fois
+```
+
+`gpiomon` n'applique aucun anti-rebond. S'il rapporte fidèlement chaque `rising` /
+`falling` là où l'application n'en voyait qu'une partie, le debounce est confirmé.
+Correctif : `.debounce(50000L)` (50 ms) au lieu de `3000L` — 3 s est absurde pour un
+anti-rebond mécanique, où 20-50 ms suffisent.
+
+---
 
 #### Diagnostic à faire (application arrêtée)
 
@@ -2777,6 +2852,52 @@ sudo -u hermanas rpicam-still -o /tmp/t.jpg --width 960 --height 540 --nopreview
   (défaut `/usr/bin/rpicam-still`).
 
 Commit `8744a41`, tests 66/66.
+
+#### 🎨 À corriger : reflets rosés sur les photos
+
+**Cause probable : la balance des blancs, pas l'objectif.** Un fisheye modifie la
+géométrie et peut assombrir les bords (vignettage), mais il ne colore pas l'image.
+
+Le suspect est `--timeout 750` sur le profil `regular` : c'est très court pour que
+l'algorithme d'auto-balance des blancs (AWB) converge. La capture part alors sur des
+gains provisoires, souvent trop rouges. picam ne posait pas ce problème car il gérait
+sa propre séquence d'initialisation avant déclenchement.
+
+Test de confirmation :
+
+```bash
+rpicam-still -o /tmp/awb-court.jpg --width 3280 --height 2464 \
+  --quality 80 --rotation 180 --nopreview --timeout 750     # comme aujourd'hui
+
+rpicam-still -o /tmp/awb-long.jpg  --width 3280 --height 2464 \
+  --quality 80 --rotation 180 --nopreview --timeout 4000    # AWB a le temps
+```
+
+Si la version longue est neutre et la courte rosée, l'hypothèse est validée.
+
+**Correctif A — allonger le délai.** `camera.regular.delay` de 750 à 2000-3000 ms.
+Simple, mais ralentit chaque capture.
+
+**Correctif B — forcer un mode AWB** *(préférable)*. La photo est prise avec la
+lampe du poulailler allumée : l'éclairage est constant et connu, un mode fixe
+converge instantanément. Cela règle le rose **et** accélère la capture.
+
+```bash
+rpicam-still -o /tmp/awb-tungsten.jpg --awb tungsten --timeout 1500 \
+  --width 3280 --height 2464 --quality 80 --rotation 180 --nopreview
+rpicam-still -o /tmp/awb-indoor.jpg   --awb indoor   --timeout 1500 \
+  --width 3280 --height 2464 --quality 80 --rotation 180 --nopreview
+```
+
+`tungsten` pour une incandescente ou une LED chaude, `indoor` pour un blanc neutre.
+
+Si B est retenu, ajouter une propriété `camera.awb` (vide = automatique) et l'option
+correspondante dans `buildCaptureCommand`, sur le modèle de `--rotation`.
+
+> **Piste résiduelle** si le rose persiste malgré un long délai *et* un AWB forcé :
+> le fichier de calibration du capteur, `/usr/share/libcamera/ipa/rpi/vc4/imx219.json`
+> (libcamera le charge bien, cf. logs). Un module clone avec un objectif différent
+> peut ne pas correspondre au tuning d'origine.
 
 #### Reste à ajuster (cosmétique)
 
