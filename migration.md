@@ -1948,6 +1948,8 @@ Utile pour rédiger un guide d'installation ; chaque point renvoie à sa section
 | 21 | picam → `rpicam-still` | 7.1 — MMAL retiré d'arm64 ; le `.so` ARMv6 n'avait plus de pile derrière lui |
 | 22 | `#dtoverlay=vc4-kms-v3d` | 7.1 — le KMS monopolisait l'interface caméra du firmware |
 | 23 | `usermod -aG video,render hermanas` | 7.1 — `/dev/media*` appartient à `root:video` ; même schéma qu'`i2c`/`spi` |
+| 24 | `wifi.powersave = 2` | 0.11ter — sans lui `pru` devient injoignable après quelques minutes |
+| 25 | Retirer `pwm.on(0, …)` avant `off()` | 5.4 — contournement pigpio devenu nuisible : sur PWM matériel il *réactive* le canal |
 
 ### 3.5ter — `Duplicate entry` : `GenerationType.AUTO` change de sens en Hibernate 6+ ✅
 
@@ -2243,6 +2245,46 @@ broche 32 est la **16ᵉ paire** en partant du connecteur d'alimentation :
         33 ─────────────────────                34
                  ...                                    ...
 ```
+
+---
+
+### 5.3bis — Le servo ne s'arrêtait pas au fin de course ✅ *(corrigé le 2026-07-31)*
+
+**Régression de la migration pi4j 2.4 → 4.0.2, avec conséquence matérielle.**
+
+`ServoMotorService.stop()` contenait un contournement écrit pour pigpio, où le PWM
+était **logiciel** : `off()` seul pouvait laisser la broche au dernier rapport
+cyclique commandé, d'où une trame explicite à zéro pour forcer la ligne bas.
+
+```java
+pwm.on(0, lastFrequency);   // ← forçait la ligne à 0 sur pigpio
+pwm.off();
+```
+
+Sur pi4j 4.x avec le plugin FFM, le PWM est **matériel** et piloté par sysfs
+(`/sys/class/pwm/pwmchipN/pwmM`). Là, `on(0, …)` **réactive** le canal : le couple
+`on`/`off` régénérait le signal au lieu de le couper.
+
+Symptôme dans les logs — l'arrêt demandé en rafale, sans effet :
+
+```
+UpButtonService  : Door has reached the up, stop servomotor now !
+ServoMotorService: servomotor stop requested (forcing duty cycle to 0).
+FFMPwmHardware   : /sys/class/pwm/pwmchip0/pwm0 - PWM is already disabled.
+   … répété six fois
+```
+
+Chaque nouvel appui du bouton relançait un arrêt inopérant.
+
+**Enjeu réel** : un servo qui ne s'arrête pas force contre sa butée, chauffe et
+tire du courant en continu — doublement gênant sur alimentation solaire.
+
+Correctif : `stop()` se limite à `pwm.off()`. Champ `lastFrequency` devenu inutile,
+retiré. Un commentaire dans le code interdit explicitement de réintroduire l'appel.
+
+> **À ne pas confondre avec le défaut de polarité ci-dessous.** Les interrupteurs
+> détectaient bien la position (`Door has reached the up…` apparaît) : c'est
+> l'arrêt qui ne suivait pas. Les deux problèmes sont indépendants.
 
 ---
 
@@ -2720,9 +2762,57 @@ Commit `8744a41`, tests 66/66.
       qualité est à 50, correcte.
 - [ ] **Délai de capture** : `camera.regular.delay = 750` ms est court pour
       l'auto-exposition en intérieur.
-- [ ] **Retester `gpu_mem=16`** : les 48 Mo donnés au GPU n'ont probablement
-      servi à rien (voir tableau ci-dessus), et la priorité affichée reste la
-      RAM disponible.
+#### 🧪 Test à faire : repasser `gpu_mem` de 64 à 16 Mo
+
+**Enjeu : 48 Mo de RAM système**, sur une machine où la mémoire disponible est la
+priorité numéro un (éviter le swap, donc l'usure de la carte SD).
+
+`gpu_mem` avait été monté de 16 à 64 pendant le diagnostic caméra, sur une
+hypothèse qui s'est révélée **fausse** : le passage à 64 n'a rien débloqué, c'est
+le retrait de `dtoverlay=vc4-kms-v3d` qui a fait fonctionner la capture. Les 48 Mo
+sont donc probablement payés pour rien.
+
+Raison de fond : sur la pile **libcamera**, le traitement passe par l'**ISP** et la
+mémoire système (`dma-buf`), pas par le firmware VideoCore comme à l'époque de
+MMAL. `gpu_mem` y pèse beaucoup moins.
+
+> **Pourquoi un test et pas une mesure ?** Le firmware n'expose aucun compteur
+> d'utilisation réelle. `vcgencmd get_mem reloc` / `malloc` (et leurs variantes
+> `*_total`) donnent le libre / total des pools, mais le firmware ajuste ce qu'il
+> alloue selon ce qui est disponible : un pool de 64 Mo à moitié vide ne prouve
+> pas qu'un pool de 16 Mo tiendrait. Seul l'essai tranche.
+
+```bash
+sudo sed -i 's/^gpu_mem=64/gpu_mem=16/' /boot/firmware/config.txt
+sudo reboot
+```
+
+Au retour — **tester à la résolution la plus exigeante**, soit le capteur entier :
+
+```bash
+vcgencmd get_mem gpu                 # gpu=16M
+free -h                              # ~48 Mo de plus qu'avec 64
+
+rpicam-still -o /tmp/t16.jpg --width 3280 --height 2464 --quality 80 \
+  --rotation 180 --nopreview --timeout 2000 ; echo "exit=$?"
+ls -la /tmp/t16.jpg
+```
+
+⚠️ Ne pas valider sur un test en 480×360 : il passerait peut-être là où le plein
+capteur échouerait.
+
+| Résultat | Conclusion |
+|---|---|
+| `exit=0`, fichier non vide | **Garder 16 Mo** — 48 Mo récupérés, caméra intacte |
+| Échec | Remonter à 64, le coût est justifié — le noter ici |
+
+Puis vérifier que le thrashing n'est pas revenu, une fois Hermanas démarré :
+
+```bash
+free -h ; swapon --show ; vmstat 1 5
+```
+
+`wa` doit rester entre 0 et 1 %, et `swapon` ne montrer que `/dev/zram0`.
 
 ### 7.2 — Streaming camera : `rpicam-vid | ffmpeg`
 
