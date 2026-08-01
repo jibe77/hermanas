@@ -324,11 +324,23 @@
         </sb-card>
 
         <sb-card>
-            <div class="card-header">
+            <div class="card-header d-flex align-items-center">
                 <fa-icon class="me-1" [icon]="['fas', 'file-contract']"></fa-icon>
                 <span i18n="@@logsContent">Log content</span>
                 @if (selectedFile) {
                     <span class="text-muted ms-2 small">({{ selectedFile }})</span>
+                }
+                @if (!isDemoMode && !loading && lines.length > 0) {
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm ms-auto"
+                        (click)="copyContent()"
+                        i18n-title="@@logsCopyTitle"
+                        title="Copy the displayed lines to the clipboard"
+                    >
+                        <fa-icon class="me-1" [icon]="['fas', 'copy']"></fa-icon>
+                        <span i18n="@@logsCopy">Copy</span>
+                    </button>
                 }
             </div>
             <div class="card-body">

@@ -422,4 +422,52 @@ export class LogsComponent implements OnInit, OnDestroy {
     downloadUrl(): string | null {
         return this.selectedFile ? this._logsService.downloadUrl(this.selectedFile) : null;
     }
+
+    /**
+     * Copie les lignes actuellement affichées — donc filtrées, pas le fichier
+     * entier, pour lequel le bouton « Télécharger » existe déjà.
+     *
+     * <p>`navigator.clipboard` n'existe qu'en contexte sécurisé (HTTPS ou
+     * localhost). En accès direct par IP sur le réseau local, il est absent :
+     * d'où le repli sur un textarea hors écran + `document.execCommand`,
+     * déprécié mais seul recours dans ce cas.</p>
+     */
+    async copyContent(): Promise<void> {
+        const text = this.lines.join('\n');
+        if (!text) {
+            return;
+        }
+        try {
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(text);
+            } else {
+                this.copyViaTextarea(text);
+            }
+            this._toastService.success(
+                $localize`:@@logsCopied:Displayed lines copied to the clipboard.`,
+                $localize`:@@logsContent:Log content`
+            );
+        } catch {
+            this._toastService.error(
+                $localize`:@@logsCopyFailed:Could not copy to the clipboard.`,
+                $localize`:@@logsContent:Log content`
+            );
+        }
+    }
+
+    private copyViaTextarea(text: string): void {
+        const area = document.createElement('textarea');
+        area.value = text;
+        // Hors écran plutôt que display:none — un élément non rendu n'est pas
+        // sélectionnable, et la copie échouerait silencieusement.
+        area.style.position = 'fixed';
+        area.style.left = '-9999px';
+        document.body.appendChild(area);
+        area.select();
+        try {
+            document.execCommand('copy');
+        } finally {
+            document.body.removeChild(area);
+        }
+    }
 }

@@ -2093,7 +2093,35 @@
           <context context-type="linenumber">89</context>
         </context-group>
       </trans-unit>
-<trans-unit id="logsDownload" datatype="html">
+<trans-unit id="logsCopy" datatype="html">
+        <source>Copy</source>
+        <target xml:space="preserve" state="translated">Copiază</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/logs/containers/logs/logs.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="logsCopyTitle" datatype="html">
+        <source>Copy the displayed lines to the clipboard</source>
+        <target xml:space="preserve" state="translated">Copiază liniile afișate în clipboard</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/logs/containers/logs/logs.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="logsCopied" datatype="html">
+        <source>Displayed lines copied to the clipboard.</source>
+        <target xml:space="preserve" state="translated">Liniile afișate au fost copiate în clipboard.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/logs/containers/logs/logs.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="logsCopyFailed" datatype="html">
+        <source>Could not copy to the clipboard.</source>
+        <target xml:space="preserve" state="translated">Copierea în clipboard a eșuat.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/logs/containers/logs/logs.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="logsDownload" datatype="html">
         <source>Download</source>
         <target xml:space="preserve" state="translated">Descarcă</target>
         <context-group purpose="location">
