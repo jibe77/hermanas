@@ -2355,16 +2355,39 @@ Dans `GpioHermanasRpiService.provisionInput` : `PULL_DOWN` → `PULL_UP`, et
 ⚠️ Vérifier bouton par bouton — ils ne sont pas nécessairement câblés pareil,
 comme le suggère la mention « inversé » pour le nichoir.
 
+#### Conséquence observée : l'ouverture automatique n'est jamais journalisée
+
+Constat de l'utilisateur (2026-08-01) : *« la porte s'est ouverte ce matin
+automatiquement mais je n'ai pas d'indication dans les événements métier, et c'est
+comme ça tous les jours »*.
+
+Ce n'est pas un défaut du journal, mais le symptôme applicatif du même problème.
+`ManageDoorOpeningEvent` n'agit que si la porte n'est pas déjà vue comme ouverte :
+
+```java
+if (!doorService.doorIsOpened()) {     // → upButtonService.isUpButtonPressed()
+    …                                  // ouverture, photo, cocorico, ÉVÉNEMENT
+}
+```
+
+Si le bouton haut est lu comme « pressé » à tort, `doorIsOpened()` renvoie
+systématiquement `true` : **tout le bloc est sauté**. Aucun mouvement commandé,
+aucun événement enregistré, aucune notification — d'où le silence quotidien.
+
+L'entrée `DOOR_OPEN_FAILED` du 2026-07-30 08:00 confirme le lien : ce jour-là le
+bloc s'est bien exécuté, et c'est `openDoorWithUpButtonManagment` qui a échoué.
+
+Même mécanique côté fermeture : `doorIsClosed()` lit le bouton bas, ce qui
+explique les `Bottom position not reached correctly. The door is reopened now.`
+
+**Corriger la polarité règle les trois symptômes d'un coup** : lecture des
+boutons, ouverture automatique silencieuse, et fermetures signalées en échec.
+
 #### Ce qui marche déjà malgré ce défaut
 
 - Ouverture et fermeture commandées depuis le front
 - Arrêt sur fin de course haut (`Door has reached the up, stop servomotor now !`)
-- Réouverture automatique de sécurité quand la position basse n'est pas confirmée
-  (`Bottom position not reached correctly. The door is reopened now.`)
-
-> Ce dernier point est probablement une **conséquence** du défaut : si l'état du
-> bouton bas est lu à l'envers, la fermeture ne peut jamais être validée. À
-> revérifier une fois la polarité corrigée.
+- Réouverture automatique de sécurité après une fermeture non confirmée
 
 - [ ] **Débrancher** le fil de signal du servo de la broche 22.
 - [ ] **Rebrancher** ce même fil sur la broche 32.
