@@ -47,17 +47,12 @@
                 "input": "public",
                 "output": "/"
               },
-              "src/assets",
-              {
-                "glob": "**/*",
-                "input": "node_modules/flag-icon-css/flags",
-                "output": "flags"
-              }
+              "src/assets"
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles/styles.scss",
-              "./node_modules/flag-icon-css/css/flag-icon.min.css"
+              "./node_modules/flag-icons/css/flag-icons.min.css"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [

@@ -14,24 +14,24 @@
         aria-expanded="false"
     >
         @if (siteLanguage === 'English') {
-            <span class="flag-icon flag-icon-gb flag-icon-squared"></span>
+            <span class="fi fi-gb fis"></span>
         }
         @if (siteLanguage === 'Français') {
-            <span class="flag-icon flag-icon-fr flag-icon-squared"></span>
+            <span class="fi fi-fr fis"></span>
         }
         @if (siteLanguage === 'Română') {
-            <span class="flag-icon flag-icon-ro flag-icon-squared"></span>
+            <span class="fi fi-ro fis"></span>
         }
     </a>
     <div class="dropdown-menu dropdown-menu-end" ngbDropdownMenu aria-labelledby="dropdownUser">
         <a class="dropdown-item" href="/index.html?lang_redirect=en"
-            ><span class="flag-icon flag-icon-gb flag-icon-squared"></span><span>{{ ' ' }}</span
+            ><span class="fi fi-gb fis"></span><span>{{ ' ' }}</span
             ><span i18n="@@english">English</span></a
         ><a class="dropdown-item" href="/index.html?lang_redirect=fr"
-            ><span class="flag-icon flag-icon-fr flag-icon-squared"></span><span>{{ ' ' }}</span
+            ><span class="fi fi-fr fis"></span><span>{{ ' ' }}</span
             ><span i18n="@@french">French</span></a
         ><a class="dropdown-item" href="/index.html?lang_redirect=ro"
-            ><span class="flag-icon flag-icon-ro flag-icon-squared"></span><span>{{ ' ' }}</span
+            ><span class="fi fi-ro fis"></span><span>{{ ' ' }}</span
             ><span i18n="@@romanian">Romanian</span></a
         >
     </div>
