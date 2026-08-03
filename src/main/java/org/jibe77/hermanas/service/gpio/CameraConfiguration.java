@@ -63,6 +63,11 @@ public class CameraConfiguration {
         return configService.getCameraAwbGains();
     }
 
+    /** Zone du capteur lue ({@code --roi}), vide pour le capteur entier. */
+    public String roi() {
+        return configService.getCameraRoi();
+    }
+
     /** Qualité JPEG (0-100), relue à chaque appel pour suivre les changements à chaud. */
     public int quality(boolean highQuality) {
         return highQuality

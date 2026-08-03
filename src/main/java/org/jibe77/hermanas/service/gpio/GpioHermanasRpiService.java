@@ -159,6 +159,16 @@ public class GpioHermanasRpiService implements GpioHermanasService {
         command.add(String.format(Locale.ROOT, "%.2f",
                 (cameraConfiguration.brightness() - 50) / 50.0));
 
+        // Zone du capteur lue. rpicam-still recadre PUIS rééchantillonne à la taille
+        // de sortie : c'est un zoom numérique. La cohérence entre le ROI et les
+        // dimensions demandées relève du réglage, pas du code — l'interface le
+        // rappelle et propose la hauteur à saisir.
+        String roi = cameraConfiguration.roi();
+        if (roi != null && !roi.isBlank()) {
+            command.add("--roi");
+            command.add(roi.trim());
+        }
+
         // Balance des blancs. Les gains explicites priment : rpicam-still ignore
         // --awb dès que --awbgains est fourni, autant ne pas envoyer les deux.
         String awbGains = cameraConfiguration.awbGains();

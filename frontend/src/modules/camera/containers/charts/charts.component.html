@@ -396,6 +396,51 @@
                         />
                     </div>
                     <div class="col-12">
+                        <hr class="my-2" />
+                        <label for="cameraRoi" class="form-label small" i18n="@@cameraRoi"
+                            >Sensor region (crop)</label
+                        >
+                        <input
+                            id="cameraRoi"
+                            type="text"
+                            class="form-control form-control-sm"
+                            [class.is-invalid]="cameraRoiError !== null"
+                            placeholder="0,0.2,1,0.8"
+                            [(ngModel)]="cameraRoi"
+                        />
+                        @if (cameraRoiError !== null) {
+                            <div class="invalid-feedback d-block">{{ cameraRoiError }}</div>
+                        }
+                        <div class="form-text small">
+                            <span i18n="@@cameraRoiHelp"
+                                >Four values between 0 and 1 — <strong>x, y, width, height</strong>
+                                — describing the part of the sensor to read. Leave empty to use
+                                the whole sensor. Example: <code>0,0.2,1,0.8</code> skips the top
+                                20% (the ceiling).</span
+                            >
+                        </div>
+                        <div class="form-text small text-warning-emphasis">
+                            <span i18n="@@cameraRoiWarning"
+                                >⚠️ The camera crops <em>then rescales</em> to the requested output
+                                size — it is a digital zoom, not a plain crop. To remove an area
+                                without magnifying the rest, adjust the heights below
+                                accordingly.</span
+                            >
+                        </div>
+                        @if (suggestedRegularHeight !== null || suggestedHighHeight !== null) {
+                            <div class="form-text small">
+                                <span i18n="@@cameraRoiSuggestion">Suggested heights for this region:</span>
+                                @if (suggestedRegularHeight !== null) {
+                                    <code class="ms-1">{{ cameraRegularWidth }}×{{ suggestedRegularHeight }}</code>
+                                }
+                                @if (suggestedHighHeight !== null) {
+                                    <code class="ms-1">{{ cameraHighWidth }}×{{ suggestedHighHeight }}</code>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="col-12">
                         <div class="form-text small" i18n="@@cameraDelayHelp">
                             The delay is the time given to auto-exposure to settle before the
                             shutter fires. Too short and the picture uses provisional gains —

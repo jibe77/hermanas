@@ -174,6 +174,7 @@ public class ConfigRestController {
         camera.put("rotation", configService.getCameraRotation());
         camera.put("awb", configService.getCameraAwb());
         camera.put("awb_gains", configService.getCameraAwbGains());
+        camera.put("roi", configService.getCameraRoi());
         camera.put("regular_quality", configService.getCameraRegularQuality());
         camera.put("regular_width", configService.getCameraRegularWidth());
         camera.put("regular_height", configService.getCameraRegularHeight());
@@ -626,6 +627,29 @@ public class ConfigRestController {
         cameraService.clearPictureCache();
         return ResponseEntity.ok("Camera AWB gains set to "
                 + (gains == null || gains.isBlank() ? "(unset)" : gains));
+    }
+
+    @Operation(
+            summary = "Restrict capture to a region of the sensor",
+            description = "Format \"x,y,width,height\" with normalised 0-1 values; empty "
+                        + "reads the whole sensor. ⚠️ rpicam-still crops THEN rescales to "
+                        + "the requested output size — it is a digital zoom, not a plain "
+                        + "crop. To remove an area without magnifying the rest, scale the "
+                        + "output height accordingly."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Region updated successfully"),
+            @ApiResponse(responseCode = "400",
+                    description = "Malformed value, out of 0-1 range, or extending past the sensor")
+    })
+    @PutMapping("/camera/roi")
+    public ResponseEntity<String> setCameraRoi(
+            @Parameter(description = "Region as \"x,y,width,height\"", example = "0,0.2,1,0.8")
+            @RequestParam(required = false, defaultValue = "") String roi) {
+        configService.setCameraRoi(roi);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera region set to "
+                + (roi == null || roi.isBlank() ? "(full sensor)" : roi));
     }
 
     @Operation(

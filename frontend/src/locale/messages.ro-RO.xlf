@@ -2184,6 +2184,69 @@
           <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="cameraRoi" datatype="html">
+        <source>Sensor region (crop)</source>
+        <target xml:space="preserve" state="translated">Zona senzorului (decupare)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRoiHelp" datatype="html">
+        <source>Four values between 0 and 1 — &lt;strong&gt;x, y, width, height&lt;/strong&gt; — describing the part of the sensor to read. Leave empty to use the whole sensor. Example: &lt;code&gt;0,0.2,1,0.8&lt;/code&gt; skips the top 20% (the ceiling).</source>
+        <target xml:space="preserve" state="translated">Patru valori între 0 și 1 — &lt;strong&gt;x, y, lățime, înălțime&lt;/strong&gt; — care descriu partea senzorului de citit. Lăsați gol pentru tot senzorul. Exemplu: &lt;code&gt;0,0.2,1,0.8&lt;/code&gt; omite 20 % din partea de sus (tavanul).</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRoiWarning" datatype="html">
+        <source>⚠️ The camera crops &lt;em&gt;then rescales&lt;/em&gt; to the requested output size — it is a digital zoom, not a plain crop. To remove an area without magnifying the rest, adjust the heights below accordingly.</source>
+        <target xml:space="preserve" state="translated">⚠️ Camera decupează &lt;em&gt;apoi redimensionează&lt;/em&gt; la dimensiunea cerută — este un zoom digital, nu o simplă decupare. Pentru a elimina o zonă fără a mări restul, ajustați înălțimile de mai jos.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRoiSuggestion" datatype="html">
+        <source>Suggested heights for this region:</source>
+        <target xml:space="preserve" state="translated">Înălțimi sugerate pentru această zonă:</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRoiErrCount" datatype="html">
+        <source>Four values are required: x, y, width, height.</source>
+        <target xml:space="preserve" state="translated">Sunt necesare patru valori: x, y, lățime, înălțime.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRoiErrNumber" datatype="html">
+        <source>Values must be decimal numbers.</source>
+        <target xml:space="preserve" state="translated">Valorile trebuie să fie numere zecimale.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRoiErrRange" datatype="html">
+        <source>Values must be between 0 and 1.</source>
+        <target xml:space="preserve" state="translated">Valorile trebuie să fie între 0 și 1.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRoiErrZero" datatype="html">
+        <source>Width and height must be greater than 0.</source>
+        <target xml:space="preserve" state="translated">Lățimea și înălțimea trebuie să fie mai mari decât 0.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRoiErrOverflow" datatype="html">
+        <source>The region extends past the sensor: x+width and y+height must not exceed 1.</source>
+        <target xml:space="preserve" state="translated">Zona depășește senzorul: x+lățime și y+înălțime nu trebuie să depășească 1.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="logsDownload" datatype="html">
         <source>Download</source>
         <target xml:space="preserve" state="translated">Descarcă</target>

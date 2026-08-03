@@ -742,6 +742,7 @@ export class DemoFixtureService {
                 rotation: 180,
                 awb: 'incandescent',
                 awb_gains: '',
+                roi: '',
                 regular_quality: 30,
                 regular_width: 1096,
                 regular_height: 822,

@@ -169,6 +169,9 @@ public class ConfigService {
     @Value("${camera.awbgains:}")
     private String cameraAwbGains;
 
+    @Value("${camera.roi:}")
+    private String cameraRoi;
+
     @Value("${camera.regular.width:1096}")
     private int cameraRegularWidth;
 
@@ -1212,6 +1215,56 @@ public class ConfigService {
                     "AWB gains must be \"R,B\" with positive decimals (e.g. 1.2,2.0), got " + gains);
         }
         setConfigValue("camera.awbgains", value, null);
+    }
+
+    /**
+     * Zone du capteur réellement lue, {@code "x,y,largeur,hauteur"} en valeurs
+     * normalisées 0-1. Vide = capteur entier.
+     *
+     * <p>⚠️ {@code rpicam-still} recadre <em>puis rééchantillonne</em> à la taille de
+     * sortie demandée : c'est un zoom numérique, pas un simple rognage. Pour retirer
+     * une zone sans agrandir le reste, la hauteur de sortie doit être ajustée dans la
+     * même proportion — couper 20 % en haut ({@code 0,0.2,1,0.8}) suppose de passer
+     * la hauteur de 822 à 658. Sinon l'image est étirée verticalement.</p>
+     */
+    @Cacheable(value = "cameraRoi")
+    public String getCameraRoi() {
+        return getConfigValue("camera.roi", cameraRoi, v -> v);
+    }
+
+    @CacheEvict(value = "cameraRoi")
+    public void setCameraRoi(String roi) {
+        String value = roi == null ? "" : roi.trim();
+        if (!value.isEmpty()) {
+            String[] parts = value.split(",");
+            if (parts.length != 4) {
+                throw new IllegalArgumentException(
+                        "ROI must be \"x,y,width,height\" with four values, got " + roi);
+            }
+            double[] v = new double[4];
+            for (int i = 0; i < 4; i++) {
+                try {
+                    v[i] = Double.parseDouble(parts[i].trim());
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(
+                            "ROI values must be decimals between 0 and 1, got " + roi, e);
+                }
+                if (v[i] < 0 || v[i] > 1) {
+                    throw new IllegalArgumentException(
+                            "ROI values must be between 0 and 1, got " + parts[i].trim());
+                }
+            }
+            // Une zone qui déborde du capteur serait rejetée par rpicam-still, mais
+            // avec un message obscur : autant l'expliquer ici.
+            if (v[2] <= 0 || v[3] <= 0) {
+                throw new IllegalArgumentException("ROI width and height must be greater than 0");
+            }
+            if (v[0] + v[2] > 1.0001 || v[1] + v[3] > 1.0001) {
+                throw new IllegalArgumentException(
+                        "ROI extends past the sensor: x+width and y+height must not exceed 1");
+            }
+        }
+        setConfigValue("camera.roi", value, null);
     }
 
     // ─── Dimensions et délais de capture ──────────────────────────────────────────

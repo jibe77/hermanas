@@ -87,6 +87,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
     cameraHighWidth = 1640;
     cameraHighHeight = 1232;
     cameraHighDelay = 1000;
+    /** Zone du capteur lue, "x,y,largeur,hauteur" en 0-1. Vide = capteur entier. */
+    cameraRoi = '';
     readonly awbModes = AWB_MODES;
     cameraSaving = false;
 
@@ -484,6 +486,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 this.cameraHighWidth = cfg.camera_settings.high_width ?? 1640;
                 this.cameraHighHeight = cfg.camera_settings.high_height ?? 1232;
                 this.cameraHighDelay = cfg.camera_settings.high_delay ?? 1000;
+                this.cameraRoi = cfg.camera_settings.roi ?? '';
                 this.aiInferenceUrl = cfg.ai_settings?.inference_url ?? '';
                 this.aiInferenceModel = cfg.ai_settings?.inference_model ?? 'focus';
                 this.aiInferenceCacheTtlSec = Math.round(
@@ -542,8 +545,78 @@ export class ChartsComponent implements OnInit, OnDestroy {
         });
     }
 
+    /**
+     * Contrôle la région d'intérêt avant l'envoi, avec les mêmes règles que le
+     * serveur : quatre valeurs, bornes 0-1, largeur/hauteur non nulles, et zone
+     * ne débordant pas du capteur.
+     *
+     * <p>Doubler la validation côté client n'est pas redondant : elle donne un
+     * retour immédiat pendant la saisie, là où le serveur ne répond qu'après
+     * l'envoi. Le serveur reste l'autorité — l'API est accessible sans passer
+     * par cette page.</p>
+     *
+     * @returns le message d'erreur, ou `null` si la valeur est acceptable
+     */
+    get cameraRoiError(): string | null {
+        const raw = (this.cameraRoi ?? '').trim();
+        if (raw === '') return null; // vide = capteur entier
+
+        const parts = raw.split(',');
+        if (parts.length !== 4) {
+            return $localize`:@@cameraRoiErrCount:Four values are required: x, y, width, height.`;
+        }
+        const values = parts.map(p => Number(p.trim()));
+        if (values.some(v => Number.isNaN(v))) {
+            return $localize`:@@cameraRoiErrNumber:Values must be decimal numbers.`;
+        }
+        if (values.some(v => v < 0 || v > 1)) {
+            return $localize`:@@cameraRoiErrRange:Values must be between 0 and 1.`;
+        }
+        const [x, y, w, h] = values;
+        if (w <= 0 || h <= 0) {
+            return $localize`:@@cameraRoiErrZero:Width and height must be greater than 0.`;
+        }
+        if (x + w > 1.0001 || y + h > 1.0001) {
+            return $localize`:@@cameraRoiErrOverflow:The region extends past the sensor: x+width and y+height must not exceed 1.`;
+        }
+        return null;
+    }
+
+    /**
+     * Hauteur de sortie qui préserverait l'échelle avec la région saisie.
+     *
+     * <p>rpicam-still recadre puis rééchantillonne : sans ajuster la hauteur, une
+     * région plus courte que large est étirée verticalement. Cette valeur est
+     * suggérée à l'opérateur, pas imposée — un zoom délibéré reste possible.</p>
+     */
+    get suggestedRegularHeight(): number | null {
+        return this.suggestedHeightFor(Number(this.cameraRegularWidth));
+    }
+
+    get suggestedHighHeight(): number | null {
+        return this.suggestedHeightFor(Number(this.cameraHighWidth));
+    }
+
+    private suggestedHeightFor(width: number): number | null {
+        if (this.cameraRoiError !== null) return null;
+        const raw = (this.cameraRoi ?? '').trim();
+        if (raw === '') return null;
+        const [, , w, h] = raw.split(',').map(p => Number(p.trim()));
+        if (!w || !h) return null;
+        // Le capteur est en 4:3 : la hauteur suit la largeur, corrigée du rapport
+        // entre les dimensions de la région.
+        return Math.round((width * 3) / 4 / (w / h));
+    }
+
     saveCameraSettings(): void {
         if (this.cameraSaving) return;
+        // Le serveur refuserait de toute façon, mais autant l'annoncer tout de
+        // suite plutôt que d'afficher une erreur HTTP après un aller-retour.
+        const roiError = this.cameraRoiError;
+        if (roiError !== null) {
+            this.toast.error(roiError, $localize`:@@cameraToastTitle:Camera`);
+            return;
+        }
         this.cameraSaving = true;
         // <input type="range"> binds as a string under ngModel; coerce here so
         // the backend never receives a stringified value (it would still parse
@@ -583,6 +656,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
             highSize: this.configService.setCameraHighSize(highWidth, highHeight),
             regularDelay: this.configService.setCameraRegularDelay(regularDelay),
             highDelay: this.configService.setCameraHighDelay(highDelay),
+            roi: this.configService.setCameraRoi(this.cameraRoi),
         }).subscribe({
             next: () => {
                 this.cameraSaving = false;

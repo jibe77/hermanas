@@ -110,6 +110,11 @@ export interface CameraSettings {
     regular_height: number;
     /** Time given to auto-exposure to settle before the shutter fires, in ms. */
     regular_delay: number;
+    /**
+     * Sensor region actually read, `"x,y,width,height"` normalised 0-1.
+     * Empty reads the whole sensor.
+     */
+    roi: string;
     /** JPEG quality for image analysis. 1..100. */
     high_quality: number;
     high_width: number;
@@ -381,6 +386,21 @@ export class ConfigService extends AbstractService {
     setCameraHighDelay(delayMs: number): Observable<string> {
         const params = new HttpParams().set('delayMs', String(delayMs));
         return this.http.put(`${this.domainBase}/config/camera/high/delay`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /**
+     * `"x,y,width,height"` normalised 0-1; empty reads the whole sensor.
+     *
+     * ⚠️ rpicam-still crops **then rescales** to the requested output size — it is a
+     * digital zoom, not a plain crop. Removing an area without magnifying the rest
+     * requires scaling the output height in the same proportion.
+     */
+    setCameraRoi(roi: string): Observable<string> {
+        const params = new HttpParams().set('roi', roi ?? '');
+        return this.http.put(`${this.domainBase}/config/camera/roi`, null, {
             params,
             responseType: 'text',
         });
