@@ -2106,6 +2106,9 @@ Utile pour rédiger un guide d'installation ; chaque point renvoie à sa section
 | 23 | `usermod -aG video,render hermanas` | 7.1 — `/dev/media*` appartient à `root:video` ; même schéma qu'`i2c`/`spi` |
 | 24 | `wifi.powersave = 2` | 0.11ter — sans lui `pru` devient injoignable après quelques minutes |
 | 25 | Retirer `pwm.on(0, …)` avant `off()` | 5.4 — contournement pigpio devenu nuisible : sur PWM matériel il *réactive* le canal |
+| 26 | Webjars retirés du `pom.xml` | 6.1 — jquery, bootstrap, sockjs, stomp-websocket : plus aucune référence, vestiges du front rendu côté serveur |
+| 27 | `outputPath.browser = ""` après migration du builder | 6.6 — le builder `application` déplaçait la sortie dans `browser/`, cassant la copie Maven |
+| 28 | `--build-optimizer` retiré des scripts npm | 6.6 — option Webpack ; faisait échouer `mvn package` alors que `ng build` seul passait |
 
 ### 3.5ter — `Duplicate entry` : `GenerationType.AUTO` change de sens en Hibernate 6+ ✅
 
@@ -2956,17 +2959,75 @@ enregistrées contre 630 dans le code, d'où une trentaine de « No translation 
 Chantiers structurels, chacun méritant sa propre branche et sa passe de
 vérification visuelle. Aucun ne bloque le fonctionnement actuel.
 
+> ✅ **Migration `@angular/build` faite le 2026-08-03** — voir §6.6.
+
 | Chantier | Pourquoi c'est reporté |
 |---|---|
-| **`@angular-devkit/build-angular` → `@angular/build`** | Change le moteur de build (Webpack → esbuild/Vite). Supprimerait au passage les **13 vulnérabilités npm**, toutes issues de `webpack-dev-server` — un outil de *développement*, jamais embarqué dans le JAR. |
 | **`@angular/animations` déprécié** | Remplacé par `animate.enter` / `animate.leave`. Demande de reprendre chaque animation. |
 | **`@import` Sass dans 33 fichiers** | Supprimé dans Dart Sass 3.0, mais encore fonctionnel. Migration `@use`/`@forward` mécanique mais étendue. |
 | **`flag-icon-css` → `flag-icons`** | Projet renommé ; changement de préfixes de classes à répercuter. |
 | **`jquery` 3 → 4** | Touche tous les scripts de templates hérités. Risque visuel sans bénéfice. |
 | **`@ng-bootstrap` en `21.0.0-rc.0`** | Passer à la GA quand elle sera publiée. |
 
-> ⚠️ **Ne pas lancer `npm audit fix --force`** : il rétrograderait
-> `@angular-devkit/build-angular` vers une version incompatible avec Angular 22.
+> ⚠️ **Ne pas lancer `npm audit fix --force`** : il rétrograderait les paquets
+> Angular vers des versions incompatibles avec la 22.
+
+### 6.6 — Migration vers `@angular/build` ✅ *(2026-08-03)*
+
+Passage du builder Webpack historique (`@angular-devkit/build-angular:browser`) au
+builder moderne `@angular/build:application`, fondé sur **esbuild/Vite**.
+
+```bash
+npx ng update @angular/cli --name use-application-builder
+```
+
+#### Deux ajustements nécessaires après le schematic
+
+**1. Le chemin de sortie changeait.** Le schematic déplace la sortie de
+`dist/hermanas-client/fr-FR/` vers `dist/hermanas-client/fr-FR/browser/`, ce qui
+aurait cassé la copie faite par le `pom.xml` (`frontend.build.dir`) **et** les
+scripts `scripts/index.js` / `scripts/version.js`. Neutralisé en posant
+`outputPath.browser = ""` sur la configuration de base et sur les trois locales :
+
+```json
+"outputPath": { "base": "dist/hermanas-client/fr-FR/", "browser": "" }
+```
+
+**2. `--build-optimizer` n'existe plus.** Option propre à Webpack, elle faisait
+échouer `mvn package` avec `Error: Unknown argument: build-optimizer` — alors que
+`ng build` seul passait, le script npm n'étant pas le même. Retirée de `build` et
+`build:debug` : le builder `application` optimise nativement en production
+(`--optimization`, actif par défaut). `--stats-json` est conservé, il existe
+toujours et produit un format analysable par esbuild.
+
+#### Résultat
+
+| | Avant | Après |
+|---|---|---|
+| Vulnérabilités npm | 13 | **7** |
+| Taille du JAR | 109 Mo | **102,6 Mo** |
+| Tests frontend | 192 ✅ | 192 ✅ |
+
+Toute la chaîne `webpack-dev-server → sockjs → uuid` a disparu.
+
+#### Les 7 vulnérabilités restantes
+
+Une seule racine : `@angular/cli` → `@modelcontextprotocol/sdk` → `hono`,
+`undici`, `fast-uri`, `brace-expansion`.
+
+C'est le **serveur MCP intégré au CLI Angular**, qui ne s'exécute que sur demande
+explicite en développement. Rien de tout cela n'entre dans le JAR. Impossible à
+corriger de notre côté : il faut qu'Angular mette à jour sa propre dépendance.
+
+#### Vérifications faites
+
+- [x] Structure de sortie identique (`fr-FR/`, `ro-RO/`, `en-US/`)
+- [x] `<base href="/fr-FR/">` préservé
+- [x] `navigationUrls` du service worker intacts — les 5 exclusions `/actuator`,
+      `/api`, `/v3`, `/swagger-ui`, `/stomp` sont bien présentes (cf. §3.5bis)
+- [x] `mvn package` produit un JAR complet avec les 3 locales embarquées
+- [ ] ⚠️ **Vérification visuelle dans le navigateur** — pas encore faite. Le moteur
+      de build a changé : à contrôler avant de considérer la migration close.
 
 ### 6.4 — Renommer le compte MariaDB `pi` → `hermanas_app` — ⏸️ *à faire sur `pru`*
 

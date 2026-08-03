@@ -1,166 +1,187 @@
 {
-    "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-    "version": 1,
-    "newProjectRoot": "projects",
-    "projects": {
-        "hermanas-client": {
-            "projectType": "application",
-            "schematics": {
-                "@schematics/angular:component": {
-                    "style": "scss"
-                }
-            },
-            "root": "",
-            "sourceRoot": "src",
-            "prefix": "sb",
-            "i18n": {
-                "sourceLocale": "en-US",
-                "locales": {
-                    "fr-FR": {
-                        "translation": "src/locale/messages.fr-FR.xlf",
-                        "baseHref": "/fr-FR/"
-                    },
-                    "ro-RO": {
-                        "translation": "src/locale/messages.ro-RO.xlf",
-                        "baseHref": "/ro-RO/"
-                    }
-                }
-            },
-            "architect": {
-                "build": {
-                    "builder": "@angular-devkit/build-angular:browser",
-                    "options": {
-                        "localize": true,
-                        "i18nMissingTranslation": "warning",
-                        "outputPath": "dist/hermanas-client",
-                        "index": "src/index.html",
-                        "main": "src/main.ts",
-                        "polyfills": "src/polyfills.ts",
-                        "tsConfig": "tsconfig.app.json",
-                        "assets": [
-                            {
-                                "glob": "**/*",
-                                "input": "public",
-                                "output": "/"
-                            },
-                            "src/assets",
-                            {
-                                "glob": "**/*",
-                                "input": "node_modules/flag-icon-css/flags",
-                                "output": "flags"
-                            }
-                        ],
-                        "styles": ["./node_modules/@angular/material/prebuilt-themes/indigo-pink.css", "src/styles/styles.scss", "./node_modules/flag-icon-css/css/flag-icon.min.css"],
-                        "stylePreprocessorOptions": {
-                            "includePaths": ["src", "./node_modules"]
-                        },
-                        "scripts": [],
-                        "vendorChunk": true,
-                        "extractLicenses": false,
-                        "buildOptimizer": false,
-                        "sourceMap": true,
-                        "optimization": false,
-                        "namedChunks": true,
-                        "serviceWorker": true,
-                        "ngswConfigPath": "ngsw-config.json"
-                    },
-                    "configurations": {
-                        "production": {
-                            "fileReplacements": [
-                                {
-                                    "replace": "src/environments/environment.ts",
-                                    "with": "src/environments/environment.prod.ts"
-                                }
-                            ],
-                            "optimization": true,
-                            "outputHashing": "all",
-                            "sourceMap": false,
-                            "namedChunks": false,
-                            "extractLicenses": true,
-                            "vendorChunk": false,
-                            "buildOptimizer": true
-                        },
-                        "fr": {
-                            "outputPath": "dist/hermanas-client/fr-FR/",
-                            "localize": ["fr-FR"]
-                        },
-                        "en": {
-                            "outputPath": "dist/hermanas-client/en-US/",
-                            "localize": ["en-US"]
-                        },
-                        "ro": {
-                            "outputPath": "dist/hermanas-client/ro-RO/",
-                            "localize": ["ro-RO"]
-                        }
-                    },
-                    "defaultConfiguration": ""
-                },
-                "serve": {
-                    "builder": "@angular-devkit/build-angular:dev-server",
-                    "options": {
-                      "buildTarget": "hermanas-client:build"
-                    },
-                    "configurations": {
-                        "production": {
-                          "buildTarget": "hermanas-client:build:production"
-
-                        },
-                        "fr": {
-                          "buildTarget": "hermanas-client:build:fr"
-                        },
-                        "en": {
-                          "buildTarget": "hermanas-client:build:en"
-                        }
-                    }
-                },
-                "extract-i18n": {
-                    "builder": "@angular-devkit/build-angular:extract-i18n",
-                    "options": {
-                      "buildTarget": "hermanas-client:build"
-                    }
-                },
-                "test": {
-                    "builder": "@analogjs/vitest-angular:test",
-                    "options": {
-                        "configFile": "vitest.config.ts"
-                    }
-                },
-                "lint": {
-                    "builder": "@angular-eslint/builder:lint",
-                    "options": {
-                        "lintFilePatterns": [
-                            "src/**/*.ts",
-                            "src/**/*.html"
-                        ]
-                    }
-                }
-            }
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "hermanas-client": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
         }
-    },
-    "schematics": {
-      "@schematics/angular:component": {
-        "type": "component"
       },
-      "@schematics/angular:directive": {
-        "type": "directive"
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "sb",
+      "i18n": {
+        "sourceLocale": "en-US",
+        "locales": {
+          "fr-FR": {
+            "translation": "src/locale/messages.fr-FR.xlf",
+            "baseHref": "/fr-FR/"
+          },
+          "ro-RO": {
+            "translation": "src/locale/messages.ro-RO.xlf",
+            "baseHref": "/ro-RO/"
+          }
+        }
       },
-      "@schematics/angular:service": {
-        "type": "service"
-      },
-      "@schematics/angular:guard": {
-        "typeSeparator": "."
-      },
-      "@schematics/angular:interceptor": {
-        "typeSeparator": "."
-      },
-      "@schematics/angular:module": {
-        "typeSeparator": "."
-      },
-      "@schematics/angular:pipe": {
-        "typeSeparator": "."
-      },
-      "@schematics/angular:resolver": {
-        "typeSeparator": "."
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "localize": true,
+            "i18nMissingTranslation": "warning",
+            "outputPath": {
+              "base": "dist/hermanas-client",
+              "browser": ""
+            },
+            "index": "src/index.html",
+            "polyfills": [
+              "src/polyfills.ts"
+            ],
+            "tsConfig": "tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
+              },
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "node_modules/flag-icon-css/flags",
+                "output": "flags"
+              }
+            ],
+            "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+              "src/styles/styles.scss",
+              "./node_modules/flag-icon-css/css/flag-icon.min.css"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src",
+                "./node_modules"
+              ]
+            },
+            "scripts": [],
+            "extractLicenses": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true,
+            "serviceWorker": "ngsw-config.json",
+            "browser": "src/main.ts"
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true
+            },
+            "fr": {
+              "outputPath": {
+                "base": "dist/hermanas-client/fr-FR/",
+                "browser": ""
+              },
+              "localize": [
+                "fr-FR"
+              ]
+            },
+            "en": {
+              "outputPath": {
+                "base": "dist/hermanas-client/en-US/",
+                "browser": ""
+              },
+              "localize": [
+                "en-US"
+              ]
+            },
+            "ro": {
+              "outputPath": {
+                "base": "dist/hermanas-client/ro-RO/",
+                "browser": ""
+              },
+              "localize": [
+                "ro-RO"
+              ]
+            }
+          },
+          "defaultConfiguration": ""
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "hermanas-client:build"
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "hermanas-client:build:production"
+            },
+            "fr": {
+              "buildTarget": "hermanas-client:build:fr"
+            },
+            "en": {
+              "buildTarget": "hermanas-client:build:en"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular/build:extract-i18n",
+          "options": {
+            "buildTarget": "hermanas-client:build"
+          }
+        },
+        "test": {
+          "builder": "@analogjs/vitest-angular:test",
+          "options": {
+            "configFile": "vitest.config.ts"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
+        }
       }
     }
+  },
+  "schematics": {
+    "@schematics/angular:component": {
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
+    }
+  }
 }

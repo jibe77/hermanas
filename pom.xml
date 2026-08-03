@@ -32,11 +32,6 @@
 		     constraint. Picks up minor API additions + CVE fixes accumulated
 		     since 2021. -->
 		<commons-lang3.version>3.20.0</commons-lang3.version>
-		<sockjs-client.version>1.5.1</sockjs-client.version>
-		<stomp-websocket.version>2.3.4</stomp-websocket.version>
-		<jquery.version>3.7.1</jquery.version>
-
-		<bootstrap.version>5.3.8</bootstrap.version>
 		<web-push.version>5.1.2</web-push.version>
         <!-- 0.8.15+ requis : les versions <= 0.8.12 ne savent pas instrumenter
              le bytecode Java 25 (IllegalClassFormatException à chaque classe). -->
@@ -208,31 +203,19 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>${commons-lang3.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>webjars-locator-core</artifactId>
-			<version>0.59</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>sockjs-client</artifactId>
-			<version>${sockjs-client.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>stomp-websocket</artifactId>
-			<version>${stomp-websocket.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>bootstrap</artifactId>
-			<version>${bootstrap.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>jquery</artifactId>
-			<version>${jquery.version}</version>
-		</dependency>
+		<!--
+			Les webjars (jquery, bootstrap, sockjs-client, stomp-websocket,
+			webjars-locator-core) ont ete retires le 2026-08-03 : plus aucune
+			reference dans le code, aucun template servi par Spring. Vestiges de
+			l'epoque ou le front etait rendu cote serveur.
+
+			Le frontend est desormais une SPA Angular qui embarque ses propres
+			dependances via npm (@stomp/stompjs, bootstrap). Le WebSocket serveur
+			n'utilise pas SockJS.
+
+			Cela evite au passage la montee jquery 3 -> 4, qui aurait mis a jour
+			du code mort.
+		-->
 
 		<!-- Spring Security Test -->
 		<dependency>
