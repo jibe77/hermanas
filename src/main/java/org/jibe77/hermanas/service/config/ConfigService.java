@@ -13,6 +13,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 
 /**
@@ -160,6 +162,30 @@ public class ConfigService {
 
     @Value("${camera.rotation}")
     private int cameraRotation;
+
+    @Value("${camera.awb:}")
+    private String cameraAwb;
+
+    @Value("${camera.awbgains:}")
+    private String cameraAwbGains;
+
+    @Value("${camera.regular.width:1096}")
+    private int cameraRegularWidth;
+
+    @Value("${camera.regular.height:822}")
+    private int cameraRegularHeight;
+
+    @Value("${camera.regular.delay:500}")
+    private int cameraRegularDelay;
+
+    @Value("${camera.high.width:1640}")
+    private int cameraHighWidth;
+
+    @Value("${camera.high.height:1232}")
+    private int cameraHighHeight;
+
+    @Value("${camera.high.delay:1000}")
+    private int cameraHighDelay;
 
     @Value("${camera.regular.quality}")
     private int cameraRegularQuality;
@@ -1124,6 +1150,162 @@ public class ConfigService {
                     "Rotation must be one of 0/90/180/270, got " + degrees);
         }
         setConfigValue("camera.rotation", degrees, null);
+    }
+
+    /**
+     * Modes de balance des blancs acceptés par {@code rpicam-still}.
+     *
+     * <p>Un mode <em>compense</em> la lumière qu'il suppose : plus la température
+     * supposée est basse, plus l'image est refroidie. Du plus froid au plus chaud —
+     * {@code incandescent} (~2500 K), {@code tungsten} (~3000 K), {@code indoor},
+     * {@code fluorescent} (~4000 K), {@code daylight} (~5500 K), {@code cloudy}.</p>
+     */
+    public static final List<String> CAMERA_AWB_MODES = List.of(
+            "auto", "incandescent", "tungsten", "fluorescent",
+            "indoor", "daylight", "cloudy");
+
+    /**
+     * Balance des blancs de la caméra.
+     *
+     * <p>La photo est toujours prise avec la lampe du poulailler allumée : l'éclairage
+     * est constant, donc un mode fixe converge instantanément là où l'automatique a
+     * besoin de plusieurs images — ce que le {@code --timeout} de 500 ms ne lui laisse
+     * pas. En {@code auto}, la capture partait sur des gains provisoires trop rouges,
+     * d'où les reflets rosés constatés.</p>
+     */
+    @Cacheable(value = "cameraAwb")
+    public String getCameraAwb() {
+        return getConfigValue("camera.awb", cameraAwb, v -> v);
+    }
+
+    @CacheEvict(value = "cameraAwb")
+    public void setCameraAwb(String mode) {
+        String value = mode == null ? "" : mode.trim().toLowerCase(Locale.ROOT);
+        // Le vide est accepté : il rend la main à l'automatique.
+        if (!value.isEmpty() && !CAMERA_AWB_MODES.contains(value)) {
+            throw new IllegalArgumentException(
+                    "AWB mode must be one of " + CAMERA_AWB_MODES + " (or empty), got " + mode);
+        }
+        setConfigValue("camera.awb", value, null);
+    }
+
+    /**
+     * Gains rouge et bleu imposés directement, au format {@code "R,B"}.
+     *
+     * <p>Prioritaire sur {@link #getCameraAwb()} : {@code rpicam-still} ignore
+     * {@code --awb} dès que {@code --awbgains} est fourni. Utile quand aucun mode
+     * prédéfini ne corrige la dominante — pour atténuer le rouge, baisser R et
+     * monter B (1.4,1.8 puis 1.2,2.0 puis 1.0,2.2).</p>
+     *
+     * <p>Vide = on s'en remet au mode AWB.</p>
+     */
+    @Cacheable(value = "cameraAwbGains")
+    public String getCameraAwbGains() {
+        return getConfigValue("camera.awbgains", cameraAwbGains, v -> v);
+    }
+
+    @CacheEvict(value = "cameraAwbGains")
+    public void setCameraAwbGains(String gains) {
+        String value = gains == null ? "" : gains.trim();
+        if (!value.isEmpty() && !value.matches("\\d+(\\.\\d+)?,\\d+(\\.\\d+)?")) {
+            throw new IllegalArgumentException(
+                    "AWB gains must be \"R,B\" with positive decimals (e.g. 1.2,2.0), got " + gains);
+        }
+        setConfigValue("camera.awbgains", value, null);
+    }
+
+    // ─── Dimensions et délais de capture ──────────────────────────────────────────
+    //
+    // Bornes volontairement larges : 64 px au minimum pour écarter une saisie
+    // absurde, 4096 au maximum — au-delà de la définition native du capteur
+    // (3280x2464), rpicam-still suréchantillonnerait sans gain de détail.
+    //
+    // ⚠️ Conserver un ratio 4:3. En 16:9, libcamera sélectionne un mode capteur
+    // RECADRÉ et le champ du fisheye est amputé.
+
+    private static final int MIN_DIMENSION = 64;
+    private static final int MAX_DIMENSION = 4096;
+    private static final int MAX_DELAY_MS = 30000;
+
+    private static int checkDimension(String label, int value) {
+        if (value < MIN_DIMENSION || value > MAX_DIMENSION) {
+            throw new IllegalArgumentException(
+                    label + " must be between " + MIN_DIMENSION + " and " + MAX_DIMENSION
+                            + ", got " + value);
+        }
+        return value;
+    }
+
+    private static int checkDelay(String label, int value) {
+        if (value < 0 || value > MAX_DELAY_MS) {
+            throw new IllegalArgumentException(
+                    label + " must be between 0 and " + MAX_DELAY_MS + " ms, got " + value);
+        }
+        return value;
+    }
+
+    @Cacheable(value = "cameraRegularWidth")
+    public int getCameraRegularWidth() {
+        return getConfigValue("camera.regular.width", cameraRegularWidth, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraRegularWidth")
+    public void setCameraRegularWidth(int width) {
+        setConfigValue("camera.regular.width", checkDimension("Width", width), null);
+    }
+
+    @Cacheable(value = "cameraRegularHeight")
+    public int getCameraRegularHeight() {
+        return getConfigValue("camera.regular.height", cameraRegularHeight, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraRegularHeight")
+    public void setCameraRegularHeight(int height) {
+        setConfigValue("camera.regular.height", checkDimension("Height", height), null);
+    }
+
+    /**
+     * Temps laissé à l'auto-exposition pour converger avant le déclenchement
+     * ({@code --timeout}). Trop court, la capture part sur des gains provisoires.
+     */
+    @Cacheable(value = "cameraRegularDelay")
+    public int getCameraRegularDelay() {
+        return getConfigValue("camera.regular.delay", cameraRegularDelay, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraRegularDelay")
+    public void setCameraRegularDelay(int delayMs) {
+        setConfigValue("camera.regular.delay", checkDelay("Delay", delayMs), null);
+    }
+
+    @Cacheable(value = "cameraHighWidth")
+    public int getCameraHighWidth() {
+        return getConfigValue("camera.high.width", cameraHighWidth, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraHighWidth")
+    public void setCameraHighWidth(int width) {
+        setConfigValue("camera.high.width", checkDimension("Width", width), null);
+    }
+
+    @Cacheable(value = "cameraHighHeight")
+    public int getCameraHighHeight() {
+        return getConfigValue("camera.high.height", cameraHighHeight, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraHighHeight")
+    public void setCameraHighHeight(int height) {
+        setConfigValue("camera.high.height", checkDimension("Height", height), null);
+    }
+
+    @Cacheable(value = "cameraHighDelay")
+    public int getCameraHighDelay() {
+        return getConfigValue("camera.high.delay", cameraHighDelay, Integer::parseInt);
+    }
+
+    @CacheEvict(value = "cameraHighDelay")
+    public void setCameraHighDelay(int delayMs) {
+        setConfigValue("camera.high.delay", checkDelay("Delay", delayMs), null);
     }
 
     @Cacheable(value = "cameraRegularQuality")

@@ -20,18 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class CameraConfiguration {
 
-    @Value("${camera.high.width}")
-    private int photoHighWidth;
-
-    @Value("${camera.high.height}")
-    private int photoHighHeight;
-
-    @Value("${camera.regular.width}")
-    private int photoRegularWidth;
-
-    @Value("${camera.regular.height}")
-    private int photoRegularHeight;
-
     @Value("${camera.encoding}")
     private String photoEncoding;
 
@@ -41,14 +29,38 @@ public class CameraConfiguration {
         this.configService = configService;
     }
 
-    /** Largeur en pixels selon le profil demandé. */
+    /** Largeur en pixels, relue à chaque appel. */
     public int width(boolean highQuality) {
-        return highQuality ? photoHighWidth : photoRegularWidth;
+        return highQuality
+                ? configService.getCameraHighWidth()
+                : configService.getCameraRegularWidth();
     }
 
-    /** Hauteur en pixels selon le profil demandé. */
+    /** Hauteur en pixels, relue à chaque appel. */
     public int height(boolean highQuality) {
-        return highQuality ? photoHighHeight : photoRegularHeight;
+        return highQuality
+                ? configService.getCameraHighHeight()
+                : configService.getCameraRegularHeight();
+    }
+
+    /**
+     * Temps laissé à l'auto-exposition avant déclenchement, en millisecondes
+     * ({@code --timeout} de rpicam-still).
+     */
+    public int delay(boolean highQuality) {
+        return highQuality
+                ? configService.getCameraHighDelay()
+                : configService.getCameraRegularDelay();
+    }
+
+    /** Mode de balance des blancs ({@code --awb}), vide si automatique. */
+    public String awb() {
+        return configService.getCameraAwb();
+    }
+
+    /** Gains rouge/bleu imposés ({@code --awbgains}), vide si non utilisés. */
+    public String awbGains() {
+        return configService.getCameraAwbGains();
     }
 
     /** Qualité JPEG (0-100), relue à chaque appel pour suivre les changements à chaud. */

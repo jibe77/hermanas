@@ -168,11 +168,20 @@ public class ConfigRestController {
         config.put("notifications", notifications);
 
         // Camera image quality
-        Map<String, Integer> camera = new LinkedHashMap<>();
+        // Object et non Integer : awb / awb_gains sont des chaînes.
+        Map<String, Object> camera = new LinkedHashMap<>();
         camera.put("brightness", configService.getCameraBrightness());
         camera.put("rotation", configService.getCameraRotation());
+        camera.put("awb", configService.getCameraAwb());
+        camera.put("awb_gains", configService.getCameraAwbGains());
         camera.put("regular_quality", configService.getCameraRegularQuality());
+        camera.put("regular_width", configService.getCameraRegularWidth());
+        camera.put("regular_height", configService.getCameraRegularHeight());
+        camera.put("regular_delay", configService.getCameraRegularDelay());
         camera.put("high_quality", configService.getCameraHighQuality());
+        camera.put("high_width", configService.getCameraHighWidth());
+        camera.put("high_height", configService.getCameraHighHeight());
+        camera.put("high_delay", configService.getCameraHighDelay());
         config.put("camera_settings", camera);
 
         // Weather provider — return the URL template but mask the API key. We expose
@@ -574,6 +583,103 @@ public class ConfigRestController {
         configService.setCameraRotation(degrees);
         cameraService.clearPictureCache();
         return ResponseEntity.ok("Camera rotation set to " + degrees + "°");
+    }
+
+    @Operation(
+            summary = "Update the white-balance mode",
+            description = "One of auto, incandescent, tungsten, fluorescent, indoor, "
+                        + "daylight, cloudy — or empty to let the camera decide. "
+                        + "A mode compensates for the light it assumes: the lower the "
+                        + "assumed temperature, the cooler the picture. Takes effect on "
+                        + "the next capture."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Mode updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Unknown mode")
+    })
+    @PutMapping("/camera/awb")
+    public ResponseEntity<String> setCameraAwb(
+            @Parameter(description = "White-balance mode", example = "incandescent")
+            @RequestParam(required = false, defaultValue = "") String mode) {
+        configService.setCameraAwb(mode);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera white balance set to "
+                + (mode == null || mode.isBlank() ? "auto" : mode));
+    }
+
+    @Operation(
+            summary = "Force red/blue white-balance gains",
+            description = "Format \"R,B\" (e.g. 1.2,2.0). Overrides the AWB mode — "
+                        + "rpicam-still ignores --awb once --awbgains is supplied. "
+                        + "To tone down a red cast, lower R and raise B. "
+                        + "Empty falls back to the AWB mode."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Gains updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Malformed value")
+    })
+    @PutMapping("/camera/awb-gains")
+    public ResponseEntity<String> setCameraAwbGains(
+            @Parameter(description = "Red and blue gains, \"R,B\"", example = "1.2,2.0")
+            @RequestParam(required = false, defaultValue = "") String gains) {
+        configService.setCameraAwbGains(gains);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera AWB gains set to "
+                + (gains == null || gains.isBlank() ? "(unset)" : gains));
+    }
+
+    @Operation(
+            summary = "Update the regular-profile capture size",
+            description = "⚠️ Keep a 4:3 ratio: in 16:9 libcamera picks a CROPPED sensor "
+                        + "mode and the fisheye field is lost. Takes effect on the next capture."
+    )
+    @PutMapping("/camera/regular/size")
+    public ResponseEntity<String> setCameraRegularSize(
+            @Parameter(description = "Width in pixels", example = "1096") @RequestParam int width,
+            @Parameter(description = "Height in pixels", example = "822") @RequestParam int height) {
+        configService.setCameraRegularWidth(width);
+        configService.setCameraRegularHeight(height);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Regular capture size set to " + width + "×" + height);
+    }
+
+    @Operation(
+            summary = "Update the high-profile capture size",
+            description = "⚠️ Keep a 4:3 ratio — see the regular-profile endpoint."
+    )
+    @PutMapping("/camera/high/size")
+    public ResponseEntity<String> setCameraHighSize(
+            @Parameter(description = "Width in pixels", example = "1640") @RequestParam int width,
+            @Parameter(description = "Height in pixels", example = "1232") @RequestParam int height) {
+        configService.setCameraHighWidth(width);
+        configService.setCameraHighHeight(height);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("High capture size set to " + width + "×" + height);
+    }
+
+    @Operation(
+            summary = "Update the regular-profile capture delay (ms)",
+            description = "Time given to auto-exposure to settle before the shutter fires "
+                        + "(rpicam-still --timeout). Too short and the capture uses "
+                        + "provisional gains — often too red."
+    )
+    @PutMapping("/camera/regular/delay")
+    public ResponseEntity<String> setCameraRegularDelay(
+            @Parameter(description = "Delay in milliseconds", example = "500")
+            @RequestParam int delayMs) {
+        configService.setCameraRegularDelay(delayMs);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Regular capture delay set to " + delayMs + " ms");
+    }
+
+    @Operation(summary = "Update the high-profile capture delay (ms)")
+    @PutMapping("/camera/high/delay")
+    public ResponseEntity<String> setCameraHighDelay(
+            @Parameter(description = "Delay in milliseconds", example = "1000")
+            @RequestParam int delayMs) {
+        configService.setCameraHighDelay(delayMs);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("High capture delay set to " + delayMs + " ms");
     }
 
     @Operation(
