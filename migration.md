@@ -43,7 +43,6 @@ solaire, interface web.
 
 - Qualité photo « regular » à **5** → à remonter (écran de configuration, effet immédiat)
 - Reflets rosés → probablement l'AWB, voir §7.1
-- `gpu_mem` 64 → 16 Mo → 48 Mo de RAM à récupérer, test décrit en §7.1
 - Compression des photos jointes aux emails (~780 Ko actuellement)
 
 ### Bilan mémoire — l'objectif est tenu
@@ -91,7 +90,7 @@ problème CPU, mais une attente disque. `VmSwap` à 191 Mo pour la seule JVM.
 | `@Lazy` sur les 23 contrôleurs REST **seulement** | le lazy **global** casserait les automatismes | 3.2bis c |
 | `vm.swappiness=10` | — | 3.2bis d |
 | Session graphique retirée | image Desktop installée au lieu de Lite | 3.2bis e |
-| `gpu_mem` 64 → 16 Mo | +48 Mo — ⚠️ remonté à 64 pendant le diagnostic caméra, **à retester** | 3.2bis g / 7.1 |
+| `gpu_mem` → **32 Mo** | +32 Mo vs 64 — seuil minimal avec caméra, mesuré (§7.1) | 3.2bis g / 7.1 |
 
 **Résultat** : `wa` de 90-100 % → 0-1 %, démarrage de 494 s → 265 s, aucune écriture
 de swap sur la carte SD.
@@ -136,8 +135,8 @@ de swap sur la carte SD.
 | Champ réduit, fisheye perdu | En 16:9 libcamera choisit un mode **recadré** ; seuls les modes 4:3 lisent le capteur entier | Dimensions en 4:3 — §7.1 |
 
 > **Fausses pistes documentées** (§7.1), pour ne pas les refaire : `camera_auto_detect`
-> était déjà présent ; `disable_fw_kms_setup` sans effet ; `gpu_mem` 16 → 64 sans
-> effet ; `vcgencmd get_camera` est **obsolète** sur libcamera et renvoie toujours
+> était déjà présent ; `disable_fw_kms_setup` sans effet ; `gpu_mem` doit valoir
+> **au moins 32 Mo** (16 ne suffit pas — §7.1) ; `vcgencmd get_camera` est **obsolète** sur libcamera et renvoie toujours
 > `interfaces=0` ; `bcm2835_unicam_legacy` n'est pas un mode dégradé.
 
 ### F. Frontend
@@ -1926,14 +1925,15 @@ vcgencmd get_mem gpu    # gpu=64M sur pru (2026-07-27)
 
 - [x] Réduire au plancher firmware :
   ```bash
-  echo "gpu_mem=16" | sudo tee -a /boot/firmware/config.txt
+  echo "gpu_mem=32" | sudo tee -a /boot/firmware/config.txt
   sudo reboot
   vcgencmd get_mem gpu    # attendu : gpu=16M
   free -h                 # total : 415 → ~463 Mo
   ```
 
 ⚠️ **À rouvrir en Phase 7.** `rpicam-still` réclame typiquement 64 Mo de mémoire
-GPU. Il faudra remonter `gpu_mem` quand la caméra sera remise en service — la
+GPU. ⚠️ **32 Mo est le minimum avec la caméra** : à 16 Mo, `rpicam-still` échoue
+(§7.1). La
 caméra étant de toute façon hors service jusque-là, ces 48 Mo sont un gain
 immédiat, à rendre plus tard.
 
@@ -2093,7 +2093,7 @@ Utile pour rédiger un guide d'installation ; chaque point renvoie à sa section
 | 10 | `vm.swappiness=10` | 3.2bis d |
 | 11 | Session graphique retirée | 3.2bis e — image Desktop au lieu de Lite |
 | 12 | zram 2× RAM, swapfile SD supprimé | 3.2bis f — **le correctif décisif** |
-| 13 | `gpu_mem` 64 → 16 Mo | 3.2bis g — +48 Mo sur une machine headless |
+| 13 | `gpu_mem` → 32 Mo | 3.2bis g / 7.1 — 16 Mo empêche la caméra, 32 est le seuil mesuré |
 | 14 | `ExecStartPre=/bin/sleep 45`, `Nice=10` | 0.6 — évite la concurrence mémoire au boot |
 | 15 | Chemins absolus dans `application.properties` | 2.6 — `./photos` → `/var/lib/hermanas/photos` |
 | 16 | `navigationUrls` explicites dans `ngsw-config.json` | 3.5bis — le service worker détournait `/actuator/*` vers `/fr-FR/actuator/*` |
@@ -3124,7 +3124,7 @@ sudo -u hermanas rpicam-still -o /tmp/t.jpg --width 960 --height 540 --nopreview
 |---|---|
 | `camera_auto_detect=1` absent | **Déjà présent** |
 | `disable_fw_kms_setup=1` | Commenté, **sans effet** |
-| `gpu_mem=16` trop bas | Monté à 64, **sans effet** — sur libcamera le traitement passe par l'ISP, pas par le firmware VideoCore. **À reteste à 16 pour récupérer les 48 Mo.** |
+| `gpu_mem=16` trop bas | ✅ **confirmé, mais masqué à l'époque** : le passage à 64 semblait sans effet parce que `vc4-kms-v3d` bloquait déjà tout. Seuil réel mesuré : **32 Mo**. |
 | `vcgencmd get_camera` | **Obsolète** sur libcamera : renvoie toujours `interfaces=0`, même caméra fonctionnelle. Ne pas s'y fier. |
 | `bcm2835_unicam_legacy` | Nom trompeur : désigne la pile VC4, pas un mode dégradé. libcamera l'utilise bien (compteur d'usage > 0). |
 
@@ -3203,57 +3203,57 @@ correspondante dans `buildCaptureCommand`, sur le modèle de `--rotation`.
       qualité est à 50, correcte.
 - [ ] **Délai de capture** : `camera.regular.delay = 750` ms est court pour
       l'auto-exposition en intérieur.
-#### 🧪 Test à faire : repasser `gpu_mem` de 64 à 16 Mo
+#### ✅ `gpu_mem` : le seuil est **32 Mo** *(mesuré le 2026-08-03)*
 
-**Enjeu : 48 Mo de RAM système**, sur une machine où la mémoire disponible est la
-priorité numéro un (éviter le swap, donc l'usure de la carte SD).
+| Valeur | Caméra | RAM système |
+|---|---|---|
+| 16 Mo | ❌ `rpicam-apps currently only supports the Raspberry Pi platforms` | 463 Mo |
+| **32 Mo** | ✅ **valeur retenue** | ~447 Mo |
+| 64 Mo | ✅ | 415 Mo |
 
-`gpu_mem` avait été monté de 16 à 64 pendant le diagnostic caméra, sur une
-hypothèse qui s'est révélée **fausse** : le passage à 64 n'a rien débloqué, c'est
-le retrait de `dtoverlay=vc4-kms-v3d` qui a fait fonctionner la capture. Les 48 Mo
-sont donc probablement payés pour rien.
+**Ma prédiction était fausse.** J'avais avancé que 16 Mo suffirait, en raisonnant
+que sur la pile libcamera le traitement passe par l'ISP et `dma-buf` plutôt que
+par le firmware VideoCore. C'est exact sur le principe, mais **l'initialisation de
+l'interface caméra par le firmware réclame malgré tout un minimum de mémoire
+GPU** — au-delà de 16 Mo.
 
-Raison de fond : sur la pile **libcamera**, le traitement passe par l'**ISP** et la
-mémoire système (`dma-buf`), pas par le firmware VideoCore comme à l'époque de
-MMAL. `gpu_mem` y pèse beaucoup moins.
+L'erreur venait d'une déduction bancale : on était passés de 16 à 64 pendant le
+diagnostic *sans que la caméra ne se débloque*, ce qui m'a fait conclure que
+`gpu_mem` n'y était pour rien. En réalité **deux causes se masquaient** —
+`dtoverlay=vc4-kms-v3d` bloquait déjà tout, et l'effet de `gpu_mem` restait
+invisible tant qu'il n'était pas levé. C'est en revenant à 16 après le correctif
+KMS que la caméra a de nouveau échoué, révélant la seconde cause.
 
-> **Pourquoi un test et pas une mesure ?** Le firmware n'expose aucun compteur
-> d'utilisation réelle. `vcgencmd get_mem reloc` / `malloc` (et leurs variantes
-> `*_total`) donnent le libre / total des pools, mais le firmware ajuste ce qu'il
-> alloue selon ce qui est disponible : un pool de 64 Mo à moitié vide ne prouve
-> pas qu'un pool de 16 Mo tiendrait. Seul l'essai tranche.
+> ⚠️ **Piège de méthode** : ne jamais conclure qu'un paramètre est sans effet
+> quand un autre défaut bloque le même chemin. Isoler les variables.
+
+**Le message d'erreur est trompeur** : `rpicam-apps currently only supports the
+Raspberry Pi platforms` ne signale pas un problème de plateforme, mais l'absence
+de caméra utilisable — quelle qu'en soit la raison (KMS, mémoire GPU, nappe).
+
+Valeur retenue :
 
 ```bash
-sudo sed -i 's/^gpu_mem=64/gpu_mem=16/' /boot/firmware/config.txt
+sudo sed -i 's/^gpu_mem=.*/gpu_mem=32/' /boot/firmware/config.txt
 sudo reboot
 ```
 
-Au retour — **tester à la résolution la plus exigeante**, soit le capteur entier :
+Vérification, **à la résolution la plus exigeante** — un test en basse définition
+passerait là où le plein capteur échouerait :
 
 ```bash
-vcgencmd get_mem gpu                 # gpu=16M
-free -h                              # ~48 Mo de plus qu'avec 64
-
-rpicam-still -o /tmp/t16.jpg --width 3280 --height 2464 --quality 80 \
-  --rotation 180 --nopreview --timeout 2000 ; echo "exit=$?"
-ls -la /tmp/t16.jpg
+vcgencmd get_mem gpu     # gpu=32M
+rpicam-still -o /tmp/t.jpg --width 3280 --height 2464 --quality 50 \
+  --rotation 180 --nopreview --timeout 1000 ; echo "exit=$?"
 ```
 
-⚠️ Ne pas valider sur un test en 480×360 : il passerait peut-être là où le plein
-capteur échouerait.
-
-| Résultat | Conclusion |
-|---|---|
-| `exit=0`, fichier non vide | **Garder 16 Mo** — 48 Mo récupérés, caméra intacte |
-| Échec | Remonter à 64, le coût est justifié — le noter ici |
-
-Puis vérifier que le thrashing n'est pas revenu, une fois Hermanas démarré :
+Puis, une fois Hermanas démarré, contrôler que le thrashing n'est pas revenu :
 
 ```bash
 free -h ; swapon --show ; vmstat 1 5
 ```
 
-`wa` doit rester entre 0 et 1 %, et `swapon` ne montrer que `/dev/zram0`.
+`wa` entre 0 et 1 %, et `swapon` ne montrant que `/dev/zram0`.
 
 ### 7.2 — Streaming camera : `rpicam-vid | ffmpeg`
 
