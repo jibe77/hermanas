@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.9.2</version>
+	<version>0.9.3</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
@@ -20,11 +20,11 @@
 		<java.version>25</java.version>
 		<!-- pi4j 4.x avec plugin FFM (Foreign Function & Memory API, Java 22+) -->
 		<pi4j.version>4.0.2</pi4j.version>
-		<mariadb-java-client.version>3.5.9</mariadb-java-client.version>
+		<mariadb-java-client.version>3.5.10</mariadb-java-client.version>
 		<!-- springdoc 3.x : ligne alignée sur Spring Boot 4. La 1.x était SB 2
 		     et la 2.x SB 3 — les deux tiraient Jackson 2 en doublon de la
 		     Jackson 3 de SB 4. -->
-		<springdoc-openapi.version>3.0.3</springdoc-openapi.version>
+		<springdoc-openapi.version>3.1.0</springdoc-openapi.version>
 		<lib-sunrise-sunset.version>1.1.2</lib-sunrise-sunset.version>
 		<commons-io.version>2.22.0</commons-io.version>
 		<!-- Override the Spring Boot 2.7 BOM (3.12.0) — 3.20.0 stays Java 8
@@ -181,7 +181,7 @@
 		<dependency>
 			<groupId>org.springframework.retry</groupId>
 			<artifactId>spring-retry</artifactId>
-			<version>2.0.9</version>
+			<version>2.0.13</version>
 		</dependency>
 		<!-- Swagger UI -->
 		<dependency>

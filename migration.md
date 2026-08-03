@@ -2805,11 +2805,16 @@ mvn versions:display-plugin-updates
 
 À passer en revue, une lib à la fois, `mvn test` entre chaque, commit dédié :
 
-- [ ] `spring-boot-starter-parent` : minor bumps SB4.
-- [ ] `pi4j` : dernière 2.x.
-- [ ] `mariadb-java-client` : dernière compatible SB4.
-- [ ] `micrometer-*` : dernière.
-- [ ] `commons-io`, `commons-lang3`, `lib-sunrise-sunset` : dernières.
+- [x] `spring-boot-starter-parent` : **4.1.0**, déjà à jour.
+- [x] ~~`pi4j` : dernière 2.x~~ — obsolète, on est en **4.0.2** avec le plugin FFM.
+- [x] `mariadb-java-client` : 3.5.9 → **3.5.10**.
+- [x] `springdoc-openapi` : 3.0.3 → **3.1.0**.
+- [x] `spring-retry` : 2.0.9 → **2.0.13**.
+- [x] `micrometer-*`, `commons-io`, `commons-lang3` : gérés par le BOM Spring Boot,
+      rien à épingler.
+- [ ] ⏸️ `webjars:jquery` 3.7.1 → **4.0.0** — **majeure reportée**. Touche tous les
+      scripts de templates hérités ; risque de casse visuelle sans bénéfice
+      fonctionnel. Voir §6.5.
 
 ### 6.2 — Dépendances frontend
 
@@ -2937,16 +2942,38 @@ enregistrées contre 630 dans le code, d'où une trentaine de « No translation 
 - [ ] **Ne jamais écrire de HTML brut** dans un `<source>` de fichier `.xlf` : toujours
   repartir de l'unité générée dans `messages.xlf`.
 
-### 6.3 — Validation
+### 6.3 — Validation ✅ *(2026-08-03)*
 
-- [ ] `mvn test` : **66 tests** OK (le chiffre « 71+ » de la roadmap initiale était
-  erroné — la suite en compte 66 depuis la migration SB 4).
-- [ ] `cd frontend && npm test && npm run e2e` : suites vertes.
-- [ ] `mvn clean package` : **aucun** « No translation found », aucun avertissement.
-- [ ] Redéploiement complet via `deploy.sh`.
-- [ ] Cycle 24 h d'observation.
+- [x] `mvn test` : **70 tests** OK (66 + 2 sur le fin de course bas + 2 sur le volume).
+- [x] `npm test` : **192 tests** sur 29 fichiers, verts.
+- [x] `ng build --configuration production` : bundles localisés générés, aucune
+      erreur.
+- [ ] `npm run e2e` — suite Playwright non relancée ici.
+- [ ] Redéploiement via `deploy.sh` puis cycle de 24 h d'observation.
 
-### 6.4 — Renommer le compte MariaDB `pi` → `hermanas_app`
+### 6.5 — Ce qui est volontairement reporté
+
+Chantiers structurels, chacun méritant sa propre branche et sa passe de
+vérification visuelle. Aucun ne bloque le fonctionnement actuel.
+
+| Chantier | Pourquoi c'est reporté |
+|---|---|
+| **`@angular-devkit/build-angular` → `@angular/build`** | Change le moteur de build (Webpack → esbuild/Vite). Supprimerait au passage les **13 vulnérabilités npm**, toutes issues de `webpack-dev-server` — un outil de *développement*, jamais embarqué dans le JAR. |
+| **`@angular/animations` déprécié** | Remplacé par `animate.enter` / `animate.leave`. Demande de reprendre chaque animation. |
+| **`@import` Sass dans 33 fichiers** | Supprimé dans Dart Sass 3.0, mais encore fonctionnel. Migration `@use`/`@forward` mécanique mais étendue. |
+| **`flag-icon-css` → `flag-icons`** | Projet renommé ; changement de préfixes de classes à répercuter. |
+| **`jquery` 3 → 4** | Touche tous les scripts de templates hérités. Risque visuel sans bénéfice. |
+| **`@ng-bootstrap` en `21.0.0-rc.0`** | Passer à la GA quand elle sera publiée. |
+
+> ⚠️ **Ne pas lancer `npm audit fix --force`** : il rétrograderait
+> `@angular-devkit/build-angular` vers une version incompatible avec Angular 22.
+
+### 6.4 — Renommer le compte MariaDB `pi` → `hermanas_app` — ⏸️ *à faire sur `pru`*
+
+> **Non fait au 2026-08-03.** Opération à exécuter directement sur la machine
+> (SQL + édition de `application.properties` + redémarrage du service), donc hors
+> du périmètre d'une mise à jour de dépendances. Sans urgence : `pi@localhost`
+> fonctionne, seul le nom prête à confusion.
 
 > **Volontairement reporté après la bascule** (décision 2026-07-27). Le gain est
 > cosmétique : `pi@localhost` fonctionne exactement comme `hermanas_app@localhost`.
@@ -3190,50 +3217,43 @@ free -h ; swapon --show ; vmstat 1 5
 
 ---
 
-## Phase 8 — Rollback plan
+## Phase 8 — Rollback plan — ❌ *abandonné (2026-08-03)*
 
-Fenêtre de conservation : **1 semaine post-Phase 5**.
+**Décision : on ne prévoit pas de retour arrière.** La migration est validée en
+production, `poupou` est éteint et débranché, et l'installation tourne sur `pru`
+depuis plusieurs jours.
 
-### 8.1 — Éléments à conserver
+La procédure de rollback supposait de rebasculer le bail DHCP `.35` sur `poupou` —
+or [cette bascule n'a jamais eu lieu](#phase-4--bascule-réseau), `pru` gardant
+`192.168.1.2`. Le plan n'est donc plus applicable tel qu'écrit, et n'a plus lieu
+d'être.
 
-- [ ] SD `poupou` intacte dans une pochette antistatique.
-- [ ] Dump SQL `hermanas-YYYY-MM-DD.sql` sur le Mac.
-- [ ] `application.properties`, `users.properties`, `keystore.p12` en backup local.
-- [ ] Ancien JAR Java 11 (`hermanas-0.8.5.jar`) sur le Mac.
+- [x] ~~Conserver la SD, le dump SQL, l'ancien JAR~~ — non requis
+- [x] ~~Procédure de retour arrière~~ — non requise
+- [x] ~~Nettoyage après une semaine stable~~ — sans objet
 
-### 8.2 — Procédure rollback (~15 min)
-
-- [ ] `sudo systemctl stop Hermanas.service` sur `pru`.
-- [ ] Débrancher GPIO de `pru`, rebrancher sur `poupou`.
-- [ ] Freebox : rebasculer bail DHCP MAC `pru` → MAC `poupou`.
-- [ ] Démarrer `poupou` : `sudo systemctl start Hermanas.service`.
-- [ ] Vérifier `https://www.hermanas.fr/`.
-
-### 8.3 — Nettoyage définitif (après 1 semaine stable)
-
-- [ ] Wiper la SD `poupou` ou la ranger comme spare.
-- [ ] Supprimer le dump SQL local.
-- [ ] Mettre à jour `deploy.sh` si tu renommes les variables `REMOTE_HOST` (`poupou` reste valide via DHCP donc pas obligatoire).
+> **Ce qui reste conseillé malgré tout**, indépendamment de tout rollback :
+> garder la SD de `poupou` telle quelle dans un tiroir. Elle ne coûte rien et
+> constitue la seule trace de la configuration Java 11 / Spring Boot 2.7, au cas
+> où une question surgirait sur l'ancien comportement.
 
 ---
 
 ## 📊 Récapitulatif — timing
 
-| Phase | Sur | Durée | Downtime coop |
-|---|---|---|---|
-| 0. Prépa `pru` headless | pru | 1-2 h | 0 |
-| ~~1. Migration code Java 25 + SB4 + pi4j 4.x FFM~~ | Mac | ~~6-10 h dev~~ **✅ fait (2026-07-27)** | 0 |
-| ~~2. Bascule données + fichiers~~ | poupou→pru | **✅ fait (2026-07-27)** | — |
-| ~~3. Test à vide + optimisation mémoire~~ | pru | **✅ fait (2026-07-27)** | — |
-| 2. Bascule données + Samba photos | poupou→pru | 30-60 min | **✓ démarre** |
-| 3. Test à vide sur banc | pru | 30 min | ✓ |
-| 4. Bascule réseau (Freebox) | Freebox | 10 min | ✓ |
-| 5. Bascule hardware sur coop | pru + coop | 15 min + 24 h obs | **✓ termine (~1 h)** |
-| 6. Update libs Maven + npm | Mac | 1-2 jours | 0 |
-| 7. Camera + player audio | pru + Mac | 4-8 h dev | 0 |
-| 8. Attente rollback | – | 1 semaine | 0 |
+| Phase | Sur | État |
+|---|---|---|
+| 0. Prépa `pru` headless | pru | ✅ 2026-07 |
+| 1. Migration code Java 25 + SB4 + pi4j 4.x FFM | Mac | ✅ 2026-07-27 |
+| 2. Bascule données + Samba photos | poupou→pru | ✅ 2026-07-27 |
+| 3. Test à vide + optimisation mémoire | pru | ✅ 2026-07-27 |
+| 4. Bascule réseau | — | ✅ 2026-08-03 — bail DHCP abandonné, `pru` garde `.2` |
+| 5. Bascule hardware sur coop | pru + coop | ✅ 2026-07-31 — ⚠️ fin de course bas défectueux (§5.4) |
+| 6. Update libs Maven + npm | Mac | ✅ 2026-08-03 — majeures reportées, voir §6.5 |
+| 7. Camera + player audio | pru + Mac | ⚠️ photo ✅, **streaming à porter** (§7.2) |
+| 8. Rollback | — | ❌ abandonné |
 
-**Downtime coop total : ~1 h**, à planifier porte ouverte.
+**Downtime réel constaté** : environ une heure le 2026-07-31, porte ouverte.
 
 ---
 
