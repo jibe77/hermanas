@@ -2598,6 +2598,69 @@
           <context context-type="sourcefile">src/modules/logs/containers/logs/logs.component.html</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="cameraAwb" datatype="html">
+        <source>White balance</source>
+        <target xml:space="preserve" state="translated">Balance des blancs</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraAwbHelp" datatype="html">
+        <source>A mode compensates for the light it assumes: the cooler the mode, the less red the picture. Ordered from coolest to warmest.</source>
+        <target xml:space="preserve" state="translated">Un mode compense la lumière qu&#x27;il suppose : plus le mode est froid, moins l&#x27;image tire au rouge. Classés du plus froid au plus chaud.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraAwbGains" datatype="html">
+        <source>White-balance gains (R,B)</source>
+        <target xml:space="preserve" state="translated">Gains de balance des blancs (R,B)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraAwbGainsHelp" datatype="html">
+        <source>Overrides the mode above. To tone down a red cast, lower R and raise B. Leave empty to use the mode.</source>
+        <target xml:space="preserve" state="translated">Prioritaire sur le mode ci-dessus. Pour atténuer une dominante rouge, baissez R et montez B. Laissez vide pour utiliser le mode.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraSizeWarning" datatype="html">
+        <source>⚠️ Keep a 4:3 ratio (e.g. 1096×822, 1640×1232): in 16:9 the camera picks a cropped sensor mode and the wide-angle field is lost.</source>
+        <target xml:space="preserve" state="translated">⚠️ Conservez un ratio 4:3 (par exemple 1096×822, 1640×1232) : en 16:9 la caméra sélectionne un mode capteur recadré et le grand-angle est perdu.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRegularSize" datatype="html">
+        <source>Dashboard size (px)</source>
+        <target xml:space="preserve" state="translated">Taille tableau de bord (px)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraHighSize" datatype="html">
+        <source>Analysis size (px)</source>
+        <target xml:space="preserve" state="translated">Taille analyse (px)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraDelay" datatype="html">
+        <source>Delay (ms)</source>
+        <target xml:space="preserve" state="translated">Délai (ms)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraDelayHelp" datatype="html">
+        <source>The delay is the time given to auto-exposure to settle before the shutter fires. Too short and the picture uses provisional gains — often too red.</source>
+        <target xml:space="preserve" state="translated">Le délai est le temps laissé à l&#x27;auto-exposition pour se stabiliser avant le déclenchement. Trop court, la photo part sur des gains provisoires — souvent trop rouges.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="logsDownload" datatype="html">
         <source>Download</source>
         <target xml:space="preserve" state="translated">Télécharger</target>

@@ -2121,6 +2121,69 @@
           <context context-type="sourcefile">src/modules/logs/containers/logs/logs.component.html</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="cameraAwb" datatype="html">
+        <source>White balance</source>
+        <target xml:space="preserve" state="translated">Balans de alb</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraAwbHelp" datatype="html">
+        <source>A mode compensates for the light it assumes: the cooler the mode, the less red the picture. Ordered from coolest to warmest.</source>
+        <target xml:space="preserve" state="translated">Un mod compensează lumina presupusă: cu cât modul e mai rece, cu atât imaginea are mai puțin roșu. Ordonate de la rece la cald.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraAwbGains" datatype="html">
+        <source>White-balance gains (R,B)</source>
+        <target xml:space="preserve" state="translated">Câștiguri balans de alb (R,B)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraAwbGainsHelp" datatype="html">
+        <source>Overrides the mode above. To tone down a red cast, lower R and raise B. Leave empty to use the mode.</source>
+        <target xml:space="preserve" state="translated">Are prioritate față de modul de mai sus. Pentru a reduce dominanta roșie, scădeți R și creșteți B. Lăsați gol pentru a folosi modul.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraSizeWarning" datatype="html">
+        <source>⚠️ Keep a 4:3 ratio (e.g. 1096×822, 1640×1232): in 16:9 the camera picks a cropped sensor mode and the wide-angle field is lost.</source>
+        <target xml:space="preserve" state="translated">⚠️ Păstrați raportul 4:3 (de ex. 1096×822, 1640×1232): în 16:9 camera alege un mod de senzor decupat și unghiul larg se pierde.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraRegularSize" datatype="html">
+        <source>Dashboard size (px)</source>
+        <target xml:space="preserve" state="translated">Dimensiune tablou de bord (px)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraHighSize" datatype="html">
+        <source>Analysis size (px)</source>
+        <target xml:space="preserve" state="translated">Dimensiune analiză (px)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraDelay" datatype="html">
+        <source>Delay (ms)</source>
+        <target xml:space="preserve" state="translated">Întârziere (ms)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraDelayHelp" datatype="html">
+        <source>The delay is the time given to auto-exposure to settle before the shutter fires. Too short and the picture uses provisional gains — often too red.</source>
+        <target xml:space="preserve" state="translated">Întârzierea este timpul lăsat auto-expunerii să se stabilizeze înainte de declanșare. Prea scurt, imaginea folosește câștiguri provizorii — adesea prea roșii.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="logsDownload" datatype="html">
         <source>Download</source>
         <target xml:space="preserve" state="translated">Descarcă</target>

@@ -737,7 +737,20 @@ export class DemoFixtureService {
             },
             audio_toggles: { cocorico_at_sunrise: true, song_at_sunset: false },
             notifications: { weather_enabled: true },
-            camera_settings: { brightness: 60, rotation: 180, regular_quality: 45, high_quality: 80 },
+            camera_settings: {
+                brightness: 60,
+                rotation: 180,
+                awb: 'incandescent',
+                awb_gains: '',
+                regular_quality: 30,
+                regular_width: 1096,
+                regular_height: 822,
+                regular_delay: 500,
+                high_quality: 50,
+                high_width: 1640,
+                high_height: 1232,
+                high_delay: 1000,
+            },
             weather_settings: {
                 // Mirrors the shape of the real OpenWeatherMap template so the
                 // demo visitor sees a realistic URL (with the placeholder tokens

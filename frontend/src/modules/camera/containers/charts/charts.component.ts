@@ -18,7 +18,7 @@ import {
     PhotosService,
 } from '@modules/camera/services/photos.service';
 import { CaptureWebsocketService } from '@modules/camera/services/capture-websocket.service';
-import { ConfigService } from '@modules/energy/services/config.service';
+import { AWB_MODES, ConfigService } from '@modules/energy/services/config.service';
 import { UserService } from '@modules/auth/services';
 import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -77,6 +77,17 @@ export class ChartsComponent implements OnInit, OnDestroy {
     cameraRotation = 180;
     cameraRegularQuality = 45;
     cameraHighQuality = 80;
+    /** Mode de balance des blancs ; chaîne vide = automatique. */
+    cameraAwb = '';
+    /** Gains rouge/bleu imposés, "R,B". Prioritaires sur le mode ci-dessus. */
+    cameraAwbGains = '';
+    cameraRegularWidth = 1096;
+    cameraRegularHeight = 822;
+    cameraRegularDelay = 500;
+    cameraHighWidth = 1640;
+    cameraHighHeight = 1232;
+    cameraHighDelay = 1000;
+    readonly awbModes = AWB_MODES;
     cameraSaving = false;
 
     aiInferenceUrl = '';
@@ -465,6 +476,14 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 this.cameraRotation = cfg.camera_settings.rotation;
                 this.cameraRegularQuality = cfg.camera_settings.regular_quality ?? 45;
                 this.cameraHighQuality = cfg.camera_settings.high_quality ?? 80;
+                this.cameraAwb = cfg.camera_settings.awb ?? '';
+                this.cameraAwbGains = cfg.camera_settings.awb_gains ?? '';
+                this.cameraRegularWidth = cfg.camera_settings.regular_width ?? 1096;
+                this.cameraRegularHeight = cfg.camera_settings.regular_height ?? 822;
+                this.cameraRegularDelay = cfg.camera_settings.regular_delay ?? 500;
+                this.cameraHighWidth = cfg.camera_settings.high_width ?? 1640;
+                this.cameraHighHeight = cfg.camera_settings.high_height ?? 1232;
+                this.cameraHighDelay = cfg.camera_settings.high_delay ?? 1000;
                 this.aiInferenceUrl = cfg.ai_settings?.inference_url ?? '';
                 this.aiInferenceModel = cfg.ai_settings?.inference_model ?? 'focus';
                 this.aiInferenceCacheTtlSec = Math.round(
@@ -533,9 +552,24 @@ export class ChartsComponent implements OnInit, OnDestroy {
         const rotation = Number(this.cameraRotation);
         const regularQuality = Number(this.cameraRegularQuality);
         const highQuality = Number(this.cameraHighQuality);
+        const regularWidth = Number(this.cameraRegularWidth);
+        const regularHeight = Number(this.cameraRegularHeight);
+        const regularDelay = Number(this.cameraRegularDelay);
+        const highWidth = Number(this.cameraHighWidth);
+        const highHeight = Number(this.cameraHighHeight);
+        const highDelay = Number(this.cameraHighDelay);
         this.logger.info(
             'saveCameraSettings: sending settings',
-            { brightness, rotation, regularQuality, highQuality },
+            {
+                brightness,
+                rotation,
+                regularQuality,
+                highQuality,
+                awb: this.cameraAwb,
+                awbGains: this.cameraAwbGains,
+                regularSize: `${regularWidth}x${regularHeight}`,
+                highSize: `${highWidth}x${highHeight}`,
+            },
             'Webcam'
         );
         forkJoin({
@@ -543,6 +577,12 @@ export class ChartsComponent implements OnInit, OnDestroy {
             rotation: this.configService.setCameraRotation(rotation),
             regularQuality: this.configService.setCameraRegularQuality(regularQuality),
             highQuality: this.configService.setCameraHighQuality(highQuality),
+            awb: this.configService.setCameraAwb(this.cameraAwb),
+            awbGains: this.configService.setCameraAwbGains(this.cameraAwbGains),
+            regularSize: this.configService.setCameraRegularSize(regularWidth, regularHeight),
+            highSize: this.configService.setCameraHighSize(highWidth, highHeight),
+            regularDelay: this.configService.setCameraRegularDelay(regularDelay),
+            highDelay: this.configService.setCameraHighDelay(highDelay),
         }).subscribe({
             next: () => {
                 this.cameraSaving = false;

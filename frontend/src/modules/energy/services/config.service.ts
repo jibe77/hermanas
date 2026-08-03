@@ -91,11 +91,43 @@ export interface NotificationToggles {
 export interface CameraSettings {
     brightness: number;
     rotation: number;
-    /** JPEG quality used for the dashboard snapshot (480×270). 1..100. */
+    /**
+     * White-balance mode passed to `rpicam-still --awb`. Empty means automatic.
+     *
+     * A mode *compensates* for the light it assumes: the lower the assumed colour
+     * temperature, the cooler the resulting picture. From coolest to warmest —
+     * incandescent, tungsten, indoor, fluorescent, daylight, cloudy.
+     */
+    awb: string;
+    /**
+     * Explicit red/blue gains, `"R,B"`. Overrides {@link awb}: rpicam-still ignores
+     * `--awb` as soon as `--awbgains` is supplied. Empty falls back to the mode.
+     */
+    awb_gains: string;
+    /** JPEG quality for the dashboard snapshot and e-mails. 1..100. */
     regular_quality: number;
-    /** JPEG quality used for the dedicated Webcam page (960×540). 1..100. */
+    regular_width: number;
+    regular_height: number;
+    /** Time given to auto-exposure to settle before the shutter fires, in ms. */
+    regular_delay: number;
+    /** JPEG quality for image analysis. 1..100. */
     high_quality: number;
+    high_width: number;
+    high_height: number;
+    high_delay: number;
 }
+
+/** Modes accepted by `rpicam-still --awb`, coolest first. */
+export const AWB_MODES = [
+    '',
+    'incandescent',
+    'tungsten',
+    'indoor',
+    'fluorescent',
+    'daylight',
+    'cloudy',
+    'auto',
+] as const;
 
 export interface WeatherSettings {
     url: string;
@@ -293,6 +325,62 @@ export class ConfigService extends AbstractService {
     setCameraHighQuality(quality: number): Observable<string> {
         const params = new HttpParams().set('quality', String(quality));
         return this.http.put(`${this.domainBase}/config/camera/high-quality`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** Empty string restores automatic white balance. */
+    setCameraAwb(mode: string): Observable<string> {
+        const params = new HttpParams().set('mode', mode ?? '');
+        return this.http.put(`${this.domainBase}/config/camera/awb`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** `"R,B"` — e.g. `1.2,2.0`. Empty falls back to the AWB mode. */
+    setCameraAwbGains(gains: string): Observable<string> {
+        const params = new HttpParams().set('gains', gains ?? '');
+        return this.http.put(`${this.domainBase}/config/camera/awb-gains`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** ⚠️ Keep a 4:3 ratio — 16:9 makes libcamera pick a cropped sensor mode. */
+    setCameraRegularSize(width: number, height: number): Observable<string> {
+        const params = new HttpParams()
+            .set('width', String(width))
+            .set('height', String(height));
+        return this.http.put(`${this.domainBase}/config/camera/regular/size`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** ⚠️ Keep a 4:3 ratio — see {@link setCameraRegularSize}. */
+    setCameraHighSize(width: number, height: number): Observable<string> {
+        const params = new HttpParams()
+            .set('width', String(width))
+            .set('height', String(height));
+        return this.http.put(`${this.domainBase}/config/camera/high/size`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setCameraRegularDelay(delayMs: number): Observable<string> {
+        const params = new HttpParams().set('delayMs', String(delayMs));
+        return this.http.put(`${this.domainBase}/config/camera/regular/delay`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    setCameraHighDelay(delayMs: number): Observable<string> {
+        const params = new HttpParams().set('delayMs', String(delayMs));
+        return this.http.put(`${this.domainBase}/config/camera/high/delay`, null, {
             params,
             responseType: 'text',
         });

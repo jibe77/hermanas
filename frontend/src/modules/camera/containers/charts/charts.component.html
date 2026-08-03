@@ -276,6 +276,133 @@
                             [(ngModel)]="cameraHighQuality"
                         />
                     </div>
+                    <div class="col-md-6">
+                        <label for="cameraAwb" class="form-label small" i18n="@@cameraAwb"
+                            >White balance</label
+                        >
+                        <select
+                            id="cameraAwb"
+                            class="form-select form-select-sm"
+                            [(ngModel)]="cameraAwb"
+                        >
+                            @for (mode of awbModes; track mode) {
+                                <option [ngValue]="mode">
+                                    {{ mode === '' ? '— automatique —' : mode }}
+                                </option>
+                            }
+                        </select>
+                        <div class="form-text small" i18n="@@cameraAwbHelp">
+                            A mode compensates for the light it assumes: the cooler the mode,
+                            the less red the picture. Ordered from coolest to warmest.
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="cameraAwbGains" class="form-label small" i18n="@@cameraAwbGains"
+                            >White-balance gains (R,B)</label
+                        >
+                        <input
+                            id="cameraAwbGains"
+                            type="text"
+                            class="form-control form-control-sm"
+                            placeholder="1.2,2.0"
+                            [(ngModel)]="cameraAwbGains"
+                        />
+                        <div class="form-text small" i18n="@@cameraAwbGainsHelp">
+                            Overrides the mode above. To tone down a red cast, lower R and
+                            raise B. Leave empty to use the mode.
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <hr class="my-2" />
+                        <div class="small text-muted" i18n="@@cameraSizeWarning">
+                            ⚠️ Keep a 4:3 ratio (e.g. 1096×822, 1640×1232): in 16:9 the camera
+                            picks a cropped sensor mode and the wide-angle field is lost.
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="cameraRegularWidth" class="form-label small" i18n="@@cameraRegularSize"
+                            >Dashboard size (px)</label
+                        >
+                        <div class="input-group input-group-sm">
+                            <input
+                                id="cameraRegularWidth"
+                                type="number"
+                                class="form-control"
+                                min="64"
+                                max="4096"
+                                [(ngModel)]="cameraRegularWidth"
+                            />
+                            <span class="input-group-text">×</span>
+                            <input
+                                type="number"
+                                class="form-control"
+                                min="64"
+                                max="4096"
+                                [(ngModel)]="cameraRegularHeight"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="cameraRegularDelay" class="form-label small" i18n="@@cameraDelay"
+                            >Delay (ms)</label
+                        >
+                        <input
+                            id="cameraRegularDelay"
+                            type="number"
+                            class="form-control form-control-sm"
+                            min="0"
+                            max="30000"
+                            step="100"
+                            [(ngModel)]="cameraRegularDelay"
+                        />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="cameraHighWidth" class="form-label small" i18n="@@cameraHighSize"
+                            >Analysis size (px)</label
+                        >
+                        <div class="input-group input-group-sm">
+                            <input
+                                id="cameraHighWidth"
+                                type="number"
+                                class="form-control"
+                                min="64"
+                                max="4096"
+                                [(ngModel)]="cameraHighWidth"
+                            />
+                            <span class="input-group-text">×</span>
+                            <input
+                                type="number"
+                                class="form-control"
+                                min="64"
+                                max="4096"
+                                [(ngModel)]="cameraHighHeight"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="cameraHighDelay" class="form-label small" i18n="@@cameraDelay"
+                            >Delay (ms)</label
+                        >
+                        <input
+                            id="cameraHighDelay"
+                            type="number"
+                            class="form-control form-control-sm"
+                            min="0"
+                            max="30000"
+                            step="100"
+                            [(ngModel)]="cameraHighDelay"
+                        />
+                    </div>
+                    <div class="col-12">
+                        <div class="form-text small" i18n="@@cameraDelayHelp">
+                            The delay is the time given to auto-exposure to settle before the
+                            shutter fires. Too short and the picture uses provisional gains —
+                            often too red.
+                        </div>
+                    </div>
+
                     <div class="col-12 d-flex justify-content-end">
                         <button
                             type="button"
