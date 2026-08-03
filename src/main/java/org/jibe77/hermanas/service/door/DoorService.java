@@ -102,8 +102,7 @@ public class DoorService {
             bottomButtonService.provisionButton();
             bottomButtonService.resetBottomButtonState();
             closeDoor(force, true);
-            if (bottomButtonService.isBottomButtonHasBeenPressed()
-                    || (waitALittle() && bottomButtonService.isBottomButtonHasBeenPressed())) {
+            if (bottomPositionReached() || (waitALittle() && bottomPositionReached())) {
                 logger.info("bottom position has been reached.");
                 notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSED));
             } else {
@@ -111,7 +110,7 @@ public class DoorService {
                 notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSED_INCORRECTLY));
                 // if the door has been closed twice, opening the door is actually closing the door .
                 openDoorWithUpButtonManagment(force, true);
-                if (!bottomButtonService.isBottomButtonHasBeenPressed())
+                if (!bottomPositionReached())
                     throw new DoorNotClosedCorrectlyException();
             }
             logger.info("... the door has been closed !");
@@ -119,6 +118,43 @@ public class DoorService {
         } else {
             logger.info("Door is not closed because is already closed state.");
         }
+    }
+
+    /**
+     * La porte a-t-elle atteint sa position basse ?
+     *
+     * <p>Deux critères, du plus franc au plus tolérant :</p>
+     * <ol>
+     *   <li>un appui net a été détecté (niveau haut) — le cas nominal ;</li>
+     *   <li>à défaut, <b>n'importe quelle transition</b> sur la ligne du fin de
+     *       course bas.</li>
+     * </ol>
+     *
+     * <p>Le second critère existe parce que ce contact est usé : il rebondit
+     * abondamment et n'atteint pas toujours un niveau haut franc. Les rebonds
+     * étaient alors interprétés comme « position jamais atteinte », déclenchant
+     * une réouverture de sécurité alors que la porte était bien en bas.</p>
+     *
+     * <p>Ce n'est pas laxiste : pendant une fermeture commandée, le seul événement
+     * mécanique capable de solliciter ce contact est l'arrivée de la porte. Le
+     * drapeau est remis à zéro juste avant le mouvement, donc seule l'activité de
+     * <em>cette</em> fermeture est prise en compte — les parasites qui surviennent
+     * porte immobile (relevés vers 04 h 45) ne sont jamais lus.</p>
+     *
+     * <p>⚠️ Contournement d'un défaut matériel, à retirer une fois le contact
+     * remplacé. Voir migration.md §5.4.</p>
+     */
+    private boolean bottomPositionReached() {
+        if (bottomButtonService.isBottomButtonHasBeenPressed()) {
+            return true;
+        }
+        if (bottomButtonService.hasBottomButtonChanged()) {
+            logger.warn("Aucun appui franc sur le fin de course bas, mais la ligne a bougé "
+                    + "pendant la fermeture : position basse considérée comme atteinte. "
+                    + "Le contact est probablement use — voir migration.md §5.4.");
+            return true;
+        }
+        return false;
     }
 
     private boolean waitALittle() {

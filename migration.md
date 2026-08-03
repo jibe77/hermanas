@@ -2379,6 +2379,51 @@ câblage.
 > ⚠️ **Broche 1 uniquement.** Les broches 2 et 4 sont en 5 V et endommageraient
 > l'entrée GPIO.
 
+##### Relevé du 2026-08-03 — le contact ne se tait jamais
+
+Le diagnostic « aucun signal » était **incomplet** : le bouton bas n'est pas muet,
+il est **instable**. Entre 04 h 45 et 07 h 19, porte immobile, il produit des
+centaines de transitions parasites :
+
+```
+04:46:18.211  Door has reached the bottom…
+04:46:18.227  Door has reached the bottom…      ← 16 ms plus tard
+04:46:18.331  Door has reached the bottom…      ← 104 ms
+04:46:18.434  Door has reached the bottom…
+```
+
+La mesure `gpioget` qui renvoyait `inactive` en continu était tombée entre deux
+oscillations. Cause probable : contact mécanique usé, ou masse mal serrée laissant
+l'entrée flotter.
+
+À noter : le `.debounce(3000L)` aurait dû filtrer cela. Qu'il n'en soit rien
+suggère que le plugin FFM ne l'applique pas comme attendu — piste à creuser.
+
+##### 🩹 Contournement logiciel en place *(2026-08-03)*
+
+En attendant la réparation, `DoorService.bottomPositionReached()` valide la
+fermeture sur **deux** critères :
+
+1. un appui franc (niveau haut) — cas nominal ;
+2. à défaut, **n'importe quelle transition** sur la ligne pendant la fermeture.
+
+`BottomButtonService.hasBottomButtonChanged()` enregistre toute transition, dans
+un sens comme dans l'autre, et le drapeau est remis à zéro juste avant chaque
+mouvement.
+
+**Pourquoi ce n'est pas laxiste** : pendant une fermeture commandée, le seul
+événement mécanique capable de solliciter ce contact est l'arrivée de la porte. Et
+comme le drapeau est réinitialisé au démarrage du mouvement, les parasites qui
+surviennent porte immobile — ceux de 04 h 45 — ne sont jamais lus.
+
+Deux tests verrouillent le comportement dans `DoorControllerTest` :
+`closingIsValidatedByAnyBottomButtonActivity` et
+`closingStillFailsWhenBottomButtonIsCompletelySilent` — le second garantit qu'un
+silence complet reste un échec.
+
+> ⚠️ **À retirer une fois le contact remplacé.** C'est un pansement sur un défaut
+> matériel, pas une correction.
+
 ##### Ce qui reste inexpliqué
 
 L'**ouverture automatique silencieuse** (voir plus bas) supposait un bouton haut lu
