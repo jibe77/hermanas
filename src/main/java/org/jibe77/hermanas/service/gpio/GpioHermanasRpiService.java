@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -55,6 +56,23 @@ public class GpioHermanasRpiService implements GpioHermanasService {
 
     @Value("${camera.rpicam.still.path:/usr/bin/rpicam-still}")
     private String rpicamStillPath;
+
+    /**
+     * Mode de balance des blancs passé à {@code --awb}. Vide = automatique.
+     *
+     * <p>La photo est toujours prise avec la lampe du poulailler allumée : l'éclairage
+     * est constant et connu, donc un mode fixe converge instantanément là où
+     * l'automatique a besoin de plusieurs images. Avec un {@code --timeout} de
+     * 500-750 ms, l'algorithme automatique déclenchait sur des gains provisoires trop
+     * rouges — d'où les reflets rosés constatés.</p>
+     */
+    @Value("${camera.awb:}")
+    private String cameraAwb;
+
+    /** Modes acceptés par {@code rpicam-still} ; toute autre valeur ferait échouer la commande. */
+    private static final Set<String> AWB_MODES = Set.of(
+            "auto", "incandescent", "tungsten", "fluorescent",
+            "indoor", "daylight", "cloudy", "custom");
 
     public GpioHermanasRpiService(CameraConfiguration cameraConfiguration) {
         this.cameraConfiguration = cameraConfiguration;
@@ -164,6 +182,19 @@ public class GpioHermanasRpiService implements GpioHermanasService {
         command.add("--brightness");
         command.add(String.format(Locale.ROOT, "%.2f",
                 (cameraConfiguration.brightness() - 50) / 50.0));
+
+        // Balance des blancs fixe, si configurée. Filtrée comme la rotation : une
+        // valeur inconnue ferait échouer la commande entière plutôt que d'être ignorée.
+        if (cameraAwb != null && !cameraAwb.isBlank()) {
+            String awb = cameraAwb.trim().toLowerCase(Locale.ROOT);
+            if (AWB_MODES.contains(awb)) {
+                command.add("--awb");
+                command.add(awb);
+            } else {
+                logger.warn("Mode AWB '{}' inconnu de rpicam-still, ignoré. Valeurs acceptées : {}.",
+                        cameraAwb, AWB_MODES);
+            }
+        }
 
         return command;
     }
