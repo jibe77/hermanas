@@ -339,6 +339,48 @@ public class MusicService {
                 -1);
     }
 
+    /**
+     * Applique immédiatement au système le volume actuellement configuré.
+     *
+     * <p>Sans cela, un changement de volume n'était visible qu'à la lecture
+     * suivante : {@code amixer} n'est invoqué qu'au démarrage d'un morceau. Régler
+     * le volume pendant que la musique joue ne produisait donc aucun effet audible,
+     * ce qui est déroutant pour un réglage censé être immédiat.</p>
+     *
+     * <p>Appelé par l'endpoint {@code PUT /api/v1/config/music/volume} après
+     * l'écriture en base. Ne lève pas : un échec d'{@code amixer} ne doit pas faire
+     * échouer la sauvegarde du paramètre, qui reste valable pour les lectures
+     * suivantes.</p>
+     *
+     * @return true si la commande a pu être lancée
+     */
+    public boolean applyConfiguredVolume() {
+        if (!musicEnabled) {
+            logger.info("Music disabled — configured volume not applied to the sound card.");
+            return false;
+        }
+        // La carte son est coupée hors lecture (économie d'énergie) ; amixer n'aurait
+        // alors aucun mixer sur lequel agir. On l'allume le temps du réglage, puis on
+        // la remet dans l'état où on l'a trouvée — sauf si un morceau joue, auquel cas
+        // la couper interromprait la lecture en cours.
+        boolean playing = currentMusicProcess != null && currentMusicProcess.isAlive();
+        try {
+            if (!playing) {
+                soundCardService.turnOn();
+            }
+            setMusicLevel(configService.getMusicVolumeRegular());
+            return true;
+        } catch (IOException e) {
+            logger.warn("Could not apply the configured volume to the sound card. "
+                    + "The setting is saved and will apply on the next playback.", e);
+            return false;
+        } finally {
+            if (!playing) {
+                soundCardService.turnOff();
+            }
+        }
+    }
+
     private void setMusicLevel(String volumeLevel) throws IOException {
         logger.info("Set music level to {} with command {} {} {} {}.",
                 volumeLevel,

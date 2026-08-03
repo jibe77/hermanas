@@ -48,6 +48,9 @@ class ConfigRestControllerTest {
     @MockitoBean
     private org.jibe77.hermanas.service.camera.CameraService cameraService;
 
+    @MockitoBean
+    private org.jibe77.hermanas.service.music.MusicService musicService;
+
     // ============================================================================
     // GET /api/v1/config - View Configuration
     // ============================================================================

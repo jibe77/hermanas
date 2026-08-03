@@ -40,15 +40,18 @@ public class ConfigRestController {
     private final CacheManager cacheManager;
     private final org.jibe77.hermanas.client.ai.AiVisionCache aiVisionCache;
     private final org.jibe77.hermanas.service.camera.CameraService cameraService;
+    private final org.jibe77.hermanas.service.music.MusicService musicService;
 
     public ConfigRestController(ConfigService configService,
                                 CacheManager cacheManager,
                                 org.jibe77.hermanas.client.ai.AiVisionCache aiVisionCache,
-                                org.jibe77.hermanas.service.camera.CameraService cameraService) {
+                                org.jibe77.hermanas.service.camera.CameraService cameraService,
+                                org.jibe77.hermanas.service.music.MusicService musicService) {
         this.configService = configService;
         this.cacheManager = cacheManager;
         this.aiVisionCache = aiVisionCache;
         this.cameraService = cameraService;
+        this.musicService = musicService;
     }
 
     // ============================================================================
@@ -432,6 +435,10 @@ public class ConfigRestController {
             @Parameter(description = "Volume percent (0-100)", example = "78")
             @RequestParam int percent) {
         configService.setMusicVolumeRegular(percent);
+        // Appliqué tout de suite à la carte son : sans cela le réglage n'aurait
+        // d'effet qu'à la lecture suivante, amixer n'étant invoqué qu'au démarrage
+        // d'un morceau. Un échec côté matériel n'invalide pas la sauvegarde.
+        musicService.applyConfiguredVolume();
         return ResponseEntity.ok("Music volume set to " + percent + "%");
     }
 

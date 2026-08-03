@@ -78,6 +78,40 @@ class MusicControllerTest {
         assertNull(musicService.getCurrentMusicProcess());
     }
 
+    /**
+     * Le volume configuré doit partir vers la carte son immédiatement, sans attendre
+     * la lecture suivante. La carte étant coupée hors lecture, elle est allumée le
+     * temps du réglage puis refermée.
+     */
+    @Test
+    void applyConfiguredVolumeSendsItToTheSoundCard() throws IOException {
+        Mockito.when(configService.getMusicVolumeRegular()).thenReturn("75%");
+        musicService.setCurrentMusicProcess(null);
+
+        assertTrue(musicService.applyConfiguredVolume());
+
+        Mockito.verify(soundCardService).turnOn();
+        Mockito.verify(processLauncher).launch(
+                Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.eq("75%"));
+        Mockito.verify(soundCardService).turnOff();
+    }
+
+    /**
+     * Un échec d'amixer ne doit pas remonter : le paramètre est déjà sauvegardé en
+     * base et s'appliquera de toute façon à la lecture suivante.
+     */
+    @Test
+    void applyConfiguredVolumeSwallowsHardwareFailure() throws IOException {
+        Mockito.when(configService.getMusicVolumeRegular()).thenReturn("75%");
+        Mockito.when(processLauncher.launch(
+                        Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+                .thenThrow(new IOException("amixer absent"));
+
+        assertFalse(musicService.applyConfiguredVolume());
+        // La carte son est refermée même en cas d'échec.
+        Mockito.verify(soundCardService).turnOff();
+    }
+
     @Test
     void testCocorico() throws IOException {
         Mockito.when(processLauncher.launch(Mockito.anyList())).thenReturn(Mockito.mock(Process.class));
