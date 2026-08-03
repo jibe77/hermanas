@@ -6,12 +6,168 @@ Checklist opérationnelle. Stratégie all-in-one : hardware + OS 64 bits (Trixie
 
 **Downtime coop attendu : ~1 h**, à planifier en milieu de journée porte ouverte.
 
-**Alias réseau conservé** : `poupou` (côté `shannen`) = IP fixe `192.168.1.35`, restera valide après bascule DHCP. Hostname interne de la nouvelle machine = `pru` (marque la différence avec l'ancien `poulailler`).
+~~**Alias réseau conservé** : `poupou` = IP fixe `192.168.1.35`, restera valide après bascule DHCP.~~
+**Rectifié le 2026-08-03** : la reprise du bail `.35` a été abandonnée, `pru` garde
+`192.168.1.2`. Voir [Phase 4](#phase-4--bascule-réseau). Hostname interne de la
+nouvelle machine = `pru` (marque la différence avec l'ancien `poulailler`).
+
+---
+
+## 🎯 Où en est-on ? *(au 2026-08-03)*
+
+**L'installation tourne en production sur `pru`.** Le poulailler est piloté par la
+nouvelle machine : porte, éclairage, ventilation, capteurs, photos, ordonnancement
+solaire, interface web.
+
+| Phase | État | Reste |
+|---|---|---|
+| 0 — Préparation `pru` | ✅ | — |
+| 1 — Code Java 25 / SB4 / pi4j FFM | ✅ | — |
+| 2 — Bascule données | ✅ | — |
+| 3 — Test à vide + mémoire | ✅ | — |
+| 4 — Bascule réseau | ✅ | Bail DHCP abandonné (voir 4.2) |
+| 5 — Bascule hardware | ⚠️ | **Fin de course bas défectueux** (§5.4) |
+| 6 — Mise à jour des dépendances | ⏸️ | Non urgent, rien ne bloque |
+| 7 — Caméra + audio | ⚠️ | Photo ✅, **streaming à porter** (§7.2) |
+| 8 — Rollback | 🔒 | À conserver tant que `poupou` existe |
+
+### Défauts matériels ouverts
+
+| Élément | Symptôme | Statut |
+|---|---|---|
+| **Fin de course bas** (BCM 15) | rebondit en continu, même porte immobile | contournement logiciel en place — §5.4 |
+| **Capteur DHT22** | humidité de 1 % à 99,9 % dans la journée | à remplacer (SHT31 en I²C) — §9 de la checklist |
+| **Streaming vidéo** | `mjpg_streamer` sur la pile MMAL disparue | à porter — §7.2 |
+
+### Réglages en attente
+
+- Qualité photo « regular » à **5** → à remonter (écran de configuration, effet immédiat)
+- Reflets rosés → probablement l'AWB, voir §7.1
+- `gpu_mem` 64 → 16 Mo → 48 Mo de RAM à récupérer, test décrit en §7.1
+- Compression des photos jointes aux emails (~780 Ko actuellement)
+
+### Bilan mémoire — l'objectif est tenu
+
+Priorité affichée : **éviter le swap disque** pour épargner la carte SD.
+
+```
+Swap    /dev/zram0   560 Mo utilisés   ← compressé en RAM
+        /var/swap      0 Mo utilisés   ← aucune écriture SD
+```
+
+---
+
+---
+
+## 🧰 Annexe — Tous les correctifs, classés par thème
+
+**Base du futur guide d'installation.** Chaque ligne est un piège rencontré en
+conditions réelles, avec sa cause et son remède. Classement par domaine plutôt que
+par chronologie : c'est ainsi qu'on les cherche quand on réinstalle.
+
+> Les numéros §x.y renvoient aux sections détaillées de ce document, qui contiennent
+> le diagnostic complet et les commandes.
+
+### A. Système et démarrage
+
+| Problème rencontré | Cause | Correctif |
+|---|---|---|
+| `pru` injoignable après quelques minutes | Veille de la carte wifi | `wifi.powersave = 2` dans NetworkManager — §0.11ter |
+| Service tué en pleine initialisation | Démarrage de 265-370 s contre 90 s de timeout par défaut | `TimeoutStartSec=900` — §3.5 |
+| GPIO laissé dans un état indéterminé à l'arrêt | `SIGKILL` avant que `pi4j.shutdown()` ait fini ; **le servo peut rester alimenté contre sa butée** | `TimeoutStopSec=180` — §3.5 |
+| Concurrence mémoire au boot | Hermanas démarre pendant que le reste du système s'initialise | `ExecStartPre=/bin/sleep 45`, `Nice=10` — §0.6 |
+| `Could not resolve placeholder` | `--spring.config.location` **remplace** la config du JAR (60 propriétés au lieu de 165) | `--spring.config.additional-location` — §3.2 |
+
+### B. Mémoire — priorité n°1 : ne pas user la carte SD
+
+Chaîne de diagnostic : `vmstat` montrait `wa` à 90-100 % avec `us` à 0 % → pas un
+problème CPU, mais une attente disque. `VmSwap` à 191 Mo pour la seule JVM.
+
+| Correctif | Effet mesuré | § |
+|---|---|---|
+| **zram 2× RAM + suppression de `/var/swap`** | **décisif** — zstd compresse à 4-5:1 | 3.2bis f |
+| MariaDB allégé (`performance_schema=OFF`, buffers réduits) | swap 526 → 178 Mo | 3.2bis a |
+| Plafonds JVM par zone (`-Xmx160m`, metaspace 192m, code cache 48m, `Xss512k`) | le heap ne fait que la moitié de l'empreinte | 3.2bis b |
+| `@Lazy` sur les 23 contrôleurs REST **seulement** | le lazy **global** casserait les automatismes | 3.2bis c |
+| `vm.swappiness=10` | — | 3.2bis d |
+| Session graphique retirée | image Desktop installée au lieu de Lite | 3.2bis e |
+| `gpu_mem` 64 → 16 Mo | +48 Mo — ⚠️ remonté à 64 pendant le diagnostic caméra, **à retester** | 3.2bis g / 7.1 |
+
+**Résultat** : `wa` de 90-100 % → 0-1 %, démarrage de 494 s → 265 s, aucune écriture
+de swap sur la carte SD.
+
+> ⚠️ **Piège à éviter** : `@Lazy` en global casse tout. 17 classes ont un
+> `@PostConstruct` (`LightService`, `ServoMotorService`, boutons) : sans elles, la
+> porte n'ouvrirait plus tant qu'aucun visiteur HTTP ne se présente.
+
+### C. GPIO et pi4j 4.x (plugin FFM)
+
+| Problème | Cause | Correctif |
+|---|---|---|
+| `ProviderNotFoundException: ffm-digital-output` | Le plugin FFM initialise **tous** ses providers d'un bloc ; `FFMI2CProviderImpl` exige le groupe `i2c` | `usermod -aG i2c,spi hermanas` — §0.4bis |
+| `PWM Chip and Channel are needed` | Le provider FFM refuse `.bcm()` : il attend l'adressage sysfs | Table BCM → chip/channel — §3.2 |
+| `/sys/class/pwm/` vide | Overlay absent | `dtoverlay=pwm,pin=12,func=4` — §3.2 |
+| Servo ne s'arrêtant pas au fin de course | Contournement pigpio (`pwm.on(0,…)` avant `off()`) : sur PWM **matériel** il *réactive* le canal | Se limiter à `pwm.off()` — §5.3bis |
+| Fermeture jamais validée | Contact de fin de course bas usé, rebondit en continu | Valider sur **toute** transition pendant la fermeture — §5.4 |
+
+> **Seul changement de câblage** vs `poupou` : le fil de signal du servo passe de la
+> broche 22 (GPIO 25) à la **broche 32 (GPIO 12)** — seuls les GPIO 12/13/18/19
+> donnent accès au PWM matériel, et le 18 est déjà pris.
+
+### D. Spring Boot 4 / Hibernate 7 / Spring Security 7
+
+| Problème | Cause | Correctif |
+|---|---|---|
+| **Login impossible, 403 sur tout POST** | Spring Security 6+ charge le `CsrfToken` paresseusement : le cookie n'est écrit que si quelqu'un le *lit* | `CsrfTokenRequestAttributeHandler` avec `setCsrfRequestAttributeName(null)` — §3.5 |
+| **`Duplicate entry '1' for key 'PRIMARY'`** | `GenerationType.AUTO` = `IDENTITY` en Hibernate 5, **table de séquence** en Hibernate 7. Les 7 nouvelles séquences repartaient de 1 | `ALTER SEQUENCE … RESTART WITH <max+1>` sur les 7 — §3.5ter |
+| `resilience4j-spring-boot3 is only compatible with Spring Boot 3.x` | L'artifactId encode la ligne Spring Boot, et le module vérifie au démarrage | `resilience4j-spring-boot4` — §3.2 |
+| Traces de 150 lignes pour un fichier absent | `NoResourceFoundException` tombait sur le handler générique | Handler dédié → 404 + log DEBUG — §3.5bis |
+| `Failed to validate connection` périodiques | MariaDB ferme les connexions inactives avant Hikari | `max-lifetime=240000` (sous le `wait_timeout`) — §3.5 |
+| `Cannot load from object array because "this.hashes" is null` | Bug de `plexus-compiler-javac` en in-process avec Java 25 | `<fork>true</fork>` sur le compiler plugin — §1.x |
+
+### E. Caméra — le portage le plus long
+
+| Problème | Cause | Correctif |
+|---|---|---|
+| picam ne charge plus | MMAL **retiré** de Raspberry Pi OS arm64 ; le `.so` ARMv6 n'a plus de pile derrière lui | Portage vers `rpicam-still` — §7.1 |
+| `rpicam-apps currently only supports the Raspberry Pi platforms` | **Message trompeur** : sort aussi quand aucune caméra n'est trouvée, sur un Pi parfaitement reconnu | Voir ligne suivante |
+| Caméra détectée mais libcamera muet | `dtoverlay=vc4-kms-v3d` monopolise l'interface caméra du firmware | Commenter l'overlay — §7.1 |
+| `Permission denied` sur `/dev/media*` | `hermanas` absent du groupe `video` | `usermod -aG video,render hermanas` — §7.1 |
+| Champ réduit, fisheye perdu | En 16:9 libcamera choisit un mode **recadré** ; seuls les modes 4:3 lisent le capteur entier | Dimensions en 4:3 — §7.1 |
+
+> **Fausses pistes documentées** (§7.1), pour ne pas les refaire : `camera_auto_detect`
+> était déjà présent ; `disable_fw_kms_setup` sans effet ; `gpu_mem` 16 → 64 sans
+> effet ; `vcgencmd get_camera` est **obsolète** sur libcamera et renvoie toujours
+> `interfaces=0` ; `bcm2835_unicam_legacy` n'est pas un mode dégradé.
+
+### F. Frontend
+
+| Problème | Cause | Correctif |
+|---|---|---|
+| 404 en boucle sur `/fr-FR/actuator/*` | Le service worker, sous `<base href="/fr-FR/">`, traitait ces URLs comme des navigations | `navigationUrls` explicites dans `ngsw-config.json` — §3.5bis |
+| Anciens comportements persistants après déploiement | Service worker en cache | DevTools → Application → Service Workers → *Unregister* |
+
+### G. Données et fichiers
+
+| Problème | Correctif |
+|---|---|
+| Chemins relatifs (`./photos`) | Absolutiser dans `application.properties` — §2.6 |
+| Défauts `sensor.python.*` pointant vers `poupou` (`/usr/bin/python`, `AdafruitDHT.py`) | Surcharger : `python3` + `read_dht22.py` — §0.7bis |
+| Ownership après copie Samba | `chown -R hermanas:hermanas` — §2.4 |
+
+### H. Ce qui reste en défaut matériel
+
+| Élément | Symptôme | Statut |
+|---|---|---|
+| Fin de course bas (BCM 15) | Rebondit en continu, y compris porte immobile | Contournement logiciel — §5.4 |
+| DHT22 | Humidité de 1 % à 99,9 % dans la même journée | À remplacer (SHT31 en I²C) |
+| Streaming vidéo | `mjpg_streamer` sur la pile MMAL disparue | À porter — §7.2 |
 
 ---
 
 ## 📚 Sommaire
 
+- [🧰 Annexe — Tous les correctifs, classés par thème](#-annexe--tous-les-correctifs-classés-par-thème) ← **base du guide d'installation**
 - [Phase 0 — Préparation `pru` headless (hors ligne)](#phase-0--préparation-pru-headless-hors-ligne)
 - [Phase 1 — Migration code Java 25 / Spring Boot 4 / Jakarta EE / pi4j 4.x](#phase-1--migration-code-java-25--spring-boot-4--jakarta-ee--pi4j-4x)
 - [Phase 2 — Bascule des données et fichiers](#phase-2--bascule-des-données-et-fichiers)
@@ -493,7 +649,7 @@ Deux blocages pour `pru` :
   Il reproduit aussi le comportement de `read_retry()` (15 tentatives espacées de 2 s),
   le DHT22 échouant fréquemment sur une lecture isolée.
 
-- [ ] Installer la dépendance sur `pru` :
+- [x] Installer la dépendance sur `pru` :
   ```bash
   sudo apt install -y python3-pip libgpiod3 python3-libgpiod
   pip3 install --break-system-packages adafruit-circuitpython-dht
@@ -503,7 +659,7 @@ Deux blocages pour `pru` :
   renommé le paquet. `apt-cache search libgpiod` pour vérifier si le nom change
   encore. `python3-libgpiod` fournit les bindings Python en paquet Debian, ce qui
   évite de les faire compiler par pip.
-- [ ] Déposer le script :
+- [x] Déposer le script :
   ```bash
   # depuis le Mac
   scp -P 5722 scripts/read_dht22.py jean-baptisterenaux@pru.local:/tmp/
@@ -512,13 +668,13 @@ Deux blocages pour `pru` :
   sudo chown hermanas:hermanas /var/lib/hermanas/read_dht22.py
   sudo chmod 750 /var/lib/hermanas/read_dht22.py
   ```
-- [ ] Adapter `/var/lib/hermanas/application.properties` :
+- [x] Adapter `/var/lib/hermanas/application.properties` :
   ```properties
   sensor.python.command = /usr/bin/python3
   sensor.python.script  = /var/lib/hermanas/read_dht22.py
   ```
   ⚠️ **`python3` et non `python`** : Trixie ne fournit pas `/usr/bin/python`.
-- [ ] Tester **sous le user `hermanas`**, pour valider que root n'est plus nécessaire :
+- [x] Tester **sous le user `hermanas`**, pour valider que root n'est plus nécessaire :
   ```bash
   sudo -u hermanas /usr/bin/python3 /var/lib/hermanas/read_dht22.py 22 4
   # attendu : Temp=XX.X*  Humidity=XX.X%
@@ -987,9 +1143,9 @@ une erreur serveur.
 Fichiers touchés : `GpioHermanasRpiService.java`, `DefaultGpioPinDigitalOutput.java`, `DefaultGpioPinDigitalInput.java`, `DefaultGpioPwm.java`.
 
 **Suppressions dans `GpioHermanasRpiService.java`** (retirées en Phase 7, gardées en dette pour le moment) :
-- [ ] Import `uk.co.caprica.picam.*` (Phase 7).
-- [ ] Bloc `System.load(picamJniImplementation)` + try/catch `UnsatisfiedLinkError` (Phase 7).
-- [ ] Annotation `@Value("${camera.picam.jni.implementation}")` et field `picamJniImplementation` (Phase 7).
+- [x] ~~Import `uk.co.caprica.picam.*`~~ — **supprimé** avec le portage vers `rpicam-still` (§7.1, commit `8744a41`).
+- [x] ~~Bloc `System.load(picamJniImplementation)`~~ — **supprimé** : plus aucune librairie native à charger (§7.1).
+- [x] ~~`@Value("${camera.picam.jni.implementation}")`~~ — **remplacé** par `camera.rpicam.still.path` (§7.1).
 
 **Adaptations API pi4j 2.x → 4.x — signatures réelles vérifiées via `javap` sur `pi4j-core-4.0.2.jar`** :
 
@@ -1020,7 +1176,7 @@ un seul fil à déplacer, le bouton haut de porte ne bouge pas.
 
 - [x] **`application.properties` adapté** : `door.servo.gpio.address` **25 → 12**
   (dans `src/main/resources/` et `src/test/resources/`).
-- [ ] ⚠️ **Recâblage physique à faire au moment du montage sur le coop (Phase 5.1)** :
+- [x] ⚠️ **Recâblage physique** ✅ *fait* — servo déplacé en broche 32 (GPIO 12), voir 5.1 :
   déplacer le fil de signal du servo de la **broche 22** (GPIO 25) vers la **broche 32** (GPIO 12).
   L'alimentation et la masse du servo ne bougent pas.
 
@@ -1180,7 +1336,7 @@ mysqldump \
   > /tmp/hermanas-$(date +%F).sql
 ```
 
-- [ ] Vérifier que le dump n'est pas vide et se termine proprement :
+- [x] Vérifier que le dump n'est pas vide et se termine proprement :
   ```bash
   ls -lh /tmp/hermanas-*.sql
   tail -1 /tmp/hermanas-*.sql    # attendu : "-- Dump completed on ..."
@@ -1298,11 +1454,11 @@ rsync -avh --progress /home/pi/residents-photos/ /mnt/pru-migration/residents-ph
 sudo umount /mnt/pru-migration
 ```
 
-- [ ] Vérifier tailles + counts sur `pru` :
+- [x] Vérifier tailles + counts sur `pru` :
   ```bash
   ssh -p 5722 jean-baptisterenaux@pru.local "du -sh /var/lib/hermanas/photos /var/lib/hermanas/music /var/lib/hermanas/residents-photos"
   ```
-- [ ] Corriger l'ownership (Samba avec `force group` a fait au mieux, mais on veut `hermanas:hermanas` sur tout) :
+- [x] Corriger l'ownership (Samba avec `force group` a fait au mieux, mais on veut `hermanas:hermanas` sur tout) :
   ```bash
   sudo chown -R hermanas:hermanas /var/lib/hermanas/photos /var/lib/hermanas/music /var/lib/hermanas/residents-photos
   ```
@@ -2144,48 +2300,56 @@ Ctrl+C. **Ne pas démarrer le service systemd encore.**
 
 ---
 
-## Phase 4 — Bascule réseau
+## Phase 4 — Bascule réseau ✅ *(2026-08-03)*
 
-### 4.1 — Extinction de `poupou`
+> **Écart assumé par rapport au plan initial.** `pru` conserve son adresse
+> `192.168.1.2` : le bail `.35` de `poupou` n'a pas été repris. Le reverse proxy
+> pointe vers `.2` et tout fonctionne, donc l'usurpation d'adresse prévue en 4.2
+> est devenue inutile. Section conservée pour mémoire, non appliquée.
+
+### 4.1 — Extinction de `poupou` ✅
 
 ```bash
 ssh -p 5722 pi@poupou "sudo shutdown -h now"
 ```
 
-- [ ] Attendre extinction complète (LED verte fixe puis éteinte).
-- [ ] Débrancher **le câble GPIO du coop** (à conserver pour rollback).
-- [ ] Débrancher l'alim.
+- [x] Extinction complète
+- [x] Câble GPIO du coop débranché — **conservé pour rollback**
+- [x] Alimentation débranchée
 
-### 4.2 — Freebox : bail DHCP statique
+Vérifié le 2026-08-03 : `192.168.1.35` ne répond plus (ping et port 8080).
+
+### 4.2 — Freebox : bail DHCP statique — ❌ *abandonné*
+
+Le plan prévoyait de transférer le bail `192.168.1.35` sur la MAC de `pru` pour
+que la bascule soit transparente. **Non fait, et sans conséquence** : `pru` sert
+sur `192.168.1.2`, et c'est cette adresse que le reverse proxy interroge.
+
+À reprendre uniquement si un jour un client codait `192.168.1.35` en dur.
+
+<details>
+<summary>Procédure d'origine, si le besoin réapparaît</summary>
 
 Interface admin Freebox → **Paramètres → DHCP → Baux statiques** :
 
-- [ ] Repérer le bail actuel sur `192.168.1.35` (MAC de `poupou`).
-- [ ] Remplacer la MAC par celle de `pru` (`ip link show wlan0 | grep ether` sur `pru`).
-- [ ] Sauvegarder.
+1. Repérer le bail actuel sur `192.168.1.35` (MAC de `poupou`).
+2. Remplacer la MAC par celle de `pru` (`ip link show wlan0 | grep ether`).
+3. Sauvegarder, puis `sudo reboot` sur `pru`.
+4. Vérifier : `ip -4 addr show wlan0` doit afficher `192.168.1.35`.
 
-Sur `pru` :
+</details>
 
-```bash
-sudo reboot
-```
+### 4.3 — Vérifications ✅
 
-Après reboot :
+État constaté le 2026-08-03 :
 
-```bash
-ip -4 addr show wlan0    # doit afficher 192.168.1.35
-```
+| Contrôle | Résultat |
+|---|---|
+| `192.168.1.35` (ancien `poupou`) | ne répond plus — machine hors tension |
+| `192.168.1.2:8080` (`pru`) | répond |
+| `hermanas.r3n4.uk` | sert bien l'application |
 
-### 4.3 — Vérifications
-
-Depuis n'importe quelle machine du LAN :
-
-```bash
-ping poupou           # doit répondre depuis 192.168.1.35 (donc pru)
-ssh -p 5722 pi@poupou # doit se connecter à pru
-```
-
-- [ ] `/etc/hosts` de `shannen` n'a **pas** besoin d'être touché (résolution par IP fixe).
+- [x] `/etc/hosts` de `shannen` inchangé — résolution par IP fixe
 
 ---
 
