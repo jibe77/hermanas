@@ -115,7 +115,7 @@ public class ApplicationStatusListener implements ApplicationListener<ContextClo
             logger.info("application status listener is enabling the wifi card for sending an email.");
             wifiService.turnOn();
         }
-        Optional<File> pic = cameraService.takePictureNoException(true);
+        Optional<File> pic = cameraService.takePictureNoException(false);
         Locale locale = Locale.getDefault();
         Object[] args = restartArgs(lastStartupAt);
         // Body = generic intro + path-specific suffix. Both share the same

@@ -81,7 +81,7 @@ public class ManageDoorOpeningEvent {
                     }
                 }
                 wifiService.turnOn();
-                Optional<File> picBeforeOpening = cameraService.takePictureNoException(true);
+                Optional<File> picBeforeOpening = cameraService.takePictureNoException(false);
                 if (picBeforeOpening.isPresent()) {
                     eventService.recordAuto(EventType.PICTURE_TAKEN, "auto: door-opening snapshot");
                 }

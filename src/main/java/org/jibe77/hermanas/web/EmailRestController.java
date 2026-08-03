@@ -67,7 +67,7 @@ public class EmailRestController {
                     "No email address on your user account. Set one in your profile before testing."));
         }
         try {
-            Optional<File> picture = cameraService.takePictureNoException(true);
+            Optional<File> picture = cameraService.takePictureNoException(false);
             emailService.sendTestMail(picture, recipient);
             String detail = picture.isPresent()
                     ? "Test email sent with picture to " + recipient + "."

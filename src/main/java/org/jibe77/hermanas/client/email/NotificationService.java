@@ -96,7 +96,7 @@ public class NotificationService {
         }
 
         // Snapshot is expensive — take it once and reuse it across language groups.
-        Optional<File> picWithClosedDoor = cameraService.takePictureNoException(true);
+        Optional<File> picWithClosedDoor = cameraService.takePictureNoException(false);
         String pictureKey = pickPictureKey(picBeforeOpening, picWithClosedDoor);
 
         for (Map.Entry<String, List<String>> entry : recipients.entrySet()) {
@@ -128,7 +128,7 @@ public class NotificationService {
             return;
         }
 
-        Optional<File> picWithClosedDoor = cameraService.takePictureNoException(true);
+        Optional<File> picWithClosedDoor = cameraService.takePictureNoException(false);
         String pictureKey = picWithClosedDoor.isPresent()
                 ? "event.mail.with_picture.message"
                 : "event.mail.without_picture.message";
