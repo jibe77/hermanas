@@ -1,3 +1,10 @@
+// Ce composant emet DEUX colonnes (porte + webcam) plutot qu'une carte unique.
+// Sans `display: contents`, son element hote s'intercalerait entre la `.row`
+// parente et ces colonnes, qui perdraient alors leur alignement sur la grille.
+:host {
+    display: contents;
+}
+
 .hidden {
     display: none;
 }

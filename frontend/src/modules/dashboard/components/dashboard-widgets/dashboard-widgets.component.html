@@ -1,21 +1,39 @@
+<!--
+    Ordre d'affichage voulu :
+
+        ┌──────────────────┬──────────────────┐
+        │ Porte            │ Accessoires      │
+        ├──────────────────┼──────────────────┤
+        │ Météo            │ Webcam           │
+        └──────────────────┴──────────────────┘
+
+    `sb-dashboard-door-widget` émet DEUX colonnes (porte + webcam) et non une
+    seule carte : il ne porte plus de `.row` propre, ses colonnes s'insèrent
+    donc directement dans cette grille. C'est ce qui permet d'intercaler les
+    accessoires entre les deux sans extraire la webcam de son composant — elle
+    y dépend de `refreshPicture()`, `picturePath` et d'une quinzaine de méthodes.
+
+    Les classes `order-*` réordonnent visuellement sans changer l'ordre du DOM,
+    et n'ont d'effet qu'à partir de `xl` : sur écran étroit tout s'empile dans
+    l'ordre naturel, la webcam se retrouvant en deuxième position.
+-->
 <div class="row">
-    <div class="col-xl-12">
-        <sb-dashboard-door-widget
-            [retryEvents]="retryLauncherEvents"
-            [domainBase]="domainBase"
-            (componentError)="onChildError($event)"
-        ></sb-dashboard-door-widget>
-    </div>
-    <div class="col-xl-6">
-        <sb-dashboard-weather-widget
-            [retryEvents]="retryLauncherEvents"
-            (componentError)="onChildError($event)"
-        ></sb-dashboard-weather-widget>
-    </div>
-    <div class="col-xl-6">
+    <!-- porte (order 1) + webcam (order 4) -->
+    <sb-dashboard-door-widget
+        [retryEvents]="retryLauncherEvents"
+        [domainBase]="domainBase"
+        (componentError)="onChildError($event)"
+    ></sb-dashboard-door-widget>
+    <div class="col-xl-6 order-xl-2">
         <sb-dashboard-accessories-widget
             [retryEvents]="retryLauncherEvents"
             (componentError)="onChildError($event)"
         ></sb-dashboard-accessories-widget>
+    </div>
+    <div class="col-xl-6 order-xl-3">
+        <sb-dashboard-weather-widget
+            [retryEvents]="retryLauncherEvents"
+            (componentError)="onChildError($event)"
+        ></sb-dashboard-weather-widget>
     </div>
 </div>
