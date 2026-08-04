@@ -27,9 +27,9 @@ solaire, interface web.
 | 3 — Test à vide + mémoire | ✅ | — |
 | 4 — Bascule réseau | ✅ | Bail DHCP abandonné (voir 4.2) |
 | 5 — Bascule hardware | ⚠️ | **Fin de course bas défectueux** (§5.4) |
-| 6 — Mise à jour des dépendances | ⏸️ | Non urgent, rien ne bloque |
+| 6 — Mise à jour des dépendances | ✅ | Backend et frontend à jour ; `@angular/build` migré et validé |
 | 7 — Caméra + audio | ⚠️ | Photo ✅, **streaming à porter** (§7.2) |
-| 8 — Rollback | 🔒 | À conserver tant que `poupou` existe |
+| 8 — Rollback | ❌ | Abandonné — garder la SD de `poupou` par précaution |
 
 ### Défauts matériels ouverts
 
@@ -41,9 +41,13 @@ solaire, interface web.
 
 ### Réglages en attente
 
-- Qualité photo « regular » à **5** → à remonter (écran de configuration, effet immédiat)
-- Reflets rosés → probablement l'AWB, voir §7.1
-- Compression des photos jointes aux emails (~780 Ko actuellement)
+- **Photos des emails** — le profil `regular` sert au dashboard *et* aux emails ;
+  1096×822 en qualité 30 devrait suffire, à confirmer à l'usage.
+- **Reflets rosés** — AWB fixé à `incandescent` (§7.1), à valider sur plusieurs
+  jours. Si une teinte subsiste, passer par `camera.awbgains` (gains explicites).
+
+> Réglés depuis : qualité « regular » (5 → 30), résolutions des deux profils
+> (plein champ 4:3), balance des blancs, `gpu_mem` (seuil de 32 Mo mesuré).
 
 ### Bilan mémoire — l'objectif est tenu
 
@@ -3026,8 +3030,12 @@ corriger de notre côté : il faut qu'Angular mette à jour sa propre dépendanc
 - [x] `navigationUrls` du service worker intacts — les 5 exclusions `/actuator`,
       `/api`, `/v3`, `/swagger-ui`, `/stomp` sont bien présentes (cf. §3.5bis)
 - [x] `mvn package` produit un JAR complet avec les 3 locales embarquées
-- [ ] ⚠️ **Vérification visuelle dans le navigateur** — pas encore faite. Le moteur
-      de build a changé : à contrôler avant de considérer la migration close.
+- [x] **Vérification visuelle dans le navigateur** ✅ *(2026-08-04)* — aucune
+      régression constatée. Le moteur de build a changé (Webpack → esbuild/Vite),
+      les classes de drapeaux aussi (`flag-icon-*` → `fi`/`fis`) : rien de tout
+      cela n'a d'effet visible.
+
+**La migration `@angular/build` est close.**
 
 ### 6.4 — Renommer le compte MariaDB `pi` → `hermanas_app` — ⏸️ *à faire sur `pru`*
 
