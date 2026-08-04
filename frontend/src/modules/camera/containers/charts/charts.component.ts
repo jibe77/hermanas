@@ -89,6 +89,16 @@ export class ChartsComponent implements OnInit, OnDestroy {
     cameraHighDelay = 1000;
     /** Zone du capteur lue, "x,y,largeur,hauteur" en 0-1. Vide = capteur entier. */
     cameraRoi = '';
+    /**
+     * Mode capteur imposé, "largeur:hauteur". Vide = libcamera choisit — ce qui
+     * sous ~790 px de hauteur donne le mode 640×480 recadré au centre, d'où une
+     * image zoomée et pixelisée.
+     */
+    cameraMode = '';
+    /** Temps de pose en µs. Vide = auto-exposition. */
+    cameraShutter = '';
+    /** Gain analogique (1 = aucun). Vide = gain automatique. */
+    cameraGain = '';
     readonly awbModes = AWB_MODES;
     cameraSaving = false;
 
@@ -487,6 +497,9 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 this.cameraHighHeight = cfg.camera_settings.high_height ?? 1232;
                 this.cameraHighDelay = cfg.camera_settings.high_delay ?? 1000;
                 this.cameraRoi = cfg.camera_settings.roi ?? '';
+                this.cameraMode = cfg.camera_settings.mode ?? '';
+                this.cameraShutter = cfg.camera_settings.shutter ?? '';
+                this.cameraGain = cfg.camera_settings.gain ?? '';
                 this.aiInferenceUrl = cfg.ai_settings?.inference_url ?? '';
                 this.aiInferenceModel = cfg.ai_settings?.inference_model ?? 'focus';
                 this.aiInferenceCacheTtlSec = Math.round(
@@ -640,6 +653,9 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 highQuality,
                 awb: this.cameraAwb,
                 awbGains: this.cameraAwbGains,
+                mode: this.cameraMode || '(auto)',
+                shutter: this.cameraShutter || '(auto)',
+                gain: this.cameraGain || '(auto)',
                 regularSize: `${regularWidth}x${regularHeight}`,
                 highSize: `${highWidth}x${highHeight}`,
             },
@@ -657,6 +673,9 @@ export class ChartsComponent implements OnInit, OnDestroy {
             regularDelay: this.configService.setCameraRegularDelay(regularDelay),
             highDelay: this.configService.setCameraHighDelay(highDelay),
             roi: this.configService.setCameraRoi(this.cameraRoi),
+            mode: this.configService.setCameraMode(this.cameraMode),
+            shutter: this.configService.setCameraShutter(this.cameraShutter),
+            gain: this.configService.setCameraGain(this.cameraGain),
         }).subscribe({
             next: () => {
                 this.cameraSaving = false;

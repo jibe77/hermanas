@@ -2473,17 +2473,24 @@
                 <source>Read timeout (s)</source>
                 <target>Délai de lecture (s)</target>
             </trans-unit>
-            <trans-unit id="aiRetryAttemptsLabel" datatype="html">
+            <trans-unit id="aiRetryHelp" datatype="html">
+        <source>When a request fails, it is retried after a pause that doubles each time — 2 s, then 4 s, then 8 s — up to the longest wait. This gives a struggling server room to recover instead of hammering it. Worst case before giving up: attempts × read timeout, plus the pauses.</source>
+        <target state="translated">Quand une requête échoue, elle est réessayée après une pause qui double à chaque fois — 2 s, puis 4 s, puis 8 s — jusqu'à l'attente maximale. Cela laisse à un serveur en difficulté le temps de se remettre au lieu de le solliciter sans répit. Pire cas avant abandon : tentatives × délai de lecture, plus les pauses.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="aiRetryAttemptsLabel" datatype="html">
                 <source>Max attempts</source>
                 <target>Tentatives max</target>
             </trans-unit>
             <trans-unit id="aiRetryInitialBackoffLabel" datatype="html">
-                <source>Initial backoff (s)</source>
-                <target>Délai initial (s)</target>
+                <source>Wait before retrying (s)</source>
+                <target state="translated">Attente avant réessai (s)</target>
             </trans-unit>
             <trans-unit id="aiRetryMaxBackoffLabel" datatype="html">
-                <source>Max backoff (s)</source>
-                <target>Délai max (s)</target>
+                <source>Longest wait (s)</source>
+                <target state="translated">Attente maximale (s)</target>
             </trans-unit>
             <trans-unit id="cameraAiTimeoutsSaved" datatype="html">
                 <source>Timeouts &amp; retry saved (effective on next reboot).</source>
@@ -2664,6 +2671,55 @@
       <trans-unit id="cameraRoi" datatype="html">
         <source>Sensor region (crop)</source>
         <target xml:space="preserve" state="translated">Zone du capteur (recadrage)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraMode" datatype="html">
+        <source>Sensor mode</source>
+        <target state="translated">Mode capteur</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraModeHelp" datatype="html">
+        <source>Format <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>width:height<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>. Leave empty to let the camera decide.</source>
+        <target state="translated">Format <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>largeur:hauteur<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>. Laissez vide pour laisser la caméra décider.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraModeWarning" datatype="html">
+        <source>⚠️ Below roughly 790 px of output height the camera falls back to a mode that is cropped to the centre — the picture then comes out zoomed and pixellated. The full-frame modes are <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>1640:1232<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> and <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>3280:2464<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>; forcing one of them lifts that limit, which matters when a sensor region is combined with a reduced height.</source>
+        <target state="translated">⚠️ En dessous d'environ 790 px de hauteur de sortie, la caméra bascule sur un mode recadré au centre — l'image sort alors zoomée et pixelisée. Les modes plein champ sont <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>1640:1232<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> et <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>3280:2464<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> ; en forcer un lève cette limite, ce qui compte dès qu'une zone de capteur est combinée à une hauteur réduite.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraShutter" datatype="html">
+        <source>Exposure time (µs)</source>
+        <target state="translated">Temps de pose (µs)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraGain" datatype="html">
+        <source>Analogue gain</source>
+        <target state="translated">Gain analogique</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraExposureHelp" datatype="html">
+        <source>Leave both empty for automatic exposure. Setting them fixes it, which removes the settling time and allows a much shorter delay below. A longer exposure brightens the picture but blurs moving hens; a higher gain brightens it too but adds noise.</source>
+        <target state="translated">Laissez les deux vides pour une exposition automatique. Les renseigner la fige, ce qui supprime le temps de convergence et autorise un délai bien plus court ci-dessous. Une pose plus longue éclaircit l'image mais rend floues les poules qui bougent ; un gain plus élevé l'éclaircit aussi mais ajoute du bruit.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraExposureWarning" datatype="html">
+        <source>⚠️ Unlike white balance, the right exposure depends on ambient light, which changes between midday and dusk even with the lamp on. Watch the pictures for a few days before settling on a value.</source>
+        <target state="translated">⚠️ Contrairement à la balance des blancs, la bonne exposition dépend de la lumière ambiante, qui change entre midi et le crépuscule même lampe allumée. Observez les photos pendant quelques jours avant de fixer une valeur.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
         </context-group>

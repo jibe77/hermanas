@@ -441,6 +441,79 @@
                     </div>
 
                     <div class="col-12">
+                        <hr class="my-2" />
+                        <label for="cameraMode" class="form-label small" i18n="@@cameraMode"
+                            >Sensor mode</label
+                        >
+                        <input
+                            id="cameraMode"
+                            type="text"
+                            class="form-control form-control-sm"
+                            placeholder="1640:1232"
+                            [(ngModel)]="cameraMode"
+                        />
+                        <div class="form-text small">
+                            <span i18n="@@cameraModeHelp"
+                                >Format <code>width:height</code>. Leave empty to let the camera
+                                decide.</span
+                            >
+                        </div>
+                        <div class="form-text small text-warning-emphasis">
+                            <span i18n="@@cameraModeWarning"
+                                >⚠️ Below roughly 790 px of output height the camera falls back to
+                                a mode that is cropped to the centre — the picture then comes out
+                                zoomed and pixellated. The full-frame modes are
+                                <code>1640:1232</code> and <code>3280:2464</code>; forcing one of
+                                them lifts that limit, which matters when a sensor region is
+                                combined with a reduced height.</span
+                            >
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <label for="cameraShutter" class="form-label small" i18n="@@cameraShutter"
+                            >Exposure time (µs)</label
+                        >
+                        <input
+                            id="cameraShutter"
+                            type="text"
+                            class="form-control form-control-sm"
+                            placeholder="20000"
+                            [(ngModel)]="cameraShutter"
+                        />
+                    </div>
+                    <div class="col-6">
+                        <label for="cameraGain" class="form-label small" i18n="@@cameraGain"
+                            >Analogue gain</label
+                        >
+                        <input
+                            id="cameraGain"
+                            type="text"
+                            class="form-control form-control-sm"
+                            placeholder="2.0"
+                            [(ngModel)]="cameraGain"
+                        />
+                    </div>
+                    <div class="col-12">
+                        <div class="form-text small">
+                            <span i18n="@@cameraExposureHelp"
+                                >Leave both empty for automatic exposure. Setting them fixes it,
+                                which removes the settling time and allows a much shorter delay
+                                below. A longer exposure brightens the picture but blurs moving
+                                hens; a higher gain brightens it too but adds noise.</span
+                            >
+                        </div>
+                        <div class="form-text small text-warning-emphasis">
+                            <span i18n="@@cameraExposureWarning"
+                                >⚠️ Unlike white balance, the right exposure depends on ambient
+                                light, which changes between midday and dusk even with the lamp
+                                on. Watch the pictures for a few days before settling on a
+                                value.</span
+                            >
+                        </div>
+                    </div>
+
+                    <div class="col-12">
                         <div class="form-text small" i18n="@@cameraDelayHelp">
                             The delay is the time given to auto-exposure to settle before the
                             shutter fires. Too short and the picture uses provisional gains —
@@ -631,7 +704,7 @@
                             for="aiRetryInitialBackoff"
                             class="form-label small"
                             i18n="@@aiRetryInitialBackoffLabel"
-                            >Initial backoff (s)</label
+                            >Wait before retrying (s)</label
                         >
                         <input
                             id="aiRetryInitialBackoff"
@@ -649,7 +722,7 @@
                             for="aiRetryMaxBackoff"
                             class="form-label small"
                             i18n="@@aiRetryMaxBackoffLabel"
-                            >Max backoff (s)</label
+                            >Longest wait (s)</label
                         >
                         <input
                             id="aiRetryMaxBackoff"
@@ -661,6 +734,14 @@
                             placeholder="10"
                             [(ngModel)]="aiInferenceRetryMaxBackoffSec"
                         />
+                    </div>
+                    <div class="col-12">
+                        <div class="form-text small" i18n="@@aiRetryHelp"
+                            >When a request fails, it is retried after a pause that doubles each
+                            time — 2 s, then 4 s, then 8 s — up to the longest wait. This gives a
+                            struggling server room to recover instead of hammering it. Worst case
+                            before giving up: attempts × read timeout, plus the pauses.</div
+                        >
                     </div>
                     <div class="col-12 d-flex justify-content-end">
                         <button

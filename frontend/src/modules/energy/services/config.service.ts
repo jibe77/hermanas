@@ -115,6 +115,16 @@ export interface CameraSettings {
      * Empty reads the whole sensor.
      */
     roi: string;
+    /**
+     * Forced sensor mode, `"width:height"`. Empty lets libcamera choose — which
+     * below ~790 px of output height means the centre-cropped 640×480 mode, hence
+     * a zoomed, pixellated picture.
+     */
+    mode: string;
+    /** Fixed exposure time in microseconds. Empty leaves auto-exposure on. */
+    shutter: string;
+    /** Fixed analogue gain (1 = none). Empty leaves auto-gain on. */
+    gain: string;
     /** JPEG quality for image analysis. 1..100. */
     high_quality: number;
     high_width: number;
@@ -401,6 +411,44 @@ export class ConfigService extends AbstractService {
     setCameraRoi(roi: string): Observable<string> {
         const params = new HttpParams().set('roi', roi ?? '');
         return this.http.put(`${this.domainBase}/config/camera/roi`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /**
+     * Forces a sensor mode, `"width:height"`; empty lets libcamera choose.
+     *
+     * ⚠️ Below ~790 px of output height libcamera falls back to the 640×480 mode,
+     * which is **centre-cropped** — the picture then comes out zoomed and
+     * pixellated. Full-frame modes on the IMX219 are `1640:1232` and `3280:2464`.
+     */
+    setCameraMode(mode: string): Observable<string> {
+        const params = new HttpParams().set('mode', mode ?? '');
+        return this.http.put(`${this.domainBase}/config/camera/mode`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /**
+     * Fixed exposure time in microseconds; empty leaves auto-exposure on.
+     *
+     * Fixing it removes the AEC convergence time, which allows a shorter capture
+     * delay. Unlike white balance, the right value depends on ambient light.
+     */
+    setCameraShutter(shutter: string): Observable<string> {
+        const params = new HttpParams().set('shutter', shutter ?? '');
+        return this.http.put(`${this.domainBase}/config/camera/shutter`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
+    /** Fixed analogue gain (1 = none); empty leaves auto-gain on. */
+    setCameraGain(gain: string): Observable<string> {
+        const params = new HttpParams().set('gain', gain ?? '');
+        return this.http.put(`${this.domainBase}/config/camera/gain`, null, {
             params,
             responseType: 'text',
         });

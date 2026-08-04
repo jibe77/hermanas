@@ -1996,17 +1996,24 @@
                 <source>Read timeout (s)</source>
                 <target>Timp de citire (s)</target>
             </trans-unit>
-            <trans-unit id="aiRetryAttemptsLabel" datatype="html">
+            <trans-unit id="aiRetryHelp" datatype="html">
+        <source>When a request fails, it is retried after a pause that doubles each time — 2 s, then 4 s, then 8 s — up to the longest wait. This gives a struggling server room to recover instead of hammering it. Worst case before giving up: attempts × read timeout, plus the pauses.</source>
+        <target state="translated">Când o cerere eșuează, este reîncercată după o pauză care se dublează de fiecare dată — 2 s, apoi 4 s, apoi 8 s — până la așteptarea maximă. Astfel un server suprasolicitat are timp să își revină, în loc să fie asaltat. În cel mai rău caz, înainte de abandon: încercări × timp de citire, plus pauzele.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="aiRetryAttemptsLabel" datatype="html">
                 <source>Max attempts</source>
                 <target>Încercări max.</target>
             </trans-unit>
             <trans-unit id="aiRetryInitialBackoffLabel" datatype="html">
-                <source>Initial backoff (s)</source>
-                <target>Pauză inițială (s)</target>
+                <source>Wait before retrying (s)</source>
+                <target state="translated">Așteptare înainte de reîncercare (s)</target>
             </trans-unit>
             <trans-unit id="aiRetryMaxBackoffLabel" datatype="html">
-                <source>Max backoff (s)</source>
-                <target>Pauză max. (s)</target>
+                <source>Longest wait (s)</source>
+                <target state="translated">Așteptare maximă (s)</target>
             </trans-unit>
             <trans-unit id="cameraAiTimeoutsSaved" datatype="html">
                 <source>Timeouts &amp; retry saved (effective on next reboot).</source>
@@ -2187,6 +2194,55 @@
       <trans-unit id="cameraRoi" datatype="html">
         <source>Sensor region (crop)</source>
         <target xml:space="preserve" state="translated">Zona senzorului (decupare)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraMode" datatype="html">
+        <source>Sensor mode</source>
+        <target state="translated">Mod senzor</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraModeHelp" datatype="html">
+        <source>Format <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>width:height<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>. Leave empty to let the camera decide.</source>
+        <target state="translated">Format <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>lățime:înălțime<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>. Lăsați gol pentru ca aparatul să aleagă.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraModeWarning" datatype="html">
+        <source>⚠️ Below roughly 790 px of output height the camera falls back to a mode that is cropped to the centre — the picture then comes out zoomed and pixellated. The full-frame modes are <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>1640:1232<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> and <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>3280:2464<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>; forcing one of them lifts that limit, which matters when a sensor region is combined with a reduced height.</source>
+        <target state="translated">⚠️ Sub aproximativ 790 px înălțime de ieșire, camera trece pe un mod decupat spre centru — imaginea iese mărită și pixelată. Modurile pe tot senzorul sunt <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>1640:1232<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> și <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>3280:2464<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>; forțarea unuia ridică această limită, ceea ce contează când o zonă de senzor este combinată cu o înălțime redusă.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraShutter" datatype="html">
+        <source>Exposure time (µs)</source>
+        <target state="translated">Timp de expunere (µs)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraGain" datatype="html">
+        <source>Analogue gain</source>
+        <target state="translated">Amplificare analogică</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraExposureHelp" datatype="html">
+        <source>Leave both empty for automatic exposure. Setting them fixes it, which removes the settling time and allows a much shorter delay below. A longer exposure brightens the picture but blurs moving hens; a higher gain brightens it too but adds noise.</source>
+        <target state="translated">Lăsați ambele goale pentru expunere automată. Completarea lor o fixează, ceea ce elimină timpul de convergență și permite o întârziere mult mai mică mai jos. O expunere mai lungă luminează imaginea dar face găinile în mișcare neclare; o amplificare mai mare luminează și ea, dar adaugă zgomot.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraExposureWarning" datatype="html">
+        <source>⚠️ Unlike white balance, the right exposure depends on ambient light, which changes between midday and dusk even with the lamp on. Watch the pictures for a few days before settling on a value.</source>
+        <target state="translated">⚠️ Spre deosebire de balansul de alb, expunerea corectă depinde de lumina ambiantă, care se schimbă între prânz și amurg chiar și cu lampa aprinsă. Urmăriți fotografiile câteva zile înainte de a fixa o valoare.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
         </context-group>
