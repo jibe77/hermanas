@@ -6,6 +6,17 @@
 #   ./deploy.sh              # déploie sur pru (Pi Zero 2 W, cible par défaut)
 #   ./deploy.sh poupou       # déploie sur poupou (ancien Pi Zero, rollback)
 #   ./deploy.sh --skip-build # réutilise le JAR déjà présent dans target/
+#   ./deploy.sh --internet    # déploie depuis l'extérieur (r3n4.uk:5723)
+#
+# `pru.local` est un nom mDNS : il ne se résout que sur le réseau local.
+# `--internet` bascule sur le nom public et le port SSH ouvert sur la box.
+# Les deux options se combinent : `./deploy.sh --internet --skip-build`.
+#
+# Pour une autre destination ponctuelle, sans toucher au script :
+#   HERMANAS_HOST=autre.domaine.fr HERMANAS_PORT=22 ./deploy.sh
+#
+# Compter plus longtemps par internet : ~100 Mo à téléverser sur une liaison
+# montante domestique, contre une dizaine de minutes en Wi-Fi local.
 #
 # Le JAR transite par /tmp car /var/lib/hermanas/ appartient à hermanas:hermanas
 # en 750 : l'utilisateur SSH ne peut pas y écrire directement.
@@ -15,12 +26,14 @@ set -euo pipefail
 # ─── Configuration par cible ────────────────────────────────────────────────
 TARGET="${1:-pru}"
 SKIP_BUILD=false
+VIA_INTERNET=false
 for arg in "$@"; do
     [ "$arg" = "--skip-build" ] && SKIP_BUILD=true
+    [ "$arg" = "--internet" ] && VIA_INTERNET=true
 done
 
 case "$TARGET" in
-    pru|--skip-build)
+    pru|--skip-build|--internet)
         TARGET="pru"
         REMOTE_HOST="pru.local"
         REMOTE_USER="jean-baptisterenaux"
@@ -40,6 +53,17 @@ case "$TARGET" in
 esac
 
 REMOTE_PORT="5722"
+
+# Depuis l'extérieur, `pru.local` (mDNS) ne résout pas : on passe par le nom
+# public et le port SSH redirigé sur la box.
+if [ "$VIA_INTERNET" = true ]; then
+    REMOTE_HOST="r3n4.uk"
+    REMOTE_PORT="5723"
+fi
+
+# Dernier mot aux variables d'environnement, pour une destination ponctuelle.
+REMOTE_HOST="${HERMANAS_HOST:-$REMOTE_HOST}"
+REMOTE_PORT="${HERMANAS_PORT:-$REMOTE_PORT}"
 SERVICE_NAME="Hermanas.service"
 
 # Couleurs pour les messages
@@ -49,7 +73,12 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${GREEN}=== Déploiement de Hermanas sur ${TARGET} ===${NC}"
-echo -e "${GREEN}    ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH} (service sous ${SERVICE_USER})${NC}"
+# Le port distingue le mode local du mode internet : l'afficher évite de
+# déployer au mauvais endroit sans s'en apercevoir.
+echo -e "${GREEN}    ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PORT} → ${REMOTE_PATH} (service sous ${SERVICE_USER})${NC}"
+if [ "$VIA_INTERNET" = true ]; then
+    echo -e "${YELLOW}    Mode internet : le transfert du JAR sera nettement plus lent.${NC}"
+fi
 
 # ─── Étape 1: Build Maven ───────────────────────────────────────────────────
 if [ "$SKIP_BUILD" = true ]; then
