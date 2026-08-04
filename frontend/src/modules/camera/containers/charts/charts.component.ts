@@ -102,6 +102,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
     readonly awbModes = AWB_MODES;
     cameraSaving = false;
 
+    /** Interrupteur global : à false, aucune fonction d'IA n'est sollicitée. */
+    aiEnabled = true;
     aiInferenceUrl = '';
     aiInferenceModel = 'focus';
     /** Exposed in seconds in the UI — the backend stores milliseconds internally. */
@@ -145,13 +147,19 @@ export class ChartsComponent implements OnInit, OnDestroy {
     detectionsVisible = false;
     aiAnalysisStep = '';
     private aiAnalysisStepTimer?: ReturnType<typeof setInterval>;
+    /**
+     * Vrai quand la capture en cours a été lancée avec l'analyse IA. Sert au
+     * template : sans cela, le panneau d'analyse afficherait un résultat vide
+     * comme s'il avait échoué, alors que rien n'a été demandé.
+     */
+    analysisRequested = false;
+
     private destroy$ = new Subject<void>();
 
     ngOnInit(): void {
-        // Every visitor — anonymous included — gets the full async pipeline.
-        // POST /api/v1/captures is open (rate-limited per IP server-side), so
-        // anonymous abuse just hits a 429.
-        this.startCapture();
+        // Photo seule au chargement : l'analyse IA se demande explicitement.
+        // POST /api/v1/captures reste ouvert à tous (limité par IP côté serveur).
+        this.startCapture(false);
 
         // Stay subscribed to auth changes so a login/logout that happens while
         // this page is open reveals or hides the admin-only / signed-in-only
@@ -189,9 +197,18 @@ export class ChartsComponent implements OnInit, OnDestroy {
      * because each request had to span the full Pi-side work. We now POST a
      * job, then poll its status while fetching the JPEG in parallel.</p>
      */
-    startCapture(): void {
+    /**
+     * Prend une photo, et lance l'analyse IA seulement si on la demande.
+     *
+     * <p>À l'ouverture de la page, {@code analyze} vaut {@code false} : une
+     * analyse par visite saturait le serveur d'inférence de travail que personne
+     * n'avait réclamé, et beaucoup n'aboutissaient jamais. L'analyse passe donc
+     * par le bouton sous la photo.</p>
+     */
+    startCapture(analyze = false): void {
         if (this.captureInFlight) return;
         this.captureInFlight = true;
+        this.analysisRequested = analyze;
         this.snapshotLoaded = false;
         this.snapshotFailed = false;
         this.aiAnalysisResult = '';
@@ -200,8 +217,11 @@ export class ChartsComponent implements OnInit, OnDestroy {
         this.detectionsVisible = false;
         this.releaseSnapshotUrl();
         this.snapshotUrl = '';
-        this.aiAnalysisLoading = true;
-        this.startAiAnalysisAnimation();
+        // Sans analyse, pas de spinner d'analyse : la photo seule arrive vite.
+        this.aiAnalysisLoading = analyze;
+        if (analyze) {
+            this.startAiAnalysisAnimation();
+        }
         this.cdr.markForCheck();
 
         const lang: 'fr' | 'en' | 'ro' = this.localeId.startsWith('fr')
@@ -216,8 +236,8 @@ export class ChartsComponent implements OnInit, OnDestroy {
         // applyCaptureError path below clears the spinner and the live
         // panel ends up empty, matching what an unauthenticated visitor
         // sees (no live picture, no fake AI analysis).
-        this.logger.info('startCapture: requesting new capture', { lang }, 'Webcam');
-        this.photos.startCapture(lang).subscribe({
+        this.logger.info('startCapture: requesting new capture', { lang, analyze }, 'Webcam');
+        this.photos.startCapture(lang, analyze).subscribe({
             next: captureId => {
                 this.currentCaptureId = captureId;
                 this.logger.info(
@@ -310,6 +330,12 @@ export class ChartsComponent implements OnInit, OnDestroy {
         } else if (state.status === 'ERROR') {
             this.aiAnalysisLoading = false;
             this.captureInFlight = false;
+            // La carte des réglages n'est chargée que pour les administrateurs :
+            // un visiteur ordinaire ignore que l'IA est coupée et verrait un
+            // bouton condamné à échouer. Le serveur nous l'apprend ici, pour tous.
+            if (state.errorCode === 'AI_DISABLED') {
+                this.aiEnabled = false;
+            }
             this.aiAnalysisResult =
                 state.errorMessage || state.errorCode || 'Analysis unavailable';
             this.aiAnalysisResultHtml = this.renderMarkdown(this.aiAnalysisResult);
@@ -500,6 +526,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 this.cameraMode = cfg.camera_settings.mode ?? '';
                 this.cameraShutter = cfg.camera_settings.shutter ?? '';
                 this.cameraGain = cfg.camera_settings.gain ?? '';
+                this.aiEnabled = cfg.ai_settings?.enabled ?? true;
                 this.aiInferenceUrl = cfg.ai_settings?.inference_url ?? '';
                 this.aiInferenceModel = cfg.ai_settings?.inference_model ?? 'focus';
                 this.aiInferenceCacheTtlSec = Math.round(
@@ -736,6 +763,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
             'Webcam'
         );
         forkJoin({
+            enabled: this.configService.setAiEnabled(this.aiEnabled),
             url: this.configService.setAiInferenceUrl(this.aiInferenceUrl.trim()),
             model: this.configService.setAiInferenceModel(
                 (this.aiInferenceModel || '').trim()

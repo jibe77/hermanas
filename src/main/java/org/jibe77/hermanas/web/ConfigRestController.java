@@ -205,6 +205,7 @@ public class ConfigRestController {
 
         // AI inference (URL + model of the local LLM used by /camera/analyze).
         Map<String, Object> aiSettings = new LinkedHashMap<>();
+        aiSettings.put("enabled", configService.isAiEnabled());
         aiSettings.put("inference_url", configService.getAiInferenceUrl());
         aiSettings.put("inference_model", configService.getAiInferenceModel());
         aiSettings.put("cache_ttl_ms", configService.getAiInferenceCacheTtlMs());
@@ -499,6 +500,21 @@ public class ConfigRestController {
             @RequestParam int durationMs) {
         configService.setDoorClosingDuration(durationMs);
         return ResponseEntity.ok("Door closing duration set to " + durationMs + " ms");
+    }
+
+    // ─── AI toggle ──────────────────────────────────────────────────────────────
+
+    @Operation(
+            summary = "Enable or disable every AI feature",
+            description = "Disabling stops all three paths at once: the Webcam page analysis, "
+                        + "GET /api/v1/camera/analyze, and the automatic morning/evening door "
+                        + "state check. Requests then fail immediately with AI_DISABLED, with "
+                        + "no network call to the inference server."
+    )
+    @PutMapping("/ai/enabled")
+    public ResponseEntity<String> setAiEnabled(@RequestParam boolean enabled) {
+        configService.setAiEnabled(enabled);
+        return ResponseEntity.ok("AI features " + (enabled ? "enabled" : "disabled"));
     }
 
     // ─── Audio toggles ──────────────────────────────────────────────────────────

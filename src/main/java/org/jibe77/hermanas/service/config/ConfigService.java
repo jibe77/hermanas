@@ -172,6 +172,9 @@ public class ConfigService {
     @Value("${camera.roi:}")
     private String cameraRoi;
 
+    @Value("${ai.enabled:true}")
+    private boolean aiEnabled;
+
     @Value("${camera.mode:}")
     private String cameraMode;
 
@@ -1024,6 +1027,31 @@ public class ConfigService {
             throw new IllegalArgumentException("Duration must be 1..30000 ms, got " + durationMs);
         }
         setConfigValue("door.closing.duration", durationMs, null);
+    }
+
+    // ============================================================================
+    // AI Toggle
+    // ============================================================================
+
+    /**
+     * Interrupteur global des fonctions d'IA.
+     *
+     * <p>À {@code false}, toute demande au serveur d'inférence échoue
+     * immédiatement avec le code {@code AI_DISABLED}, sans requête réseau. Couvre
+     * les trois chemins : page Webcam, {@code /api/v1/camera/analyze} et la
+     * vérification automatique de l'état de la porte.</p>
+     *
+     * <p>À distinguer d'une URL d'inférence vide, qui signale une configuration
+     * incomplète ({@code NOT_CONFIGURED}) plutôt qu'un choix délibéré.</p>
+     */
+    @Cacheable(value = "aiEnabled")
+    public boolean isAiEnabled() {
+        return getConfigValue("ai.enabled", aiEnabled, Boolean::valueOf);
+    }
+
+    @CacheEvict(value = "aiEnabled", allEntries = true)
+    public void setAiEnabled(boolean enabled) {
+        setConfigValue("ai.enabled", enabled, null);
     }
 
     // ============================================================================

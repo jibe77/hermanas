@@ -125,9 +125,13 @@ export class PhotosService {
      * Kicks an async capture + analysis pipeline on the backend. Returns the
      * opaque capture id used to drive {@link captureImageUrl} and the STOMP
      * subscription on {@code /topic/captures/{id}}.
+     *
+     * @param analyze `false` to only take the picture. The page loads this way:
+     *        one AI analysis per visit was flooding the inference server with
+     *        work nobody had asked for. The analysis is now behind a button.
      */
-    startCapture(lang: 'fr' | 'en' | 'ro'): Observable<string> {
-        const params = new HttpParams().set('lang', lang);
+    startCapture(lang: 'fr' | 'en' | 'ro', analyze = true): Observable<string> {
+        const params = new HttpParams().set('lang', lang).set('analyze', String(analyze));
         return this.http
             .post<{ captureId: string }>(`${environment.apiUrl}/captures`, null, {
                 params,

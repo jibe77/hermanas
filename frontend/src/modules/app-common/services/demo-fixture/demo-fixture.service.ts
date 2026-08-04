@@ -663,6 +663,7 @@ export class DemoFixtureService {
         const port = ports[Math.floor(Math.random() * ports.length)];
         const model = models[Math.floor(Math.random() * models.length)];
         this.cachedAiSettings = {
+            enabled: true,
             inference_url: `http://${host}:${port}/v1`,
             inference_model: model,
             cache_ttl_ms: 120000,

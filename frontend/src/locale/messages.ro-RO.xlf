@@ -612,7 +612,21 @@
                 <source>Close</source>
                 <target>Închide</target>
             </trans-unit>
-            <trans-unit id="cameraLivePanelTitle" datatype="html">
+            <trans-unit id="cameraAnalyse" datatype="html">
+        <source>Analyse this picture</source>
+        <target state="translated">Analizează această fotografie</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraAnalyseHelp" datatype="html">
+        <source>Takes a fresh picture and asks the AI to count hens and eggs. May take up to a minute.</source>
+        <target state="translated">Face o fotografie nouă și cere IA să numere găinile și ouăle. Poate dura până la un minut.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cameraLivePanelTitle" datatype="html">
                 <source>Live photo</source>
                 <target>Fotografie în direct</target>
             </trans-unit>
@@ -1356,7 +1370,21 @@
                 <source>Your account is awaiting validation by an administrator.</source>
                 <target>Contul tău este în așteptare de validare de către un administrator.</target>
             </trans-unit>
-            <trans-unit id="aiInferenceTitle" datatype="html">
+            <trans-unit id="aiEnabledLabel" datatype="html">
+        <source>Enable AI features</source>
+        <target state="translated">Activează funcțiile IA</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="aiEnabledHelp" datatype="html">
+        <source>Turning this off stops everything at once: the analysis button on this page, the analysis endpoint, and the automatic morning and evening door check. No request reaches the inference server.</source>
+        <target state="translated">Debifarea oprește totul deodată: butonul de analiză din această pagină, endpointul de analiză și verificarea automată a ușii dimineața și seara. Nicio cerere nu ajunge la serverul de inferență.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="aiInferenceTitle" datatype="html">
                 <source>AI inference endpoint</source>
                 <target>Endpoint inferență AI</target>
             </trans-unit>

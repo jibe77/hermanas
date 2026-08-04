@@ -148,6 +148,17 @@ public class AiVisionClient {
     }
 
     private String sendChatRequest(File image, String userPrompt, String lang) throws AiVisionException {
+        // Interrupteur global, placé ici plutôt que chez les appelants : trois
+        // chemins mènent à l'IA — la page Webcam, l'endpoint /camera/analyze et le
+        // scheduler de vérification de porte, qui tourne sans intervention. Poser
+        // le garde-fou au seul passage obligé évite qu'un futur appelant l'oublie.
+        if (!configService.isAiEnabled()) {
+            logger.info("AI vision disabled by configuration — request not sent.");
+            throw new AiVisionException("AI_DISABLED",
+                    "AI features are disabled in the configuration.",
+                    "AI analysis is currently disabled.");
+        }
+
         String baseUrl = configService.getAiInferenceUrl();
         String model = configService.getAiInferenceModel();
         // INFO-level so the operator can read the current configuration straight from

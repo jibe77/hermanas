@@ -79,12 +79,29 @@
                 </div>
             }
             <!-- Loader + result live outside the snapshot @if so they remain
-                 visible even if the picture itself failed to render. The
-                 refresh button at the top of the card kicks a new capture +
-                 analysis pipeline; no need for a duplicate "Analyse IA"
-                 button — both ran the same startCapture() under the hood. -->
+                 visible even if the picture itself failed to render.
+
+                 The refresh button at the top of the card only takes a picture.
+                 The AI analysis sits behind its own button below: running one on
+                 every page load flooded the inference server with work nobody had
+                 asked for, and many of those never completed. -->
             @if (snapshotUrl || captureInFlight) {
                 <div class="mt-3">
+                    @if (aiEnabled && snapshotUrl && !aiAnalysisLoading && !aiAnalysisResult) {
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            (click)="startCapture(true)"
+                            [disabled]="captureInFlight"
+                        >
+                            <fa-icon class="me-1" [icon]="['fas', 'search']"></fa-icon>
+                            <span i18n="@@cameraAnalyse">Analyse this picture</span>
+                        </button>
+                        <div class="form-text small mt-1" i18n="@@cameraAnalyseHelp"
+                            >Takes a fresh picture and asks the AI to count hens and eggs. May
+                            take up to a minute.</div
+                        >
+                    }
                     @if (aiAnalysisLoading) {
                         <div class="ai-analysis-loader mt-3">
                             <div class="ai-loader-icons" aria-hidden="true">
@@ -546,6 +563,23 @@
                     URL of the local LLM used by the "AI analysis" button. Leave empty to mark the
                     feature as not configured.
                 </p>
+                <div class="form-check form-switch mb-3">
+                    <input
+                        id="aiEnabled"
+                        class="form-check-input"
+                        type="checkbox"
+                        role="switch"
+                        [(ngModel)]="aiEnabled"
+                    />
+                    <label class="form-check-label small" for="aiEnabled" i18n="@@aiEnabledLabel"
+                        >Enable AI features</label
+                    >
+                    <div class="form-text small" i18n="@@aiEnabledHelp"
+                        >Turning this off stops everything at once: the analysis button on this
+                        page, the analysis endpoint, and the automatic morning and evening door
+                        check. No request reaches the inference server.</div
+                    >
+                </div>
                 <div class="row g-3 align-items-end">
                     <div class="col-md-6">
                         <label

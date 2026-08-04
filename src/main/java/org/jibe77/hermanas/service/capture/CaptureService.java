@@ -78,16 +78,34 @@ public class CaptureService {
      * method itself returns immediately.
      */
     public String startAsync(String lang) {
+        return startAsync(lang, true);
+    }
+
+    /**
+     * Variante permettant de ne prendre que la photo.
+     *
+     * @param analyze {@code false} pour s'arrêter après la capture, sans solliciter
+     *        le serveur d'inférence. La page Webcam s'en sert à l'ouverture : une
+     *        analyse par visite saturait le serveur d'inférence pour un résultat
+     *        que personne n'avait demandé. L'analyse est désormais déclenchée par
+     *        un bouton.
+     */
+    public String startAsync(String lang, boolean analyze) {
         String normalized = normalizeLang(lang);
         String id = UUID.randomUUID().toString();
         captures.put(id, new CaptureState(normalized));
-        logger.info("Capture {} started (lang={}).", id, normalized);
-        runPipeline(id, normalized);
+        logger.info("Capture {} started (lang={}, analyze={}).", id, normalized, analyze);
+        runPipeline(id, normalized, analyze);
         return id;
     }
 
     @Async
     void runPipeline(String id, String lang) {
+        runPipeline(id, lang, true);
+    }
+
+    @Async
+    void runPipeline(String id, String lang, boolean analyze) {
         CaptureState state = captures.get(id);
         if (state == null) {
             return;
@@ -113,6 +131,15 @@ public class CaptureService {
             // Operator-facing message stays neutral; technical detail is
             // already in the preceding logger.warn("...", id, e) call.
             state.fail("CAMERA_ERROR", "The snapshot could not be captured. Please try again.");
+            publish(id, state);
+            return;
+        }
+
+        if (!analyze) {
+            // Photo seule : on termine sur DONE avec un texte vide plutôt que de
+            // laisser le client attendre un ANALYZING qui ne viendra jamais.
+            logger.info("Capture {} done without analysis (analyze=false).", id);
+            state.complete("", java.util.List.of());
             publish(id, state);
             return;
         }

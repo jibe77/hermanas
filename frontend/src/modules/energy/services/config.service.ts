@@ -29,6 +29,8 @@ export interface AllConfig {
 }
 
 export interface AiSettings {
+    /** Master switch: false disables every AI feature. */
+    enabled: boolean;
     /** URL of the local LLM endpoint used by /camera/analyze. Empty string = not configured. */
     inference_url: string;
     /** Name of the multimodal model exposed by that server. Defaults to "focus" (qwen2.5-vl). */
@@ -423,6 +425,20 @@ export class ConfigService extends AbstractService {
      * which is **centre-cropped** — the picture then comes out zoomed and
      * pixellated. Full-frame modes on the IMX219 are `1640:1232` and `3280:2464`.
      */
+    /**
+     * Master switch for every AI feature.
+     *
+     * Disabling stops all three paths at once: the Webcam page analysis,
+     * `/camera/analyze`, and the automatic morning/evening door state check.
+     */
+    setAiEnabled(enabled: boolean): Observable<string> {
+        const params = new HttpParams().set('enabled', String(enabled));
+        return this.http.put(`${this.domainBase}/config/ai/enabled`, null, {
+            params,
+            responseType: 'text',
+        });
+    }
+
     setCameraMode(mode: string): Observable<string> {
         const params = new HttpParams().set('mode', mode ?? '');
         return this.http.put(`${this.domainBase}/config/camera/mode`, null, {

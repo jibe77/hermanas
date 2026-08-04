@@ -57,8 +57,10 @@ public class CaptureRestController {
     }
 
     @Operation(
-            summary = "Start an async capture + analysis pipeline",
-            description = "Returns immediately with a capture id; the actual work runs in the background."
+            summary = "Start an async capture pipeline, optionally with AI analysis",
+            description = "Returns immediately with a capture id; the actual work runs in the "
+                        + "background. Pass analyze=false to only take the picture — the Webcam "
+                        + "page does this on load, and asks for the analysis on demand."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202", description = "Capture job accepted, polling URLs returned")
@@ -68,10 +70,12 @@ public class CaptureRestController {
             message = "Too many capture requests. Please wait a minute before trying again.")
     public ResponseEntity<Map<String, String>> start(
             @Parameter(description = "Output language for the AI analysis (fr / en / ro)", example = "fr")
-            @RequestParam(defaultValue = "en") String lang) {
+            @RequestParam(defaultValue = "en") String lang,
+            @Parameter(description = "Run the AI analysis after the capture", example = "true")
+            @RequestParam(defaultValue = "true") boolean analyze) {
         // CaptureService.startAsync() already logs the captureId at INFO with the lang;
         // no need to duplicate here.
-        String id = captureService.startAsync(lang);
+        String id = captureService.startAsync(lang, analyze);
         return ResponseEntity.accepted()
                 .body(Collections.singletonMap("captureId", id));
     }
