@@ -97,6 +97,45 @@ class ConfigServiceRoiTest {
     }
 
     @Test
+    @DisplayName("Mode capteur : \"largeur:hauteur\", vide pour le choix automatique")
+    void validatesSensorMode() {
+        assertDoesNotThrow(() -> configService.setCameraMode("1640:1232"));
+        assertDoesNotThrow(() -> configService.setCameraMode("3280:2464"));
+        assertDoesNotThrow(() -> configService.setCameraMode("1640:1232:10"));   // profondeur
+        assertDoesNotThrow(() -> configService.setCameraMode("1640:1232:10:P")); // packing
+        assertDoesNotThrow(() -> configService.setCameraMode(""));               // automatique
+
+        assertThrows(IllegalArgumentException.class, () -> configService.setCameraMode("1640"));
+        assertThrows(IllegalArgumentException.class, () -> configService.setCameraMode("1640x1232"));
+        assertThrows(IllegalArgumentException.class, () -> configService.setCameraMode("plein"));
+    }
+
+    @Test
+    @DisplayName("Temps de pose borné à 10 s — au-delà on dépasse le timeout de capture")
+    void validatesShutter() {
+        assertDoesNotThrow(() -> configService.setCameraShutter("20000"));
+        assertDoesNotThrow(() -> configService.setCameraShutter(""));      // automatique
+        assertDoesNotThrow(() -> configService.setCameraShutter(null));
+
+        assertThrows(IllegalArgumentException.class, () -> configService.setCameraShutter("0"));
+        assertThrows(IllegalArgumentException.class, () -> configService.setCameraShutter("20000000"));
+        assertThrows(IllegalArgumentException.class, () -> configService.setCameraShutter("20 ms"));
+    }
+
+    @Test
+    @DisplayName("Gain analogique entre 1 et 16")
+    void validatesGain() {
+        assertDoesNotThrow(() -> configService.setCameraGain("1"));
+        assertDoesNotThrow(() -> configService.setCameraGain("2.0"));
+        assertDoesNotThrow(() -> configService.setCameraGain(""));         // automatique
+
+        // Sous 1 le gain n'a pas de sens ; au-delà de 16 l'image est inexploitable.
+        assertThrows(IllegalArgumentException.class, () -> configService.setCameraGain("0.5"));
+        assertThrows(IllegalArgumentException.class, () -> configService.setCameraGain("20"));
+        assertThrows(IllegalArgumentException.class, () -> configService.setCameraGain("beaucoup"));
+    }
+
+    @Test
     @DisplayName("Dimensions et délais bornés")
     void validatesSizesAndDelays() {
         assertDoesNotThrow(() -> configService.setCameraRegularWidth(1096));

@@ -159,6 +159,15 @@ public class GpioHermanasRpiService implements GpioHermanasService {
         command.add(String.format(Locale.ROOT, "%.2f",
                 (cameraConfiguration.brightness() - 50) / 50.0));
 
+        // Mode capteur imposé. Sans lui, libcamera choisit selon les dimensions
+        // demandées et bascule sur un mode RECADRÉ sous ~790 px de hauteur —
+        // l'image sort alors zoomée et pixelisée.
+        String mode = cameraConfiguration.mode();
+        if (mode != null && !mode.isBlank()) {
+            command.add("--mode");
+            command.add(mode.trim());
+        }
+
         // Zone du capteur lue. rpicam-still recadre PUIS rééchantillonne à la taille
         // de sortie : c'est un zoom numérique. La cohérence entre le ROI et les
         // dimensions demandées relève du réglage, pas du code — l'interface le
@@ -179,6 +188,21 @@ public class GpioHermanasRpiService implements GpioHermanasService {
         } else if (awb != null && !awb.isBlank()) {
             command.add("--awb");
             command.add(awb.trim().toLowerCase(Locale.ROOT));
+        }
+
+        // Exposition manuelle. Fournir les deux désactive l'auto-exposition
+        // (AEC/AGC) et supprime son temps de convergence, ce qui autorise un
+        // --timeout plus court. Les deux réglages sont indépendants : ne fixer
+        // que l'un laisse l'algorithme ajuster l'autre.
+        String shutter = cameraConfiguration.shutter();
+        if (shutter != null && !shutter.isBlank()) {
+            command.add("--shutter");
+            command.add(shutter.trim());
+        }
+        String gain = cameraConfiguration.gain();
+        if (gain != null && !gain.isBlank()) {
+            command.add("--gain");
+            command.add(gain.trim());
         }
 
         return command;

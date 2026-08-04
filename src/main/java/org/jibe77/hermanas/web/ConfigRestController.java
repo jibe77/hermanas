@@ -175,6 +175,9 @@ public class ConfigRestController {
         camera.put("awb", configService.getCameraAwb());
         camera.put("awb_gains", configService.getCameraAwbGains());
         camera.put("roi", configService.getCameraRoi());
+        camera.put("mode", configService.getCameraMode());
+        camera.put("shutter", configService.getCameraShutter());
+        camera.put("gain", configService.getCameraGain());
         camera.put("regular_quality", configService.getCameraRegularQuality());
         camera.put("regular_width", configService.getCameraRegularWidth());
         camera.put("regular_height", configService.getCameraRegularHeight());
@@ -627,6 +630,71 @@ public class ConfigRestController {
         cameraService.clearPictureCache();
         return ResponseEntity.ok("Camera AWB gains set to "
                 + (gains == null || gains.isBlank() ? "(unset)" : gains));
+    }
+
+    @Operation(
+            summary = "Force a sensor mode",
+            description = "Format \"width:height\"; empty lets libcamera choose. "
+                        + "⚠️ Below ~790 px of output height libcamera switches to the "
+                        + "640x480 mode, which is CENTRE-CROPPED — the picture then comes "
+                        + "out zoomed and pixellated. Full-frame modes on the IMX219 are "
+                        + "1640:1232 and 3280:2464. Forcing one frees the output height, "
+                        + "which matters when combining a ROI with a reduced height."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Mode updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Malformed value")
+    })
+    @PutMapping("/camera/mode")
+    public ResponseEntity<String> setCameraMode(
+            @Parameter(description = "Sensor mode \"width:height\", empty for automatic",
+                    example = "1640:1232")
+            @RequestParam(required = false, defaultValue = "") String mode) {
+        configService.setCameraMode(mode);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera sensor mode set to "
+                + (mode == null || mode.isBlank() ? "(automatic)" : mode));
+    }
+
+    @Operation(
+            summary = "Set a fixed exposure time (microseconds)",
+            description = "Empty leaves auto-exposure on. Fixing the exposure removes the "
+                        + "AEC convergence time, which allows a shorter capture delay. "
+                        + "Unlike white balance, the right value depends on ambient light: "
+                        + "it differs between midday and dusk even with the lamp on. "
+                        + "Too short darkens the picture; too long blurs moving hens."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Shutter updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Out of range (1..10000000) or malformed")
+    })
+    @PutMapping("/camera/shutter")
+    public ResponseEntity<String> setCameraShutter(
+            @Parameter(description = "Exposure time in microseconds, empty for auto", example = "20000")
+            @RequestParam(required = false, defaultValue = "") String shutter) {
+        configService.setCameraShutter(shutter);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera shutter set to "
+                + (shutter == null || shutter.isBlank() ? "(auto)" : shutter + " µs"));
+    }
+
+    @Operation(
+            summary = "Set a fixed analogue gain",
+            description = "Empty leaves auto-gain on; 1 means no gain. Raising it brightens "
+                        + "the picture but adds noise — grain becomes visible above 8."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Gain updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Out of range (1.0..16.0) or malformed")
+    })
+    @PutMapping("/camera/gain")
+    public ResponseEntity<String> setCameraGain(
+            @Parameter(description = "Analogue gain, empty for auto", example = "2.0")
+            @RequestParam(required = false, defaultValue = "") String gain) {
+        configService.setCameraGain(gain);
+        cameraService.clearPictureCache();
+        return ResponseEntity.ok("Camera gain set to "
+                + (gain == null || gain.isBlank() ? "(auto)" : gain));
     }
 
     @Operation(

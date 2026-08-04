@@ -172,6 +172,15 @@ public class ConfigService {
     @Value("${camera.roi:}")
     private String cameraRoi;
 
+    @Value("${camera.mode:}")
+    private String cameraMode;
+
+    @Value("${camera.shutter:}")
+    private String cameraShutter;
+
+    @Value("${camera.gain:}")
+    private String cameraGain;
+
     @Value("${camera.regular.width:1096}")
     private int cameraRegularWidth;
 
@@ -1215,6 +1224,96 @@ public class ConfigService {
                     "AWB gains must be \"R,B\" with positive decimals (e.g. 1.2,2.0), got " + gains);
         }
         setConfigValue("camera.awbgains", value, null);
+    }
+
+    /**
+     * Mode capteur imposé ({@code --mode}), {@code "largeur:hauteur"}. Vide = choix
+     * automatique de libcamera.
+     *
+     * <p><b>Pourquoi ce réglage existe.</b> Sous ~790 px de hauteur de sortie,
+     * libcamera bascule sur le mode 640×480, qui est <b>recadré au centre</b> :
+     * l'image sort zoomée et pixelisée. Forcer un mode plein champ
+     * ({@code 1640:1232} ou {@code 3280:2464}) libère la hauteur de sortie, ce
+     * qui est indispensable dès qu'on combine un ROI avec une hauteur réduite.</p>
+     */
+    @Cacheable(value = "cameraMode")
+    public String getCameraMode() {
+        return getConfigValue("camera.mode", cameraMode, v -> v);
+    }
+
+    @CacheEvict(value = "cameraMode", allEntries = true)
+    public void setCameraMode(String mode) {
+        String value = mode == null ? "" : mode.trim();
+        if (!value.isEmpty() && !value.matches("\\d+:\\d+(:\\d+)?(:[PU])?")) {
+            throw new IllegalArgumentException(
+                    "Mode must be \"width:height\", optionally \":bit-depth\" and \":P\"/\":U\" "
+                            + "(e.g. 1640:1232), got " + mode);
+        }
+        setConfigValue("camera.mode", value, null);
+    }
+
+    /**
+     * Temps de pose en microsecondes ({@code --shutter}). Vide = automatique.
+     *
+     * <p>Fixer l'exposition supprime le temps de convergence de l'AEC, ce qui
+     * autorise un {@code delay} plus court. Mais contrairement à la balance des
+     * blancs, la bonne valeur dépend de la lumière ambiante — elle change entre
+     * midi et le crépuscule, même lampe allumée.</p>
+     *
+     * <p>Trop court : image sombre. Trop long : flou de bougé sur les poules.</p>
+     */
+    @Cacheable(value = "cameraShutter")
+    public String getCameraShutter() {
+        return getConfigValue("camera.shutter", cameraShutter, v -> v);
+    }
+
+    @CacheEvict(value = "cameraShutter", allEntries = true)
+    public void setCameraShutter(String shutter) {
+        String value = shutter == null ? "" : shutter.trim();
+        if (!value.isEmpty()) {
+            long microseconds;
+            try {
+                microseconds = Long.parseLong(value);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(
+                        "Shutter must be an integer number of microseconds, got " + shutter);
+            }
+            // Borne haute à 10 s : au-delà on est en pose longue, hors usage ici,
+            // et le processus dépasserait le timeout de capture.
+            if (microseconds < 1 || microseconds > 10_000_000L) {
+                throw new IllegalArgumentException(
+                        "Shutter must be between 1 and 10000000 microseconds (10 s), got " + shutter);
+            }
+        }
+        setConfigValue("camera.shutter", value, null);
+    }
+
+    /**
+     * Gain analogique ({@code --gain}). Vide = automatique, {@code 1} = aucun gain.
+     *
+     * <p>Monter éclaircit l'image mais ajoute du bruit ; au-delà de 8 le grain
+     * devient visible.</p>
+     */
+    @Cacheable(value = "cameraGain")
+    public String getCameraGain() {
+        return getConfigValue("camera.gain", cameraGain, v -> v);
+    }
+
+    @CacheEvict(value = "cameraGain", allEntries = true)
+    public void setCameraGain(String gain) {
+        String value = gain == null ? "" : gain.trim();
+        if (!value.isEmpty()) {
+            double parsed;
+            try {
+                parsed = Double.parseDouble(value);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Gain must be a decimal number, got " + gain);
+            }
+            if (parsed < 1.0 || parsed > 16.0) {
+                throw new IllegalArgumentException("Gain must be between 1.0 and 16.0, got " + gain);
+            }
+        }
+        setConfigValue("camera.gain", value, null);
     }
 
     /**

@@ -68,6 +68,33 @@ public class CameraConfiguration {
         return configService.getCameraRoi();
     }
 
+    /**
+     * Mode capteur imposé ({@code --mode}), vide si libcamera choisit.
+     *
+     * <p>Empêche la bascule automatique vers un mode recadré quand la hauteur
+     * de sortie descend sous ~790 px.</p>
+     */
+    public String mode() {
+        return configService.getCameraMode();
+    }
+
+    /**
+     * Temps de pose en microsecondes ({@code --shutter}), vide si automatique.
+     *
+     * <p>Fixer l'exposition supprime le temps de convergence de l'AEC, ce qui
+     * permet de réduire {@code camera.*.delay}. Contrairement à la balance des
+     * blancs, la valeur juste dépend de la lumière ambiante : elle varie entre
+     * midi et le crépuscule, même lampe allumée.</p>
+     */
+    public String shutter() {
+        return configService.getCameraShutter();
+    }
+
+    /** Gain analogique ({@code --gain}), vide si automatique. 1 = aucun gain. */
+    public String gain() {
+        return configService.getCameraGain();
+    }
+
     /** Qualité JPEG (0-100), relue à chaque appel pour suivre les changements à chaud. */
     public int quality(boolean highQuality) {
         return highQuality
