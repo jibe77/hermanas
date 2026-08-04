@@ -485,7 +485,7 @@ public class ConfigService {
      * @param lightSecurityTimerDelayEco timer delay in milliseconds
      * @throws IllegalArgumentException if value is negative
      */
-    @CacheEvict(value = "lightSecurityTimerDelayEco")
+    @CacheEvict(value = "lightSecurityTimerDelayEco", allEntries = true)
     public void setLightSecurityTimerDelayEco(long lightSecurityTimerDelayEco) {
         setConfigValue("light.security.timer.delay.eco", lightSecurityTimerDelayEco, nonNegativeLongValidator());
     }
@@ -507,7 +507,7 @@ public class ConfigService {
      * @param lightSecurityTimerDelayRegular timer delay in milliseconds
      * @throws IllegalArgumentException if value is negative
      */
-    @CacheEvict(value = "lightSecurityTimerDelayRegular")
+    @CacheEvict(value = "lightSecurityTimerDelayRegular", allEntries = true)
     public void setLightSecurityTimerDelayRegular(long lightSecurityTimerDelayRegular) {
         setConfigValue("light.security.timer.delay.regular", lightSecurityTimerDelayRegular, nonNegativeLongValidator());
     }
@@ -529,7 +529,7 @@ public class ConfigService {
      * @param lightSecurityTimerDelaySunny timer delay in milliseconds
      * @throws IllegalArgumentException if value is negative
      */
-    @CacheEvict(value = "lightSecurityTimerDelaySunny")
+    @CacheEvict(value = "lightSecurityTimerDelaySunny", allEntries = true)
     public void setLightSecurityTimerDelaySunny(long lightSecurityTimerDelaySunny) {
         setConfigValue("light.security.timer.delay.sunny", lightSecurityTimerDelaySunny, nonNegativeLongValidator());
     }
@@ -554,7 +554,7 @@ public class ConfigService {
      * @param fanSecurityTimerDelayEco timer delay in milliseconds
      * @throws IllegalArgumentException if value is negative
      */
-    @CacheEvict(value = "fanSecurityTimerDelayEco")
+    @CacheEvict(value = "fanSecurityTimerDelayEco", allEntries = true)
     public void setFanSecurityTimerDelayEco(long fanSecurityTimerDelayEco) {
         setConfigValue("fan.security.timer.delay.eco", fanSecurityTimerDelayEco, nonNegativeLongValidator());
     }
@@ -575,7 +575,7 @@ public class ConfigService {
      * @param fanSecurityTimerDelayRegular timer delay in milliseconds
      * @throws IllegalArgumentException if value is negative
      */
-    @CacheEvict(value = "fanSecurityTimerDelayRegular")
+    @CacheEvict(value = "fanSecurityTimerDelayRegular", allEntries = true)
     public void setFanSecurityTimerDelayRegular(long fanSecurityTimerDelayRegular) {
         setConfigValue("fan.security.timer.delay.regular", fanSecurityTimerDelayRegular, nonNegativeLongValidator());
     }
@@ -596,7 +596,7 @@ public class ConfigService {
      * @param fanSecurityTimerDelaySunny timer delay in milliseconds
      * @throws IllegalArgumentException if value is negative
      */
-    @CacheEvict(value = "fanSecurityTimerDelaySunny")
+    @CacheEvict(value = "fanSecurityTimerDelaySunny", allEntries = true)
     public void setFanSecurityTimerDelaySunny(long fanSecurityTimerDelaySunny) {
         setConfigValue("fan.security.timer.delay.sunny", fanSecurityTimerDelaySunny, nonNegativeLongValidator());
     }
@@ -621,7 +621,7 @@ public class ConfigService {
      * @param musicSecurityTimerDelayEco timer delay in milliseconds
      * @throws IllegalArgumentException if value is negative
      */
-    @CacheEvict(value = "musicSecurityTimerDelayEco")
+    @CacheEvict(value = "musicSecurityTimerDelayEco", allEntries = true)
     public void setMusicSecurityTimerDelayEco(long musicSecurityTimerDelayEco) {
         setConfigValue("music.security.timer.delay.eco", musicSecurityTimerDelayEco, nonNegativeLongValidator());
     }
@@ -642,7 +642,7 @@ public class ConfigService {
      * @param musicSecurityTimerDelayRegular timer delay in milliseconds
      * @throws IllegalArgumentException if value is negative
      */
-    @CacheEvict(value = "musicSecurityTimerDelayRegular")
+    @CacheEvict(value = "musicSecurityTimerDelayRegular", allEntries = true)
     public void setMusicSecurityTimerDelayRegular(long musicSecurityTimerDelayRegular) {
         setConfigValue("music.security.timer.delay.regular", musicSecurityTimerDelayRegular, nonNegativeLongValidator());
     }
@@ -663,7 +663,7 @@ public class ConfigService {
      * @param musicSecurityTimerDelaySunny timer delay in milliseconds
      * @throws IllegalArgumentException if value is negative
      */
-    @CacheEvict(value = "musicSecurityTimerDelaySunny")
+    @CacheEvict(value = "musicSecurityTimerDelaySunny", allEntries = true)
     public void setMusicSecurityTimerDelaySunny(long musicSecurityTimerDelaySunny) {
         setConfigValue("music.security.timer.delay.sunny", musicSecurityTimerDelaySunny, nonNegativeLongValidator());
     }
@@ -745,7 +745,7 @@ public class ConfigService {
      *
      * @param consumptionModeEcoForce true to force eco mode
      */
-    @CacheEvict(value = "consumptionModeEcoForce")
+    @CacheEvict(value = "consumptionModeEcoForce", allEntries = true)
     public void setConsumptionModeEcoForce(boolean consumptionModeEcoForce) {
         this.consumptionModeEcoForce = consumptionModeEcoForce;
         setConfigValue("consumption.mode.eco.force", consumptionModeEcoForce, null);
@@ -770,7 +770,7 @@ public class ConfigService {
      *
      * @param wifiDisabledInEcoMode true to disable WiFi
      */
-    @CacheEvict(value = "wifiDisabledInEcoMode")
+    @CacheEvict(value = "wifiDisabledInEcoMode", allEntries = true)
     public void setWifiDisabledInEcoMode(boolean wifiDisabledInEcoMode) {
         setConfigValue("wifi.disabled.eco", wifiDisabledInEcoMode, null);
     }
@@ -790,7 +790,7 @@ public class ConfigService {
      *
      * @param wifiDisabledInSunnyMode true to disable WiFi
      */
-    @CacheEvict(value = "wifiDisabledInSunnyMode")
+    @CacheEvict(value = "wifiDisabledInSunnyMode", allEntries = true)
     public void setWifiDisabledInSunnyMode(boolean wifiDisabledInSunnyMode) {
         setConfigValue("wifi.disabled.sunny", wifiDisabledInSunnyMode, null);
     }
@@ -811,7 +811,7 @@ public class ConfigService {
      *
      * @param wifiDisabledInRegularMode true to disable WiFi
      */
-    @CacheEvict(value = "wifiDisabledInRegularMode")
+    @CacheEvict(value = "wifiDisabledInRegularMode", allEntries = true)
     public void setWifiDisabledInRegularMode(boolean wifiDisabledInRegularMode) {
         setConfigValue("wifi.disabled.regular", wifiDisabledInRegularMode, null);
     }
@@ -838,7 +838,7 @@ public class ConfigService {
      *
      * @param playlist sub-directory name, or empty/null for "no selection"
      */
-    @CacheEvict(value = "selectedPlaylist")
+    @CacheEvict(value = "selectedPlaylist", allEntries = true)
     public void setSelectedPlaylist(String playlist) {
         setConfigValue("music.playlist.selected", playlist == null ? "" : playlist, null);
     }
@@ -938,7 +938,7 @@ public class ConfigService {
      * @param percent 0-100
      * @throws IllegalArgumentException if percent is out of bounds
      */
-    @CacheEvict(value = "musicVolumeRegular")
+    @CacheEvict(value = "musicVolumeRegular", allEntries = true)
     public void setMusicVolumeRegular(int percent) {
         if (percent < 0 || percent > 100) {
             throw new IllegalArgumentException("Volume must be between 0 and 100, got " + percent);
@@ -961,7 +961,7 @@ public class ConfigService {
         return getConfigValue("door.opening.position", doorOpeningPosition, Integer::parseInt);
     }
 
-    @CacheEvict(value = "doorOpeningPosition")
+    @CacheEvict(value = "doorOpeningPosition", allEntries = true)
     public void setDoorOpeningPosition(int position) {
         if (position < 1 || position > 100) {
             throw new IllegalArgumentException("Servo position must be 1..100, got " + position);
@@ -974,7 +974,7 @@ public class ConfigService {
         return getConfigValue("door.closing.position", doorClosingPosition, Integer::parseInt);
     }
 
-    @CacheEvict(value = "doorClosingPosition")
+    @CacheEvict(value = "doorClosingPosition", allEntries = true)
     public void setDoorClosingPosition(int position) {
         if (position < 1 || position > 100) {
             throw new IllegalArgumentException("Servo position must be 1..100, got " + position);
@@ -996,7 +996,7 @@ public class ConfigService {
         return getConfigValue("door.opening.duration", doorOpeningDuration, Integer::parseInt);
     }
 
-    @CacheEvict(value = "doorOpeningDuration")
+    @CacheEvict(value = "doorOpeningDuration", allEntries = true)
     public void setDoorOpeningDuration(int durationMs) {
         if (durationMs < 1 || durationMs > 30000) {
             throw new IllegalArgumentException("Duration must be 1..30000 ms, got " + durationMs);
@@ -1009,7 +1009,7 @@ public class ConfigService {
         return getConfigValue("door.closing.duration", doorClosingDuration, Integer::parseInt);
     }
 
-    @CacheEvict(value = "doorClosingDuration")
+    @CacheEvict(value = "doorClosingDuration", allEntries = true)
     public void setDoorClosingDuration(int durationMs) {
         if (durationMs < 1 || durationMs > 30000) {
             throw new IllegalArgumentException("Duration must be 1..30000 ms, got " + durationMs);
@@ -1027,7 +1027,7 @@ public class ConfigService {
                 Boolean::valueOf);
     }
 
-    @CacheEvict(value = "cocoricoAtSunriseEnabled")
+    @CacheEvict(value = "cocoricoAtSunriseEnabled", allEntries = true)
     public void setCocoricoAtSunriseEnabled(boolean enabled) {
         setConfigValue("play.cocorico.at.sunrise.enabled", enabled, null);
     }
@@ -1037,7 +1037,7 @@ public class ConfigService {
         return getConfigValue("play.song.at.sunset", songAtSunsetEnabled, Boolean::valueOf);
     }
 
-    @CacheEvict(value = "songAtSunsetEnabled")
+    @CacheEvict(value = "songAtSunsetEnabled", allEntries = true)
     public void setSongAtSunsetEnabled(boolean enabled) {
         setConfigValue("play.song.at.sunset", enabled, null);
     }
@@ -1051,7 +1051,7 @@ public class ConfigService {
         return getConfigValue("weather.info.enabled", weatherInfoEnabled, Boolean::valueOf);
     }
 
-    @CacheEvict(value = "weatherInfoEnabled")
+    @CacheEvict(value = "weatherInfoEnabled", allEntries = true)
     public void setWeatherInfoEnabled(boolean enabled) {
         setConfigValue("weather.info.enabled", enabled, null);
     }
@@ -1129,7 +1129,7 @@ public class ConfigService {
         return getConfigValue("camera.brightness", cameraBrightness, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraBrightness")
+    @CacheEvict(value = "cameraBrightness", allEntries = true)
     public void setCameraBrightness(int brightness) {
         if (brightness < 0 || brightness > 100) {
             throw new IllegalArgumentException("Brightness must be 0..100, got " + brightness);
@@ -1146,7 +1146,7 @@ public class ConfigService {
         return getConfigValue("camera.rotation", cameraRotation, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraRotation")
+    @CacheEvict(value = "cameraRotation", allEntries = true)
     public void setCameraRotation(int degrees) {
         if (degrees != 0 && degrees != 90 && degrees != 180 && degrees != 270) {
             throw new IllegalArgumentException(
@@ -1181,7 +1181,7 @@ public class ConfigService {
         return getConfigValue("camera.awb", cameraAwb, v -> v);
     }
 
-    @CacheEvict(value = "cameraAwb")
+    @CacheEvict(value = "cameraAwb", allEntries = true)
     public void setCameraAwb(String mode) {
         String value = mode == null ? "" : mode.trim().toLowerCase(Locale.ROOT);
         // Le vide est accepté : il rend la main à l'automatique.
@@ -1207,7 +1207,7 @@ public class ConfigService {
         return getConfigValue("camera.awbgains", cameraAwbGains, v -> v);
     }
 
-    @CacheEvict(value = "cameraAwbGains")
+    @CacheEvict(value = "cameraAwbGains", allEntries = true)
     public void setCameraAwbGains(String gains) {
         String value = gains == null ? "" : gains.trim();
         if (!value.isEmpty() && !value.matches("\\d+(\\.\\d+)?,\\d+(\\.\\d+)?")) {
@@ -1232,7 +1232,7 @@ public class ConfigService {
         return getConfigValue("camera.roi", cameraRoi, v -> v);
     }
 
-    @CacheEvict(value = "cameraRoi")
+    @CacheEvict(value = "cameraRoi", allEntries = true)
     public void setCameraRoi(String roi) {
         String value = roi == null ? "" : roi.trim();
         if (!value.isEmpty()) {
@@ -1302,7 +1302,7 @@ public class ConfigService {
         return getConfigValue("camera.regular.width", cameraRegularWidth, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraRegularWidth")
+    @CacheEvict(value = "cameraRegularWidth", allEntries = true)
     public void setCameraRegularWidth(int width) {
         setConfigValue("camera.regular.width", checkDimension("Width", width), null);
     }
@@ -1312,7 +1312,7 @@ public class ConfigService {
         return getConfigValue("camera.regular.height", cameraRegularHeight, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraRegularHeight")
+    @CacheEvict(value = "cameraRegularHeight", allEntries = true)
     public void setCameraRegularHeight(int height) {
         setConfigValue("camera.regular.height", checkDimension("Height", height), null);
     }
@@ -1326,7 +1326,7 @@ public class ConfigService {
         return getConfigValue("camera.regular.delay", cameraRegularDelay, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraRegularDelay")
+    @CacheEvict(value = "cameraRegularDelay", allEntries = true)
     public void setCameraRegularDelay(int delayMs) {
         setConfigValue("camera.regular.delay", checkDelay("Delay", delayMs), null);
     }
@@ -1336,7 +1336,7 @@ public class ConfigService {
         return getConfigValue("camera.high.width", cameraHighWidth, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraHighWidth")
+    @CacheEvict(value = "cameraHighWidth", allEntries = true)
     public void setCameraHighWidth(int width) {
         setConfigValue("camera.high.width", checkDimension("Width", width), null);
     }
@@ -1346,7 +1346,7 @@ public class ConfigService {
         return getConfigValue("camera.high.height", cameraHighHeight, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraHighHeight")
+    @CacheEvict(value = "cameraHighHeight", allEntries = true)
     public void setCameraHighHeight(int height) {
         setConfigValue("camera.high.height", checkDimension("Height", height), null);
     }
@@ -1356,7 +1356,7 @@ public class ConfigService {
         return getConfigValue("camera.high.delay", cameraHighDelay, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraHighDelay")
+    @CacheEvict(value = "cameraHighDelay", allEntries = true)
     public void setCameraHighDelay(int delayMs) {
         setConfigValue("camera.high.delay", checkDelay("Delay", delayMs), null);
     }
@@ -1366,7 +1366,7 @@ public class ConfigService {
         return getConfigValue("camera.regular.quality", cameraRegularQuality, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraRegularQuality")
+    @CacheEvict(value = "cameraRegularQuality", allEntries = true)
     public void setCameraRegularQuality(int quality) {
         if (quality < 1 || quality > 100) {
             throw new IllegalArgumentException("Quality must be 1..100, got " + quality);
@@ -1379,7 +1379,7 @@ public class ConfigService {
         return getConfigValue("camera.high.quality", cameraHighQuality, Integer::parseInt);
     }
 
-    @CacheEvict(value = "cameraHighQuality")
+    @CacheEvict(value = "cameraHighQuality", allEntries = true)
     public void setCameraHighQuality(int quality) {
         if (quality < 1 || quality > 100) {
             throw new IllegalArgumentException("Quality must be 1..100, got " + quality);
@@ -1402,7 +1402,7 @@ public class ConfigService {
      * to interpolate them — we do not validate that here so a future migration to a
      * different provider with a different signature stays possible without code change.
      */
-    @CacheEvict(value = "weatherInfoUrl")
+    @CacheEvict(value = "weatherInfoUrl", allEntries = true)
     public void setWeatherInfoUrl(String url) {
         if (url == null || url.trim().isEmpty()) {
             throw new IllegalArgumentException("Weather URL must not be empty");
@@ -1420,7 +1420,7 @@ public class ConfigService {
      * every weather call fail with 401. To turn the feature off use
      * {@link #setWeatherInfoEnabled(boolean)} instead.
      */
-    @CacheEvict(value = "weatherInfoKey")
+    @CacheEvict(value = "weatherInfoKey", allEntries = true)
     public void setWeatherInfoKey(String key) {
         if (key == null || key.trim().isEmpty()) {
             throw new IllegalArgumentException(
@@ -1441,7 +1441,7 @@ public class ConfigService {
         return getConfigValue("ai.inference.url", aiInferenceUrl, s -> s);
     }
 
-    @CacheEvict(value = "aiInferenceUrl")
+    @CacheEvict(value = "aiInferenceUrl", allEntries = true)
     public void setAiInferenceUrl(String url) {
         // Allow clearing the URL by passing an empty string — that effectively
         // marks the AI integration as "not configured", which is a legitimate state.
@@ -1459,7 +1459,7 @@ public class ConfigService {
         return configured == null || configured.trim().isEmpty() ? "focus" : configured.trim();
     }
 
-    @CacheEvict(value = "aiInferenceModel")
+    @CacheEvict(value = "aiInferenceModel", allEntries = true)
     public void setAiInferenceModel(String model) {
         setConfigValue("ai.inference.model", model == null ? "" : model.trim(), null);
     }
@@ -1473,7 +1473,7 @@ public class ConfigService {
         return getConfigValue("ai.inference.cache.ttl-ms", aiInferenceCacheTtlMs, Long::parseLong);
     }
 
-    @CacheEvict(value = "aiInferenceCacheTtlMs")
+    @CacheEvict(value = "aiInferenceCacheTtlMs", allEntries = true)
     public void setAiInferenceCacheTtlMs(long ttlMs) {
         setConfigValue("ai.inference.cache.ttl-ms", ttlMs, null);
     }
@@ -1489,7 +1489,7 @@ public class ConfigService {
         return getConfigValue("ai.inference.prompt", aiInferencePrompt, s -> s);
     }
 
-    @CacheEvict(value = "aiInferencePrompt")
+    @CacheEvict(value = "aiInferencePrompt", allEntries = true)
     public void setAiInferencePrompt(String prompt) {
         setConfigValue("ai.inference.prompt", prompt == null ? "" : prompt.trim(), null);
     }
@@ -1507,7 +1507,7 @@ public class ConfigService {
                 aiInferenceConnectTimeoutMs, Integer::parseInt);
     }
 
-    @CacheEvict(value = "aiInferenceConnectTimeoutMs")
+    @CacheEvict(value = "aiInferenceConnectTimeoutMs", allEntries = true)
     public void setAiInferenceConnectTimeoutMs(int ms) {
         setConfigValue("ai.inference.connect-timeout-ms", ms, null);
     }
@@ -1523,7 +1523,7 @@ public class ConfigService {
                 aiInferenceReadTimeoutMs, Integer::parseInt);
     }
 
-    @CacheEvict(value = "aiInferenceReadTimeoutMs")
+    @CacheEvict(value = "aiInferenceReadTimeoutMs", allEntries = true)
     public void setAiInferenceReadTimeoutMs(int ms) {
         setConfigValue("ai.inference.read-timeout-ms", ms, null);
     }
@@ -1538,7 +1538,7 @@ public class ConfigService {
                 aiInferenceRetryMaxAttempts, Integer::parseInt);
     }
 
-    @CacheEvict(value = "aiInferenceRetryMaxAttempts")
+    @CacheEvict(value = "aiInferenceRetryMaxAttempts", allEntries = true)
     public void setAiInferenceRetryMaxAttempts(int attempts) {
         setConfigValue("ai.inference.retry.max-attempts", attempts, null);
     }
@@ -1549,7 +1549,7 @@ public class ConfigService {
                 aiInferenceRetryInitialBackoffMs, Long::parseLong);
     }
 
-    @CacheEvict(value = "aiInferenceRetryInitialBackoffMs")
+    @CacheEvict(value = "aiInferenceRetryInitialBackoffMs", allEntries = true)
     public void setAiInferenceRetryInitialBackoffMs(long ms) {
         setConfigValue("ai.inference.retry.initial-backoff-ms", ms, null);
     }
@@ -1560,7 +1560,7 @@ public class ConfigService {
                 aiInferenceRetryMaxBackoffMs, Long::parseLong);
     }
 
-    @CacheEvict(value = "aiInferenceRetryMaxBackoffMs")
+    @CacheEvict(value = "aiInferenceRetryMaxBackoffMs", allEntries = true)
     public void setAiInferenceRetryMaxBackoffMs(long ms) {
         setConfigValue("ai.inference.retry.max-backoff-ms", ms, null);
     }
@@ -1579,7 +1579,7 @@ public class ConfigService {
         return getConfigValue("suntime.latitude", latitude, Double::parseDouble);
     }
 
-    @CacheEvict(value = "latitude")
+    @CacheEvict(value = "latitude", allEntries = true)
     public void setLatitude(double value) {
         if (value < -90.0 || value > 90.0) {
             throw new IllegalArgumentException("Latitude must be between -90 and 90: " + value);
@@ -1592,7 +1592,7 @@ public class ConfigService {
         return getConfigValue("suntime.longitude", longitude, Double::parseDouble);
     }
 
-    @CacheEvict(value = "longitude")
+    @CacheEvict(value = "longitude", allEntries = true)
     public void setLongitude(double value) {
         if (value < -180.0 || value > 180.0) {
             throw new IllegalArgumentException("Longitude must be between -180 and 180: " + value);
@@ -1637,7 +1637,7 @@ public class ConfigService {
         return trimmed;
     }
 
-    @CacheEvict(value = "emailNotificationFrom")
+    @CacheEvict(value = "emailNotificationFrom", allEntries = true)
     public void setEmailNotificationFrom(String from) {
         if (from == null || !from.contains("@")) {
             throw new IllegalArgumentException("Invalid 'from' email: " + from);
@@ -1658,7 +1658,7 @@ public class ConfigService {
         return getConfigValue("spring.mail.host", mailHost, s -> s);
     }
 
-    @CacheEvict(value = "mailHost")
+    @CacheEvict(value = "mailHost", allEntries = true)
     public void setMailHost(String host) {
         if (host == null || host.trim().isEmpty()) {
             throw new IllegalArgumentException("SMTP host must not be empty");
@@ -1671,7 +1671,7 @@ public class ConfigService {
         return getConfigValue("spring.mail.port", mailPort, Integer::parseInt);
     }
 
-    @CacheEvict(value = "mailPort")
+    @CacheEvict(value = "mailPort", allEntries = true)
     public void setMailPort(int port) {
         if (port < 1 || port > 65535) {
             throw new IllegalArgumentException("SMTP port must be 1..65535: " + port);
@@ -1684,7 +1684,7 @@ public class ConfigService {
         return getConfigValue("spring.mail.username", mailUsername, s -> s);
     }
 
-    @CacheEvict(value = "mailUsername")
+    @CacheEvict(value = "mailUsername", allEntries = true)
     public void setMailUsername(String username) {
         if (username == null) {
             throw new IllegalArgumentException("SMTP username must not be null");
@@ -1705,7 +1705,7 @@ public class ConfigService {
      * Empty string is rejected: silently writing an empty password would break sends
      * with an opaque auth error. To disable auth, set the auth flag instead.
      */
-    @CacheEvict(value = "mailPassword")
+    @CacheEvict(value = "mailPassword", allEntries = true)
     public void setMailPassword(String password) {
         if (password == null || password.isEmpty()) {
             throw new IllegalArgumentException(
@@ -1725,7 +1725,7 @@ public class ConfigService {
         return getConfigValue("spring.mail.properties.mail.smtp.auth", mailSmtpAuth, Boolean::parseBoolean);
     }
 
-    @CacheEvict(value = "mailSmtpAuth")
+    @CacheEvict(value = "mailSmtpAuth", allEntries = true)
     public void setMailSmtpAuth(boolean value) {
         setConfigValue("spring.mail.properties.mail.smtp.auth", value, null);
     }
@@ -1735,7 +1735,7 @@ public class ConfigService {
         return getConfigValue("spring.mail.properties.mail.smtp.starttls.enable", mailStartTlsEnable, Boolean::parseBoolean);
     }
 
-    @CacheEvict(value = "mailStartTlsEnable")
+    @CacheEvict(value = "mailStartTlsEnable", allEntries = true)
     public void setMailStartTlsEnable(boolean value) {
         setConfigValue("spring.mail.properties.mail.smtp.starttls.enable", value, null);
     }
