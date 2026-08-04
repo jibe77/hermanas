@@ -2192,15 +2192,15 @@
         </context-group>
       </trans-unit>
       <trans-unit id="cameraRoiHelp" datatype="html">
-        <source>Four values between 0 and 1 — &lt;strong&gt;x, y, width, height&lt;/strong&gt; — describing the part of the sensor to read. Leave empty to use the whole sensor. Example: &lt;code&gt;0,0.2,1,0.8&lt;/code&gt; skips the top 20% (the ceiling).</source>
-        <target xml:space="preserve" state="translated">Patru valori între 0 și 1 — &lt;strong&gt;x, y, lățime, înălțime&lt;/strong&gt; — care descriu partea senzorului de citit. Lăsați gol pentru tot senzorul. Exemplu: &lt;code&gt;0,0.2,1,0.8&lt;/code&gt; omite 20 % din partea de sus (tavanul).</target>
+        <source>Four values between 0 and 1 — <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>x, y, width, height<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — describing the part of the sensor to read. Leave empty to use the whole sensor. Example: <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>0,0.2,1,0.8<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> skips the top 20% (the ceiling).</source>
+        <target state="translated">Patru valori între 0 și 1 — <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>x, y, lățime, înălțime<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — descriind partea senzorului care se citește. Lăsați gol pentru a folosi tot senzorul. Exemplu: <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>0,0.2,1,0.8<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> ignoră 20 % din partea de sus (tavanul).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cameraRoiWarning" datatype="html">
-        <source>⚠️ The camera crops &lt;em&gt;then rescales&lt;/em&gt; to the requested output size — it is a digital zoom, not a plain crop. To remove an area without magnifying the rest, adjust the heights below accordingly.</source>
-        <target xml:space="preserve" state="translated">⚠️ Camera decupează &lt;em&gt;apoi redimensionează&lt;/em&gt; la dimensiunea cerută — este un zoom digital, nu o simplă decupare. Pentru a elimina o zonă fără a mări restul, ajustați înălțimile de mai jos.</target>
+        <source>⚠️ The camera crops <x id="START_EMPHASISED_TEXT" ctype="x-em" equiv-text="&lt;em&gt;"/>then rescales<x id="CLOSE_EMPHASISED_TEXT" ctype="x-em" equiv-text="&lt;/em&gt;"/> to the requested output size — it is a digital zoom, not a plain crop. To remove an area without magnifying the rest, adjust the heights below accordingly.</source>
+        <target state="translated">⚠️ Camera decupează <x id="START_EMPHASISED_TEXT" ctype="x-em" equiv-text="&lt;em&gt;"/>apoi rescalează<x id="CLOSE_EMPHASISED_TEXT" ctype="x-em" equiv-text="&lt;/em&gt;"/> la dimensiunea de ieșire cerută — este un zoom digital, nu o simplă decupare. Pentru a elimina o zonă fără a mări restul, ajustați înălțimile de mai jos în consecință.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
         </context-group>

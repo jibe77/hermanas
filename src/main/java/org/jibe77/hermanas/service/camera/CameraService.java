@@ -171,19 +171,58 @@ public class CameraService {
     public File takePictureCached(boolean highQuality, boolean force)
             throws IOException, InterruptedException {
         if (!force) {
-            CachedPicture cached = pictureCache.get(highQuality);
-            if (cached != null && cached.isFresh(pictureCacheTtlMs) && cached.file.exists()) {
-                logger.info("Picture cache hit (highQuality={}, age={} ms, file={}).",
-                        highQuality, System.currentTimeMillis() - cached.timestamp,
-                        cached.file.getAbsolutePath());
-                return cached.file;
+            File cached = freshFromCache(highQuality);
+            if (cached != null) {
+                return cached;
             }
         }
-        File fresh = takePicture(highQuality);
-        if (pictureCacheTtlMs > 0) {
-            pictureCache.put(highQuality, new CachedPicture(fresh, System.currentTimeMillis()));
+
+        // Verrou partagé avec takePicture() : les appelants concurrents attendent ici
+        // plutôt que d'enchaîner les captures.
+        synchronized (this) {
+            // Double contrôle — l'essentiel de ce bloc.
+            //
+            // Le dashboard interroge cet endpoint toutes les deux secondes, alors
+            // qu'une capture prend 5 à 10 s. Quand le cache expire, plusieurs requêtes
+            // franchissent le test ci-dessus puis s'empilent sur le verrou. Sans cette
+            // seconde vérification, chacune déclenchait sa propre capture en sortant
+            // d'attente : lumière rallumée, caméra resollicitée, photos parasites en
+            // rafale — alors que la première avait déjà produit l'image voulue.
+            //
+            // On relit donc le cache une fois le verrou obtenu : les suivantes
+            // repartent avec la photo fraîchement prise.
+            if (!force) {
+                File cached = freshFromCache(highQuality);
+                if (cached != null) {
+                    logger.info("Capture évitée : une autre requête venait de produire {}.",
+                            cached.getName());
+                    return cached;
+                }
+            }
+
+            File fresh = takePicture(highQuality);
+            if (pictureCacheTtlMs > 0) {
+                pictureCache.put(highQuality, new CachedPicture(fresh, System.currentTimeMillis()));
+            }
+            return fresh;
         }
-        return fresh;
+    }
+
+    /**
+     * Entrée de cache encore valable pour ce profil, ou {@code null}.
+     *
+     * <p>Vérifie que le fichier existe toujours : le cache ne survit pas à une
+     * suppression manuelle sous l'application.</p>
+     */
+    private File freshFromCache(boolean highQuality) {
+        CachedPicture cached = pictureCache.get(highQuality);
+        if (cached != null && cached.isFresh(pictureCacheTtlMs) && cached.file.exists()) {
+            logger.info("Picture cache hit (highQuality={}, age={} ms, file={}).",
+                    highQuality, System.currentTimeMillis() - cached.timestamp,
+                    cached.file.getAbsolutePath());
+            return cached.file;
+        }
+        return null;
     }
 
     /**

@@ -2669,15 +2669,15 @@
         </context-group>
       </trans-unit>
       <trans-unit id="cameraRoiHelp" datatype="html">
-        <source>Four values between 0 and 1 — &lt;strong&gt;x, y, width, height&lt;/strong&gt; — describing the part of the sensor to read. Leave empty to use the whole sensor. Example: &lt;code&gt;0,0.2,1,0.8&lt;/code&gt; skips the top 20% (the ceiling).</source>
-        <target xml:space="preserve" state="translated">Quatre valeurs entre 0 et 1 — &lt;strong&gt;x, y, largeur, hauteur&lt;/strong&gt; — décrivant la partie du capteur à lire. Laissez vide pour utiliser tout le capteur. Exemple : &lt;code&gt;0,0.2,1,0.8&lt;/code&gt; ignore les 20 % du haut (le plafond).</target>
+        <source>Four values between 0 and 1 — <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>x, y, width, height<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — describing the part of the sensor to read. Leave empty to use the whole sensor. Example: <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>0,0.2,1,0.8<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> skips the top 20% (the ceiling).</source>
+        <target state="translated">Quatre valeurs entre 0 et 1 — <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>x, y, largeur, hauteur<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> — décrivant la partie du capteur à lire. Laissez vide pour utiliser tout le capteur. Exemple : <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>0,0.2,1,0.8<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> ignore les 20 % du haut (le plafond).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cameraRoiWarning" datatype="html">
-        <source>⚠️ The camera crops &lt;em&gt;then rescales&lt;/em&gt; to the requested output size — it is a digital zoom, not a plain crop. To remove an area without magnifying the rest, adjust the heights below accordingly.</source>
-        <target xml:space="preserve" state="translated">⚠️ La caméra recadre &lt;em&gt;puis rééchantillonne&lt;/em&gt; à la taille de sortie demandée — c&#x27;est un zoom numérique, pas un simple rognage. Pour retirer une zone sans agrandir le reste, ajustez les hauteurs ci-dessous en conséquence.</target>
+        <source>⚠️ The camera crops <x id="START_EMPHASISED_TEXT" ctype="x-em" equiv-text="&lt;em&gt;"/>then rescales<x id="CLOSE_EMPHASISED_TEXT" ctype="x-em" equiv-text="&lt;/em&gt;"/> to the requested output size — it is a digital zoom, not a plain crop. To remove an area without magnifying the rest, adjust the heights below accordingly.</source>
+        <target state="translated">⚠️ La caméra recadre <x id="START_EMPHASISED_TEXT" ctype="x-em" equiv-text="&lt;em&gt;"/>puis rééchantillonne<x id="CLOSE_EMPHASISED_TEXT" ctype="x-em" equiv-text="&lt;/em&gt;"/> à la taille de sortie demandée — c'est un zoom numérique, pas un simple rognage. Pour retirer une zone sans agrandir le reste, ajustez les hauteurs ci-dessous en conséquence.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/modules/camera/containers/charts/charts.component.html</context>
         </context-group>
