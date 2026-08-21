@@ -36,6 +36,7 @@ class ManageDoorOpeningTest {
     WifiService wifiService;
     NotificationService notificationService;
     ConsumptionModeController consumptionModeController;
+    org.jibe77.hermanas.service.config.ConfigService configService;
 
     @BeforeEach
     void init() {
@@ -52,8 +53,7 @@ class ManageDoorOpeningTest {
         wifiService = mock(WifiService.class);
         notificationService = mock(NotificationService.class);
         consumptionModeController = mock(ConsumptionModeController.class);
-        org.jibe77.hermanas.service.config.ConfigService configService =
-                mock(org.jibe77.hermanas.service.config.ConfigService.class);
+        configService = mock(org.jibe77.hermanas.service.config.ConfigService.class);
         EventService eventService = mock(EventService.class);
 
         manageDoorOpeningEvent = new ManageDoorOpeningEvent(
@@ -70,7 +70,51 @@ class ManageDoorOpeningTest {
         // "bottom switch released overnight" case where doorIsClosed() would
         // return false and used to silently skip the morning opening.
         when(doorService.doorIsOpened()).thenReturn(false);
+        when(doorService.openDoorWithUpButtonManagment(false, false)).thenReturn(true);
         manageDoorOpeningEvent.manageDoorOpeningEvent(LocalDateTime.now());
         verify(doorService, times(1)).openDoorWithUpButtonManagment(false, false);
+        // Ouverture réussie : la fenêtre bascule à J+1.
+        verify(sunTimeManager, times(1)).reloadDoorOpeningTime();
+    }
+
+    /**
+     * Une ouverture ratée ne doit pas repousser l'échéance à J+1 : sinon les poules
+     * restent enfermées toute la journée (incident du 2026-08-21). La fenêtre reste
+     * ouverte pour un nouvel essai au tick suivant.
+     */
+    @Test
+    void failedOpeningIsRetriedOnTheNextTick() {
+        when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInThePast);
+        when(doorService.doorIsOpened()).thenReturn(false);
+        when(doorService.openDoorWithUpButtonManagment(false, false)).thenReturn(false);
+
+        manageDoorOpeningEvent.manageDoorOpeningEvent(LocalDateTime.now());
+
+        verify(doorService, times(1)).openDoorWithUpButtonManagment(false, false);
+        verify(sunTimeManager, never()).reloadDoorOpeningTime();
+    }
+
+    /**
+     * ... mais on n'insiste pas indéfiniment : après MAX_OPENING_ATTEMPTS échecs, on
+     * abandonne jusqu'au lendemain plutôt que de réessayer toutes les minutes.
+     */
+    @Test
+    void openingIsGivenUpAfterMaxAttempts() {
+        when(sunTimeManager.getNextDoorOpeningTime()).thenReturn(eventAlwaysInThePast);
+        when(doorService.doorIsOpened()).thenReturn(false);
+        when(doorService.openDoorWithUpButtonManagment(false, false)).thenReturn(false);
+        when(configService.isCocoricoAtSunriseEnabled()).thenReturn(true);
+        when(consumptionModeController.isEcoMode(any(LocalDateTime.class))).thenReturn(false);
+
+        for (int i = 0; i < ManageDoorOpeningEvent.MAX_OPENING_ATTEMPTS; i++) {
+            manageDoorOpeningEvent.manageDoorOpeningEvent(LocalDateTime.now());
+        }
+
+        verify(doorService, times(ManageDoorOpeningEvent.MAX_OPENING_ATTEMPTS))
+                .openDoorWithUpButtonManagment(false, false);
+        // La fenêtre n'est repoussée qu'une seule fois, au dernier échec.
+        verify(sunTimeManager, times(1)).reloadDoorOpeningTime();
+        // Le cocorico ne retentit qu'au premier essai, pas à chaque retry.
+        verify(musicService, times(1)).cocorico();
     }
 }

@@ -45,6 +45,17 @@ public class ManageDoorOpeningEvent {
 
     private static final Logger logger = LoggerFactory.getLogger(ManageDoorOpeningEvent.class);
 
+    /**
+     * How many times a failed sunrise opening is retried on subsequent scheduler ticks
+     * before giving up and rolling the schedule over to J+1. The scheduler runs every
+     * 60 s, so this spreads the attempts over a few minutes — long enough to ride out a
+     * bouncing end-of-course switch, short enough to avoid retrying all morning.
+     */
+    static final int MAX_OPENING_ATTEMPTS = 3;
+
+    /** Failed attempts for the current sunrise window; reset once the window rolls over. */
+    private int failedOpeningAttempts = 0;
+
     public ManageDoorOpeningEvent(SunTimeManager sunTimeManager, CameraService cameraService,
                                   DoorService doorService, MusicService musicService,
                                   FanService fanService, WifiService wifiService,
@@ -66,15 +77,24 @@ public class ManageDoorOpeningEvent {
 
     public void manageDoorOpeningEvent(LocalDateTime currentTime) {
         if (currentTime.isAfter(sunTimeManager.getNextDoorOpeningTime())) {
+            // Tracks whether the opening attempt below succeeded. Stays true when no
+            // attempt was needed (door already up), so the normal path still rolls the
+            // schedule over to J+1.
+            boolean openingSucceeded = true;
             // Open on !doorIsOpened() rather than the stricter doorIsClosed(): a
             // hen leaning on the trap or a flaky bottom switch can release the bottom
             // sensor overnight, leaving both buttons unpressed at sunrise. The old
             // strict check silently skipped the morning opening in that case.
-            // reloadDoorOpeningTime() below pushes the next opening to J+1, so this
-            // block cannot re-fire the same day even if the sensor stays ambiguous.
+            // On success reloadDoorOpeningTime() below pushes the next opening to J+1;
+            // on failure the window is deliberately left open for up to
+            // MAX_OPENING_ATTEMPTS retries.
             if (!doorService.doorIsOpened()) {
                 logger.info("door opening event is starting now.");
-                if (configService.isCocoricoAtSunriseEnabled() && !consumptionModeController.isEcoMode(LocalDateTime.now())) {
+                // Crow only on the first attempt of the window — a retry every 60 s
+                // must not turn a flaky switch into a cocorico loop.
+                if (failedOpeningAttempts == 0
+                        && configService.isCocoricoAtSunriseEnabled()
+                        && !consumptionModeController.isEcoMode(LocalDateTime.now())) {
                     logger.info("Triggering cocorico automatically at sunrise.");
                     if (musicService.cocorico()) {
                         eventService.recordAuto(EventType.COCORICO, "auto: sunrise");
@@ -86,6 +106,7 @@ public class ManageDoorOpeningEvent {
                     eventService.recordAuto(EventType.PICTURE_TAKEN, "auto: door-opening snapshot");
                 }
                 boolean isCorrectlyOpened = doorService.openDoorWithUpButtonManagment(false, false);
+                openingSucceeded = isCorrectlyOpened;
 
                 if (isCorrectlyOpened) {
                     eventService.recordAuto(EventType.DOOR_OPENED, "auto: sunrise");
@@ -106,7 +127,22 @@ public class ManageDoorOpeningEvent {
                 // turn off the wifi in 15 minutes
                 wifiService.turnOffAfter(900);
             }
-            sunTimeManager.reloadDoorOpeningTime();
+            // Only roll the schedule forward to J+1 on success. On failure we leave the
+            // opening time in the past so the next scheduler tick retries, instead of
+            // leaving the hens shut in until tomorrow — but give up after
+            // MAX_OPENING_ATTEMPTS so a genuinely broken door doesn't retry all morning.
+            if (openingSucceeded) {
+                failedOpeningAttempts = 0;
+                sunTimeManager.reloadDoorOpeningTime();
+            } else if (++failedOpeningAttempts >= MAX_OPENING_ATTEMPTS) {
+                logger.error("door opening still failing after {} attempts, giving up until tomorrow.",
+                        failedOpeningAttempts);
+                failedOpeningAttempts = 0;
+                sunTimeManager.reloadDoorOpeningTime();
+            } else {
+                logger.warn("door opening failed (attempt {}/{}), retrying on the next scheduler tick.",
+                        failedOpeningAttempts, MAX_OPENING_ATTEMPTS);
+            }
         }
     }
 }

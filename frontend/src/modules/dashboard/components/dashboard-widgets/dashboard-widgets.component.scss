@@ -9,3 +9,41 @@ img.not_hidden {
     width: 100%;
     height: 100%;
 }
+
+// Les panneaux ne doivent PAS s'étirer : chaque carte garde sa hauteur de contenu.
+//
+// Par défaut `.row` est un flex avec `align-items: stretch`, et comme `.card`
+// n'a pas de `height: 100%`, la carte restait en haut d'une colonne étirée —
+// d'où un vide invisible sous les cartes courtes et des bas de cartes en
+// escalier. `align-items-start` (dans le template) supprime cet étirement.
+//
+// Restait le décalage vertical entre les deux lignes : en flex, la 2e ligne
+// démarre sous la plus haute carte de la 1re. La grille CSS ci-dessous aligne
+// les colonnes ET les lignes, chaque rangée se dimensionnant indépendamment,
+// donc Météo et Webcam démarrent exactement à la même hauteur.
+//
+// On ne l'active qu'à partir de `xl` (1200px), seuil où les classes `col-xl-6` /
+// `order-xl-*` du template passent sur deux colonnes ; en dessous, tout
+// s'empile et le flex natif de Bootstrap convient.
+//
+// `@media` en dur plutôt que `media-breakpoint-up()` : les styles de composant
+// n'importent que `variables.scss`, qui charge les fonctions et variables
+// Bootstrap mais pas ses mixins — c'est la convention des autres composants.
+@media (min-width: 1200px) {
+    :host > .row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        align-items: start;
+
+        // La gouttière de la grille remplace celle de Bootstrap, sinon les
+        // marges négatives de `.row` et le padding des colonnes se cumulent.
+        gap: 0 $grid-gutter-width;
+        margin-left: 0;
+        margin-right: 0;
+
+        > * {
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+}

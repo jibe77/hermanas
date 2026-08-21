@@ -198,7 +198,12 @@ public class DoorService {
             upButtonService.provisionButton();
             upButtonService.resetUpButtonState();
             notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENING));
-            if (openDoor(force, openingDoorAfterClosingProblem) && upButtonService.isUpButtonHasBeenPressed()) {
+            // Pass force=true: the guard above already decided the door must move.
+            // openDoor() would otherwise re-read the up switch several seconds later
+            // (wifi turn-on + camera capture happen in between at sunrise), and a
+            // bouncing switch reading "pressed" on that second sample silently
+            // cancelled the movement — the door then stayed shut all morning.
+            if (openDoor(true, openingDoorAfterClosingProblem) && upButtonService.isUpButtonHasBeenPressed()) {
                 logger.info("up position has been reached.");
                 notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.OPENED));
                 returnedValue = true;

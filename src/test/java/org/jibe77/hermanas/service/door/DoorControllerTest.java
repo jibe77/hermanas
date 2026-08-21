@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 class DoorControllerTest {
@@ -45,6 +46,39 @@ class DoorControllerTest {
         assertEquals(DoorStatusEnum.CLOSED, doorService.statusInfo().getStatus());
         when(upButtonService.isUpButtonPressed()).thenReturn(true);
         assertEquals(DoorStatusEnum.OPENED, doorService.statusInfo().getStatus());
+    }
+
+    /**
+     * Le fin de course haut rebondit lui aussi. Entre le garde d'entrée de
+     * {@code openDoorWithUpButtonManagment} et la relecture faite plus bas par
+     * {@code openDoor}, plusieurs secondes s'écoulent au lever du soleil (allumage du
+     * wifi puis capture photo). Si le contact rebondit à « pressé » sur ce second
+     * échantillon, le mouvement était silencieusement annulé et la porte restait
+     * fermée toute la matinée (incident du 2026-08-21).
+     *
+     * <p>Le servo doit donc bouger dès lors que le garde d'entrée a laissé passer,
+     * quel que soit l'état relu ensuite.</p>
+     */
+    @Test
+    void openingIsNotCancelledByABouncingUpSwitch() {
+        ServoMotorService servo = mock(ServoMotorService.class);
+        UpButtonService upButtonService = mock(UpButtonService.class);
+        DoorService doorService = new DoorService(
+                servo,
+                mock(BottomButtonService.class),
+                upButtonService,
+                mock(SunTimeManager.class),
+                mock(NotificationController.class),
+                mock(org.jibe77.hermanas.service.config.ConfigService.class));
+
+        // Contact relâché à l'entrée (la porte est bien en bas), puis rebond à
+        // « pressé » lors de toutes les relectures suivantes.
+        when(upButtonService.isUpButtonPressed()).thenReturn(false, true, true, true);
+        when(upButtonService.isUpButtonHasBeenPressed()).thenReturn(true);
+
+        assertTrue(doorService.openDoorWithUpButtonManagment(false, false));
+        // Le servo a bien reçu l'ordre de monter.
+        verify(servo, atLeastOnce()).setPosition(anyInt(), anyInt());
     }
 
     /**
