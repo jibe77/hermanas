@@ -54,7 +54,14 @@ img.not_hidden {
         // stylable — un `> *` raterait la carte porte et la carte webcam.
         // `::ng-deep` ici aussi : les colonnes porte et webcam appartiennent au
         // template de `sb-dashboard-door-widget`.
+        //
+        // `width: auto` est indispensable : `.col-xl-6` porte un `width: 50%` de
+        // Bootstrap, qui dans une cellule de grille vaut 50% *de la cellule* et
+        // non de la ligne. Les cartes ne remplissaient donc que la moitié de leur
+        // colonne, d'où deux bandes étroites séparées par un grand vide.
         ::ng-deep .col-xl-6 {
+            width: auto;
+            max-width: none;
             padding-left: 0;
             padding-right: 0;
             margin-bottom: $spacer * 1.5;

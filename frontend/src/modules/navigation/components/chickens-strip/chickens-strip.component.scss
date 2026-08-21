@@ -204,10 +204,19 @@
     }
     // Without animations the strip would just stack 4 hens at x=-60px.
     // Spread them out statically so they remain a nice decoration.
-    .chicken:nth-child(1) { transform: translate(10%,  -50%); }
-    .chicken:nth-child(2) { transform: translate(35%,  -50%); }
-    .chicken:nth-child(3) { transform: translate(60%,  -50%); }
-    .chicken:nth-child(4) { transform: translate(85%,  -50%); }
+    //
+    // Le décalage DOIT se faire par `left` : `.chicken` est en `position:
+    // absolute; left: -60px` (point de départ de la marche), et un pourcentage
+    // dans `translate()` se rapporte à la largeur de l'élément lui-même — soit
+    // 28px ici, pas à celle de la bande. Les poules se retrouvaient donc
+    // empilées à -60px + quelques pixels, hors du conteneur et masquées
+    // derrière la barre latérale. `left` est bien relatif à la bande, et
+    // `translate(-50%, -50%)` recentre chaque poule sur sa position.
+    .chicken { transform: translate(-50%, -50%); }
+    .chicken:nth-child(1) { left: 10%; }
+    .chicken:nth-child(2) { left: 35%; }
+    .chicken:nth-child(3) { left: 60%; }
+    .chicken:nth-child(4) { left: 85%; }
 }
 
 // Hide on narrow screens — the topnav already feels cramped on phones.
