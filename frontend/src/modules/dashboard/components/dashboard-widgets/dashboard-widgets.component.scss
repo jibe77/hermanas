@@ -10,17 +10,19 @@ img.not_hidden {
     height: 100%;
 }
 
-// Les panneaux ne doivent PAS s'étirer : chaque carte garde sa hauteur de contenu.
+// Les panneaux s'étirent, mais leurs bords doivent s'aligner franchement.
 //
-// Par défaut `.row` est un flex avec `align-items: stretch`, et comme `.card`
-// n'a pas de `height: 100%`, la carte restait en haut d'une colonne étirée —
-// d'où un vide invisible sous les cartes courtes et des bas de cartes en
-// escalier. `align-items-start` (dans le template) supprime cet étirement.
+// L'impression de « flottement » venait de là : `.row` étire bien les colonnes
+// (`align-items: stretch` par défaut), mais `.card` n'a pas de `height: 100%`.
+// La carte restait donc en haut d'une colonne étirée, et l'espace restant
+// devenait un vide invisible sous elle — des cartes de hauteurs différentes,
+// posées sur une grille qu'on ne voyait pas.
 //
-// Restait le décalage vertical entre les deux lignes : en flex, la 2e ligne
-// démarre sous la plus haute carte de la 1re. La grille CSS ci-dessous aligne
-// les colonnes ET les lignes, chaque rangée se dimensionnant indépendamment,
-// donc Météo et Webcam démarrent exactement à la même hauteur.
+// La correction se fait donc en deux temps :
+//   1. la grille CSS ci-dessous aligne les colonnes ET les lignes (en flex, la
+//      2e ligne démarrerait sous la plus haute carte de la 1re) ;
+//   2. les cartes remplissent réellement leur cellule (`height: 100%` propagé
+//      jusqu'à `.card`), pour que les bords bas d'une même rangée coïncident.
 //
 // On ne l'active qu'à partir de `xl` (1200px), seuil où les classes `col-xl-6` /
 // `order-xl-*` du template passent sur deux colonnes ; en dessous, tout
@@ -33,7 +35,8 @@ img.not_hidden {
     :host > .row {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        align-items: start;
+        // `stretch` (défaut) : chaque cellule prend la hauteur de sa rangée.
+        align-items: stretch;
 
         // La gouttière de la grille remplace celle de Bootstrap, sinon les
         // marges négatives de `.row` et le padding des colonnes se cumulent.
@@ -41,9 +44,37 @@ img.not_hidden {
         margin-left: 0;
         margin-right: 0;
 
-        > * {
+        // `.mb-4` de `.card` est neutralisé au profit d'un `margin-bottom` porté
+        // par la colonne : sur une carte étirée, la marge se retrouverait sinon
+        // *dans* la cellule et décalerait le bord bas d'une carte à l'autre.
+        //
+        // On cible les colonnes par leur classe et non par `> *` : le composant
+        // porte est en `display: contents`, ses deux colonnes sont donc bien des
+        // items de la grille alors que son hôte n'est pas un enfant direct
+        // stylable — un `> *` raterait la carte porte et la carte webcam.
+        // `::ng-deep` ici aussi : les colonnes porte et webcam appartiennent au
+        // template de `sb-dashboard-door-widget`.
+        ::ng-deep .col-xl-6 {
             padding-left: 0;
             padding-right: 0;
+            margin-bottom: $spacer * 1.5;
+        }
+
+        // Chaîne de hauteurs jusqu'à la carte : la colonne est étirée par la
+        // grille, mais `sb-card` (élément hôte) puis `.card` doivent suivre,
+        // sinon la carte reste à sa hauteur de contenu et le vide réapparaît.
+        //
+        // `::ng-deep` est indispensable pour atteindre `.card` : il appartient au
+        // template de `sb-card`, donc l'encapsulation par défaut le rend
+        // inaccessible depuis ici (même contournement que system.component.scss).
+        ::ng-deep sb-card {
+            display: block;
+            height: 100%;
+
+            > .card {
+                height: 100%;
+                margin-bottom: 0;
+            }
         }
     }
 }
