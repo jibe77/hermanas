@@ -154,10 +154,24 @@ export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
             clearTimeout(this.pictureRetryTimer);
             this.pictureRetryTimer = undefined;
         }
-        // force=true bypasses the backend's 30 s picture cache so the dashboard
-        // never serves a stale shot. date= is a cache-buster on the browser side
-        // — changing the URL is enough to make the browser drop any in-flight
-        // request for the previous src (no need for an intermediate reset).
+        // force=false lets the backend's 30 s picture cache absorb the request.
+        // The dashboard thumbnail doesn't need a second-accurate shot, and
+        // forcing on every load creates a stampede that can push the Pi Zero's
+        // camera queue past the proxy timeout (504).
+        this.picturePath =
+            this.domainBase + '/camera/takePicture?force=false&date=' + new Date().getTime();
+        this.changeDetectorRef.markForCheck();
+    }
+
+    public forceRefreshPicture() {
+        this.pictureInitialised = false;
+        this.pictureNotInitialised = false;
+        this.pictureRetryCount = 0;
+        if (this.pictureRetryTimer) {
+            clearTimeout(this.pictureRetryTimer);
+            this.pictureRetryTimer = undefined;
+        }
+        // Explicit user action — bypass the 30 s cache for a fresh shot.
         this.picturePath =
             this.domainBase + '/camera/takePicture?force=true&date=' + new Date().getTime();
         this.changeDetectorRef.markForCheck();
@@ -199,7 +213,7 @@ export class DashboardDoorWidgetComponent implements OnInit, OnDestroy {
                 this.pictureNotInitialised = false;
                 this.picturePath =
                     this.domainBase +
-                    '/camera/takePicture?force=true&date=' +
+                    '/camera/takePicture?force=false&date=' +
                     new Date().getTime();
                 this.changeDetectorRef.markForCheck();
             }, DashboardDoorWidgetComponent.PICTURE_RETRY_DELAY_MS);
