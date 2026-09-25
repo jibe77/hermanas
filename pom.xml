@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.0</version>
+		<version>4.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.jibe77</groupId>
 	<artifactId>hermanas</artifactId>
-	<version>0.9.8</version>
+	<version>0.11.1</version>
 	<packaging>jar</packaging>
 	<name>hermanas</name>
 	<description>Chicken coop automation</description>
@@ -24,7 +24,7 @@
 		<!-- springdoc 3.x : ligne alignée sur Spring Boot 4. La 1.x était SB 2
 		     et la 2.x SB 3 — les deux tiraient Jackson 2 en doublon de la
 		     Jackson 3 de SB 4. -->
-		<springdoc-openapi.version>3.1.0</springdoc-openapi.version>
+		<springdoc-openapi.version>3.1.1</springdoc-openapi.version>
 		<lib-sunrise-sunset.version>1.1.2</lib-sunrise-sunset.version>
 		<commons-io.version>2.22.0</commons-io.version>
 		<!-- Override the Spring Boot 2.7 BOM (3.12.0) — 3.20.0 stays Java 8
@@ -121,6 +121,18 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<!-- Persist HTTP sessions in the database so they survive JVM restarts (deploys,
+		     crashes). Without this, Tomcat stores sessions in memory only; every
+		     `systemctl restart` invalidates all active JSESSIONID cookies and logs
+		     users out. The remember-me mechanism already persists in `persistent_logins`,
+		     but it only covers users who checked the "Remember me" checkbox.
+		     spring-session-jdbc covers ALL sessions. Tables (SPRING_SESSION,
+		     SPRING_SESSION_ATTRIBUTES) are auto-created via
+		     spring.session.jdbc.initialize-schema=always. -->
+		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-jdbc</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -251,8 +263,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.70</version>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.86</version>
 		</dependency>
 		<!-- Apache HttpComponents v4 : aligné sur httpasyncclient 4.1.5 tiré par
 		     web-push 5.1.2 (qui expose HttpResponse dans son API publique).
@@ -266,7 +278,7 @@
 		<dependency>
 			<groupId>org.bitbucket.b_c</groupId>
 			<artifactId>jose4j</artifactId>
-			<version>0.9.6</version>
+			<version>0.9.7</version>
 		</dependency>
 	</dependencies>
 
