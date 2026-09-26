@@ -24,7 +24,7 @@ public class MailAndCameraHealthIndicator implements HealthIndicator {
     public Health health() {
         Optional<File> picWithClosedDoor = cameraService.takePictureNoException(false);
         if (picWithClosedDoor.isPresent()) {
-            emailService.sendMail(
+            emailService.sendMailToAdmins(
                     "Notification sent by Actuator on Hermanas",
                     "This email is sent by a Hermanas health check.",
                     picWithClosedDoor);

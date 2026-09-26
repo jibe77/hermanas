@@ -4,6 +4,7 @@ import org.jibe77.hermanas.data.entity.HermanasUser;
 import org.jibe77.hermanas.data.entity.Parameter;
 import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.data.repository.ParameterRepository;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
@@ -23,12 +25,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Service
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final ConfigService configService;
     private final ParameterRepository parameterRepository;
 
     private final List<MimeMessagePreparator> sendingQueue = new ArrayList<>();
@@ -41,9 +45,49 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
-    public EmailService(JavaMailSender mailSender, ParameterRepository parameterRepository) {
+    public EmailService(JavaMailSender mailSender, ConfigService configService,
+                       ParameterRepository parameterRepository) {
         this.mailSender = mailSender;
+        this.configService = configService;
         this.parameterRepository = parameterRepository;
+    }
+
+    /**
+     * Resolves the mail sender to use for the next send. Builds a fresh
+     * {@link JavaMailSenderImpl} from the dynamic configuration managed by
+     * {@link ConfigService} (database first, {@code application.properties} fallback),
+     * so that changes made via the admin UI take effect on the very next email
+     * without requiring a restart.
+     *
+     * <p>If {@code ConfigService} returns a blank host (e.g. in a test context where
+     * no SMTP is configured), falls back to the Spring Boot auto-configured
+     * {@link JavaMailSender} bean that was injected at startup.</p>
+     */
+    protected JavaMailSender resolveSender() {
+        String host = configService.getMailHost();
+        if (host == null || host.isBlank()) {
+            return mailSender;
+        }
+
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setHost(host);
+        sender.setPort(configService.getMailPort());
+        sender.setUsername(configService.getMailUsername());
+        sender.setPassword(configService.getMailPassword());
+
+        Properties props = sender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", String.valueOf(configService.isMailSmtpAuth()));
+        props.put("mail.smtp.starttls.enable", String.valueOf(configService.isMailStartTlsEnable()));
+        props.put("mail.smtp.connectiontimeout", "50000");
+        props.put("mail.smtp.timeout", "50000");
+        props.put("mail.smtp.writetimeout", "50000");
+
+        logger.debug("Resolved SMTP sender: host={}, port={}, auth={}, starttls={}",
+                host, sender.getPort(),
+                configService.isMailSmtpAuth(), configService.isMailStartTlsEnable());
+
+        return sender;
     }
 
     private String getEmailNotificationFrom() {
@@ -59,6 +103,17 @@ public class EmailService {
 
     public void sendMail(String subject, String body, Optional<File>... filesToAttach) {
         sendMailTo(resolveRecipients(), subject, body, filesToAttach);
+    }
+
+    /**
+     * Sends a mail only to users with the {@code ADMIN} role and notifications enabled.
+     * Used by the Actuator health-check so that diagnostic emails do not spam every
+     * opted-in user on the instance.
+     */
+    @SafeVarargs
+    public final void sendMailToAdmins(String subject, String body,
+                                      Optional<File>... filesToAttach) {
+        sendMailTo(resolveAdminRecipients(), subject, body, filesToAttach);
     }
 
     /**
@@ -133,12 +188,32 @@ public class EmailService {
         }
     }
 
+    /**
+     * Resolves the list of recipients restricted to {@code ADMIN} users who have
+     * notifications enabled and a non-blank email address.
+     */
+    private List<String> resolveAdminRecipients() {
+        if (userRepository == null) {
+            return Collections.emptyList();
+        }
+        try {
+            return userRepository.findByRoleAndNotificationsEnabledTrue("ADMIN").stream()
+                    .map(HermanasUser::getEmail)
+                    .filter(e -> e != null && !e.trim().isEmpty())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.warn("Failed to load admin users from database; notification will be skipped.", e);
+            return Collections.emptyList();
+        }
+    }
+
     public synchronized void processSendingQueue() {
         logger.info("start processing sending queue.");
+        JavaMailSender sender = resolveSender();
         Iterator<MimeMessagePreparator> it = sendingQueue.iterator();
         while (it.hasNext()) {
             try {
-                mailSender.send(it.next());
+                sender.send(it.next());
                 it.remove();
             } catch (MailException ex) {
                 logger.error("Can't send email", ex);
@@ -187,7 +262,7 @@ public class EmailService {
             }
         };
         logger.info("Sending diagnostics test email to {}.", recipient);
-        mailSender.send(preparator);
+        resolveSender().send(preparator);
         logger.info("Diagnostics test email sent successfully.");
     }
 

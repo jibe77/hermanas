@@ -134,11 +134,11 @@ public class SecurityConfig
                 .requestMatchers(HttpMethod.GET, "/api/v1/push/vapid-public-key").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/push/test").hasRole(ROLE_ADMIN)
 
-                // ─── Actuator: keep /health and /info reachable for external monitoring,
-                // restrict everything else to administrators (env/configprops/heapdump can
-                // leak credentials and memory snapshots) ─────────────────────────────────────
-                .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**",
-                        "/actuator/info").permitAll()
+                // ─── Actuator: /info stays public for external monitoring,
+                // restrict everything else (including /health) to administrators
+                // (env/configprops/heapdump can leak credentials and memory snapshots,
+                //  /health triggers MailAndCameraHealthIndicator which sends emails) ─────
+                .requestMatchers(HttpMethod.GET, "/actuator/info").permitAll()
                 .requestMatchers("/actuator/**").hasRole(ROLE_ADMIN)
 
                 // ─── Logs: admin only — log content may contain sensitive data ────────────────
@@ -219,7 +219,15 @@ public class SecurityConfig
                                 res.getWriter().write("{\"error\":\"UNAUTHENTICATED\"}");
                             },
                             org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher
-                                    .pathPattern("/api/v1/**")))
+                                    .pathPattern("/api/v1/**"))
+                    .defaultAuthenticationEntryPointFor(
+                            (req, res, e) -> {
+                                res.setStatus(401);
+                                res.setContentType("application/json");
+                                res.getWriter().write("{\"error\":\"UNAUTHENTICATED\"}");
+                            },
+                            org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher
+                                    .pathPattern("/actuator/**")))
                 .formLogin(form -> form
                     // Declaring a custom loginPage disables Spring's DefaultLoginPageGeneratingFilter,
                     // which would otherwise serve an HTML form on GET /login and cause empty-file

@@ -16,6 +16,8 @@ public interface HermanasUserRepository extends CrudRepository<HermanasUser, Lon
 
     List<HermanasUser> findByRole(String role);
 
+    List<HermanasUser> findByRoleAndNotificationsEnabledTrue(String role);
+
     long countByRole(String role);
 
     void deleteByLogin(String login);
