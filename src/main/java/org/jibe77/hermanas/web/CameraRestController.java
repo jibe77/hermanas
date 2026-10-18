@@ -158,6 +158,12 @@ public class CameraRestController {
                 // mjpg_streamer. Avoid spamming on every retry.
                 if (attempt == 0) {
                     logger.info("mjpg_streamer not ready yet ({}). Retrying...", e.getMessage());
+                    if (!cameraService.streamingProcessIsAlive()) {
+                        logger.warn("mjpg_streamer is already dead on the first failed connection: "
+                                + "the whole retry budget is wasted waiting for a port that will "
+                                + "never open, and the light stays on meanwhile (thread {}).",
+                                Thread.currentThread().getName());
+                    }
                 }
                 try {
                     Thread.sleep(100);
@@ -171,6 +177,14 @@ public class CameraRestController {
         if (upstream == null) {
             logger.warn("Could not reach mjpg_streamer on localhost:8081 after {} attempts ({} ms).",
                     attemptCount, waitMs, lastError);
+            // Trace de diagnostic de l'incident : ce chemin rend la réponse sans jamais
+            // appeler stopStream(). Le processus de flux reste enregistré comme actif et
+            // la lumière reste allumée. Volontairement sans correctif ici, pour que la
+            // reproduction montre bien la fuite complète.
+            logger.warn("Returning 503 without stopping the stream: mjpg_streamer is still "
+                            + "registered as running and the light is left as it was (thread {}). "
+                            + "Nothing will switch it off but the security timer or a manual stop.",
+                    Thread.currentThread().getName());
             response.setStatus(HttpStatus.SERVICE_UNAVAILABLE.value());
             response.setContentType(MediaType.TEXT_PLAIN_VALUE);
             response.getWriter().write("mjpg_streamer not reachable");
@@ -217,6 +231,11 @@ public class CameraRestController {
                 }
             } catch (IOException e) {
                 logger.warn("Upstream MJPEG read failed.", e);
+                // Seul ClientAbortException ci-dessus nettoie : toute autre IOException
+                // laisse le flux et la lumière en place. Trace de l'incident.
+                logger.warn("Stream aborted on an upstream error without stopping mjpg_streamer: "
+                                + "the light is left as it was (thread {}).",
+                        Thread.currentThread().getName());
             } finally {
                 finalUpstream.disconnect();
             }

@@ -37,6 +37,19 @@ public class ProcessLauncher {
     }
 
     public void printErrorStreamInThread(Process currentStreamingProcess) {
+        printErrorStreamInThread(currentStreamingProcess, "process", false);
+    }
+
+    /**
+     * Drains the error stream of a launched process in a dedicated thread.
+     *
+     * @param label name used in the log lines, so several processes can be told apart
+     * @param warn  when true, the output is logged at WARN instead of DEBUG. Used for
+     *              {@code mjpg_streamer}: at DEBUG the {@code No such file or directory}
+     *              raised by bash never reaches spring.log, and a dead streamer is only
+     *              visible much later as an unexplained exit value.
+     */
+    public void printErrorStreamInThread(Process currentStreamingProcess, String label, boolean warn) {
         InputStream errorStream = currentStreamingProcess.getErrorStream();
         if (errorStream != null) {
             BufferedReader bufferedReader = new BufferedReader(
@@ -48,7 +61,11 @@ public class ProcessLauncher {
                     try {
                         line = bufferedReader.readLine();
                         if (line != null) {
-                            logger.debug(line);
+                            if (warn) {
+                                logger.warn("{}: {}", label, line);
+                            } else {
+                                logger.debug(line);
+                            }
                         }
                     } catch (IOException e) {
                         logger.error("can't read process errors.", e);
@@ -56,7 +73,16 @@ public class ProcessLauncher {
                     }
                 } while (line != null);
                 logger.info("process error stream is finished (debug only).");
-            }).start();
+                if (warn) {
+                    // La valeur de sortie est remontée dès que stderr se ferme, sans
+                    // attendre qu'un stopStream la découvre plusieurs minutes plus tard.
+                    try {
+                        logger.warn("{} exited with value {}.", label, currentStreamingProcess.exitValue());
+                    } catch (IllegalThreadStateException stillRunning) {
+                        logger.debug("{} error stream closed while the process was still alive.", label);
+                    }
+                }
+            }, label + " error stream").start();
         } else {
             logger.info("error stream is null.");
         }

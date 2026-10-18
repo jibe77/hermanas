@@ -58,6 +58,12 @@ public class BirdhouseButtonService {
         if (pressed) {
             logger.info("Birdhouse button is pressed.");
             if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
+                // Même schéma que CameraService.switchLightOn() : le bouton décline la
+                // responsabilité si la lumière est déjà allumée — notamment quand une
+                // capture photo la tient au même moment.
+                logger.warn("Birdhouse button pressed while the light was already ON: the button "
+                        + "will not switch it off on release (thread {}).",
+                        Thread.currentThread().getName());
                 setLightHasBeenSwitchedOnByBirdhouseDoor(false);
             } else {
                 setLightHasBeenSwitchedOnByBirdhouseDoor(true);
@@ -67,6 +73,10 @@ public class BirdhouseButtonService {
             logger.info("Birdhouse button is not pressed anymore.");
             if (isLightHasBeenSwitchedOnByBirdhouseDoor()) {
                 lightService.switchOff();
+            } else if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
+                logger.warn("Birdhouse button released but the light is still ON and was not "
+                                + "claimed by the button: nothing switched it off (thread {}).",
+                        Thread.currentThread().getName());
             }
             setLightHasBeenSwitchedOnByBirdhouseDoor(false);
         }

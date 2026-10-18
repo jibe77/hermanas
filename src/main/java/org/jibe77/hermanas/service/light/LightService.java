@@ -39,6 +39,14 @@ public class LightService {
 
     private Timer lightSecurityStopTimer;
 
+    /**
+     * Échéance programmée du timer de sécurité, en millisecondes d'epoch, ou
+     * {@code null} quand aucun timer n'est armé. Purement diagnostique : elle permet
+     * de dire, sur un log, combien de temps il restait à courir au moment où il a
+     * été remplacé ou annulé.
+     */
+    private volatile Long securityTimerFireAt;
+
     private ConfigService configService;
 
     DigitalOutput gpioPinDigitalOutput;
@@ -95,6 +103,14 @@ public class LightService {
             startSecurityTimer();
             notificationController.notify(new CoopStatus(Appliance.LIGHT, StatusEnum.ON));
             eventService.record(EventType.LIGHT_ON, details);
+        } else {
+            // Sans cette trace, une demande d'allumage ignorée parce que le relais est
+            // désactivé est strictement identique, dans les logs, à une absence de
+            // demande. Le texte « Switching on light. » est laissé tel quel plus haut
+            // pour ne casser aucun filtre existant.
+            logger.warn("Switching on light ignored: light relay is disabled "
+                    + "(light.relay.enabled=false), requested by thread {}.",
+                    Thread.currentThread().getName());
         }
     }
 
@@ -113,11 +129,25 @@ public class LightService {
             logger.info("Switching off light.");
             gpioPinDigitalOutput.low();
             if (lightSecurityStopTimer != null) {
+                // Annuler un timer encore valide est l'une des trois façons de laisser
+                // la lumière allumée au-delà du délai de sécurité. Sans cette trace on
+                // ne peut pas distinguer « le timer a tiré » de « quelqu'un l'a annulé
+                // en passant par ici ».
+                long remainingMs = securityTimerFireAt == null
+                        ? -1 : securityTimerFireAt - System.currentTimeMillis();
+                logger.warn("Security timer cancelled by this switchOff (thread {}, details={}); "
+                                + "it still had {} ms to run.",
+                        Thread.currentThread().getName(), details, remainingMs);
                 lightSecurityStopTimer.cancel();
                 lightSecurityStopTimer = null;
+                securityTimerFireAt = null;
             }
             notificationController.notify(new CoopStatus(Appliance.LIGHT, StatusEnum.OFF));
             eventService.record(EventType.LIGHT_OFF, details);
+        } else {
+            logger.warn("Switching off light ignored: light relay is disabled "
+                    + "(light.relay.enabled=false), requested by thread {}.",
+                    Thread.currentThread().getName());
         }
     }
 
@@ -133,18 +163,47 @@ public class LightService {
 
     private void startSecurityTimer() {
         if (lightSecurityStopTimer != null) {
+            long remainingMs = securityTimerFireAt == null
+                    ? -1 : securityTimerFireAt - System.currentTimeMillis();
+            logger.warn("Replacing the previous security timer (thread {}); it still had {} ms to run.",
+                    Thread.currentThread().getName(), remainingMs);
             lightSecurityStopTimer.cancel();
         }
         lightSecurityStopTimer = new Timer("Light security stop");
+
+        long ecoDelay = configService.getLightSecurityTimerDelayEco();
+        long regularDelay = configService.getLightSecurityTimerDelayRegular();
+        long sunnyDelay = configService.getLightSecurityTimerDelaySunny();
         long duration = consumptionModeController.getDuration(
-                configService.getLightSecurityTimerDelayEco(),
-                configService.getLightSecurityTimerDelayRegular(),
-                configService.getLightSecurityTimerDelaySunny(),
-                LocalDateTime.now());
+                ecoDelay, regularDelay, sunnyDelay, LocalDateTime.now());
+        securityTimerFireAt = System.currentTimeMillis() + duration;
+
+        // Le seul log du timer (« stopping light after … ms ») n'est émis que s'il
+        // part. On ne pouvait donc pas distinguer, sur un incident : jamais programmé,
+        // programmé beaucoup trop loin, ou thread bloqué. Ces trois valeurs + le mode
+        // retenu tranchent la question en un coup d'œil.
+        logger.info("Security timer armed: mode={}, duration={} ms, expected to fire at {}, "
+                        + "raw config eco/regular/sunny = {}/{}/{} ms.",
+                consumptionModeController.getCurrentEnergyMode().getCurrentMode(),
+                duration,
+                LocalDateTime.now().plusNanos(duration * 1_000_000L),
+                ecoDelay, regularDelay, sunnyDelay);
+
         lightSecurityStopTimer.schedule(new TimerTask() {
                                             public void run() {
                                                 logger.info("stopping light after {} ms.", duration);
-                                                switchOff("auto: security timer");
+                                                // Une exception non rattrapée dans un TimerTask tue
+                                                // son thread en silence : la trace part sur stderr,
+                                                // jamais dans spring.log. On la journalise puis on la
+                                                // relance telle quelle — le comportement reste
+                                                // identique, seule la visibilité change.
+                                                try {
+                                                    switchOff("auto: security timer");
+                                                } catch (RuntimeException e) {
+                                                    logger.error("Security timer failed to switch the "
+                                                            + "light off; the light may be stuck on.", e);
+                                                    throw e;
+                                                }
                                             }
                                         },
                 duration);

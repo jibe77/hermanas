@@ -123,6 +123,13 @@ public class CameraService {
         if (lightSwitchedOnByCamera) {
             lightService.switchOff();
             lightSwitchedOnByCamera = false;
+        } else if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
+            // Le cas exact de l'incident : la lumière est allumée, personne ne la
+            // réclame, et le log d'origine était en DEBUG donc invisible.
+            logger.warn("Light is still ON but this thread is not taking responsibility to "
+                            + "switch it off (thread {}): the flag was cleared by another flow "
+                            + "in the meantime. Waiting for the security timer or a manual stop.",
+                    Thread.currentThread().getName());
         } else {
             logger.debug("light hasn't been switched on before taking picture, it should not be switched off.");
         }
@@ -133,10 +140,23 @@ public class CameraService {
      */
     private void switchLightOn() {
         if (StatusEnum.ON.equals(lightService.getStatus().getStatusEnum())) {
-            logger.debug("light is already on, it's useless to switch it on again.");
+            if (lightSwitchedOnByCamera) {
+                // Le drapeau est un jeton unique partagé entre la photo et le flux
+                // vidéo : voilà l'endroit précis où un flux volait la responsabilité
+                // de l'extinction à l'autre.
+                logger.warn("Light is already ON and this thread is giving up the switch-off "
+                                + "responsibility it was holding (thread {}): nobody will switch "
+                                + "the light off now.",
+                        Thread.currentThread().getName());
+            } else {
+                logger.info("light is already on, it's useless to switch it on again "
+                                + "(thread {}): this flow will not switch it off either.",
+                        Thread.currentThread().getName());
+            }
             lightSwitchedOnByCamera = false;
         } else {
-            logger.info("light has been switched on by camera.");
+            logger.info("light has been switched on by camera (thread {}).",
+                    Thread.currentThread().getName());
             lightService.switchOn();
             lightSwitchedOnByCamera = true;
         }
@@ -255,9 +275,14 @@ public class CameraService {
                     "/bin/bash", "-c",
                     streamingCommand
             );
-            processLauncher.printErrorStreamInThread(currentStreamingProcess);
+            logger.info("mjpg_streamer launched as pid {}; this stream holds the light: {}.",
+                    currentStreamingProcess.pid(), lightSwitchedOnByCamera);
+            // stderr en WARN ici : c'est ce qui aurait montré le « No such file or
+            // directory » de bash dès 20:48, au lieu d'un mystique exit 127.
+            processLauncher.printErrorStreamInThread(currentStreamingProcess, "mjpg_streamer", true);
         } else {
-            logger.info("current steaming process is not null, nothing to start.");
+            logger.info("current steaming process is not null (pid {}), nothing to start.",
+                    currentStreamingProcess.pid());
         }
     }
 
@@ -274,13 +299,34 @@ public class CameraService {
                     logger.info("Force destroy.");
                     currentStreamingProcess.destroyForcibly();
                 }
+                int exitValue = currentStreamingProcess.exitValue();
                 logger.info("Process has exited {}, is alive {}, exit value {}",
-                        hasExited, currentStreamingProcess.isAlive(), currentStreamingProcess.exitValue());
+                        hasExited, currentStreamingProcess.isAlive(), exitValue);
+                if (exitValue != 0) {
+                    logger.warn("mjpg_streamer exited with value {} — 127 means the command was "
+                                    + "not found. Check camera.streaming.command and the presence of "
+                                    + "the binary on the Pi: the video stream could never have worked.",
+                            exitValue);
+                }
             } finally {
                 processLauncher.launch("/bin/kill", "-9", Long.toString(currentStreamingProcess.pid()));
                 currentStreamingProcess = null;
             }
+        } else {
+            logger.info("stopStream called but no streaming process was running "
+                    + "(thread {}); only the light bookkeeping was released.",
+                    Thread.currentThread().getName());
         }
+    }
+
+    /**
+     * Le processus {@code mjpg_streamer} est-il encore vivant ? Renvoie {@code false}
+     * quand aucun processus n'est lancé ou qu'il s'est déjà terminé — auquel cas
+     * attendre le port 8081 ne sert à rien.
+     */
+    public boolean streamingProcessIsAlive() {
+        Process process = currentStreamingProcess;
+        return process != null && process.isAlive();
     }
 
     public int getClosingRate() {
