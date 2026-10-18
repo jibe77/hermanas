@@ -868,20 +868,25 @@ public class ConfigRestController {
     }
 
     /**
-     * Public read-only access to the built-in default prompt. Exposed so the
-     * front-end demo mode (anonymous visitor) can pre-fill the AI prompt
-     * textarea — every other field in the camera config panel stays gated
-     * behind the class-level {@code @PreAuthorize("isAuthenticated()")},
-     * but the default prompt itself is a hardcoded constant with no
-     * secret value and is safe to surface to unauthenticated visitors.
+     * Public read-only access to the built-in default prompt and the AI-enabled
+     * flag. Exposed so the front-end (including the anonymous visitor / demo
+     * mode) can both pre-fill the AI prompt textarea and, crucially, learn
+     * whether AI features are switched on. The "Analyse this picture" button
+     * lives on the public live-photo card and must not be shown when the backend
+     * would reject the analysis with "AI disabled" — but the full config panel
+     * stays behind the class-level {@code @PreAuthorize("isAuthenticated()")}.
+     * Neither the default prompt (a hardcoded constant) nor the enabled flag
+     * carries any secret, so both are safe to surface to unauthenticated
+     * visitors.
      */
-    @Operation(summary = "Returns the built-in default prompt used by the multimodal model. Public — no authentication required.")
+    @Operation(summary = "Returns the built-in default prompt and the AI-enabled flag. Public — no authentication required.")
     @GetMapping("/ai/prompt-default")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<Map<String, String>> getAiInferencePromptDefault() {
-        Map<String, String> body = new LinkedHashMap<>();
+    public ResponseEntity<Map<String, Object>> getAiInferencePromptDefault() {
+        Map<String, Object> body = new LinkedHashMap<>();
         body.put("prompt_default",
                 org.jibe77.hermanas.client.ai.CameraPromptBuilder.DEFAULT_PROMPT);
+        body.put("enabled", configService.isAiEnabled());
         return ResponseEntity.ok(body);
     }
 

@@ -897,7 +897,7 @@ def section_dependencies():
                 ["javax.* namespaces", "Legacy", "Migration jakarta.* impossible sur Boot 2.7"],
                 ["Pi4j", "≤ 2.4.0", "Pin matériel — versions ultérieures incompatibles Pi Zero+Java 11"],
                 ["MariaDB Connector/J", "3.5.8", "À jour"],
-                ["BouncyCastle", "1.70", "Récent"],
+                ["BouncyCastle", "1.81 (jdk18on)", "À jour — migré depuis jdk15on (EOL)"],
                 ["commons-io", "2.18.0", "Récent"],
             ],
             col_widths=[55 * mm, 38 * mm, 75 * mm],

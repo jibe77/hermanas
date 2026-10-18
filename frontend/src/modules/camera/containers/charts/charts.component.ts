@@ -161,19 +161,30 @@ export class ChartsComponent implements OnInit, OnDestroy {
         // POST /api/v1/captures reste ouvert à tous (limité par IP côté serveur).
         this.startCapture(false);
 
+        // Charge l'état d'IA pour TOUS les visiteurs afin que le bouton
+        // « Analyse this picture » (carte « Live photo » publique) reflète le vrai
+        // `ai.enabled`. Sans ce chargement, `aiEnabled` reste à sa valeur par
+        // défaut (true) et un invité voit un bouton que le backend rejette avec
+        // « AI analysis is currently disabled ». Comme GET /api/v1/config est
+        // réservé aux authentifiés (@PreAuthorize isAuthenticated au niveau
+        // classe), l'invité tombe dans la branche error() qui relit le drapeau
+        // `enabled` via l'endpoint public /config/ai/prompt-default. Les champs
+        // réservées à l'admin ne sont visibles que quand isAdmin est vrai.
+        this.loadCameraSettings();
+
         // Stay subscribed to auth changes so a login/logout that happens while
         // this page is open reveals or hides the admin-only / signed-in-only
-        // panels (camera settings, archive listing) without a page reload.
+        // panels (camera settings, archive listing) without a page reload. The
+        // AI-enabled flag is already resolved above (full config for the signed-in,
+        // public prompt-default for the anonymous), so a later login as ADMIN needs
+        // no settings re-fetch — the admin card just renders with the values that
+        // loadCameraSettings populated.
         this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe(() => {
-            const wasAdmin = this.isAdmin;
             const wasSignedIn = this.isSignedIn;
             this.isAdmin = this.userService.isAdmin();
             this.isSignedIn =
                 this.isAdmin ||
                 this.userService.getCurrentUser().authState === 'signedIn';
-            if (this.isAdmin && !wasAdmin) {
-                this.loadCameraSettings();
-            }
             if (this.isSignedIn && !wasSignedIn) {
                 this.load('');
             }
@@ -576,6 +587,15 @@ export class ChartsComponent implements OnInit, OnDestroy {
                 this.aiInferencePromptDefault = res.prompt_default ?? '';
                 if (!this.aiInferencePrompt) {
                     this.aiInferencePrompt = this.aiInferencePromptDefault;
+                }
+                // Public `enabled` flag: an anonymous visitor cannot read the
+                // full /config payload (isAuthenticated), so this is the only
+                // path that tells us whether AI is actually on. Without it the
+                // `aiEnabled` field keeps its default (true) and the "Analyse
+                // this picture" button shows on the public live-photo card even
+                // when the backend would answer "AI analysis is disabled".
+                if (res.enabled !== undefined) {
+                    this.aiEnabled = res.enabled;
                 }
                 this.cdr.markForCheck();
             },

@@ -4,6 +4,7 @@ import org.jibe77.hermanas.data.entity.HermanasUser;
 import org.jibe77.hermanas.data.entity.Parameter;
 import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.data.repository.ParameterRepository;
+import org.jibe77.hermanas.service.config.ConfigService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ class EmailServiceTest {
     JavaMailSender javaMailSender;
 
     @MockitoBean
+    ConfigService configService;
+
+    @MockitoBean
     ParameterRepository parameterRepository;
 
     @MockitoBean
@@ -37,6 +41,9 @@ class EmailServiceTest {
 
     @org.junit.jupiter.api.BeforeEach
     void wireMocks() {
+        // Return blank host so resolveSender() falls back to the injected mock JavaMailSender.
+        Mockito.when(configService.getMailHost()).thenReturn(null);
+
         Parameter fromRow = new Parameter();
         fromRow.setEntryKey("email.notification.from");
         fromRow.setEntryValue("test-from@example.com");

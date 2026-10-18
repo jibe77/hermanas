@@ -185,8 +185,11 @@ export class ConfigService extends AbstractService {
      * (anonymous visitor or front-only demo mode), so the operator can still
      * see and copy the default prompt even without being authenticated.
      */
-    getAiInferencePromptDefault(): Observable<{ prompt_default: string }> {
-        return this.http.get<{ prompt_default: string }>(
+    getAiInferencePromptDefault(): Observable<{
+        prompt_default: string;
+        enabled: boolean;
+    }> {
+        return this.http.get<{ prompt_default: string; enabled: boolean }>(
             `${this.domainBase}/config/ai/prompt-default`
         );
     }
