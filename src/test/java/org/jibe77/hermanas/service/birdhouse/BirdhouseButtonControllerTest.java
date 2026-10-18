@@ -94,6 +94,29 @@ class BirdhouseButtonControllerTest {
         DigitalStateChangeEvent event = Mockito.mock(DigitalStateChangeEvent.class);
         Mockito.when(event.state()).thenReturn(DigitalState.LOW);
         birdhouseButtonService.setLightHasBeenSwitchedOnByBirdhouseDoor(false);
+        // Le relâchement non réclamé par le bouton relit l'état de la lumière pour
+        // tracer le cas « encore allumée par quelqu'un d'autre » : sans ce stub le
+        // mock renvoie null et manageEvent casse sur un NPE.
+        Mockito.when(lightService.getStatus()).thenReturn(new Status(StatusEnum.OFF, -1));
+
+        birdhouseButtonService.manageEvent(event);
+
+        Assert.isTrue(!birdhouseButtonService.isLightHasBeenSwitchedOnByBirdhouseDoor(),
+                "The light is not switched on by birdhouse door.");
+        Mockito.verify(lightService, Mockito.times(0)).switchOff();
+    }
+
+    /**
+     * Relâchement du bouton alors que la lumière est encore allumée sans avoir été
+     * réclamée par le bouton (une capture photo la tient, par exemple) : le bouton
+     * ne doit pas l'éteindre, il se contente de tracer l'anomalie.
+     */
+    @Test
+    void testBirdhouseIsClosedAndLightIsStillOnButNotClaimedByTheButton() {
+        DigitalStateChangeEvent event = Mockito.mock(DigitalStateChangeEvent.class);
+        Mockito.when(event.state()).thenReturn(DigitalState.LOW);
+        birdhouseButtonService.setLightHasBeenSwitchedOnByBirdhouseDoor(false);
+        Mockito.when(lightService.getStatus()).thenReturn(new Status(StatusEnum.ON, -1));
 
         birdhouseButtonService.manageEvent(event);
 
