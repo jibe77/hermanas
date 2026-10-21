@@ -340,8 +340,13 @@ public class SecurityConfig
     public PersistentTokenBasedRememberMeServices rememberMeServices(
             PersistentTokenRepository tokenRepository,
             UserDetailsService userDetailsService) {
+        // GraceWindowRememberMeServices et non la classe mère : le SPA émet plusieurs requêtes
+        // en parallèle au démarrage, et la rotation de token de la stratégie "persistent token"
+        // faisait passer les requêtes concurrentes pour un vol de cookie. La réponse en erreur
+        // supprimait alors le cookie remember-me tout juste renouvelé — l'utilisateur devait se
+        // reconnecter. Voir le javadoc de la classe pour le détail du scénario.
         PersistentTokenBasedRememberMeServices services =
-                new PersistentTokenBasedRememberMeServices(rememberMeKey, userDetailsService,
+                new GraceWindowRememberMeServices(rememberMeKey, userDetailsService,
                         tokenRepository);
         services.setCookieName(REMEMBER_ME_COOKIE_NAME);
         services.setTokenValiditySeconds(rememberMeValiditySeconds);

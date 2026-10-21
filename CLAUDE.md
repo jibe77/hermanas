@@ -4,11 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Hermanas is a chicken coop automation system built with Spring Boot, designed to run on **Raspberry Pi Zero**. It automates door control based on sunrise/sunset, manages lighting, camera monitoring, temperature/humidity sensors, and fan control.
+Hermanas is a chicken coop automation system built with Spring Boot, running on a **Raspberry Pi Zero 2 W** (hostname `pru`). It automates door control based on sunrise/sunset, manages lighting, camera monitoring, temperature/humidity sensors, and fan control.
 
-**Hardware Constraint:** This application runs on Raspberry Pi Zero, which limits the runtime environment to **Java 11** and **Spring Boot 2.x**. Upgrading to Spring Boot 3+ and Java 17+ is not possible until the hardware is upgraded.
+**Runtime:** **Java 25** + **Spring Boot 4.1.x**, on Raspberry Pi OS Trixie arm64. The old
+Java 11 / Spring Boot 2.x constraint is gone — it came from the original Pi Zero
+(`poupou`), decommissioned during the 2026 hardware migration. See *Deployment & hardware*
+below.
 
-- **Frontend repository:** https://github.com/jibe77/hermanasclient
+- **Frontend:** bundled in this repo under `frontend/` and packaged into the same JAR.
+  (The standalone https://github.com/jibe77/hermanasclient repo is the historical source.)
 - **Live instance:** http://www.hermanas.fr
 
 ## Build & Development Commands
@@ -35,9 +39,44 @@ mvn versions:display-dependency-updates
 # Check maven plugins updates
 mvn versions:display-plugin-updates
 
-# automate deployment on the chicken-coop
+# Frontend (from frontend/)
+npm test            # Vitest, single pass
+npm run e2e         # Playwright
+
+# automate deployment on the chicken-coop (default target: pru)
 ./deploy.sh
+./deploy.sh poupou        # old Pi Zero, rollback target
+./deploy.sh --skip-build  # reuse the current JAR
+./deploy.sh --internet    # public hostname + box SSH port instead of pru.local (mDNS)
 ```
+
+`mvn package` also builds the Angular SPA (`frontend-maven-plugin`) and bundles it into the
+JAR — hence the ~105 MB artifact and the slow package step. `mvn test` / `mvn compile` skip
+the npm build and stay fast.
+
+## Deployment & hardware
+
+Current target: **`pru`**, a Raspberry Pi Zero 2 W on Raspberry Pi OS Trixie arm64 — migrated
+in 2026 from `poupou` (original Pi Zero, kept as rollback). Key facts that shape the code:
+
+- **Java 25** installed via apt, **Spring Boot 4.1**, `jakarta.*` throughout (no `javax.*` left).
+- **GPIO via `pi4j-plugin-ffm`** (Foreign Function & Memory, needs Java 22+), talking to
+  `/dev/gpiochip0`. Replaced the pigpio/`/dev/mem` stack, which Debian Trixie dropped.
+  FFM needs `--enable-native-access=ALL-UNNAMED` to avoid restricted-method warnings.
+- **Runs as the non-root `hermanas` user** from `/var/lib/hermanas/` (see `deploy.sh`) — that
+  is where `application.properties`, `users.properties`, `photos/`, `music/` and the keystore
+  live. Not `/home/pi/`. Needs supplementary groups `gpio` (chardev) and `audio` (cvlc).
+- **Reverse proxy:** Traefik (TLS) → nginx (`deploy/nginx/hermanas-cache.conf`, caching) →
+  Spring on `:8080`. `/api/**` and WebSockets are never cached; hashed assets cache 1 year;
+  HTML 60 s. nginx forwards `X-Forwarded-*`.
+  ⚠️ nginx gotcha documented in that file: redefining a single `proxy_set_header` inside a
+  `location` block drops all inherited ones, so each block re-declares them.
+- **512 MB RAM**, CPU deliberately underclocked to 600 MHz. Keep dependencies lean and cap the
+  heap; npm builds never run on the device.
+
+The launch wrapper (`Hermanas.sh`) and the systemd unit live **on the device**, not in this
+repo — check there for the actual JVM flags.
+- **Monitoring:** `prometheus-node-exporter` on `pru`; Prometheus + Grafana on `shannen`.
 
 ## Architecture
 
@@ -45,28 +84,31 @@ mvn versions:display-plugin-updates
 
 The application follows a **REST Controller-Service-Repository** pattern with an IoT twist:
 
-- **REST Controllers** (`service/` package, `*RestController` classes) - REST endpoints marked with `@RestController`
-- **Services** (`controller/` package, `*Service` classes) - Hardware abstraction and business logic (door, light, fan, camera, sensor)
+- **REST Controllers** (`web/` package, `*RestController` classes) - REST endpoints marked with `@RestController`
+- **Services** (`service/` package, `*Service` classes) - Hardware abstraction and business logic (door, light, fan, camera, sensor)
 - **Repositories** (`data/repository/`) - Spring Data JPA interfaces
 - **Schedulers** (`scheduler/`) - Quartz-based jobs for sun-related automation
 
-**Note:** The package naming is being gradually refactored. Currently:
-- Files in `src/main/java/org/jibe77/hermanas/service/` contain REST controllers (package `org.jibe77.hermanas.service.*`)
-- Files in `src/main/java/org/jibe77/hermanas/controller/` contain services (package `org.jibe77.hermanas.controller.*`)
+The package-naming refactor described in earlier phases is **done**: REST controllers live in
+`web/`, services in `service/`. The `controller/` directory still exists on disk but is empty —
+safe to delete.
 
 ### Key Packages
 
 | Package | Purpose |
 |---------|---------|
-| `service/` | REST controllers (`*RestController`) exposing HTTP API endpoints |
-| `controller/door/` | Door services: servo motor control, button management |
-| `controller/gpio/` | GPIO abstraction with real (Rpi) and fake implementations |
-| `controller/fan/`, `controller/light/`, etc. | Hardware control services |
+| `web/` | REST controllers (`*RestController`), `WebConfig` (SPA routing), `SpaErrorController` |
+| `service/door/` | Door services: servo motor control, button management |
+| `service/gpio/` | GPIO abstraction with real (Rpi) and fake implementations |
+| `service/fan/`, `service/light/`, `service/camera/`, etc. | Hardware control services |
+| `security/` | `SecurityConfig`, DB-backed users, remember-me, rate limiting, audit, Siri token |
 | `scheduler/job/` | Periodic jobs: SunRelatedJob (60s), CameraJob (3h), DiskSpaceJob |
 | `scheduler/event/` | Event handlers for door opening/closing based on sunrise/sunset |
 | `scheduler/sun/` | Sun time calculations with caching |
 | `websocket/` | STOMP/WebSocket for real-time status notifications |
 | `health/` | Custom Spring Boot health indicators |
+| `metrics/` | `HermanasMetrics` — Micrometer counters/gauges/timers |
+| `image/` | Image processing (chicken/egg/dirt counting) |
 
 ### GPIO Strategy Pattern
 
@@ -80,10 +122,18 @@ GpioHermanasService (interface)
 
 Main configuration in `application.properties`. Key externalized parameters:
 
-- **GPIO pins:** door servo (25), buttons (15, 18), light (14), fan (23), sensor (4)
-- **Door timing:** opening 10000ms, closing 2350ms, servo positions 5-16
+- **GPIO pins:** door servo (**12** — hardware PWM; moved off 25 during the Pi4j FFM
+  migration), door buttons (15 bottom, 18 up), birdhouse button (24), light relay (14),
+  fan relay (23)
+- **Door timing:** opening 10000 ms, closing 2350 ms, servo positions 5–16
 - **Sun scheduling:** location coordinates, door delays after sunrise/sunset
-- **Camera:** resolution, quality, rotation, streaming port 8081
+- **Camera:** resolution, quality, rotation (180), streaming port
+- **Auth/session:** `hermanas.security.users-file`, `hermanas.security.remember-me-key`
+  (⚠️ still `change-me-in-production-please` in the committed default — override in prod;
+  rotating it invalidates every remember-me cookie), `spring.session.timeout`
+
+In production these are overridden by `/var/lib/hermanas/application.properties`
+(not in git — it holds the DB credentials).
 
 Test profile `application-gpio-fake.properties` uses H2 in-memory database.
 
@@ -91,7 +141,48 @@ Test profile `application-gpio-fake.properties` uses H2 in-memory database.
 
 - **Production:** MariaDB
 - **Testing:** H2 in-memory
-- **Entities:** Parameter, Sensor, Event, Picture
+- **Entities:** Parameter, Sensor, Event, Picture, HermanasUser, Resident, PushSubscription
+- **Schema:** Hibernate `ddl-auto=update` for entities, plus `schema.sql`
+  (`spring.sql.init.mode=always`, run after Hibernate via
+  `spring.jpa.defer-datasource-initialization=true`) for non-JPA tables such as
+  `persistent_logins`. `spring-session-jdbc` creates its own tables.
+  ⚠️ `ParameterColumnMigration` issues MariaDB-specific `ALTER TABLE … MODIFY`, which fails
+  harmlessly on H2 — expected noise in dev logs.
+
+## Authentication & Session
+
+Form login + session cookie, no Amplify, no HTTP Basic, no CORS (the SPA is same-origin,
+served from the same JAR).
+
+- **Login:** `POST /api/v1/auth/login` (form-urlencoded) → 200 / 401. `GET /api/v1/auth/me`
+  reports the current session.
+- **Users:** stored in the DB (`HermanasUser`), served by `DbUserDetailsService`. On an empty
+  table it bootstraps from `users.properties` (path via `hermanas.security.users-file`);
+  `marguerite` is forced to `ADMIN`. Self-registration creates `NOT_VALIDATED_YET` accounts
+  that cannot log in until an admin promotes them (`PendingValidationUserDetailsChecker`).
+  ⚠️ **Known bug:** `java -jar hermanas.jar --hash <pw>` prints a `{bcrypt}`-prefixed hash,
+  but `passwordEncoder()` is a bare `BCryptPasswordEncoder` that doesn't strip that prefix —
+  pasting the output verbatim into `users.properties` yields a permanent 401. Strip the
+  `{bcrypt}` prefix until this is fixed (Phase 10).
+- **CSRF:** enabled, `XSRF-TOKEN` cookie echoed by Angular in `X-XSRF-TOKEN`. Requires the
+  non-XOR `CsrfTokenRequestAttributeHandler` with `setCsrfRequestAttributeName(null)` —
+  otherwise Spring Security 6+ defers token creation, the cookie is never written, and every
+  POST 403s. Requests carrying `X-Siri-Token` are exempt.
+- **Sessions:** persisted in the DB via `spring-session-jdbc` (survives redeploys),
+  `spring.session.timeout = 30m`.
+- **Remember-me:** persistent-token strategy, `hermanas-remember-me` cookie, 31 days,
+  `persistent_logins` table (created by `schema.sql`).
+  ⚠️ Rotation is wrapped by **`GraceWindowRememberMeServices`**: the token rotates on every
+  use, so the SPA's parallel boot requests would otherwise look like cookie theft — and the
+  error response's cookie-deletion header would wipe the freshly rotated cookie, silently
+  killing remember-me. The grace window (30 s) accepts the just-superseded token without
+  rotating or rewriting the cookie. Genuine replays after the window still raise
+  `CookieTheftException`. Don't "fix" a theft exception by silencing its logger.
+
+**Authorization model is inverted:** everything is `permitAll` by default; only mutating verbs
+on `/api/v1/**` (plus a handful of legacy state-changing GETs) require a role. The dashboard is
+a read-only public showcase. Admins do **not** inherit `USER` (no role hierarchy), so use
+`hasAnyRole(USER, ADMIN)`.
 
 ## API Documentation
 
@@ -102,10 +193,23 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 ### Backend (JUnit 5 + Spring Boot Test)
 - Image processing tests use `@Tag("image_processing")` and are excluded by default
 - Use `gpio-fake` profile to run tests without Raspberry Pi hardware
-- Native library `picam-2.0.1.so` required for camera on Pi (versions >2.4.0 incompatible with Pi Zero + Java 11)
+- ⚠️ **`src/test/resources/application.properties` fully shadows the one in `src/main/resources`**
+  (test classpath wins — it is not merged). It omits many keys, so a broad `@SpringBootTest`
+  loading the whole context fails on unresolved placeholders (`cors.origins.allowed`,
+  `camera.streaming.command`, …) and on the missing `JavaMailSender`. Existing tests dodge this
+  by using narrow slices (`@SpringBootTest(classes = {OneService.class})`). Widening a test means
+  either reconciling that file or passing the keys via `@SpringBootTest(properties = {...})`.
+- ⚠️ **Spring Boot 4 moved the test annotations**: `@AutoConfigureMockMvc` is now
+  `org.springframework.boot.webmvc.test.autoconfigure`, *not*
+  `org.springframework.boot.test.autoconfigure.web.servlet`.
+- To exercise auth/session behaviour end-to-end, running the real JAR is often faster than
+  fighting the context: `java -jar target/hermanas-*.jar --spring.profiles.active=gpio-fake
+  --server.port=8099 --spring.mail.host=localhost --hermanas.security.users-file=/tmp/users.properties`
+  then drive it with curl. On H2 the `ALTER TABLE parameter MODIFY` migration and the
+  `rfkill`/photo-directory errors are expected noise, not startup failures.
 
 ### Frontend (Vitest + @analogjs/vitest-angular)
-- Runner: **Vitest 3** (not Karma — migrated). Karma was deprecated in Angular 20.
+- Runner: **Vitest 4** (not Karma — migrated). Karma was deprecated in Angular 20.
 - Environment: **jsdom + zone.js**, no headless browser. `vitest.config.ts` at the
   frontend root, setup file `src/test-setup.ts`.
 - Commands (from `frontend/`):
@@ -115,7 +219,7 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 - Assertion style is Jest-compatible (`expect`, `vi.fn()`, `vi.spyOn()`).
   **No Jasmine globals** (`jasmine.SpyObj`, `jasmine.createSpyObj`, `spyOn`,
   `.and.returnValue`) — they were translated during the port.
-- `done()` callbacks are forbidden by Vitest 3. Use `firstValueFrom` /
+- `done()` callbacks are forbidden by Vitest 4. Use `firstValueFrom` /
   `lastValueFrom` for Observables, or return a Promise from the test body.
 - TestBed setup: most specs use plain `provideHttpClient()` +
   `provideHttpClientTesting()`. For services that depend on Angular signals or
@@ -125,6 +229,11 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 ---
 
 ## TODO - Technical Debt & Improvements
+
+> **Phases 1–9 are a historical changelog, kept for context.** They record what was true when
+> each phase shipped, and some details were later superseded (file/class names, the CSRF
+> decision, the Pi Zero constraints). When a phase entry disagrees with the sections above,
+> **the sections above win.** The live backlog is **Phase 10**.
 
 ### Phase 1 - Critical Bugs & Quick Wins ✅ COMPLETED
 
@@ -232,7 +341,9 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 - [x] **Document CSRF protection decision**
   - ✅ Added comprehensive JavaDoc explaining CSRF is disabled for stateless REST API
   - ✅ Reasoning documented: HTTP Basic auth + separate SPA frontend + proper CORS configuration
-  - 🔒 **Decision:** CSRF remains disabled (appropriate for this architecture)
+  - ⚠️ **Superseded:** CSRF was later **re-enabled** when auth moved to form login + session
+    cookies, and CORS was removed (same-origin SPA). See *Authentication & Session* above —
+    that section is authoritative.
 
 - [x] **Add rate limiting** for sensitive endpoints
   - ✅ Created lightweight custom rate limiter (no new dependencies for Pi Zero)
@@ -293,7 +404,8 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 
 ### Phase 7 : Feature Backlog ✅ COMPLETED
 
-- [x] Improve test coverage (currently ~21%: 18 test files / 84 source files)
+- [x] Improve test coverage (was ~21%: 18 test files / 84 source files;
+  now 28 test files / 152 source files, **136 backend tests** green)
   - Add `@SpringBootTest` integration tests
   - Add `@WebMvcTest` for REST layer
   - Add `@DataJpaTest` for repositories
@@ -370,25 +482,14 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
     - ✅ **`cross-env` 7 → 10.1.0** + **`shelljs` 0.8 → 0.10.0** (commit
       `3b3ca67`).
 
-  - **Still pending:**
-    - **`@angular/cdk` + `@angular/material` 21 → 22** — currently on
-      `^21.2.14`. Material 3 design tokens land in v22; expect overrides
-      in `styles/` to need rewiring, especially anything touching
-      color/typography roles. Safe to do now that Angular core is on 21.
-    - **Angular 21 → 22** — Angular 22 shipped 2026-06-03 (only ~2 weeks
-      old). Hold off until ~early 2027 — same posture that took us
-      cleanly through 20 → 21.
-    - **`typescript` 5.9 → 6.0** — Stricter type checking, decorators
-      stage 3. Will surface latent issues. Wait until Angular has
-      certified TS 6 (Angular 21 is happy with 5.9).
-    - **`uuid` 9 → 14** — Five majors. ESM-only since v10; grep for any
-      `require('uuid')` in scripts/* and convert to `import`. (Verify
-      whether `uuid` is still in the tree — may already be gone after
-      commit `3b3ca67` "drop dead deps".)
+  - **Also shipped since (state at 2026-10-21):**
+    - ✅ **Angular 21 → 22** — now on `~22.1.0`.
+    - ✅ **`@angular/cdk` + `@angular/material` 21 → 22** — on `^22.1.0`.
+    - ✅ **`typescript` 5.9 → 6.0** — on `~6.0.3`.
+    - ✅ **`vitest` → 4.1.10**.
+    - ✅ **Backend Java 17+ blockers cleared** — Spring Boot 4, Spring Security 7,
+      Pi4j 4.0.2 all landed with the Phase 9 hardware migration.
 
-  - **Held back as long as the Pi Zero stays:** Spring Boot 3, Spring
-    Security 7, Pi4j 4.x, h2 2.4, spring-retry 2.x, resilience4j 2.x —
-    all require Java 17. Move with the hardware upgrade (Phase 9).
   - **Held back for visual breakage risk:** jQuery 3 → 4 (touches every
     legacy template script), webjars:webjars-locator-core breaking
     change between 0.x and 1.x.
@@ -413,6 +514,8 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 - [x] **Decouple authentication/user management from AWS Amplify** — replaced with a self-hosted login form backed by a local user file
   - ✅ **Backend:**
     - Created `FileBasedUserDetailsService` loading users from `users.properties` (multi-user, bcrypt). Path configurable via `hermanas.security.users-file` (default `./users.properties`).
+      ⚠️ **Since replaced by `DbUserDetailsService`** — users live in the DB, and
+      `users.properties` is now only a first-startup bootstrap source.
     - `SecurityConfig` refactored: form login on `POST /api/v1/auth/login` returning 200/401 (no HTML redirects), `BCryptPasswordEncoder` bean, `httpBasic()` removed, old `security.user.*` / `security.guest.*` properties removed.
     - New `AuthRestController`: `GET /api/v1/auth/me` (session check).
     - **Session model:** form login + session cookie (`JSESSIONID`).
@@ -444,26 +547,48 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
 
 - [x] **Improve image processing to count chicken, eggs, and amount of durt in the coop** 
 
-### Phase 9 - Major Upgrade (BLOCKED - Hardware Constraint)
+### Phase 9 - Hardware & Runtime Migration ✅ COMPLETED (2026)
 
-> **NOT POSSIBLE:** The Raspberry Pi Zero hardware does not support Java 17+, which is required for Spring Boot 3.x. These upgrades are blocked until the hardware is upgraded to a more capable Raspberry Pi model. Move to a recent Raspberry Pi hardware !
+> Previously blocked by the Pi Zero's Java 11 ceiling. Unblocked by migrating the hardware to a
+> **Pi Zero 2 W** (`pru`), then doing the runtime/framework jump in one cutover.
 
-- [ ] ~~**Upgrade to Spring Boot 3.2+**~~
-  - Requires Java 17+ (not supported on Pi Zero)
-  - Would require migrating `javax.*` → `jakarta.*` (persistence, annotation)
-  - Would require Pi4j update if compatible version exists
+- [x] **Raspberry Pi Zero → Pi Zero 2 W** — Raspberry Pi OS Trixie arm64, non-root `hermanas`
+  user under `/var/lib/hermanas/`, MariaDB 10.3 → 10.11, old SD kept as rollback.
+- [x] **Java 11 → Java 25** (apt-installed, not SDKMAN).
+- [x] **Spring Boot 2.7 → 4.1.x**, including Spring Security 6/7 migration.
+- [x] **`javax.*` → `jakarta.*`** — zero `javax.persistence` / `javax.annotation` left.
+- [x] **`@EnableGlobalMethodSecurity` → `@EnableMethodSecurity`**.
+- [x] **Pi4j 2.4 → 4.0.2**, single `pi4j-plugin-ffm` plugin (FFM / chardev), replacing the
+  pigpio stack that Debian Trixie removed.
+- [x] **Maven + npm dependency catch-up** — see the frontend list below.
 
-- [ ] ~~**Upgrade Java 11 → Java 17 or 21 LTS**~~
-  - Not supported on Raspberry Pi Zero hardware
+### Deprecated Components — resolved
 
-### Deprecated Components (EOL) - Cannot Be Updated
+| Component | Status |
+|-----------|--------|
+| Spring Boot 2.7.18 (EOL) | ✅ on **4.1.1** |
+| Java 11 | ✅ on **Java 25** |
+| `WebSecurityConfigurerAdapter` | ✅ `SecurityFilterChain` bean (Phase 4) |
+| `@EnableGlobalMethodSecurity` | ✅ `@EnableMethodSecurity` |
+| `javax.persistence.*` / `javax.annotation.*` | ✅ migrated to `jakarta.*` |
+| pigpio / `/dev/mem` GPIO | ✅ `pi4j-plugin-ffm` on `/dev/gpiochip0` |
 
-> **Note:** Due to Raspberry Pi Zero hardware limitations (Java 11 max), these deprecated components cannot be updated. The deprecation warnings must be accepted as technical debt until hardware is upgraded.
+**Still held back for visual-breakage risk (not hardware-related):** jQuery 3 → 4 (touches
+every legacy template script), `webjars-locator-core` 0.x → 1.x.
 
-| Component | Status | Action |
-|-----------|--------|--------|
-| Spring Boot 2.7.18 | EOL Nov 2023 | **Blocked** - Pi Zero cannot run Java 17+ |
-| `WebSecurityConfigurerAdapter` | Deprecated | ✅ **FIXED** - Replaced with `SecurityFilterChain` bean (Phase 4) |
-| `@EnableGlobalMethodSecurity` | Deprecated | **Blocked** - Replacement requires Spring Boot 3.x |
-| `javax.persistence.*` | Legacy | **Blocked** - Jakarta namespace requires Spring Boot 3.x |
-| `javax.annotation.*` | Legacy | **Blocked** - Jakarta namespace requires Spring Boot 3.x |
+### Phase 10 - Current backlog
+
+- [ ] **`--hash` CLI emits an unusable hash.** `HermanasApplication` prints
+  `{bcrypt}$2a$...`, but `SecurityConfig.passwordEncoder()` is a bare `BCryptPasswordEncoder`
+  that does not understand the `{bcrypt}` prefix — it treats it as part of the hash, so login
+  returns 401. Fix by either using a `DelegatingPasswordEncoder` or dropping the prefix from
+  the CLI output. Affects only the `users.properties` bootstrap path, not `/register`.
+- [ ] **Reconcile `src/test/resources/application.properties`** so broad `@SpringBootTest`
+  context loads are possible (see Testing Notes).
+- [ ] **Delete the empty `src/main/java/org/jibe77/hermanas/controller/` directory** — the
+  rename refactor left it behind.
+- [ ] **Leftover Amplify files**: `frontend/amplify/`, `frontend/amplify.yml`,
+  `frontend/.graphqlconfig.yml` are unreferenced and can be removed.
+- [ ] **Consider `micrometer-registry-prometheus`** — `management.endpoints.web.exposure.include`
+  lists `prometheus`, but the dependency is not declared explicitly in `pom.xml`. Verify the
+  endpoint actually serves content.
