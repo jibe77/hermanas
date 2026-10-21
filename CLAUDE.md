@@ -589,6 +589,6 @@ every legacy template script), `webjars-locator-core` 0.x → 1.x.
   rename refactor left it behind.
 - [ ] **Leftover Amplify files**: `frontend/amplify/`, `frontend/amplify.yml`,
   `frontend/.graphqlconfig.yml` are unreferenced and can be removed.
-- [ ] **Consider `micrometer-registry-prometheus`** — `management.endpoints.web.exposure.include`
-  lists `prometheus`, but the dependency is not declared explicitly in `pom.xml`. Verify the
-  endpoint actually serves content.
+- [x] ~~Consider `micrometer-registry-prometheus`~~ — already declared in `pom.xml`
+  (verified 2026-10-21); `/actuator/prometheus` is wired. The old migration note claiming it
+  was missing is out of date.
