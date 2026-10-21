@@ -17,8 +17,22 @@ below.
 
 ## Build & Development Commands
 
+> **IMPORTANT — no JDK/Maven inside the Paseo container on shannen.** Do NOT
+> download a JDK/Maven tarball and do NOT run bare `mvn` (it does not exist
+> there). Use the pre-installed wrapper `hermanas-build`, which runs Maven 3.9
+> + JDK 25 in a dedicated build container with a persistent local repo cache:
+>
+> ```bash
+> hermanas-build                        # mvn compile (this repo)
+> hermanas-build package -DskipTests    # package the WAR/JAR
+> hermanas-build test -Dtest=XxxTest    # any mvn goals
+> ```
+>
+> Never write large build/test artifacts under `/tmp` of the container — it
+> lives on the host root filesystem, which is size-constrained.
+
 ```bash
-# Build the project
+# Build the project (on a machine that has mvn, e.g. a dev box)
 mvn clean package
 
 # Run the application
