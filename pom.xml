@@ -31,7 +31,7 @@
 		     compatible per its pom, so it survives the Pi Zero / Java 11
 		     constraint. Picks up minor API additions + CVE fixes accumulated
 		     since 2021. -->
-		<commons-lang3.version>3.20.0</commons-lang3.version>
+		<commons-lang3.version>3.21.0</commons-lang3.version>
 		<web-push.version>5.1.2</web-push.version>
         <!-- 0.8.15+ requis : les versions <= 0.8.12 ne savent pas instrumenter
              le bytecode Java 25 (IllegalClassFormatException à chaque classe). -->
