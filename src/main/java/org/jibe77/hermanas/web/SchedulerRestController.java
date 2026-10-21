@@ -95,10 +95,17 @@ public class SchedulerRestController {
         return noCache(sunTimeManager.getNextEvents());
     }
 
-    // Belt-and-braces no-cache headers so Safari / the Angular service worker /
-    // any reverse proxy in front of the Pi does not serve a stale schedule after
-    // the operator flipped the force-open/close toggle. Same set of directives
-    // as ConfigRestController.getAllConfig — see the rationale over there.
+    // Belt-and-braces no-cache headers so Safari / any reverse proxy in front of
+    // the Pi does not serve a stale schedule after the operator flipped the
+    // force-open/close toggle. Same set of directives as
+    // ConfigRestController.getAllConfig — see the rationale over there.
+    //
+    // Note: these headers do NOT neutralise the Angular service worker. ngsw
+    // stores dataGroup responses in the Cache Storage API regardless of
+    // Cache-Control (it only uses max-age to decide whether to revalidate in the
+    // background, and still answers the current request from the cache). The
+    // schedule shown after a configuration change therefore depends on
+    // frontend/ngsw-config.json, where the API group is network-first.
     private static <T> ResponseEntity<T> noCache(T body) {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, max-age=0, must-revalidate, private")

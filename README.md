@@ -434,6 +434,27 @@ PUT /api/v1/energy/forceEco
 Every setter clears its Spring cache so the change is effective immediately;
 `POST /api/v1/config/refresh` is the manual catch-all.
 
+**Where a "saved but reverted" value can still come from.** Three caches sit
+between the form and the database:
+
+1. *Spring cache* (`ConfigService` getters). Cleared by `allEntries = true` on
+every `@CacheEvict` setter — guarded by `ConfigServiceCacheEvictTest`, because a
+plain `@CacheEvict` on `setXxx(v)` evicts a key derived from `v` while the
+tabless getter is cached under `SimpleKey.EMPTY`, i.e. nothing is evicted.
+2. *Angular service worker* (`frontend/ngsw-config.json`). It stores `dataGroups`
+responses in the Cache Storage API **regardless of `Cache-Control`**: a
+`no-store` reply is still cached, and a `performance` group answers from the
+cache first and only revalidates in the background. The API group is therefore
+`freshness` with a ~0 `maxAge` (network-first, cache used only as the offline
+fallback). Keep it that way: a `performance` group on `/api/v1/scheduler/**` or
+`/api/v1/energy/**` makes the dashboard show the previous light-on / door times
+for as long as `maxAge` after a change.
+3. *Silent read fallback.* `ConfigService.getConfigValue` catches every
+exception and returns the `application.properties` default. A failing read
+(duplicate `entry_key` row, DB hiccup) therefore looks exactly like "my change
+was saved but the old value came back" — check for
+`Error reading config '<key>' from database` in the log before looking further.
+
 ```bash
 # Full bundle
 GET /api/v1/config

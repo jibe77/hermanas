@@ -122,6 +122,20 @@ export class SchedulerComponent implements OnInit, OnDestroy {
 
     reload(): void {
         this.loading = true;
+        this.fetchConfig({ reportErrors: true });
+    }
+
+    /**
+     * Re-reads the persisted values after a successful save, without flipping the
+     * page back into its loading state. The form then always shows what the
+     * server actually kept — a write that was rejected or clamped server-side
+     * becomes visible immediately instead of looking like it went through.
+     */
+    private syncAfterSave(): void {
+        this.fetchConfig({ reportErrors: false });
+    }
+
+    private fetchConfig(opts: { reportErrors: boolean }): void {
         this.configService.getAll().subscribe({
             next: config => {
                 this.force = { ...config.door_force_schedule };
@@ -131,10 +145,12 @@ export class SchedulerComponent implements OnInit, OnDestroy {
             },
             error: (err: HttpErrorResponse) => {
                 this.loading = false;
-                this.toast.error(
-                    err.error?.message || err.message || 'Cannot load scheduler state',
-                    `Scheduler — HTTP ${err.status}`
-                );
+                if (opts.reportErrors) {
+                    this.toast.error(
+                        err.error?.message || err.message || 'Cannot load scheduler state',
+                        `Scheduler — HTTP ${err.status}`
+                    );
+                }
                 this.cdr.markForCheck();
             },
         });
@@ -162,7 +178,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
                     $localize`:@@schedulerSunOffsetsSaved:Sun-related offsets saved`,
                     $localize`:@@schedulerToastTitle:Scheduler`
                 );
-                this.cdr.markForCheck();
+                this.syncAfterSave();
             },
             error: (err: HttpErrorResponse) => {
                 this.savingSun = false;
@@ -196,7 +212,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
                     $localize`:@@schedulerSaved:Schedule saved`,
                     $localize`:@@schedulerToastTitle:Scheduler`
                 );
-                this.cdr.markForCheck();
+                this.syncAfterSave();
             },
             error: (err: HttpErrorResponse) => {
                 this.saving = false;

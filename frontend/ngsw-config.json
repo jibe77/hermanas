@@ -29,24 +29,13 @@
   ],
   "dataGroups": [
     {
-      "name": "api-fresh",
+      "name": "api-offline",
       "urls": [
         "/api/v1/door/**",
         "/api/v1/light/**",
         "/api/v1/music/**",
         "/api/v1/fan/**",
-        "/api/v1/sensor/**"
-      ],
-      "cacheConfig": {
-        "maxSize": 20,
-        "maxAge": "5m",
-        "timeout": "10s",
-        "strategy": "freshness"
-      }
-    },
-    {
-      "name": "api-performance",
-      "urls": [
+        "/api/v1/sensor/**",
         "/api/v1/scheduler/**",
         "/api/v1/info/**",
         "/api/v1/energy/**",
@@ -54,9 +43,9 @@
       ],
       "cacheConfig": {
         "maxSize": 50,
-        "maxAge": "1h",
-        "timeout": "5s",
-        "strategy": "performance"
+        "maxAge": "1s",
+        "timeout": "10s",
+        "strategy": "freshness"
       }
     }
   ],
