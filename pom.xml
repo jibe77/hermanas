@@ -32,7 +32,9 @@
 		     constraint. Picks up minor API additions + CVE fixes accumulated
 		     since 2021. -->
 		<commons-lang3.version>3.21.0</commons-lang3.version>
-		<web-push.version>5.1.2</web-push.version>
+		<!-- Version tirée par springdoc ${springdoc-openapi.version} : à réaligner quand
+		     springdoc monte (hermanas-build dependency:tree -Pdev -Dincludes=io.swagger.core.v3). -->
+		<swagger-annotations.version>2.2.55</swagger-annotations.version>
         <!-- 0.8.15+ requis : les versions <= 0.8.12 ne savent pas instrumenter
              le bytecode Java 25 (IllegalClassFormatException à chaque classe). -->
         <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
@@ -89,10 +91,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-quartz</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -180,21 +178,20 @@
 			<artifactId>mariadb-java-client</artifactId>
 			<version>${mariadb-java-client.version}</version>
 		</dependency>
+		<!-- H2 ne sert qu'aux tests et au profil Spring gpio-fake : hors du JAR de prod.
+		     Pour lancer gpio-fake hors tests, activer le profil Maven dev (voir plus bas). -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
+			<scope>test</scope>
 		</dependency>
-		<!-- Spring Boot 4 : spring-retry n'est plus dans le BOM, version fixée manuellement. -->
+		<!-- Annotations OpenAPI (@Operation, @Tag, @Schema…) seules : elles documentent
+		     les contrôleurs sans rien charger à l'exécution. Le moteur springdoc et
+		     Swagger UI ne sont embarqués qu'avec le profil Maven dev. -->
 		<dependency>
-			<groupId>org.springframework.retry</groupId>
-			<artifactId>spring-retry</artifactId>
-			<version>2.0.13</version>
-		</dependency>
-		<!-- Swagger UI -->
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>${springdoc-openapi.version}</version>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-annotations-jakarta</artifactId>
+			<version>${swagger-annotations.version}</version>
 		</dependency>
 
 		<!-- compute sunset and sunrise hour for the current day -->
@@ -236,50 +233,21 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Resilience4j : l'artifactId encode la ligne Spring Boot ciblée, et le
-		     module refuse de démarrer si elle ne correspond pas — SpringBoot3Verifier
-		     lève "Module ... is only compatible with Spring Boot 3.x" au lancement.
-		     Un -spring-boot4 existe bien, en 2.4.0 également. -->
-		<dependency>
-			<groupId>io.github.resilience4j</groupId>
-			<artifactId>resilience4j-spring-boot4</artifactId>
-			<version>2.4.0</version>
-		</dependency>
-		<!-- Spring Boot 4 : spring-boot-starter-aop a été renommé spring-boot-starter-aspectj. -->
+		<!-- Spring Boot 4 : spring-boot-starter-aop a été renommé spring-boot-starter-aspectj.
+		     Sert aux aspects maison (@RateLimited, @AuditLog). -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aspectj</artifactId>
 		</dependency>
 
-		<!-- Web Push (VAPID) for PWA notifications. 5.1.x is Java 8+. The two
-		     deps below are runtime-only in web-push's POM but we touch them at
-		     compile time (BouncyCastleProvider for security setup, HttpResponse
-		     as the return type of PushService.send), so we need them at compile
-		     scope as well. -->
-		<dependency>
-			<groupId>nl.martijndwars</groupId>
-			<artifactId>web-push</artifactId>
-			<version>${web-push.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.86</version>
-		</dependency>
-		<!-- Apache HttpComponents v4 : aligné sur httpasyncclient 4.1.5 tiré par
-		     web-push 5.1.2 (qui expose HttpResponse dans son API publique).
-		     Spring Boot 3 a retiré httpclient (v4) de son BOM (migration vers
-		     httpclient5), il faut donc fixer la version manuellement. -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.14</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bitbucket.b_c</groupId>
-			<artifactId>jose4j</artifactId>
-			<version>0.9.7</version>
-		</dependency>
+		<!--
+			Retirés pour alléger le tas et le metaspace du Pi Zero :
+			- spring-boot-starter-quartz : aucun Job Quartz, tout est en @Scheduled ;
+			- spring-retry : un try/catch dans DoorService, une boucle dans AiVisionClient ;
+			- resilience4j : un compteur d'échecs dans WeatherClient ;
+			- web-push + bcprov + httpclient 4 + jose4j (async-http-client, Netty) :
+			  WebPushSender chiffre (RFC 8291) et signe (VAPID) avec le seul JDK.
+		-->
 	</dependencies>
 
 	<build>
@@ -415,6 +383,26 @@
 	</build>
 
 	<profiles>
+		<!--
+			Outils de développement exclus du JAR de prod : H2 pour le profil Spring
+			gpio-fake, springdoc + Swagger UI (/swagger-ui/index.html).
+			  mvn spring-boot:run -Pdev -Dspring-boot.run.profiles=gpio-fake
+		-->
+		<profile>
+			<id>dev</id>
+			<dependencies>
+				<dependency>
+					<groupId>com.h2database</groupId>
+					<artifactId>h2</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.springdoc</groupId>
+					<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+					<version>${springdoc-openapi.version}</version>
+				</dependency>
+			</dependencies>
+		</profile>
 		<!--
 			Builds the Angular frontend and bundles it into the JAR under static/.
 			Active by default. Skip with: mvn package -P!with-frontend

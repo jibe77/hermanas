@@ -115,7 +115,7 @@ mysql --version
    java -jar target/hermanas-0.8.2.jar
 
    # On development machine with fake GPIO + H2 in-memory DB
-   mvn spring-boot:run -Dspring.profiles.active=gpio-fake
+   mvn spring-boot:run -Pdev -Dspring.profiles.active=gpio-fake
    ```
 
 6. **Access the application**
@@ -680,7 +680,7 @@ GpioHermanasService (interface)
 
 3. **Use fake GPIO profile**
    ```bash
-   mvn spring-boot:run -Dspring.profiles.active=gpio-fake
+   mvn spring-boot:run -Pdev -Dspring.profiles.active=gpio-fake
    ```
    This allows development on non-Raspberry Pi hardware.
 

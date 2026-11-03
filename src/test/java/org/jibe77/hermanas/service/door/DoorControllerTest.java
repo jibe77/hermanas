@@ -135,6 +135,31 @@ class DoorControllerTest {
         when(bottomButtonService.isBottomButtonPressed()).thenReturn(false);
 
         assertThrows(DoorNotClosedCorrectlyException.class,
-                () -> doorService.closeDoorWithBottormButtonManagement(true));
+                () -> doorService.closeDoorWithBottomButtonOrThrow(true));
+    }
+
+    /**
+     * L'API publique ne laisse pas remonter l'échec : la porte est refermée sans
+     * contrôle du fin de course (repli autrefois porté par le {@code @Recover} de
+     * spring-retry).
+     */
+    @Test
+    void publicCloseFallsBackToBlindClosingWhenBottomButtonIsSilent() {
+        BottomButtonService bottomButtonService = mock(BottomButtonService.class);
+        ServoMotorService servo = mock(ServoMotorService.class);
+        DoorService doorService = spy(new DoorService(
+                servo,
+                bottomButtonService,
+                mock(UpButtonService.class),
+                mock(SunTimeManager.class),
+                mock(NotificationController.class),
+                mock(org.jibe77.hermanas.service.config.ConfigService.class)));
+
+        when(bottomButtonService.isBottomButtonHasBeenPressed()).thenReturn(false);
+        when(bottomButtonService.hasBottomButtonChanged()).thenReturn(false);
+        when(bottomButtonService.isBottomButtonPressed()).thenReturn(false);
+
+        assertDoesNotThrow(() -> doorService.closeDoorWithBottormButtonManagement(true));
+        verify(doorService).closeDoor(false, false);
     }
 }

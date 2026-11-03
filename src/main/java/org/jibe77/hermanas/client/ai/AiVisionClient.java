@@ -7,9 +7,6 @@ import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.retry.backoff.ExponentialBackOffPolicy;
-import org.springframework.retry.policy.SimpleRetryPolicy;
-import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
@@ -46,7 +43,9 @@ public class AiVisionClient {
     private final ConfigService configService;
     private final CameraPromptBuilder promptBuilder;
     private final RestTemplate restTemplate;
-    private final RetryTemplate retryTemplate;
+    private final int maxAttempts;
+    private final long initialBackoffMs;
+    private final long maxBackoffMs;
 
     public AiVisionClient(ConfigService configService,
                           CameraPromptBuilder promptBuilder,
@@ -71,39 +70,43 @@ public class AiVisionClient {
                 .readTimeout(Duration.ofMillis(readTimeoutMs))
                 .build();
 
-        // Retry policy: only CONNECT-phase failures are retried. We refuse
-        // to retry on a SocketTimeoutException post-connection because the
-        // read timeout (~3 min) would then multiply by the attempt count —
-        // a hung inference is unlikely to recover within seconds, and the
-        // user would wait many minutes for the final failure. HTTP 4xx
-        // (HttpClientErrorException) and 5xx (HttpServerErrorException) are
-        // also not retried: they signal a request-level or server-level
-        // problem that a quick retry won't fix.
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(
-                maxAttempts,
-                java.util.Collections.singletonMap(ResourceAccessException.class, true),
-                true) {
-            @Override
-            public boolean canRetry(org.springframework.retry.RetryContext context) {
-                Throwable t = context.getLastThrowable();
-                if (t instanceof ResourceAccessException && isConnectFailure(t)) {
-                    return super.canRetry(context);
-                }
-                if (t == null) {
-                    return super.canRetry(context);
-                }
-                return false;
+        this.maxAttempts = Math.max(1, maxAttempts);
+        this.initialBackoffMs = initialBackoffMs;
+        this.maxBackoffMs = maxBackoffMs;
+    }
+
+    /**
+     * POST with retries on CONNECT-phase failures only. We refuse to retry on a
+     * SocketTimeoutException post-connection because the read timeout (~3 min)
+     * would then multiply by the attempt count — a hung inference is unlikely to
+     * recover within seconds, and the user would wait many minutes for the final
+     * failure. HTTP 4xx (HttpClientErrorException) and 5xx (HttpServerErrorException)
+     * are also not retried: they signal a request-level or server-level problem
+     * that a quick retry won't fix. Backoff is exponential (x2), capped at
+     * {@code maxBackoffMs}.
+     */
+    @SuppressWarnings("rawtypes")
+    private Map postWithRetry(String url, HttpEntity<?> entity, String model) {
+        long backoffMs = initialBackoffMs;
+        for (int attempt = 1; ; attempt++) {
+            if (attempt > 1) {
+                logger.info("AI vision: retry attempt {} for POST {} (model={}).", attempt, url, model);
             }
-        };
-
-        ExponentialBackOffPolicy backOff = new ExponentialBackOffPolicy();
-        backOff.setInitialInterval(initialBackoffMs);
-        backOff.setMultiplier(2.0);
-        backOff.setMaxInterval(maxBackoffMs);
-
-        this.retryTemplate = new RetryTemplate();
-        this.retryTemplate.setRetryPolicy(retryPolicy);
-        this.retryTemplate.setBackOffPolicy(backOff);
+            try {
+                return restTemplate.postForObject(url, entity, Map.class);
+            } catch (ResourceAccessException e) {
+                if (attempt >= maxAttempts || !isConnectFailure(e)) {
+                    throw e;
+                }
+                try {
+                    Thread.sleep(backoffMs);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+                backoffMs = Math.min(backoffMs * 2, maxBackoffMs);
+            }
+        }
     }
 
     /**
@@ -194,14 +197,7 @@ public class AiVisionClient {
         try {
             long start = System.currentTimeMillis();
             @SuppressWarnings("unchecked")
-            Map<String, Object> response = retryTemplate.execute(context -> {
-                int attempt = context.getRetryCount() + 1;
-                if (attempt > 1) {
-                    logger.info("AI vision: retry attempt {} for POST {} (model={}).",
-                            attempt, url, model);
-                }
-                return restTemplate.postForObject(url, entity, Map.class);
-            });
+            Map<String, Object> response = postWithRetry(url, entity, model);
             long elapsed = System.currentTimeMillis() - start;
             logger.info("AI vision: POST {} returned in {} ms (model={}, lang={}).",
                     url, elapsed, model, lang);

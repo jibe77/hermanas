@@ -39,7 +39,7 @@ mvn clean package
 mvn spring-boot:run
 
 # Run on non-Pi hardware (fake GPIO)
-mvn spring-boot:run -Dspring.profiles.active=gpio-fake
+mvn spring-boot:run -Pdev -Dspring.profiles.active=gpio-fake
 
 # Run all tests
 mvn test
@@ -101,7 +101,7 @@ The application follows a **REST Controller-Service-Repository** pattern with an
 - **REST Controllers** (`web/` package, `*RestController` classes) - REST endpoints marked with `@RestController`
 - **Services** (`service/` package, `*Service` classes) - Hardware abstraction and business logic (door, light, fan, camera, sensor)
 - **Repositories** (`data/repository/`) - Spring Data JPA interfaces
-- **Schedulers** (`scheduler/`) - Quartz-based jobs for sun-related automation
+- **Schedulers** (`scheduler/`) - `@Scheduled` jobs for sun-related automation (no Quartz)
 
 The package-naming refactor described in earlier phases is **done**: REST controllers live in
 `web/`, services in `service/`. The `controller/` directory still exists on disk but is empty —
@@ -200,7 +200,7 @@ a read-only public showcase. Admins do **not** inherit `USER` (no role hierarchy
 
 ## API Documentation
 
-Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config`
+Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config` — **only in JARs built with `-Pdev`** (springdoc is left out of the production JAR to save memory on the Pi).
 
 ## Testing Notes
 
@@ -217,7 +217,7 @@ Swagger UI available at: `/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-
   `org.springframework.boot.webmvc.test.autoconfigure`, *not*
   `org.springframework.boot.test.autoconfigure.web.servlet`.
 - To exercise auth/session behaviour end-to-end, running the real JAR is often faster than
-  fighting the context: `java -jar target/hermanas-*.jar --spring.profiles.active=gpio-fake
+  fighting the context (JAR built with `-Pdev`, otherwise H2 is missing): `java -jar target/hermanas-*.jar --spring.profiles.active=gpio-fake
   --server.port=8099 --spring.mail.host=localhost --hermanas.security.users-file=/tmp/users.properties`
   then drive it with curl. On H2 the `ALTER TABLE parameter MODIFY` migration and the
   `rfkill`/photo-directory errors are expected noise, not startup failures.

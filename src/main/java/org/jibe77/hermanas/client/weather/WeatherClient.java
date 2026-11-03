@@ -1,15 +1,23 @@
 package org.jibe77.hermanas.client.weather;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.Instant;
+
 @Component
 public class WeatherClient {
 
-    public static final String CIRCUIT_BREAKER_NAME = "weatherApi";
+    /**
+     * Échecs consécutifs au-delà desquels l'API n'est plus appelée pendant {@link #PAUSE}.
+     * Remplace le circuit breaker resilience4j : un appel par minute au plus et la météo
+     * désactivée par défaut — un compteur suffit, sans module ni thread supplémentaire.
+     */
+    static final int FAILURE_THRESHOLD = 3;
+    static final Duration PAUSE = Duration.ofMinutes(5);
 
     private final org.jibe77.hermanas.service.config.ConfigService configService;
 
@@ -19,31 +27,44 @@ public class WeatherClient {
 
     final RestTemplateBuilder builder;
 
+    private int consecutiveFailures;
+    private Instant pausedUntil = Instant.MIN;
+
     public WeatherClient(RestTemplateBuilder builder,
                          org.jibe77.hermanas.service.config.ConfigService configService) {
         this.builder = builder;
         this.configService = configService;
     }
 
-    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "getInfoFallback")
-    public WeatherInfo getInfo() {
+    public synchronized WeatherInfo getInfo() {
         if (!configService.isWeatherInfoEnabled()) {
             return getDefaultWeatherInfo();
         }
-        WeatherInfo weatherInfo = builder.build().getForObject(
-                configService.getWeatherInfoUrl(),
-                WeatherInfo.class,
-                configService.getLatitude(),
-                configService.getLongitude(),
-                configService.getWeatherInfoKey());
-        log.info("Weather info content : {}", weatherInfo);
-        return weatherInfo;
-    }
-
-    @SuppressWarnings("unused") // referenced by @CircuitBreaker fallbackMethod
-    private WeatherInfo getInfoFallback(Throwable ex) {
-        log.warn("Weather API unavailable ({}); returning default info.", ex.getMessage());
-        return getDefaultWeatherInfo();
+        if (Instant.now().isBefore(pausedUntil)) {
+            log.debug("Weather API paused until {}; returning default info.", pausedUntil);
+            return getDefaultWeatherInfo();
+        }
+        try {
+            WeatherInfo weatherInfo = builder.build().getForObject(
+                    configService.getWeatherInfoUrl(),
+                    WeatherInfo.class,
+                    configService.getLatitude(),
+                    configService.getLongitude(),
+                    configService.getWeatherInfoKey());
+            consecutiveFailures = 0;
+            log.info("Weather info content : {}", weatherInfo);
+            return weatherInfo;
+        } catch (RuntimeException ex) {
+            if (++consecutiveFailures >= FAILURE_THRESHOLD) {
+                consecutiveFailures = 0;
+                pausedUntil = Instant.now().plus(PAUSE);
+                log.warn("Weather API unavailable ({}); {} failures in a row, pausing calls for {} min.",
+                        ex.getMessage(), FAILURE_THRESHOLD, PAUSE.toMinutes());
+            } else {
+                log.warn("Weather API unavailable ({}); returning default info.", ex.getMessage());
+            }
+            return getDefaultWeatherInfo();
+        }
     }
 
     private WeatherInfo getDefaultWeatherInfo() {

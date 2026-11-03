@@ -16,9 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
@@ -78,7 +75,8 @@ public class DoorService {
                 if (doorStatusEnum == DoorStatusEnum.OPENED) {
                     openDoorWithUpButtonManagment(false, false);
                 } else if (doorStatusEnum == DoorStatusEnum.CLOSED) {
-                    closeDoorWithBottormButtonManagement(false);
+                    // Appel interne : passait déjà à côté du proxy @Retryable, donc sans repli.
+                    closeDoorWithBottomButtonOrThrow(false);
                 }
             } else {
                 logger.warn("Door status is null, cannot initialize door according to sun time.");
@@ -91,12 +89,23 @@ public class DoorService {
     /**
      * Close the door moving the servomotor clockwise
      * @param force if force is set to true, force door to close even if it is closed.
+     *
+     * <p>Si le fin de course bas ne confirme pas la fermeture, même après la réouverture
+     * de sécurité, la porte est refermée sans contrôle du bouton
+     * ({@link #closeDoorWithoutBottomButtonManagement()}). Ce repli était porté par
+     * {@code @Retryable(maxAttempts = 1)} + {@code @Recover} de spring-retry, soit aucune
+     * nouvelle tentative et un appel direct au {@code @Recover} : un try/catch fait la
+     * même chose sans la dépendance.</p>
      */
-    @Retryable(
-            value = { DoorNotClosedCorrectlyException.class },
-            maxAttempts = 1,
-            backoff = @Backoff(delay = 2000))
     public synchronized void closeDoorWithBottormButtonManagement(boolean force) {
+        try {
+            closeDoorWithBottomButtonOrThrow(force);
+        } catch (DoorNotClosedCorrectlyException e) {
+            closeDoorWithoutBottomButtonManagement();
+        }
+    }
+
+    synchronized void closeDoorWithBottomButtonOrThrow(boolean force) {
         if (force || !doorIsClosed()) {
             notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSING));
             bottomButtonService.provisionButton();
@@ -167,8 +176,7 @@ public class DoorService {
         return true;
     }
 
-    @Recover
-    private void closeDoorWithoutBottomButtonManagement(DoorNotClosedCorrectlyException e) {
+    private void closeDoorWithoutBottomButtonManagement() {
         logger.info("Close door without button management.");
         notificationController.notify(new CoopStatus(Appliance.DOOR, StatusEnum.CLOSING));
         closeDoor(false, false);
