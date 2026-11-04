@@ -40,6 +40,15 @@ public class EmailService {
     @Value("${email.notification.from:}")
     private String emailNotificationFromDefault;
 
+    /**
+     * Domain JavaMail puts in the Message-ID ({@code <…JavaMail.user@host>}). Without it the
+     * Pi's own hostname ends up there, which spam filters penalise. Spring Boot only applies
+     * {@code spring.mail.properties.*} to its auto-configured sender, not to the one built
+     * in {@link #resolveSender()}, hence this explicit copy.
+     */
+    @Value("${spring.mail.properties.mail.host:}")
+    private String mailSessionHost;
+
     @Autowired(required = false)
     private HermanasUserRepository userRepository;
 
@@ -82,6 +91,9 @@ public class EmailService {
         props.put("mail.smtp.connectiontimeout", "50000");
         props.put("mail.smtp.timeout", "50000");
         props.put("mail.smtp.writetimeout", "50000");
+        if (mailSessionHost != null && !mailSessionHost.isBlank()) {
+            props.put("mail.host", mailSessionHost.trim());
+        }
 
         logger.debug("Resolved SMTP sender: host={}, port={}, auth={}, starttls={}",
                 host, sender.getPort(),
@@ -147,10 +159,9 @@ public class EmailService {
                     .toArray(InternetAddress[]::new);
             mimeMessage.setRecipients(Message.RecipientType.TO, to);
             mimeMessage.setFrom(new InternetAddress(from));
-            mimeMessage.setSubject(subject);
-            mimeMessage.setText(body);
+            mimeMessage.setSubject(subject, "UTF-8");
 
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
             if (filesToAttach != null) {
                 for (Optional<File> fileToAttach : filesToAttach) {
@@ -161,7 +172,8 @@ public class EmailService {
                 }
             }
 
-            helper.setText(body, true);
+            // multipart/alternative with a text/plain part: HTML-only mails score as spam.
+            helper.setText(htmlToPlainText(body), body);
         };
         sendingQueue.add(preparator);
         processSendingQueue();
@@ -255,7 +267,8 @@ public class EmailService {
                 String html = "<p>" + introText + "</p>"
                         + "<p>Latest chicken-coop snapshot:</p>"
                         + "<p><img src=\"cid:coopPicture\" style=\"max-width:100%;height:auto;\" /></p>";
-                helper.setText(html, true);
+                // text/plain + text/html → multipart/alternative, puis addInline wrappera en multipart/related
+                helper.setText(introText + "\n(See attached image for chicken-coop snapshot.)", html);
                 helper.addInline("coopPicture", picture.get());
             } else {
                 helper.setText(introText + "\n(No picture available.)", false);
@@ -264,6 +277,32 @@ public class EmailService {
         logger.info("Sending diagnostics test email to {}.", recipient);
         resolveSender().send(preparator);
         logger.info("Diagnostics test email sent successfully.");
+    }
+
+    /**
+     * Plain-text rendering of an HTML body for the text/plain alternative: block-level
+     * tags become line breaks, the remaining tags are dropped and the common entities
+     * decoded. A body that is already plain text comes out unchanged.
+     */
+    static String htmlToPlainText(String html) {
+        if (html == null) {
+            return "";
+        }
+        String text = html
+                .replaceAll("(?i)<br\\s*/?>", "\n")
+                .replaceAll("(?i)</(p|div|h[1-6]|li|tr|table)>", "\n")
+                .replaceAll("(?i)<(ul|ol)[^>]*>", "\n")
+                .replaceAll("(?i)<li[^>]*>", "- ")
+                .replaceAll("(?s)<[^>]*>", "")
+                .replace("&nbsp;", " ")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'")
+                .replace("&amp;", "&");
+        return text.replaceAll("[ \\t]+\n", "\n")
+                .replaceAll("\n{3,}", "\n\n")
+                .trim();
     }
 
     public boolean isSendingQueueEmpty() {
