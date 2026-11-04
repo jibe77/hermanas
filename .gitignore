@@ -95,3 +95,6 @@ LOG_FILE_IS_UNDEFINED.*
 audit.txt
 audit_config.txt
 audit_config.*.txt
+
+# Rapport de pentest (confidentiel) : ne jamais le versionner.
+/audit/
