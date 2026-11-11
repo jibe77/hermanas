@@ -221,6 +221,11 @@ public class ConfigService {
     @Value("${ai.inference.url:}")
     private String aiInferenceUrl;
 
+    // Bearer token for an authenticating gateway (e.g. LiteLLM). Empty = no
+    // Authorization header, i.e. llama.cpp reached directly.
+    @Value("${ai.inference.api-key:}")
+    private String aiInferenceApiKey;
+
     @Value("${ai.inference.model:focus}")
     private String aiInferenceModel;
 
@@ -1573,6 +1578,15 @@ public class ConfigService {
         // Allow clearing the URL by passing an empty string — that effectively
         // marks the AI integration as "not configured", which is a legitimate state.
         setConfigValue("ai.inference.url", url == null ? "" : url.trim(), null);
+    }
+
+    /**
+     * API key sent as {@code Authorization: Bearer <key>} to the inference server.
+     * Empty means "no authentication" (llama.cpp reached directly).
+     */
+    @Cacheable(value = "aiInferenceApiKey")
+    public String getAiInferenceApiKey() {
+        return getConfigValue("ai.inference.api-key", aiInferenceApiKey, s -> s);
     }
 
     /**

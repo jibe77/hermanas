@@ -192,6 +192,15 @@ public class AiVisionClient {
         Map<String, Object> payload = buildChatPayload(model, lang, base64, userPrompt);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        // A gateway such as LiteLLM requires a Bearer token; llama.cpp reached
+        // directly does not. Never log the key itself — only its length.
+        String apiKey = configService.getAiInferenceApiKey();
+        String trimmedKey = apiKey == null ? "" : apiKey.trim();
+        if (!trimmedKey.isEmpty()) {
+            headers.setBearerAuth(trimmedKey);
+        }
+        logger.info("AI vision: Authorization header {} (api-key length={}).",
+                trimmedKey.isEmpty() ? "not sent" : "sent", trimmedKey.length());
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
 
         try {
