@@ -5,6 +5,7 @@ import {
     LOCALE_ID,
     OnDestroy,
     OnInit,
+    SecurityContext,
     inject,
 } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -438,7 +439,16 @@ export class ChartsComponent implements OnInit, OnDestroy {
         if (inList) {
             out.push('</ul>');
         }
-        return this.sanitizer.bypassSecurityTrustHtml(out.join(''));
+        // XSS-VULN-01 regression watch. The markup below is built from LLM output that
+        // arrives over an unauthenticated STOMP topic. It is safe today only because
+        // escape() ran first over the whole string — and "the escape happens before the
+        // transform" is precisely the invariant a later refactor breaks. Sanitize the
+        // composed HTML instead of trusting it, so the DOM stays safe even if the escape
+        // ever moves after a markdown transform. bypassSecurityTrustHtml is deliberately
+        // applied only to the already-sanitized string, which is the supported pattern for
+        // handing a plain string to an [innerHTML] binding.
+        const sanitized = this.sanitizer.sanitize(SecurityContext.HTML, out.join('')) ?? '';
+        return this.sanitizer.bypassSecurityTrustHtml(sanitized);
     }
 
     /**

@@ -146,10 +146,41 @@ public class EmailService {
      * Sends a mail to an explicit list of recipients, bypassing the opt-in resolution. Used for
      * one-off transactional mails such as registration confirmation and the admin notification of
      * a pending account.
+     *
+     * <p><strong>Contract (XSS-VULN-01):</strong> {@code htmlBody} is a <em>trusted template</em>.
+     * It is written verbatim into the {@code text/html} MIME part, so anything interpolated into
+     * it must already be escaped — see {@link #escapeHtml(String)}. Any caller whose body is
+     * plain text — which is every notification built from device or model output — must use
+     * {@link #sendPlainTextMailTo} instead, which escapes at this boundary so no call-site can
+     * inherit the flaw.</p>
      */
     @SafeVarargs
-    public final void sendMailTo(List<String> recipients, String subject, String body,
+    public final void sendMailTo(List<String> recipients, String subject, String htmlBody,
                                  Optional<File>... filesToAttach) {
+        // multipart/alternative with a text/plain part: HTML-only mails score as spam.
+        sendInternal(recipients, subject, htmlToPlainText(htmlBody), htmlBody, filesToAttach);
+    }
+
+    /**
+     * Plain-text counterpart of {@link #sendMailTo}. The body is HTML-escaped here, before it
+     * can reach any MIME part, and line breaks become {@code <br>}.
+     *
+     * <p>This is the fix for the second-order HTML injection: the door-verification mail used to
+     * interpolate the raw {@code choices[0].message.content} returned by whatever host
+     * {@code ai.inference.url} names straight into the {@code text/html} part, so a hostile
+     * inference reply could inject markup into a mail the operator's mail client renders.</p>
+     */
+    @SafeVarargs
+    public final void sendPlainTextMailTo(List<String> recipients, String subject, String plainText,
+                                          Optional<File>... filesToAttach) {
+        String safe = escapeHtml(plainText);
+        String html = safe.replace("\r\n", "<br>").replace("\n", "<br>");
+        sendInternal(recipients, subject, plainText, html, filesToAttach);
+    }
+
+    @SafeVarargs
+    private final void sendInternal(List<String> recipients, String subject, String textPart,
+                                    String htmlPart, Optional<File>... filesToAttach) {
         if (recipients == null || recipients.isEmpty()) {
             logger.info("No recipients for mail '{}' — skipping.", subject);
             return;
@@ -186,11 +217,19 @@ public class EmailService {
                 }
             }
 
-            // multipart/alternative with a text/plain part: HTML-only mails score as spam.
-            helper.setText(htmlToPlainText(body), body);
+            // text/plain + text/html → multipart/alternative.
+            helper.setText(textPart, htmlPart);
         };
         sendingQueue.add(preparator);
         processSendingQueue();
+    }
+
+    /**
+     * HTML-escapes a value destined for an HTML MIME part. Centralised so there is exactly one
+     * encoder on the mail path and a call-site cannot pick a weaker one.
+     */
+    public static String escapeHtml(String value) {
+        return org.springframework.web.util.HtmlUtils.htmlEscape(value == null ? "" : value);
     }
 
     /**
