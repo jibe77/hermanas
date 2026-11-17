@@ -8,6 +8,7 @@ import org.springframework.boot.security.autoconfigure.actuate.web.servlet.Manag
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.jibe77.hermanas.security.SecurityConfig;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.io.Console;
@@ -44,7 +45,11 @@ public class HermanasApplication {
 			char[] chars = console.readPassword("Password: ");
 			password = new String(chars);
 		}
-		String hash = new BCryptPasswordEncoder().encode(password);
+		// CRYPTO-010 : même facteur de travail que l'application. Un hash produit à un facteur
+		// plus faible n'est pas bloquant — il est re-haché à la première connexion réussie —
+		// mais autant ne pas remettre le compteur à zéro à chaque utilisateur créé à la main.
+		String hash = new BCryptPasswordEncoder(SecurityConfig.DEFAULT_BCRYPT_STRENGTH)
+				.encode(password);
 		System.out.println("{bcrypt}" + hash);
 	}
 }

@@ -7,6 +7,7 @@ import org.jibe77.hermanas.security.siri.SiriTokenVerifier;
 import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -318,9 +320,24 @@ public class SecurityConfig
         return req.getRemoteAddr();
     }
 
+    /**
+     * Facteur de travail BCrypt par défaut (CRYPTO-010). 12 est le plancher raisonnable
+     * aujourd'hui : 10, l'ancien défaut codé en dur, coûte une soixantaine de millisecondes par
+     * essai sur du matériel ordinaire, ce qui laisse un fichier de hashes se faire cribler à
+     * bon compte. Sur un Pi Zero 2 W volontairement bridé à 600 MHz, 12 représente grosso modo
+     * une seconde par connexion — d'où la propriété : c'est à l'exploitant de juger, pas au JAR.
+     */
+    public static final int DEFAULT_BCRYPT_STRENGTH = 12;
+
+    @Value("${hermanas.security.bcrypt-strength:" + DEFAULT_BCRYPT_STRENGTH + "}")
+    private int bcryptStrength;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        logger.info("Password encoder: BCrypt, strength {}.", bcryptStrength);
+        // BCryptPasswordEncoder enforce 4..31 and throws otherwise, which is the clearest
+        // message the operator can get at startup.
+        return new BCryptPasswordEncoder(bcryptStrength);
     }
 
     /**
@@ -332,12 +349,23 @@ public class SecurityConfig
     @Bean
     public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
                                                             PasswordEncoder passwordEncoder,
-                                                            PendingValidationUserDetailsChecker pendingChecker) {
+                                                            PendingValidationUserDetailsChecker pendingChecker,
+                                                            ObjectProvider<UserDetailsPasswordService> passwordService) {
         // Spring Security 7 : le constructeur no-arg et setUserDetailsService()
         // ont disparu, le UserDetailsService passe par le constructeur.
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         provider.setPreAuthenticationChecks(pendingChecker);
+        // CRYPTO-010 : quand un mot de passe vient de prouver le bon, et que le hash stocké est
+        // plus faible que le facteur courant, DaoAuthenticationProvider le ré-encode et le fait
+        // persister par ce service. C'est le seul chemin qui rattrape les lignes importées en
+        // l'état de l'ancien users.properties — sinon un hash posé au plancher y reste à vie.
+        // ObjectProvider et pas la dépendance directe : un slice de test qui monte cette
+        // configuration sans DbUserDetailsService ne doit pas échouer là-dessus.
+        UserDetailsPasswordService upgrader = passwordService.getIfAvailable();
+        if (upgrader != null) {
+            provider.setUserDetailsPasswordService(upgrader);
+        }
         return provider;
     }
 
