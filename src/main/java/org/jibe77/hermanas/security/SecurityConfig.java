@@ -3,6 +3,7 @@ package org.jibe77.hermanas.security;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.security.ratelimit.LoginRateLimitFilter;
 import org.jibe77.hermanas.security.siri.SiriTokenAuthenticationFilter;
+import org.jibe77.hermanas.security.siri.SiriTokenVerifier;
 import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +91,8 @@ public class SecurityConfig
                                            EventService eventService,
                                            LoginRateLimitFilter loginRateLimitFilter,
                                            SessionEpochFilter sessionEpochFilter,
-                                           SiriTokenAuthenticationFilter siriTokenAuthenticationFilter)
+                                           SiriTokenAuthenticationFilter siriTokenAuthenticationFilter,
+                                           SiriTokenVerifier siriTokenVerifier)
             throws Exception
     {
         logger.info("Configure authorizations.");
@@ -130,9 +132,15 @@ public class SecurityConfig
                         // X-XSRF-TOKEN, sans savoir la déchiffrer. Avec la variante XOR, le cookie
                         // est encodé et la comparaison échouerait.
                         .csrfTokenRequestHandler(csrfTokenRequestHandler())
+                        // CRYPTO-004: l'exemption était indexée sur la PRÉSENCE de l'en-tête, pas
+                        // sur une authentification réussie. N'importe quel POST porteur de
+                        // `X-Siri-Token: n-importe-quoi` sortait donc du CsrfFilter — y compris
+                        // system/shutdown, system/reboot et door/open. L'exemption est le prix du
+                        // mécanisme de jeton statique (un Shortcut ne peut pas réémettre un cookie) :
+                        // elle n'est due que quand ce mécanisme a réellement authentifié la requête.
                         .requireCsrfProtectionMatcher(req ->
                                 org.springframework.security.web.csrf.CsrfFilter.DEFAULT_CSRF_MATCHER.matches(req)
-                                        && req.getHeader(SiriTokenAuthenticationFilter.HEADER_NAME) == null))
+                                        && !siriTokenVerifier.isAuthenticated(req)))
                 .authorizeHttpRequests(auth -> auth
 
                 // ─── Authentication endpoints (must stay reachable unauthenticated) ───────────
