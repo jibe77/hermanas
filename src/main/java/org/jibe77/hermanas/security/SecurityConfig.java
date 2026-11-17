@@ -92,7 +92,8 @@ public class SecurityConfig
                                            LoginRateLimitFilter loginRateLimitFilter,
                                            SessionEpochFilter sessionEpochFilter,
                                            SiriTokenAuthenticationFilter siriTokenAuthenticationFilter,
-                                           SiriTokenVerifier siriTokenVerifier)
+                                           SiriTokenVerifier siriTokenVerifier,
+                                           org.jibe77.hermanas.security.ratelimit.LoginAttemptService loginAttemptService)
             throws Exception
     {
         logger.info("Configure authorizations.");
@@ -258,6 +259,9 @@ public class SecurityConfig
                     .usernameParameter("username")
                     .passwordParameter("password")
                     .successHandler((req, res, auth) -> {
+                        // A successful login clears the account-side failure counter and any
+                        // lockout (AUTH-VULN-03).
+                        loginAttemptService.recordSuccess(auth.getName());
                         eventService.record(EventType.LOGIN_SUCCESS,
                                 "login=" + auth.getName() + " ip=" + clientIp(req));
                         res.setStatus(200);
@@ -267,6 +271,9 @@ public class SecurityConfig
                         // can spot brute-force attempts on the Journalisation page. The auth
                         // journal is admin-only, so this is not an oracle.
                         String attempted = req.getParameter("username");
+                        // AUTH-VULN-03: the per-IP bucket alone let a named account be sprayed
+                        // with zero account-side friction. Count it on the account too.
+                        loginAttemptService.recordFailure(attempted);
                         eventService.record(EventType.LOGIN_FAILED,
                                 "login=" + (attempted == null ? "?" : attempted)
                                         + " reason=" + ex.getMessage()

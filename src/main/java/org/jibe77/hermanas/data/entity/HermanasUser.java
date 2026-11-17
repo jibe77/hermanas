@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.data.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -47,6 +48,23 @@ public class HermanasUser {
     @Column(name = "session_epoch", nullable = false)
     private long sessionEpoch = 0L;
 
+    /**
+     * Consecutive failed logins against this account, reset by a successful one
+     * (AUTH-VULN-03).
+     *
+     * <p>The only friction the target used to offer was a per-source-IP bucket held in a
+     * {@code ConcurrentHashMap}, destroyed on every restart — and the public journal showed
+     * 959 {@code STARTUP} events, so the budget refilled on the operator's own restarts.
+     * A named, privilege-tagged account could be sprayed with zero account-side cost. These
+     * two columns move the counter onto the account and onto disk.</p>
+     */
+    @Column(name = "failed_attempts", nullable = false)
+    private int failedAttempts = 0;
+
+    /** Until when the account refuses logins. {@code null} means not locked. */
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
     public HermanasUser() {}
 
     public HermanasUser(String login, String passwordHash, String email, String role,
@@ -87,6 +105,12 @@ public class HermanasUser {
 
     public long getSessionEpoch() { return sessionEpoch; }
     public void setSessionEpoch(long sessionEpoch) { this.sessionEpoch = sessionEpoch; }
+
+    public int getFailedAttempts() { return failedAttempts; }
+    public void setFailedAttempts(int failedAttempts) { this.failedAttempts = failedAttempts; }
+
+    public LocalDateTime getLockedUntil() { return lockedUntil; }
+    public void setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
 
     @Override
     public boolean equals(Object o) {

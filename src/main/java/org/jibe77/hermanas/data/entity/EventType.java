@@ -64,6 +64,12 @@ public enum EventType {
     LOGIN_SUCCESS,
     LOGIN_FAILED,
     LOGOUT,
+    /**
+     * Raised when an account crosses the failed-login threshold and gets its progressive
+     * lockout (AUTH-VULN-03). Admin-only visibility, like the rest of the auth feed —
+     * it is an alert, not something the anonymous caller should learn.
+     */
+    LOGIN_LOCKED_OUT,
 
     // Camera
     PICTURE_TAKEN,
