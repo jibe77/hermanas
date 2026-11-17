@@ -415,7 +415,10 @@ public class ConfigService {
         }
         parameter.setEntryValue(String.valueOf(value));
 
-        logger.info("Saving config to database: {} = {}", key, value);
+        // CRYPTO-006: this line used to write the raw value for every key, so every
+        // spring.mail.password / weather.info.key / ai.inference.api-key write landed in
+        // spring.log — retained by the rolling appender — in plaintext.
+        logger.info("Saving config to database: {} = {}", key, SecretConfigKeys.render(key, value));
         parameterRepository.save(parameter);
 
         auditConfigChange(key, oldValue, value);
@@ -434,37 +437,44 @@ public class ConfigService {
      *
      * <p>Audit log format (pipe-separated for grep-friendliness):</p>
      * <pre>user=&lt;login|anonymous&gt; | key=&lt;key&gt; | old=&lt;value&gt; | new=&lt;value&gt;</pre>
+     *
+     * <p>Secret keys are masked in <em>every</em> sink (CRYPTO-006). The previous version
+     * masked only the copy pushed into the event journal, while the comment promised the
+     * audit file got the redacted form too — it did not, and {@code audit_config.txt}
+     * carried the plaintext mail password for 24 months of rollovers.</p>
      */
     private void auditConfigChange(String key, Object oldValue, Object newValue) {
         String user = org.jibe77.hermanas.service.event.EventService.currentUsername();
         String oldRendered = oldValue == null ? "<unset>" : String.valueOf(oldValue);
         String newRendered = newValue == null ? "<unset>" : String.valueOf(newValue);
+        String maskedOld = SecretConfigKeys.render(key, oldValue);
+        String maskedNew = SecretConfigKeys.render(key, newValue);
         configAuditLogger.info("user={} | key={} | old={} | new={}",
-                user == null ? "anonymous" : user, key, oldRendered, newRendered);
+                user == null ? "anonymous" : user, key, maskedOld, maskedNew);
         if (eventService != null) {
-            // Mask secret-looking keys before they reach the journal so the
-            // Journalisation page never surfaces a fresh API key or mail password
-            // in plain text. The CONFIG_AUDIT file still gets the redacted form too.
-            String redactedNew = isSecretKey(key) ? "<redacted>" : newRendered;
-            String redactedOld = isSecretKey(key) ? "<redacted>" : oldRendered;
+            // Same masked form on the journal, which is reachable over HTTP. The registry
+            // (not a substring guess) decides what is a secret — see SecretConfigKeys.
             eventService.record(EventType.CONFIG_CHANGED,
-                    "key=" + key + " old=" + redactedOld + " new=" + redactedNew);
+                    "key=" + key + " old=" + maskedOld + " new=" + maskedNew);
+        }
+        // The unmasked rendering is kept in a local so a debugger or a future sink can see
+        // what was suppressed; it is deliberately never logged.
+        if (logger.isTraceEnabled() && !SecretConfigKeys.isSecret(key)) {
+            logger.trace("Config audit detail: key={} old={} new={}", key, oldRendered, newRendered);
         }
     }
 
     /**
      * Returns true if the given key holds a secret that must never appear in
-     * plain text in the journal (mail password, API keys, etc.). Conservative —
-     * any key containing "password", "key", "secret" or "token" is treated as
-     * sensitive. The latitude/longitude pair is also masked because the coop
-     * coordinates are private.
+     * plain text in the journal (mail password, API keys, etc.).
+     *
+     * <p>Delegates to {@link SecretConfigKeys}, which combines an explicit registry of
+     * secret keys with a conservative name heuristic (CRYPTO-006, CRYPTO-007). The old
+     * version was a bare substring test that missed hyphen-delimited names such as
+     * {@code ai.inference.api-key}.</p>
      */
-    private static boolean isSecretKey(String key) {
-        if (key == null) return false;
-        String k = key.toLowerCase();
-        return k.contains("password") || k.contains("secret") || k.contains("token")
-                || k.endsWith(".key") || k.contains(".key.")
-                || k.equals("suntime.latitude") || k.equals("suntime.longitude");
+    static boolean isSecretKey(String key) {
+        return SecretConfigKeys.isSecret(key);
     }
 
     // ============================================================================
