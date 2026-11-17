@@ -78,8 +78,10 @@ in 2026 from `poupou` (original Pi Zero, kept as rollback). Key facts that shape
   `/dev/gpiochip0`. Replaced the pigpio/`/dev/mem` stack, which Debian Trixie dropped.
   FFM needs `--enable-native-access=ALL-UNNAMED` to avoid restricted-method warnings.
 - **Runs as the non-root `hermanas` user** from `/var/lib/hermanas/` (see `deploy.sh`) — that
-  is where `application.properties`, `users.properties`, `photos/`, `music/` and the keystore
-  live. Not `/home/pi/`. Needs supplementary groups `gpio` (chardev) and `audio` (cvlc).
+  is where `application.properties`, `users.properties`, `photos/` and `music/` live. Not
+  `/home/pi/`. Needs supplementary groups `gpio` (chardev) and `audio` (cvlc). There is **no
+  keystore on the device and none in the repo**: TLS ends at Traefik, the app speaks plain HTTP
+  on `:8080`.
 - **Reverse proxy:** Traefik (TLS) → nginx (`deploy/nginx/hermanas-cache.conf`, caching) →
   Spring on `:8080`. `/api/**` and WebSockets are never cached; hashed assets cache 1 year;
   HTML 60 s. nginx forwards `X-Forwarded-*`.
@@ -603,6 +605,11 @@ every legacy template script), `webjars-locator-core` 0.x → 1.x.
   rename refactor left it behind.
 - [ ] **Leftover Amplify files**: `frontend/amplify/`, `frontend/amplify.yml`,
   `frontend/.graphqlconfig.yml` are unreferenced and can be removed.
+- [ ] **Purge `keystore.p12` from git history and add a secret scanner to CI.** The file is gone
+  from the tree (Vigilo CRYPTO-008, 2026-11-17), but the private key it holds is still reachable
+  in every commit since the baseline `528ee1b` — `git filter-repo --path src/main/resources/keystore.p12
+  --invert-path` plus a coordinated force-push, and rotate whatever certificate it carried. A
+  `gitleaks`/`detect-secrets` pre-commit + CI step is what stops the next one.
 - [x] ~~Consider `micrometer-registry-prometheus`~~ — already declared in `pom.xml`
   (verified 2026-10-21); `/actuator/prometheus` is wired. The old migration note claiming it
   was missing is out of date.
