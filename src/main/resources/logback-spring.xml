@@ -27,18 +27,17 @@
          alongside other system logs. -->
     <property name="HERMANAS_AUDIT_DIR" value="${hermanas.audit.dir:-.}"/>
 
-    <!-- CRYPTO-006: last line of defence for the audit files. ConfigService now masks
-         secret keys at the source (SecretConfigKeys.render), but a filter on the appender
-         means a future code path that logs a credential by accident — a stack trace that
-         quotes a JDBC URL, a debug line someone adds — is redacted on the way to disk
-         rather than after the fact. Applied to the two audit appenders we own; spring.log
-         is covered by the source-side masking because its appender is included from
-         Spring Boot's defaults and is not ours to redefine. -->
+    <!-- CRYPTO-006: last line of defence for the audit files. ConfigService already masks
+         secret keys at the source (SecretConfigKeys.render), but the audit appenders also
+         write through %mask (SecretMaskingConverter), so a future code path that logs a
+         credential by accident — a stack trace that quotes a JDBC URL, a debug line someone
+         adds — is redacted on the way to disk rather than after the fact. Applied to the two
+         audit appenders we own; spring.log is covered by the source-side masking because its
+         appender is included from Spring Boot's defaults and is not ours to redefine. -->
+    <conversionRule conversionWord="mask"
+                    converterClass="org.jibe77.hermanas.security.audit.SecretMaskingConverter"/>
+
     <appender name="CONFIG_AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.core.filter.ReplaceFilter">
-            <regex>(?i)\b(password|passwd|secret|token|api[-_]?key|apikey|appid|private[-_]?key)(\s*[=:]\s*)(\S+)</regex>
-            <replacement>$1$2***</replacement>
-        </filter>
         <file>${HERMANAS_AUDIT_DIR}/audit_config.txt</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${HERMANAS_AUDIT_DIR}/audit_config.%d{yyyy-MM}.txt</fileNamePattern>
@@ -46,23 +45,21 @@
             <maxHistory>24</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %msg%n</pattern>
+            <!-- %mask, not %msg: SecretMaskingConverter redacts credentials (CRYPTO-006). -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %mask%n</pattern>
         </encoder>
     </appender>
 
     <!-- Plain text appender for the security audit trail (door, shutdown, etc.) -->
     <appender name="AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.core.filter.ReplaceFilter">
-            <regex>(?i)\b(password|passwd|secret|token|api[-_]?key|apikey|appid|private[-_]?key)(\s*[=:]\s*)(\S+)</regex>
-            <replacement>$1$2***</replacement>
-        </filter>
         <file>${HERMANAS_AUDIT_DIR}/audit.txt</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${HERMANAS_AUDIT_DIR}/audit.%d{yyyy-MM}.txt</fileNamePattern>
             <maxHistory>24</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %msg%n</pattern>
+            <!-- %mask, not %msg: SecretMaskingConverter redacts credentials (CRYPTO-006). -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %mask%n</pattern>
         </encoder>
     </appender>
 

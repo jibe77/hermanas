@@ -51,6 +51,20 @@ class ConfigRestControllerTest {
     @MockitoBean
     private org.jibe77.hermanas.service.music.MusicService musicService;
 
+    /**
+     * La slice {@code @WebMvcTest} embarque les filtres servlet de l'application, dont
+     * {@code SessionEpochFilter} (AUTH-VULN-01) et {@code SiriTokenAuthenticationFilter}
+     * (CRYPTO-004). Ils ne sont pas l'objet de ces tests — {@code @WithMockUser} suffit à
+     * exercer les {@code @PreAuthorize} — mais leurs constructeurs tirent chacun une pièce
+     * de la couche basse, qu'il faut donc simuler pour que le contexte démarre.
+     */
+    @MockitoBean
+    private org.jibe77.hermanas.data.repository.HermanasUserRepository userRepository;
+
+    @MockitoBean
+    private org.jibe77.hermanas.security.siri.SiriTokenVerifier siriTokenVerifier;
+
+
     // ============================================================================
     // GET /api/v1/config - View Configuration
     // ============================================================================
