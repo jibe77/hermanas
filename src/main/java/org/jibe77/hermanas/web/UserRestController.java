@@ -13,6 +13,7 @@ import org.jibe77.hermanas.dto.UserDTO;
 import org.jibe77.hermanas.dto.UserUpdateRequest;
 import org.jibe77.hermanas.security.PasswordPolicy;
 import org.jibe77.hermanas.security.SecurityConfig;
+import org.jibe77.hermanas.security.SessionRevocationService;
 import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,15 +49,18 @@ public class UserRestController {
     private final PasswordEncoder passwordEncoder;
     private final EventService eventService;
     private final PasswordPolicy passwordPolicy;
+    private final SessionRevocationService sessionRevocationService;
 
     public UserRestController(HermanasUserRepository repository,
                               PasswordEncoder passwordEncoder,
                               EventService eventService,
-                              PasswordPolicy passwordPolicy) {
+                              PasswordPolicy passwordPolicy,
+                              SessionRevocationService sessionRevocationService) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.eventService = eventService;
         this.passwordPolicy = passwordPolicy;
+        this.sessionRevocationService = sessionRevocationService;
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
@@ -186,6 +190,10 @@ public class UserRestController {
             return badRequest("Cannot delete the last administrator");
         }
         repository.delete(user);
+        // AUTH-VULN-01: a deleted ADMIN kept ROLE_ADMIN in whatever session was already
+        // open. The row is gone, so the epoch bump is a no-op, but the sessions and the
+        // remember-me tokens really do go away.
+        sessionRevocationService.revokeAllFor(login, "account deleted");
         logger.info("Admin deleted user '{}'", login);
         eventService.record(EventType.USER_DELETED,
                 "login=" + login + " role=" + user.getRole());
@@ -212,7 +220,10 @@ public class UserRestController {
         }
     }
 
-    private ResponseEntity<?> applyUpdate(HermanasUser user, UserUpdateRequest body) {        if (body.getEmail() != null) {
+    private ResponseEntity<?> applyUpdate(HermanasUser user, UserUpdateRequest body) {
+        boolean passwordChanged = false;
+        boolean roleChanged = false;
+        if (body.getEmail() != null) {
             String email = body.getEmail().trim();
             if (!email.isEmpty() && !EMAIL_RE.matcher(email).matches()) {
                 return badRequest("Invalid email address");
@@ -231,14 +242,27 @@ public class UserRestController {
                 return weak;
             }
             user.setPasswordHash(passwordEncoder.encode(body.getPassword()));
+            passwordChanged = true;
         }
         if (body.getRole() != null) {
-            user.setRole(normalizeRole(body.getRole()));
+            String newRole = normalizeRole(body.getRole());
+            roleChanged = !newRole.equals(user.getRole());
+            user.setRole(newRole);
         }
         if (body.getLanguage() != null) {
             user.setLanguage(normalizeLanguage(body.getLanguage()));
         }
         repository.save(user);
+
+        // AUTH-VULN-01: re-hashing the password and saving the row revoked nothing. The
+        // SecurityContext — username plus the role cached at authentication time — lives in
+        // the JDBC-backed session and was replayed verbatim, so a stolen session survived
+        // the victim's own password change, and even a demotion or a deletion. Everything
+        // previously issued for this login goes now: sessions, remember-me tokens, epoch.
+        if (passwordChanged || roleChanged) {
+            sessionRevocationService.revokeAllFor(user.getLogin(),
+                    passwordChanged ? "password change" : "role change");
+        }
         return ResponseEntity.ok(toDto(user));
     }
 

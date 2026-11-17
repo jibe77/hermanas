@@ -5,7 +5,6 @@ import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -141,9 +140,11 @@ public class DbUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         HermanasUser user = repository.findByLogin(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Unknown user: " + username));
-        return User.withUsername(user.getLogin())
-                .password(user.getPasswordHash())
-                .roles(user.getRole())
-                .build();
+        // HermanasUserDetails and not the stock User builder because the session epoch has
+        // to travel with the principal for SessionEpochFilter to be able to check it.
+        // The role is used verbatim, exactly as User.withUsername(...).roles(role) did, so
+        // NOT_VALIDATED_YET keeps its dedicated authority for PendingValidationUserDetailsChecker.
+        return new HermanasUserDetails(user.getLogin(), user.getPasswordHash(),
+                user.getRole(), user.getSessionEpoch());
     }
 }

@@ -19,6 +19,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
@@ -81,6 +82,7 @@ public class SecurityConfig
                                            PersistentTokenBasedRememberMeServices rememberMeServices,
                                            EventService eventService,
                                            LoginRateLimitFilter loginRateLimitFilter,
+                                           SessionEpochFilter sessionEpochFilter,
                                            SiriTokenAuthenticationFilter siriTokenAuthenticationFilter)
             throws Exception
     {
@@ -95,6 +97,10 @@ public class SecurityConfig
                 // standard auth machinery runs, so they bypass the form-login flow and inherit
                 // the matching authorizeRequests rules (ROLE_USER).
                 .addFilterBefore(siriTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // Runs once every authentication mechanism has had its say (form login, remember-me,
+                // anonymous) but before authorization, so a session whose account changed under it
+                // is dropped with a 401 instead of being served on the cached authority.
+                .addFilterAfter(sessionEpochFilter, AnonymousAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
                 // CSRF protection relies on the SPA echoing a cookie value in a header — Shortcuts
                 // cannot do that, so requests carrying the Siri token are exempt. The token itself

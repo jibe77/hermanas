@@ -35,6 +35,18 @@ public class HermanasUser {
     @Column(nullable = false, length = 8)
     private String language = "fr";
 
+    /**
+     * Counter bumped whenever everything the application already issued for this account
+     * must stop working — password change, role change, deletion (AUTH-VULN-01).
+     *
+     * <p>The value is copied into the {@code SecurityContext} at authentication time and
+     * compared against this row by {@link org.jibe77.hermanas.security.SessionEpochFilter}
+     * on every request, so a session or remember-me token minted before the change cannot
+     * outlive it.</p>
+     */
+    @Column(name = "session_epoch", nullable = false)
+    private long sessionEpoch = 0L;
+
     public HermanasUser() {}
 
     public HermanasUser(String login, String passwordHash, String email, String role,
@@ -72,6 +84,9 @@ public class HermanasUser {
 
     public String getLanguage() { return language; }
     public void setLanguage(String language) { this.language = language != null ? language : "fr"; }
+
+    public long getSessionEpoch() { return sessionEpoch; }
+    public void setSessionEpoch(long sessionEpoch) { this.sessionEpoch = sessionEpoch; }
 
     @Override
     public boolean equals(Object o) {
