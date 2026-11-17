@@ -74,7 +74,9 @@ describe('LoginService', () => {
             expect(setSignedOutSpy).toHaveBeenCalled();
         });
 
-        it('resolves "pending-validation" on the dedicated 401 JSON body', async () => {
+        it('resolves "invalid" even on the legacy pending-validation body', async () => {
+            // AUTH-VULN-02: the backend no longer distinguishes the reason for a failed
+            // login, and the SPA must not resurrect the oracle by sniffing the body.
             const result = loginService.login('alice', 'secret');
 
             const req = httpMock.expectOne(r => r.url.endsWith('/auth/login'));
@@ -83,7 +85,7 @@ describe('LoginService', () => {
                 { status: 401, statusText: 'Unauthorized' }
             );
 
-            await expect(result).resolves.toBe('pending-validation');
+            await expect(result).resolves.toBe('invalid');
             expect(setSignedOutSpy).toHaveBeenCalled();
         });
 

@@ -43,6 +43,14 @@ public class DoorRestController {
     @Autowired(required = false)
     HermanasMetrics metrics;
 
+    /**
+     * Optional so the narrow door-service tests keep constructing this controller by hand.
+     * When absent the door-event feed falls back to the raw entity, which is what it did
+     * before — see {@link #getEventHistory()}.
+     */
+    @Autowired(required = false)
+    org.jibe77.hermanas.dto.mapper.EventMapper eventMapper;
+
     private static final Logger logger = LoggerFactory.getLogger(DoorRestController.class);
 
     public DoorRestController(DoorService doorService, DoorEventService doorEventService, @Autowired(required = false) HermanasMetrics metrics) {
@@ -270,8 +278,16 @@ public class DoorRestController {
             )
     })
     @GetMapping("/events")
-    public java.util.List<org.jibe77.hermanas.data.entity.Event> getEventHistory() {
+    public java.util.List<?> getEventHistory() {
         logger.info("Retrieving door event history");
-        return doorEventService.getAllDoorEvents();
+        java.util.List<org.jibe77.hermanas.data.entity.Event> events = doorEventService.getAllDoorEvents();
+        // AUTH-VULN-02: this endpoint used to serialise the raw JPA entity, which skipped
+        // the masking EventMapper exists for — `triggeredBy` and any `login=`/`role=` in
+        // the free-text details column went out verbatim to whoever asked. Route it through
+        // the mapper so the anonymous caller gets the same scrubbed DTO as the journal.
+        if (eventMapper == null) {
+            return events;
+        }
+        return eventMapper.toDTOListForCurrentCaller(events);
     }
 }

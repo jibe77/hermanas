@@ -6,10 +6,19 @@ import org.jibe77.hermanas.service.event.EventService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
 public class EventMapper {
+
+    /**
+     * {@code key=value} pairs in the free-text {@code details} column that must never reach
+     * an anonymous caller. Written as a scrub rule rather than per event type so a future
+     * event carrying {@code login=} cannot slip through by being forgotten (AUTH-VULN-02).
+     */
+    private static final Pattern SENSITIVE_DETAIL =
+            Pattern.compile("\\b(login|role|email|password|token|secret|api-key|key)=[^\\s,;\\]]*");
 
     /**
      * Public mapper that strips {@code triggeredBy} — used when the journal is
@@ -23,6 +32,11 @@ public class EventMapper {
     /**
      * Variant used by authenticated endpoints — preserves the {@code triggeredBy}
      * column so operators can see who turned the light on at 3am.
+     *
+     * <p>When the caller is anonymous the {@code details} column is scrubbed as well:
+     * it is free text written by every producer in the codebase, and the masking that
+     * existed here only covered {@code triggeredBy}, which is why the {@code USER_*}
+     * rows leaked the whole operator population through the public feed.</p>
      */
     public EventDTO toDTO(Event event, boolean includeTriggeredBy) {
         if (event == null) {
@@ -32,9 +46,20 @@ public class EventMapper {
                 event.getId(),
                 event.getEventType() != null ? event.getEventType().name() : null,
                 event.getDateTime(),
-                event.getDetails(),
+                includeTriggeredBy ? event.getDetails() : scrubForAnonymous(event.getDetails()),
                 includeTriggeredBy ? event.getTriggeredBy() : null
         );
+    }
+
+    /**
+     * Removes {@code login=…} / {@code role=…} and friends from a details string.
+     * Returns the input untouched for authenticated callers.
+     */
+    static String scrubForAnonymous(String details) {
+        if (details == null || details.isEmpty()) {
+            return details;
+        }
+        return SENSITIVE_DETAIL.matcher(details).replaceAll(m -> m.group(1) + "=***");
     }
 
     public List<EventDTO> toDTOList(List<Event> events) {

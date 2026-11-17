@@ -249,23 +249,22 @@ public class SecurityConfig
                     })
                     .failureHandler((req, res, ex) -> {
                         // Record the failed attempt with the login that was tried, so admins
-                        // can spot brute-force attempts on the Journalisation page.
+                        // can spot brute-force attempts on the Journalisation page. The auth
+                        // journal is admin-only, so this is not an oracle.
                         String attempted = req.getParameter("username");
                         eventService.record(EventType.LOGIN_FAILED,
                                 "login=" + (attempted == null ? "?" : attempted)
                                         + " reason=" + ex.getMessage()
                                         + " ip=" + clientIp(req));
-                        // Surface the special "pending validation" case as a small JSON body so the
-                        // SPA can render the right error string. Anything else stays a generic 401.
+                        // AUTH-VULN-02: one uniform answer for every failure reason. The
+                        // pending-validation case used to answer a distinguishable body,
+                        // which told an unauthenticated caller that the login exists and is
+                        // merely awaiting approval. The registration response and the
+                        // confirmation mail already tell a real applicant the same thing,
+                        // so nothing legitimate is lost.
                         res.setStatus(401);
-                        if (PendingValidationUserDetailsChecker.PENDING_VALIDATION_MESSAGE
-                                .equals(ex.getMessage())) {
-                            res.setContentType("application/json");
-                            res.getWriter().write(
-                                    "{\"error\":\""
-                                            + PendingValidationUserDetailsChecker.PENDING_VALIDATION_MESSAGE
-                                            + "\"}");
-                        }
+                        res.setContentType("application/json");
+                        res.getWriter().write("{\"error\":\"INVALID_CREDENTIALS\"}");
                     }))
                 .rememberMe(remember -> remember
                     .rememberMeServices(rememberMeServices)

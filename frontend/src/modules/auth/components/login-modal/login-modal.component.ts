@@ -156,9 +156,9 @@ export class LoginModalComponent implements OnInit {
             // in app.config.ts.
             const currentUrl = this.router.url;
             this.router.navigateByUrl(currentUrl);
-        } else if (outcome === 'pending-validation') {
-            this.errorMessage = $localize`:@@signinPendingValidation:Your account is awaiting validation by an administrator.`;
         } else {
+            // One generic message: the backend no longer distinguishes "wrong password"
+            // from "account awaiting validation" (AUTH-VULN-02).
             this.errorMessage = $localize`:@@signinFailed:Invalid username or password.`;
         }
         this.cdr.markForCheck();

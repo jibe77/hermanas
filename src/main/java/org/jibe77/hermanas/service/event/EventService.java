@@ -58,10 +58,12 @@ public class EventService {
             EventType.RESIDENT_UPDATED,
             EventType.RESIDENT_PHOTO_UPLOADED,
             EventType.RESIDENT_PHOTO_DELETED,
-            EventType.USER_CREATED,
-            EventType.USER_UPDATED,
-            EventType.USER_DELETED,
-            EventType.USER_SELF_UPDATED,
+            // AUTH-VULN-02: the USER_* rows were added to this list without re-checking the
+            // assumption the masking layer was written for — "the public showcase never
+            // exposes operator logins". Their details column is `login=<user> role=<role>`,
+            // copied verbatim, so 33 anonymous requests handed the whole operator population
+            // with privilege levels. Account-management history is not chicken-coop business
+            // and now sits behind the admin-only journal.
             EventType.CONFIG_CHANGED,
             EventType.EMAIL_TEST_SENT,
             EventType.PICTURE_TAKEN
@@ -70,11 +72,20 @@ public class EventService {
     /**
      * Event types restricted to administrators. Exposing failed login attempts
      * to anonymous users would leak whether a given login exists.
+     *
+     * <p>The {@code USER_*} rows moved here from {@link #BUSINESS_TYPES} (AUTH-VULN-02):
+     * their {@code details} column names the operator account and its role, which is
+     * exactly what must not reach an anonymous caller. They stay visible to administrators
+     * on the same admin-only journal feed.</p>
      */
     public static final List<EventType> AUTH_TYPES = Arrays.asList(
             EventType.LOGIN_SUCCESS,
             EventType.LOGIN_FAILED,
-            EventType.LOGOUT
+            EventType.LOGOUT,
+            EventType.USER_CREATED,
+            EventType.USER_UPDATED,
+            EventType.USER_DELETED,
+            EventType.USER_SELF_UPDATED
     );
 
     private final EventRepository eventRepository;
