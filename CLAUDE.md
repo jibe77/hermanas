@@ -613,6 +613,16 @@ every legacy template script), `webjars-locator-core` 0.x → 1.x.
   in every commit since the baseline `528ee1b` — `git filter-repo --path src/main/resources/keystore.p12
   --invert-path` plus a coordinated force-push, and rotate whatever certificate it carried. A
   `gitleaks`/`detect-secrets` pre-commit + CI step is what stops the next one.
+- [ ] **Encrypt the secret configuration values at rest** (Vigilo CRYPTO-015). Every long-lived
+  secret — VAPID private scalar, SMTP password, weather key, inference key — is plaintext in
+  `Parameter.entry_value`: no column encryption, no key id, no version, no rotation path, and the
+  VAPID pair is generated once (`if (pub == null || priv == null)`) and never changes. The fix is
+  a programme, not a patch: a JPA `AttributeConverter` doing AES-256-GCM with a key from the
+  environment, a `key_version` column so a rotation can migrate rows lazily, and an admin action
+  that re-derives VAPID and forces browsers to re-subscribe. `SecretConfigKeys` is the list of
+  what must be wrapped — and is *not* encryption, a point its Javadoc now states out loud.
+  Deliberately not attempted on the pentest branch: a lost master key makes every stored secret
+  unreadable, which is an outage with a chicken door attached.
 - [ ] **Replace the static Siri token with per-device credentials** (Vigilo CRYPTO-005). The
   hygiene items shipped in 2026-11-17 — `MessageDigest.isEqual` so the comparison no longer leaks
   the token length, a startup warning below 32 bytes, an INFO line on every accepted use, and a

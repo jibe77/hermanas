@@ -32,6 +32,20 @@ import java.util.Set;
  *
  * <p>Static on purpose: Logback instantiates its filter outside the Spring context, and a
  * log path must never depend on a bean being wired.</p>
+ *
+ * <h3>Ce registre ne chiffre rien (CRYPTO-015)</h3>
+ * <p>Ces noms décrivent ce qui ne doit pas être <em>écrit dans un journal</em>. Ils ne disent
+ * rien de ce qui est <em>stocké</em> : la valeur de chaque clé listée ici dort en clair dans
+ * {@code Parameter.entry_value}, une colonne unique sans chiffrement, sans identifiant de
+ * clé, sans version et sans chemin de rotation. Le registre est donc, vu de la base, une liste
+ * de choses qu'une sauvegarde lisible, une fuite MariaDB ou un SQLi donneraient intégralement.
+ * Le rapport classe ça en Informationnel — MariaDB n'écoute qu'en local et aucun SQL construit
+ * par concaténation n'a été trouvé — et le traite à juste titre comme un programme plutôt
+ * qu'un correctif : convertisseur JPA AES-256-GCM alimenté par un secret d'environnement,
+ * colonne {@code key_version}, action admin de rotation (re-dérivation de la paire VAPID et
+ * re-souscription forcée des navigateurs). Le tout est consigné dans la backlog Phase 10 ;
+ * ce n'est pas un détail qu'on glisse dans une branche de correctifs, une clé maîtresse perdue
+ * rendant toutes les valeurs illisibles.</p>
  */
 public final class SecretConfigKeys {
 
