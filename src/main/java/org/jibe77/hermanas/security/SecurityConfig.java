@@ -51,9 +51,6 @@ public class SecurityConfig
     /** Name of the remember-me cookie sent to the browser. */
     private static final String REMEMBER_ME_COOKIE_NAME = "hermanas-remember-me";
 
-    @Value("${hermanas.security.remember-me-key}")
-    private String rememberMeKey;
-
     @Value("${hermanas.security.remember-me-validity-seconds:2678400}")
     private int rememberMeValiditySeconds;
 
@@ -93,6 +90,7 @@ public class SecurityConfig
                                            SessionEpochFilter sessionEpochFilter,
                                            SiriTokenAuthenticationFilter siriTokenAuthenticationFilter,
                                            SiriTokenVerifier siriTokenVerifier,
+                                           RememberMeKey rememberMeKey,
                                            org.jibe77.hermanas.security.ratelimit.LoginAttemptService loginAttemptService)
             throws Exception
     {
@@ -290,7 +288,7 @@ public class SecurityConfig
                     }))
                 .rememberMe(remember -> remember
                     .rememberMeServices(rememberMeServices)
-                    .key(rememberMeKey))
+                    .key(rememberMeKey.value()))
                 .logout(logout -> logout
                     .logoutUrl("/api/v1/auth/logout")
                     // Remove the remember-me cookie alongside the session on logout, otherwise
@@ -366,14 +364,15 @@ public class SecurityConfig
     @Bean
     public PersistentTokenBasedRememberMeServices rememberMeServices(
             PersistentTokenRepository tokenRepository,
-            UserDetailsService userDetailsService) {
+            UserDetailsService userDetailsService,
+            RememberMeKey rememberMeKey) {
         // GraceWindowRememberMeServices et non la classe mère : le SPA émet plusieurs requêtes
         // en parallèle au démarrage, et la rotation de token de la stratégie "persistent token"
         // faisait passer les requêtes concurrentes pour un vol de cookie. La réponse en erreur
         // supprimait alors le cookie remember-me tout juste renouvelé — l'utilisateur devait se
         // reconnecter. Voir le javadoc de la classe pour le détail du scénario.
         PersistentTokenBasedRememberMeServices services =
-                new GraceWindowRememberMeServices(rememberMeKey, userDetailsService,
+                new GraceWindowRememberMeServices(rememberMeKey.value(), userDetailsService,
                         tokenRepository);
         services.setCookieName(REMEMBER_ME_COOKIE_NAME);
         services.setTokenValiditySeconds(rememberMeValiditySeconds);

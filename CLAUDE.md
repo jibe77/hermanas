@@ -144,9 +144,12 @@ Main configuration in `application.properties`. Key externalized parameters:
 - **Door timing:** opening 10000 ms, closing 2350 ms, servo positions 5–16
 - **Sun scheduling:** location coordinates, door delays after sunrise/sunset
 - **Camera:** resolution, quality, rotation (180), streaming port
-- **Auth/session:** `hermanas.security.users-file`, `hermanas.security.remember-me-key`
-  (⚠️ still `change-me-in-production-please` in the committed default — override in prod;
-  rotating it invalidates every remember-me cookie), `spring.session.timeout`
+- **Auth/session:** `hermanas.security.users-file`, `spring.session.timeout`, and
+  `hermanas.security.remember-me-key` — which is **no longer a committed literal** (CRYPTO-001):
+  it reads `${HERMANAS_SECURITY_REMEMBER_ME_KEY:}`, and `RememberMeKey` draws a random key at
+  each boot when it is empty. Harmless, because under the persistent-token strategy the key is
+  not an input to the cookie value; set it only if several instances must share one
+  authentication context
 
 In production these are overridden by `/var/lib/hermanas/application.properties`
 (not in git — it holds the DB credentials).
