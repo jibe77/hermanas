@@ -29,7 +29,8 @@ export class RegisterComponent {
     constructor() {
         this.registerForm = this.fb.group({
             login: ['', [Validators.required, Validators.minLength(2)]],
-            password: ['', [Validators.required, Validators.minLength(6)]],
+            // Mirrors PasswordPolicy on the server (AUTH-VULN-04).
+            password: ['', [Validators.required, Validators.minLength(12)]],
             email: ['', [Validators.required, Validators.email]],
         });
     }

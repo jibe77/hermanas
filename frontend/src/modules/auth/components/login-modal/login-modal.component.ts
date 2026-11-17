@@ -65,7 +65,9 @@ export class LoginModalComponent implements OnInit {
         this.registerForm = this.fb.group({
             login: ['', [Validators.required, Validators.minLength(2)]],
             email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(6)]],
+            // Mirrors PasswordPolicy on the server (AUTH-VULN-04). The server is the
+            // authority; this only avoids a round-trip for the obvious cases.
+            password: ['', [Validators.required, Validators.minLength(12)]],
             language: [defaultLanguage, Validators.required],
         });
         // Sync the visible view with the view requested by the caller each time
