@@ -613,6 +613,14 @@ every legacy template script), `webjars-locator-core` 0.x → 1.x.
   in every commit since the baseline `528ee1b` — `git filter-repo --path src/main/resources/keystore.p12
   --invert-path` plus a coordinated force-push, and rotate whatever certificate it carried. A
   `gitleaks`/`detect-secrets` pre-commit + CI step is what stops the next one.
+- [ ] **Replace the static Siri token with per-device credentials** (Vigilo CRYPTO-005). The
+  hygiene items shipped in 2026-11-17 — `MessageDigest.isEqual` so the comparison no longer leaks
+  the token length, a startup warning below 32 bytes, an INFO line on every accepted use, and a
+  CSRF exemption that is granted only when the token actually authenticated the caller
+  (CRYPTO-004). What did not: it is still one permanent, shared, non-revocable secret. The real
+  fix is short-lived HMAC/signed tokens bound to `(user, device id)`, stored server-side as a
+  salted hash, with an admin screen to issue and revoke them. Until then the property stays empty
+  by default and the filter stays a no-op.
 - [x] ~~Consider `micrometer-registry-prometheus`~~ — already declared in `pom.xml`
   (verified 2026-10-21); `/actuator/prometheus` is wired. The old migration note claiming it
   was missing is out of date.
