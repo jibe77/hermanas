@@ -57,6 +57,13 @@ public class SecurityConfig
     private int rememberMeValiditySeconds;
 
     /**
+     * Whether the remember-me cookie carries the {@code Secure} attribute (CRYPTO-002).
+     * Defaults to {@code true}; only a local http development server should set it to false.
+     */
+    @Value("${hermanas.security.require-secure-cookie:true}")
+    private boolean requireSecureCookie = true;
+
+    /**
      * HTTP security with inverted policy: everything is public by default; only state-changing
      * operations require authentication. This matches the product model where the dashboard is a
      * read-only public showcase and only authenticated users can act on the chicken coop.
@@ -356,9 +363,21 @@ public class SecurityConfig
         services.setCookieName(REMEMBER_ME_COOKIE_NAME);
         services.setTokenValiditySeconds(rememberMeValiditySeconds);
         services.setParameter("remember-me");
-        // Send the cookie only over HTTPS in production. Hermanas serves both http (dev) and https
-        // (prod via reverse-proxy), so we let Spring auto-detect from the request scheme.
-        services.setUseSecureCookie(false);
+        // CRYPTO-002: this used to be a hard-coded setUseSecureCookie(false), justified by
+        // "Hermanas serves both http (dev) and https (prod)". The consequence in production
+        // was that the longest-lived credential the application issues — a 31-day, full-
+        // authority authentication cookie — was transmitted in cleartext on any cleartext
+        // request. nginx's 301 to https does not protect that first request: the cookie
+        // rides along with it.
+        //
+        // The default is now Secure. Local http development opts out explicitly through
+        // hermanas.security.require-secure-cookie=false rather than by editing security code.
+        services.setUseSecureCookie(requireSecureCookie);
+        if (!requireSecureCookie) {
+            logger.warn("hermanas.security.require-secure-cookie=false: the {} remember-me "
+                    + "cookie is issued WITHOUT the Secure attribute and can leak over "
+                    + "cleartext HTTP. Never leave this on in production.", REMEMBER_ME_COOKIE_NAME);
+        }
         return services;
     }
 
