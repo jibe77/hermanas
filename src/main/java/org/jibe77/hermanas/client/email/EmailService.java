@@ -100,8 +100,40 @@ public class EmailService {
 
         Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", String.valueOf(configService.isMailSmtpAuth()));
-        props.put("mail.smtp.starttls.enable", String.valueOf(configService.isMailStartTlsEnable()));
+        boolean auth = configService.isMailSmtpAuth();
+        boolean startTls = configService.isMailStartTlsEnable();
+        int port = configService.getMailPort();
+        // CRYPTO-013: implicit TLS (port 465) and opportunistic STARTTLS (25/587) are
+        // different transports. The shipped properties used to set socketFactory.port=465 /
+        // socketFactory.class=SSLSocketFactory, which JavaMail's SMTPTransport ignores —
+        // the socket came up in plaintext whatever the operator believed.
+        boolean implicitTls = port == 465;
+
+        props.put("mail.smtp.auth", String.valueOf(auth));
+        if (implicitTls) {
+            props.put("mail.smtp.ssl.enable", "true");
+            // STARTTLS on an already-encrypted socket is meaningless and confuses some
+            // relays; leave it off and say why.
+            props.put("mail.smtp.starttls.enable", "false");
+        } else {
+            props.put("mail.smtp.starttls.enable", String.valueOf(startTls));
+            // The whole point of this block: with only `starttls.enable`, STARTTLS is
+            // *opportunistic*. A server that does not advertise it — or an on-path
+            // adversary that strips the capability out of the EHLO response — let the
+            // session continue in plaintext, and `mail.smtp.auth=true` then sent
+            // `AUTH LOGIN` in clear text. `required` makes the handshake a precondition
+            // for the send instead of a preference.
+            props.put("mail.smtp.starttls.required", String.valueOf(startTls));
+        }
+
+        if (auth && !implicitTls && !startTls) {
+            // Belt and braces: never negotiate credentials onto a socket we know is bare.
+            throw new IllegalStateException(
+                    "Refusing to send: SMTP authentication is enabled but neither STARTTLS nor"
+                            + " implicit TLS is configured. The credentials would cross the wire"
+                            + " in plaintext. Enable STARTTLS, use port 465, or turn off auth.");
+        }
+
         props.put("mail.smtp.connectiontimeout", "50000");
         props.put("mail.smtp.timeout", "50000");
         props.put("mail.smtp.writetimeout", "50000");
@@ -109,9 +141,8 @@ public class EmailService {
             props.put("mail.host", mailSessionHost.trim());
         }
 
-        logger.debug("Resolved SMTP sender: host={}, port={}, auth={}, starttls={}",
-                host, sender.getPort(),
-                configService.isMailSmtpAuth(), configService.isMailStartTlsEnable());
+        logger.debug("Resolved SMTP sender: host={}, port={}, auth={}, starttls={}, implicit-tls={}",
+                host, port, auth, startTls, implicitTls);
 
         return sender;
     }
