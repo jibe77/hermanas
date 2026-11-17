@@ -12,7 +12,9 @@ import org.springframework.security.web.authentication.rememberme.InMemoryTokenR
 import org.springframework.security.web.authentication.rememberme.PersistentRememberMeToken;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
+import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -115,5 +117,50 @@ class GraceWindowRememberMeServicesTest {
 
         assertThatThrownBy(() -> autoLogin("token-jamais-emis"))
                 .isInstanceOf(CookieTheftException.class);
+    }
+
+    /**
+     * CRYPTO-003 : le chemin de grâce court-circuite la méthode mère, il doit donc reproduire la
+     * vérification d'expiration de Spring. Un jeton périmé ne doit rien ouvrir, même présenté
+     * dans la fenêtre de grâce.
+     */
+    @Test
+    void expiredTokensAreStillRecognisedAsExpiredOnTheGracePath() {
+        services.setTokenValiditySeconds(1);
+
+        assertThat(services.isTokenExpired(new PersistentRememberMeToken(
+                USERNAME, SERIES, "token", new Date(System.currentTimeMillis() - 10_000L))))
+                .as("un jeton plus vieux que la validité doit être reconnu périmé")
+                .isTrue();
+        assertThat(services.isTokenExpired(new PersistentRememberMeToken(
+                USERNAME, SERIES, "token", new Date())))
+                .as("un jeton tout juste posé doit être valide")
+                .isFalse();
+    }
+
+    /**
+     * CRYPTO-003 : la fenêtre est courte (2 s). Une fois retombée, la réutilisation d'un token
+     * déjà tourné redevient ce que le schéma de Jaspan existe pour détecter : un vol.
+     */
+    @Test
+    void replayOutsideTheGraceWindowIsTreatedAsTheft() throws Exception {
+        storeToken("token-initial");
+        autoLogin("token-initial");
+
+        // Faire retomber la fenêtre sans attendre 2 secondes réelles.
+        Field field = GraceWindowRememberMeServices.class.getDeclaredField("recentlyRotated");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> rotated = (Map<String, Object>) field.get(services);
+        rotated.clear();
+
+        assertThatThrownBy(() -> autoLogin("token-initial"))
+                .isInstanceOf(CookieTheftException.class);
+    }
+
+    /** CRYPTO-003 : la fenêtre est de quelques secondes, plus de 30. */
+    @Test
+    void graceWindowIsAtMostTwoSeconds() {
+        assertThat(GraceWindowRememberMeServices.GRACE_WINDOW.getSeconds()).isLessThanOrEqualTo(2);
     }
 }
