@@ -301,9 +301,32 @@ public class ConfigService {
     @Autowired(required = false)
     private org.jibe77.hermanas.service.event.EventService eventService;
 
+    // Same story for the SSRF gate: mandatory in the real application, absent in the narrow
+    // test slices that only wire ConfigService and a repository.
+    @Autowired(required = false)
+    private org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator;
+
     public ConfigService(ParameterRepository parameterRepository, @Autowired(required = false) HermanasMetrics metrics) {
         this.parameterRepository = parameterRepository;
         this.metrics = metrics;
+    }
+
+    /**
+     * Runs a user-supplied outbound destination through {@link
+     * org.jibe77.hermanas.security.ssrf.DestinationValidator} before it is persisted.
+     * A {@code null} validator means we are in a slice that never wired the security layer.
+     */
+    private void checkDestination(String url, org.jibe77.hermanas.security.ssrf.DestinationValidator.Sink sink) {
+        if (destinationValidator != null) {
+            destinationValidator.validateHttpUrl(url, sink);
+        }
+    }
+
+    /** Same idea for the SMTP transport, which stores a bare hostname plus a port. */
+    private void checkSmtpDestination(String host, int port) {
+        if (destinationValidator != null) {
+            destinationValidator.validateSmtpDestination(host, port);
+        }
     }
 
     // ============================================================================
@@ -1533,12 +1556,18 @@ public class ConfigService {
      * {@code {longitude}}, {@code {key}} placeholders for {@link org.jibe77.hermanas.client.weather.WeatherClient}
      * to interpolate them — we do not validate that here so a future migration to a
      * different provider with a different signature stays possible without code change.
+     *
+     * <p>What we <em>do</em> validate (SSRF-VULN-03): the destination itself. The old
+     * version rejected only blank, and because the {@code @CacheEvict} makes the change
+     * live immediately, one {@code PUT /config/weather/url?url=http://169.254.169.254/}
+     * turned every dashboard poll into a metadata-service request.</p>
      */
     @CacheEvict(value = "weatherInfoUrl", allEntries = true)
     public void setWeatherInfoUrl(String url) {
         if (url == null || url.trim().isEmpty()) {
             throw new IllegalArgumentException("Weather URL must not be empty");
         }
+        checkDestination(url.trim(), org.jibe77.hermanas.security.ssrf.DestinationValidator.Sink.WEATHER);
         setConfigValue("weather.info.url", url.trim(), null);
     }
 
@@ -1577,7 +1606,13 @@ public class ConfigService {
     public void setAiInferenceUrl(String url) {
         // Allow clearing the URL by passing an empty string — that effectively
         // marks the AI integration as "not configured", which is a legitimate state.
-        setConfigValue("ai.inference.url", url == null ? "" : url.trim(), null);
+        String trimmed = url == null ? "" : url.trim();
+        if (!trimmed.isEmpty()) {
+            // SSRF-VULN-03: this value is POSTed to by the capture pipeline, which an
+            // anonymous visitor can trigger. It used to be stored after a bare trim().
+            checkDestination(trimmed, org.jibe77.hermanas.security.ssrf.DestinationValidator.Sink.AI_INFERENCE);
+        }
+        setConfigValue("ai.inference.url", trimmed, null);
     }
 
     /**
@@ -1804,6 +1839,9 @@ public class ConfigService {
         if (host == null || host.trim().isEmpty()) {
             throw new IllegalArgumentException("SMTP host must not be empty");
         }
+        // SSRF-VULN-03: the SMTP sink was the least-filtered of the four — any host and any
+        // port could be stored, and the credentials follow the host.
+        checkSmtpDestination(host.trim(), getMailPort());
         setConfigValue("spring.mail.host", host.trim(), null);
     }
 
@@ -1816,6 +1854,12 @@ public class ConfigService {
     public void setMailPort(int port) {
         if (port < 1 || port > 65535) {
             throw new IllegalArgumentException("SMTP port must be 1..65535: " + port);
+        }
+        // Re-check the pair: the port is what turns "our relay" into "an open proxy on the
+        // management VLAN", so it is validated against the allowlist together with the host.
+        String host = getMailHost();
+        if (host != null && !host.isBlank()) {
+            checkSmtpDestination(host.trim(), port);
         }
         setConfigValue("spring.mail.port", port, null);
     }

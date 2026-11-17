@@ -52,6 +52,13 @@ public class EmailService {
     @Autowired(required = false)
     private HermanasUserRepository userRepository;
 
+    /**
+     * Optional so the narrow unit tests that build an {@code EmailService} by hand keep
+     * working; the Spring context always provides it.
+     */
+    @Autowired(required = false)
+    private org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator;
+
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     public EmailService(JavaMailSender mailSender, ConfigService configService,
@@ -76,6 +83,13 @@ public class EmailService {
         String host = configService.getMailHost();
         if (host == null || host.isBlank()) {
             return mailSender;
+        }
+
+        // SSRF-VULN-03: the SMTP transport was the least-filtered sink — any host and any
+        // port could be stored, and the SMTP credentials are transmitted to whatever host
+        // the row names. Re-check on every send, not only when the value is written.
+        if (destinationValidator != null) {
+            destinationValidator.validateSmtpDestination(host, configService.getMailPort());
         }
 
         JavaMailSenderImpl sender = new JavaMailSenderImpl();

@@ -59,6 +59,17 @@ public class PushRestController {
         if (req == null || req.endpoint == null || req.p256dh == null || req.auth == null) {
             return ResponseEntity.badRequest().build();
         }
+        // SSRF-VULN-03: refuse to store a subscription that points the notifier at an
+        // internal address. Checked at subscribe time so the operator gets a clean 400
+        // instead of a silently skipped push.
+        String refusal = pushService.endpointRefusalReason(req.endpoint);
+        if (refusal != null) {
+            logger.warn("Rejected push subscription endpoint: {}", refusal);
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "INVALID_ENDPOINT");
+            error.put("message", refusal);
+            return ResponseEntity.badRequest().body(error);
+        }
         String username = currentUsername();
         PushSubscription sub = repository.findByEndpoint(req.endpoint).orElseGet(PushSubscription::new);
         sub.setEndpoint(req.endpoint);

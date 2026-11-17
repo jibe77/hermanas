@@ -46,12 +46,15 @@ public class AiVisionClient {
     private final int maxAttempts;
     private final long initialBackoffMs;
     private final long maxBackoffMs;
+    private final org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator;
 
     public AiVisionClient(ConfigService configService,
                           CameraPromptBuilder promptBuilder,
-                          RestTemplateBuilder builder) {
+                          RestTemplateBuilder builder,
+                          org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator) {
         this.configService = configService;
         this.promptBuilder = promptBuilder;
+        this.destinationValidator = destinationValidator;
         // Timeouts and retry policy are read from ConfigService so values
         // persisted from the Webcam configuration page survive across
         // reboots (application.properties only feeds first-boot defaults).
@@ -178,6 +181,19 @@ public class AiVisionClient {
         }
         String url = chatCompletionsUrl(baseUrl.trim());
 
+        // SSRF-VULN-03: re-check at the socket, not only at the setter. The stored row can
+        // predate the control, and the capture pipeline that reaches this line is reachable
+        // from an anonymous visitor.
+        try {
+            destinationValidator.validateHttpUrl(url,
+                    org.jibe77.hermanas.security.ssrf.DestinationValidator.Sink.AI_INFERENCE);
+        } catch (RuntimeException refused) {
+            logger.warn("AI vision request refused by destination validation: {}", refused.getMessage());
+            throw new AiVisionException("DESTINATION_REFUSED",
+                    "The configured inference endpoint was refused by the destination policy.",
+                    "AI analysis is not available with the current configuration.");
+        }
+
         String base64;
         try {
             base64 = Base64.getEncoder().encodeToString(Files.readAllBytes(image.toPath()));
@@ -223,9 +239,24 @@ public class AiVisionClient {
     /**
      * Accepts a base URL with or without a trailing {@code /v1}, and with or
      * without a trailing slash. Always returns {@code <base>/chat/completions}.
+     *
+     * <p>Any query string or fragment is dropped first (SSRF-VULN-03): a stored base
+     * ending in {@code #} used to swallow the appended path, giving whoever wrote the
+     * configuration byte-exact control of the request line.</p>
      */
     static String chatCompletionsUrl(String baseUrl) {
-        String b = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        String b = baseUrl.trim();
+        int fragment = b.indexOf('#');
+        if (fragment >= 0) {
+            b = b.substring(0, fragment);
+        }
+        int query = b.indexOf('?');
+        if (query >= 0) {
+            b = b.substring(0, query);
+        }
+        if (b.endsWith("/")) {
+            b = b.substring(0, b.length() - 1);
+        }
         if (b.endsWith("/chat/completions")) {
             return b;
         }

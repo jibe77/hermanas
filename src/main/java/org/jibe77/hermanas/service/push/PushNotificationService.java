@@ -42,15 +42,18 @@ public class PushNotificationService {
     private final ParameterRepository parameterRepository;
     private final PushSubscriptionRepository subscriptionRepository;
     private final String vapidSubject;
+    private final org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator;
     private WebPushSender pushService;
     private String publicKey;
 
     public PushNotificationService(ParameterRepository parameterRepository,
                                    PushSubscriptionRepository subscriptionRepository,
+                                   org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator,
                                    @Value("${hermanas.push.vapid.subject:mailto:admin@hermanas.local}")
                                    String vapidSubject) {
         this.parameterRepository = parameterRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.destinationValidator = destinationValidator;
         this.vapidSubject = vapidSubject;
     }
 
@@ -106,6 +109,11 @@ public class PushNotificationService {
                 escape(title), escape(body), escape(url == null ? "/dashboard" : url));
         int sent = 0;
         for (PushSubscription sub : all) {
+            String refusal = endpointRefusalReason(sub.getEndpoint());
+            if (refusal != null) {
+                logger.warn("Skipping push to subscription {}: {}", sub.getId(), refusal);
+                continue;
+            }
             try {
                 int status = pushService.send(sub.getEndpoint(), sub.getP256dh(), sub.getAuth(),
                         payload.getBytes(StandardCharsets.UTF_8));
@@ -122,6 +130,28 @@ public class PushNotificationService {
             }
         }
         return sent;
+    }
+
+    /**
+     * SSRF-VULN-03: a subscription endpoint is a URL the server dials with a signed VAPID
+     * assertion. Without this check, {@code POST /push/subscribe} with
+     * {@code endpoint=http://169.254.169.254/} turned the notifier into an internal proxy.
+     * Public so the subscribe endpoint can reject the row at write time; called again here
+     * because the row may predate the control or have been edited directly in the database.
+     *
+     * @return null when the endpoint is acceptable, otherwise the reason it is not
+     */
+    public String endpointRefusalReason(String endpoint) {
+        if (destinationValidator == null) {
+            return null;
+        }
+        try {
+            destinationValidator.validateHttpUrl(endpoint,
+                    org.jibe77.hermanas.security.ssrf.DestinationValidator.Sink.WEB_PUSH);
+            return null;
+        } catch (RuntimeException refused) {
+            return refused.getMessage();
+        }
     }
 
     private String readParam(String key) {

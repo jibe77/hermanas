@@ -994,6 +994,7 @@ public class ConfigRestController {
     // ─── SMTP transport ────────────────────────────────────────────────────────
 
     @Operation(summary = "Update SMTP host")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/host")
     public ResponseEntity<String> setMailHost(@RequestParam String host) {
         configService.setMailHost(host);
@@ -1001,6 +1002,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Update SMTP port (1..65535)")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/port")
     public ResponseEntity<String> setMailPort(@RequestParam int port) {
         configService.setMailPort(port);
@@ -1008,6 +1010,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Update SMTP username")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/username")
     public ResponseEntity<String> setMailUsername(@RequestParam String username) {
         configService.setMailUsername(username);
@@ -1015,6 +1018,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Update SMTP password (write-only; never returned)")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/password")
     public ResponseEntity<String> setMailPassword(@RequestParam String password) {
         configService.setMailPassword(password);
@@ -1022,6 +1026,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Toggle SMTP authentication")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/auth")
     public ResponseEntity<String> setMailAuth(@RequestParam boolean enabled) {
         configService.setMailSmtpAuth(enabled);
@@ -1029,6 +1034,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Toggle SMTP STARTTLS")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/starttls")
     public ResponseEntity<String> setMailStartTls(@RequestParam boolean enabled) {
         configService.setMailStartTlsEnable(enabled);
