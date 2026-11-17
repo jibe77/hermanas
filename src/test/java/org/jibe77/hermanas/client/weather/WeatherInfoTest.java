@@ -36,6 +36,13 @@ class WeatherInfoTest {
     @MockitoBean
     org.jibe77.hermanas.service.config.ConfigService configService;
 
+    /**
+     * Le client valide sa destination avant chaque appel (SSRF-VULN-03) ; ce test ne porte
+     * pas sur cette validation, il se contente d'un douan qui laisse tout passer.
+     */
+    @MockitoBean
+    org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator;
+
     @org.junit.jupiter.api.BeforeEach
     void wireConfigService() {
         Mockito.doAnswer(inv -> {

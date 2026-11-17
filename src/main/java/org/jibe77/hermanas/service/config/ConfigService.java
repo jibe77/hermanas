@@ -1570,7 +1570,9 @@ public class ConfigService {
      * <p>What we <em>do</em> validate (SSRF-VULN-03): the destination itself. The old
      * version rejected only blank, and because the {@code @CacheEvict} makes the change
      * live immediately, one {@code PUT /config/weather/url?url=http://169.254.169.254/}
-     * turned every dashboard poll into a metadata-service request.</p>
+     * turned every dashboard poll into a metadata-service request. The validator also
+     * refuses anything other than {@code https} for this sink (CRYPTO-014) — the provider
+     * key is interpolated into the URL, so it must never cross the wire in clear.</p>
      */
     @CacheEvict(value = "weatherInfoUrl", allEntries = true)
     public void setWeatherInfoUrl(String url) {

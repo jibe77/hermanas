@@ -33,7 +33,8 @@ import java.util.Set;
  * <h3>What is checked</h3>
  * <ul>
  *   <li><b>Scheme allowlist</b> — {@code https} always, {@code http} only while
- *       {@code hermanas.security.allow-insecure-http-destinations} is left on.</li>
+ *       {@code hermanas.security.allow-insecure-http-destinations} is left on, and never for
+ *       the sinks that send a secret in the URL ({@link #TLS_REQUIRED}, CRYPTO-014).</li>
  *   <li><b>Port allowlist</b> — {@code hermanas.security.allowed-destination-ports}.</li>
  *   <li><b>Resolved address</b> — every {@link InetAddress} the hostname resolves to must
  *       not be loopback, site-local, link-local, any-local or multicast. Resolving and
@@ -81,6 +82,15 @@ public class DestinationValidator {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DestinationValidator.class);
+
+    /**
+     * Sinks whose request carries a secret — the weather query puts the provider API key in
+     * the URL — so a cleartext transport is never acceptable there, whatever
+     * {@code hermanas.security.allow-insecure-http-destinations} says (CRYPTO-014). The
+     * weather provider has answered on 443 since long before this code existed, so nothing
+     * legitimate is lost.
+     */
+    private static final Set<Sink> TLS_REQUIRED = Set.of(Sink.WEATHER, Sink.DIAGNOSTIC);
 
     private final Set<String> allowedHosts = new LinkedHashSet<>();
     private final Set<Integer> allowedPorts = new LinkedHashSet<>();
@@ -130,6 +140,11 @@ public class DestinationValidator {
         if (!"https".equals(scheme)) {
             if (!"http".equals(scheme)) {
                 throw reject(sink, url, "scheme '" + scheme + "' is not allowed");
+            }
+            if (TLS_REQUIRED.contains(sink)) {
+                // CRYPTO-014 : la clé du fournisseur s'envoie dans l'URL, donc pas de
+                // dérogation « cleartext autorisé » pour ces destinations-là.
+                throw reject(sink, url, "cleartext http is refused for this destination, use https");
             }
             if (!allowInsecureHttp) {
                 throw reject(sink, url, "cleartext http is refused, use https");
@@ -255,7 +270,13 @@ public class DestinationValidator {
     private URI parse(String url, Sink sink) {
         final URI uri;
         try {
-            uri = URI.create(url);
+            // Un gabarit d'URI-Template ({latitude}, {key}) contient des accolades, que
+            // java.net.URI refuse : la seule URL météo par défaut de l'application aurait
+            // été refusée comme mal formée. Les parenthèses sont autorisées aux mêmes
+            // positions, on échange les unes pour les autres le temps d'extraire le
+            // schéma, l'hôte et le port ; les autres règles travaillent sur la chaîne
+            // d'origine, accolades comprises.
+            uri = URI.create(url.replace('{', '(').replace('}', ')'));
         } catch (IllegalArgumentException e) {
             throw reject(sink, url, "is not a well-formed URL");
         }
