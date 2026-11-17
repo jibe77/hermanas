@@ -130,8 +130,22 @@ public class SecurityConfig
                         //
                         // Handler *simple* et non XorCsrfTokenRequestAttributeHandler (le défaut
                         // depuis 6.0) : Angular renvoie la valeur du cookie telle quelle dans
-                        // X-XSRF-TOKEN, sans savoir la déchiffrer. Avec la variante XOR, le cookie
-                        // est encodé et la comparaison échouerait.
+                        // X-XSRF-TOKEN, sans savoir la déchiffrer. Ce n'est plus une intuition,
+                        // c'est mesuré dans SpaCsrfRoundTripTest : CookieCsrfTokenRepository écrit
+                        // le jeton BRUT dans le cookie (le masque XOR ne porte que sur l'attribut
+                        // de requête, que ce SPA ne lit pas), alors que le gestionnaire par défaut
+                        // attend une valeur masquée dans l'en-tête et la dé-masque avant de
+                        // comparer. Passer au défaut sans rien d'autre casse donc chaque requête
+                        // mutante du frontend (403 vérifié).
+                        //
+                        // CRYPTO-012 demandait ce retour au défaut ; il n'est pas applicable tel
+                        // quel, et son bénéfice serait nul ici : la défense XOR contre BREACH
+                        // suppose que le secret soit réfléchi dans un corps de réponse compressé.
+                        // Le jeton CSRF, lui, ne sort que dans un en-tête Set-Cookie et n'est
+                        // jamais imprimé dans une page — et aucune compression n'est activée
+                        // (aucune clé server.compression.* dans application.properties). Le
+                        // précondition du rapport n'est pas réunie, et le remède l'aurait payé en
+                        // frontend cassé.
                         .csrfTokenRequestHandler(csrfTokenRequestHandler())
                         // CRYPTO-004: l'exemption était indexée sur la PRÉSENCE de l'en-tête, pas
                         // sur une authentification réussie. N'importe quel POST porteur de
