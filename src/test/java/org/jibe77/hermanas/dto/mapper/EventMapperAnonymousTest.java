@@ -88,14 +88,26 @@ class EventMapperAnonymousTest {
         assertEquals("marguerite", dto.getTriggeredBy());
     }
 
+    /**
+     * Ce qui relève de l'opérateur ne doit pas être sur la liste publique : ni les comptes
+     * (AUTH-VULN-02), ni l'historique de configuration (CRYPTO-007).
+     *
+     * <p>Le caviardage du mapper ne suffit pas pour {@code CONFIG_CHANGED} : sa colonne
+     * {@code details} est {@code key=<nom> old=<ancien> new=<nouveau>}, et si le mapper
+     * masque bien {@code key=}, la valeur utile à un attaquant est derrière {@code new=},
+     * qu'aucune règle ne masque — et pour cause, elle n'a pas de nom de clé reconnaissable.
+     * C'est la raison pour laquelle cette catégorie passe derrière {@code hasRole(ADMIN)},
+     * et non un raffinement du motif.</p>
+     */
     @Test
-    void accountManagementEventsAreNotOnThePublicTypeList() {
+    void operatorTelemetryIsNotOnThePublicTypeList() {
         List<EventType> publicTypes = EventService.BUSINESS_TYPES;
 
         for (EventType type : List.of(EventType.USER_CREATED, EventType.USER_UPDATED,
-                EventType.USER_DELETED, EventType.USER_SELF_UPDATED)) {
+                EventType.USER_DELETED, EventType.USER_SELF_UPDATED,
+                EventType.CONFIG_CHANGED)) {
             assertFalse(publicTypes.contains(type),
-                    type + " discloses an operator login and must not be public");
+                    type + " discloses operator telemetry and must not be public");
             assertTrue(EventService.AUTH_TYPES.contains(type),
                     type + " should still be visible on the admin-only journal");
         }
