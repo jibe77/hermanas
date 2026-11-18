@@ -232,7 +232,13 @@ public class DestinationValidator {
         for (InetAddress address : addresses) {
             String reason = refusalReason(address);
             if (reason != null) {
-                throw reject(sink, url, "resolves to a " + reason + " address (" + address.getHostAddress() + ")");
+                // La phrase doit se suffire à elle-même dans un journal systemd : c'est ce
+                // qui a manqué le 2026-11-18, quand un relais mail en DNS split-horizon a
+                // fait échouer le démarrage sans que rien n'indique la dérogation à poser.
+                throw reject(sink, url, "resolves to a " + reason + " address ("
+                        + address.getHostAddress() + "). If that is deliberate — a LAN server "
+                        + "behind split-horizon DNS, for instance — list the host in "
+                        + "hermanas.security.allowed-destination-hosts");
             }
         }
     }

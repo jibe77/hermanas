@@ -133,6 +133,19 @@ class DestinationValidatorTest {
                 .hasMessageContaining("private");
     }
 
+    /**
+     * Le message de refus doit nommer lui-même la dérogation à poser. En production, le
+     * 2026-11-18, le journal ne disait que « resolves to a private address » et rien
+     * n'orientait vers la propriété à renseigner.
+     */
+    @Test
+    void aRefusedDestinationNamesThePropertyThatGrantsTheException() {
+        assertThatThrownBy(() -> validator().validateSmtpDestination("10.20.30.40", 587))
+                .isInstanceOf(DestinationValidator.InvalidDestinationException.class)
+                .hasMessageContaining("private")
+                .hasMessageContaining("hermanas.security.allowed-destination-hosts");
+    }
+
     @Test
     void portsOffTheAllowlistAreRefused() {
         assertThatThrownBy(() -> validator().validateHttpUrl("https://8.8.8.8:9000/",

@@ -5,6 +5,7 @@ import org.jibe77.hermanas.data.entity.Parameter;
 import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.data.repository.ParameterRepository;
 import org.jibe77.hermanas.service.config.ConfigService;
+import org.jibe77.hermanas.security.ssrf.DestinationValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +58,7 @@ public class EmailService {
      * working; the Spring context always provides it.
      */
     @Autowired(required = false)
-    private org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator;
+    private DestinationValidator destinationValidator;
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
@@ -78,6 +79,10 @@ public class EmailService {
      * <p>If {@code ConfigService} returns a blank host (e.g. in a test context where
      * no SMTP is configured), falls back to the Spring Boot auto-configured
      * {@link JavaMailSender} bean that was injected at startup.</p>
+     *
+     * @return the sender to use, or {@code null} when the configured destination is refused
+     *         by the SSRF validator — callers must treat that as "e-mail is off for now",
+     *         never as a fatal error.
      */
     protected JavaMailSender resolveSender() {
         String host = configService.getMailHost();
@@ -89,7 +94,19 @@ public class EmailService {
         // port could be stored, and the SMTP credentials are transmitted to whatever host
         // the row names. Re-check on every send, not only when the value is written.
         if (destinationValidator != null) {
-            destinationValidator.validateSmtpDestination(host, configService.getMailPort());
+            try {
+                destinationValidator.validateSmtpDestination(host, configService.getMailPort());
+            } catch (DestinationValidator.InvalidDestinationException refused) {
+                // A refused relay is a configuration problem, never a reason to take the
+                // whole application down. This method sits on the startup path — WifiService
+                // drains the sending queue from a @PostConstruct — and on 2026-11-18 a
+                // split-horizon mail.r3n4.uk resolving to a LAN address made the door
+                // automation fail to boot at all, restart after restart. Email degrades to
+                // "not sent"; the coop keeps working.
+                logger.error("SMTP relay destination refused, e-mail notifications are off "
+                        + "until it is corrected: {}", refused.getMessage());
+                return null;
+            }
         }
 
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
@@ -306,6 +323,14 @@ public class EmailService {
     public synchronized void processSendingQueue() {
         logger.info("start processing sending queue.");
         JavaMailSender sender = resolveSender();
+        if (sender == null) {
+            // Refused destination (see resolveSender). The messages stay queued: a relay
+            // that is temporarily unreachable, or blocked until the operator adds it to
+            // hermanas.security.allowed-destination-hosts, must not silently eat the
+            // notifications that piled up while it was down.
+            logger.warn("Sending queue left untouched: no usable SMTP destination.");
+            return;
+        }
         Iterator<MimeMessagePreparator> it = sendingQueue.iterator();
         while (it.hasNext()) {
             try {
@@ -359,7 +384,15 @@ public class EmailService {
             }
         };
         logger.info("Sending diagnostics test email to {}.", recipient);
-        resolveSender().send(preparator);
+        JavaMailSender sender = resolveSender();
+        if (sender == null) {
+            // Contrairement au chemin file d'attente, celui-ci est declenche par un admin
+            // qui clique sur « envoyer un test » : il faut lui dire pourquoi rien ne part.
+            throw new IllegalStateException("The configured SMTP destination was refused by "
+                    + "the destination validator; the application log gives the reason and the "
+                    + "property to adjust.");
+        }
+        sender.send(preparator);
         logger.info("Diagnostics test email sent successfully.");
     }
 
