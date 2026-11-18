@@ -262,10 +262,11 @@ export class DemoFixtureService {
             return { message: 'Demo — caches not actually cleared', caches_cleared: 0 };
         }
         if (path.endsWith('/weather/test')) {
+            // No `snippet`: the real endpoint stopped echoing the provider body
+            // (SSRF-VULN-01), so the demo fixture mirrors the fixed ok/error shape.
             return {
                 ok: true,
                 durationMs: 142,
-                snippet: '{"main":{"temp":18.4,"humidity":62},…} (demo)',
             };
         }
         // Music actions surfaced as state-changing GETs by demoMode.interceptor —

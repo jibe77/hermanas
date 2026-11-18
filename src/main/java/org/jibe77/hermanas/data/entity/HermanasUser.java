@@ -1,6 +1,7 @@
 package org.jibe77.hermanas.data.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -34,6 +35,35 @@ public class HermanasUser {
      */
     @Column(nullable = false, length = 8)
     private String language = "fr";
+
+    /**
+     * Counter bumped whenever everything the application already issued for this account
+     * must stop working — password change, role change, deletion (AUTH-VULN-01).
+     *
+     * <p>The value is copied into the {@code SecurityContext} at authentication time and
+     * compared against this row by {@link org.jibe77.hermanas.security.SessionEpochFilter}
+     * on every request, so a session or remember-me token minted before the change cannot
+     * outlive it.</p>
+     */
+    @Column(name = "session_epoch", nullable = false)
+    private long sessionEpoch = 0L;
+
+    /**
+     * Consecutive failed logins against this account, reset by a successful one
+     * (AUTH-VULN-03).
+     *
+     * <p>The only friction the target used to offer was a per-source-IP bucket held in a
+     * {@code ConcurrentHashMap}, destroyed on every restart — and the public journal showed
+     * 959 {@code STARTUP} events, so the budget refilled on the operator's own restarts.
+     * A named, privilege-tagged account could be sprayed with zero account-side cost. These
+     * two columns move the counter onto the account and onto disk.</p>
+     */
+    @Column(name = "failed_attempts", nullable = false)
+    private int failedAttempts = 0;
+
+    /** Until when the account refuses logins. {@code null} means not locked. */
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
 
     public HermanasUser() {}
 
@@ -72,6 +102,15 @@ public class HermanasUser {
 
     public String getLanguage() { return language; }
     public void setLanguage(String language) { this.language = language != null ? language : "fr"; }
+
+    public long getSessionEpoch() { return sessionEpoch; }
+    public void setSessionEpoch(long sessionEpoch) { this.sessionEpoch = sessionEpoch; }
+
+    public int getFailedAttempts() { return failedAttempts; }
+    public void setFailedAttempts(int failedAttempts) { this.failedAttempts = failedAttempts; }
+
+    public LocalDateTime getLockedUntil() { return lockedUntil; }
+    public void setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
 
     @Override
     public boolean equals(Object o) {

@@ -5,10 +5,10 @@ import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -28,7 +28,7 @@ import java.util.Properties;
  * Users admin screen later.</p>
  */
 @Service
-public class DbUserDetailsService implements UserDetailsService {
+public class DbUserDetailsService implements UserDetailsService, UserDetailsPasswordService {
 
     private static final Logger logger = LoggerFactory.getLogger(DbUserDetailsService.class);
     private static final String ADMIN_LOGIN = "marguerite";
@@ -141,9 +141,39 @@ public class DbUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         HermanasUser user = repository.findByLogin(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Unknown user: " + username));
-        return User.withUsername(user.getLogin())
-                .password(user.getPasswordHash())
-                .roles(user.getRole())
-                .build();
+        // HermanasUserDetails and not the stock User builder because the session epoch has
+        // to travel with the principal for SessionEpochFilter to be able to check it.
+        // The role is used verbatim, exactly as User.withUsername(...).roles(role) did, so
+        // NOT_VALIDATED_YET keeps its dedicated authority for PendingValidationUserDetailsChecker.
+        return new HermanasUserDetails(user.getLogin(), user.getPasswordHash(),
+                user.getRole(), user.getSessionEpoch());
+    }
+
+    /**
+     * Ré-encode le hash d'un utilisateur qui vient de prouver le mot de passe (CRYPTO-010).
+     *
+     * <p>Appelé par {@code DaoAuthenticationProvider} après un {@code matches()} réussi, et
+     * seulement quand {@code upgradeEncoding()} juge le hash stocké plus faible que le facteur
+     * courant — donc typiquement une ligne importée telle quelle de l'ancien
+     * {@code users.properties}, ou un hash posé avant que l'exploitant ne monte
+     * {@code hermanas.security.bcrypt-strength}. Sans ce crochet, un hash au plancher reste au
+     * plancher indéfiniment : personne ne change jamais son mot de passe deux fois pour la
+     * seule plaisir de le re-hacher.</p>
+     *
+     * <p>Le mot de passe lui-même n'a pas changé, seulement la façon dont il est stocké :
+     * l'epoch de session n'est donc pas touchée, et aucune session en cours n'est invalidée.
+     * Le hash est réécrit tel quel, sans préfixe {@code {bcrypt}} — le encodeur configuré est
+     * un {@code BCryptPasswordEncoder} nu, qui ne sait pas le relire.</p>
+     */
+    @Override
+    public UserDetails updatePassword(UserDetails principal, String newEncodedPassword) {
+        HermanasUser user = repository.findByLogin(principal.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("Unknown user: " + principal.getUsername()));
+        user.setPasswordHash(newEncodedPassword);
+        repository.save(user);
+        logger.info("Hash of '{}' re-encoded at the configured BCrypt strength.",
+                principal.getUsername());
+        return new HermanasUserDetails(user.getLogin(), user.getPasswordHash(),
+                user.getRole(), user.getSessionEpoch());
     }
 }

@@ -11,7 +11,9 @@ import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.dto.UserCreateRequest;
 import org.jibe77.hermanas.dto.UserDTO;
 import org.jibe77.hermanas.dto.UserUpdateRequest;
+import org.jibe77.hermanas.security.PasswordPolicy;
 import org.jibe77.hermanas.security.SecurityConfig;
+import org.jibe77.hermanas.security.SessionRevocationService;
 import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,13 +48,19 @@ public class UserRestController {
     private final HermanasUserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final EventService eventService;
+    private final PasswordPolicy passwordPolicy;
+    private final SessionRevocationService sessionRevocationService;
 
     public UserRestController(HermanasUserRepository repository,
                               PasswordEncoder passwordEncoder,
-                              EventService eventService) {
+                              EventService eventService,
+                              PasswordPolicy passwordPolicy,
+                              SessionRevocationService sessionRevocationService) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.eventService = eventService;
+        this.passwordPolicy = passwordPolicy;
+        this.sessionRevocationService = sessionRevocationService;
     }
 
     // ──────────────────────────────────────────────────────────────────────────────
@@ -112,8 +120,12 @@ public class UserRestController {
         if (body.getLogin() == null || body.getLogin().trim().isEmpty()) {
             return badRequest("Login is required");
         }
-        if (body.getPassword() == null || body.getPassword().isEmpty()) {
-            return badRequest("Password is required");
+        // AUTH-VULN-04: this endpoint happily minted a ROLE_ADMIN account with a
+        // one-character secret. Same policy as self-registration now applies here.
+        ResponseEntity<?> weak = checkPasswordStrength(body.getPassword(),
+                body.getLogin(), body.getEmail());
+        if (weak != null) {
+            return weak;
         }
         if (repository.existsByLogin(body.getLogin())) {
             return badRequest("A user with this login already exists");
@@ -178,6 +190,10 @@ public class UserRestController {
             return badRequest("Cannot delete the last administrator");
         }
         repository.delete(user);
+        // AUTH-VULN-01: a deleted ADMIN kept ROLE_ADMIN in whatever session was already
+        // open. The row is gone, so the epoch bump is a no-op, but the sessions and the
+        // remember-me tokens really do go away.
+        sessionRevocationService.revokeAllFor(login, "account deleted");
         logger.info("Admin deleted user '{}'", login);
         eventService.record(EventType.USER_DELETED,
                 "login=" + login + " role=" + user.getRole());
@@ -188,7 +204,25 @@ public class UserRestController {
     // Helpers
     // ──────────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Runs a candidate password through {@link PasswordPolicy} and translates a rejection
+     * into the 400 shape this controller already returns. Returns {@code null} when the
+     * password is acceptable.
+     */
+    private ResponseEntity<?> checkPasswordStrength(String password, String login, String email) {
+        try {
+            passwordPolicy.validate(password, java.util.Arrays.asList(login, email));
+            return null;
+        } catch (PasswordPolicy.WeakPasswordException e) {
+            logger.info("Rejected a weak password for '{}': {} ({})", login, e.getMessage(), e.getCode());
+            return ResponseEntity.badRequest()
+                    .body(java.util.Map.of("error", e.getMessage(), "code", e.getCode()));
+        }
+    }
+
     private ResponseEntity<?> applyUpdate(HermanasUser user, UserUpdateRequest body) {
+        boolean passwordChanged = false;
+        boolean roleChanged = false;
         if (body.getEmail() != null) {
             String email = body.getEmail().trim();
             if (!email.isEmpty() && !EMAIL_RE.matcher(email).matches()) {
@@ -200,15 +234,35 @@ public class UserRestController {
             user.setNotificationsEnabled(body.getNotificationsEnabled());
         }
         if (body.getPassword() != null && !body.getPassword().isEmpty()) {
+            // AUTH-VULN-04: reached from PUT /users/me and PUT /users/{login}; it used to
+            // accept any non-empty replacement, including a one-character one.
+            ResponseEntity<?> weak = checkPasswordStrength(body.getPassword(),
+                    user.getLogin(), user.getEmail());
+            if (weak != null) {
+                return weak;
+            }
             user.setPasswordHash(passwordEncoder.encode(body.getPassword()));
+            passwordChanged = true;
         }
         if (body.getRole() != null) {
-            user.setRole(normalizeRole(body.getRole()));
+            String newRole = normalizeRole(body.getRole());
+            roleChanged = !newRole.equals(user.getRole());
+            user.setRole(newRole);
         }
         if (body.getLanguage() != null) {
             user.setLanguage(normalizeLanguage(body.getLanguage()));
         }
         repository.save(user);
+
+        // AUTH-VULN-01: re-hashing the password and saving the row revoked nothing. The
+        // SecurityContext — username plus the role cached at authentication time — lives in
+        // the JDBC-backed session and was replayed verbatim, so a stolen session survived
+        // the victim's own password change, and even a demotion or a deletion. Everything
+        // previously issued for this login goes now: sessions, remember-me tokens, epoch.
+        if (passwordChanged || roleChanged) {
+            sessionRevocationService.revokeAllFor(user.getLogin(),
+                    passwordChanged ? "password change" : "role change");
+        }
         return ResponseEntity.ok(toDto(user));
     }
 

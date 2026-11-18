@@ -65,7 +65,9 @@ export class LoginModalComponent implements OnInit {
         this.registerForm = this.fb.group({
             login: ['', [Validators.required, Validators.minLength(2)]],
             email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(6)]],
+            // Mirrors PasswordPolicy on the server (AUTH-VULN-04). The server is the
+            // authority; this only avoids a round-trip for the obvious cases.
+            password: ['', [Validators.required, Validators.minLength(12)]],
             language: [defaultLanguage, Validators.required],
         });
         // Sync the visible view with the view requested by the caller each time
@@ -154,9 +156,9 @@ export class LoginModalComponent implements OnInit {
             // in app.config.ts.
             const currentUrl = this.router.url;
             this.router.navigateByUrl(currentUrl);
-        } else if (outcome === 'pending-validation') {
-            this.errorMessage = $localize`:@@signinPendingValidation:Your account is awaiting validation by an administrator.`;
         } else {
+            // One generic message: the backend no longer distinguishes "wrong password"
+            // from "account awaiting validation" (AUTH-VULN-02).
             this.errorMessage = $localize`:@@signinFailed:Invalid username or password.`;
         }
         this.cdr.markForCheck();

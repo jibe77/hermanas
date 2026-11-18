@@ -28,21 +28,23 @@ public class RegistrationService {
     private static final Logger logger = LoggerFactory.getLogger(RegistrationService.class);
     private static final Pattern EMAIL_RE = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern LOGIN_RE = Pattern.compile("^[A-Za-z0-9._-]{2,64}$");
-    private static final int MIN_PASSWORD_LENGTH = 6;
 
     private final HermanasUserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final MessageSource messageSource;
+    private final PasswordPolicy passwordPolicy;
 
     public RegistrationService(HermanasUserRepository repository,
                                PasswordEncoder passwordEncoder,
                                EmailService emailService,
-                               MessageSource messageSource) {
+                               MessageSource messageSource,
+                               PasswordPolicy passwordPolicy) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.messageSource = messageSource;
+        this.passwordPolicy = passwordPolicy;
     }
 
     /**
@@ -61,15 +63,27 @@ public class RegistrationService {
             throw new RegistrationException("INVALID_LOGIN",
                     "Login must be 2-64 characters from [A-Za-z0-9._-]");
         }
-        if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
-            throw new RegistrationException("INVALID_PASSWORD",
-                    "Password must be at least " + MIN_PASSWORD_LENGTH + " characters");
+        // AUTH-VULN-04: the old rule here was `length() >= 6`, which is what let a
+        // six-character dictionary word protect the administrator account. Every write
+        // path now goes through the shared PasswordPolicy instead of inventing its own.
+        try {
+            passwordPolicy.validate(password, java.util.Arrays.asList(login, email));
+        } catch (PasswordPolicy.WeakPasswordException e) {
+            throw new RegistrationException(e.getCode(), e.getMessage());
         }
         if (email == null || !EMAIL_RE.matcher(email).matches()) {
             throw new RegistrationException("INVALID_EMAIL", "A valid email is required");
         }
         if (repository.existsByLogin(login)) {
-            throw new RegistrationException("LOGIN_TAKEN", "This login is already taken");
+            // AUTH-VULN-02 / AUTH-VULN-04 : le message ne confirme plus textuellement
+            // que le compte existe. Le code `LOGIN_TAKEN` reste dans la reponse parce
+            // que le front le mappe pour sa traduction (login-modal et register) ; il
+            // reste donc un oracle mou, mais `POST /register` est limite a 3 tentatives
+            // par heure et par IP (voir AuthRestController), ce qui rend un balayage de
+            // dictionnaire sans interet. Fermer completement demanderait un autre
+            // parcours : reponse identique dans tous les cas + confirmation par e-mail.
+            throw new RegistrationException("LOGIN_TAKEN",
+                    "Registration could not be completed with the supplied details.");
         }
 
         String language = normalizeLanguage(body.getLanguage());

@@ -301,9 +301,32 @@ public class ConfigService {
     @Autowired(required = false)
     private org.jibe77.hermanas.service.event.EventService eventService;
 
+    // Same story for the SSRF gate: mandatory in the real application, absent in the narrow
+    // test slices that only wire ConfigService and a repository.
+    @Autowired(required = false)
+    private org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator;
+
     public ConfigService(ParameterRepository parameterRepository, @Autowired(required = false) HermanasMetrics metrics) {
         this.parameterRepository = parameterRepository;
         this.metrics = metrics;
+    }
+
+    /**
+     * Runs a user-supplied outbound destination through {@link
+     * org.jibe77.hermanas.security.ssrf.DestinationValidator} before it is persisted.
+     * A {@code null} validator means we are in a slice that never wired the security layer.
+     */
+    private void checkDestination(String url, org.jibe77.hermanas.security.ssrf.DestinationValidator.Sink sink) {
+        if (destinationValidator != null) {
+            destinationValidator.validateHttpUrl(url, sink);
+        }
+    }
+
+    /** Same idea for the SMTP transport, which stores a bare hostname plus a port. */
+    private void checkSmtpDestination(String host, int port) {
+        if (destinationValidator != null) {
+            destinationValidator.validateSmtpDestination(host, port);
+        }
     }
 
     // ============================================================================
@@ -392,7 +415,10 @@ public class ConfigService {
         }
         parameter.setEntryValue(String.valueOf(value));
 
-        logger.info("Saving config to database: {} = {}", key, value);
+        // CRYPTO-006: this line used to write the raw value for every key, so every
+        // spring.mail.password / weather.info.key / ai.inference.api-key write landed in
+        // spring.log — retained by the rolling appender — in plaintext.
+        logger.info("Saving config to database: {} = {}", key, SecretConfigKeys.render(key, value));
         parameterRepository.save(parameter);
 
         auditConfigChange(key, oldValue, value);
@@ -411,37 +437,44 @@ public class ConfigService {
      *
      * <p>Audit log format (pipe-separated for grep-friendliness):</p>
      * <pre>user=&lt;login|anonymous&gt; | key=&lt;key&gt; | old=&lt;value&gt; | new=&lt;value&gt;</pre>
+     *
+     * <p>Secret keys are masked in <em>every</em> sink (CRYPTO-006). The previous version
+     * masked only the copy pushed into the event journal, while the comment promised the
+     * audit file got the redacted form too — it did not, and {@code audit_config.txt}
+     * carried the plaintext mail password for 24 months of rollovers.</p>
      */
     private void auditConfigChange(String key, Object oldValue, Object newValue) {
         String user = org.jibe77.hermanas.service.event.EventService.currentUsername();
         String oldRendered = oldValue == null ? "<unset>" : String.valueOf(oldValue);
         String newRendered = newValue == null ? "<unset>" : String.valueOf(newValue);
+        String maskedOld = SecretConfigKeys.render(key, oldValue);
+        String maskedNew = SecretConfigKeys.render(key, newValue);
         configAuditLogger.info("user={} | key={} | old={} | new={}",
-                user == null ? "anonymous" : user, key, oldRendered, newRendered);
+                user == null ? "anonymous" : user, key, maskedOld, maskedNew);
         if (eventService != null) {
-            // Mask secret-looking keys before they reach the journal so the
-            // Journalisation page never surfaces a fresh API key or mail password
-            // in plain text. The CONFIG_AUDIT file still gets the redacted form too.
-            String redactedNew = isSecretKey(key) ? "<redacted>" : newRendered;
-            String redactedOld = isSecretKey(key) ? "<redacted>" : oldRendered;
+            // Same masked form on the journal, which is reachable over HTTP. The registry
+            // (not a substring guess) decides what is a secret — see SecretConfigKeys.
             eventService.record(EventType.CONFIG_CHANGED,
-                    "key=" + key + " old=" + redactedOld + " new=" + redactedNew);
+                    "key=" + key + " old=" + maskedOld + " new=" + maskedNew);
+        }
+        // The unmasked rendering is kept in a local so a debugger or a future sink can see
+        // what was suppressed; it is deliberately never logged.
+        if (logger.isTraceEnabled() && !SecretConfigKeys.isSecret(key)) {
+            logger.trace("Config audit detail: key={} old={} new={}", key, oldRendered, newRendered);
         }
     }
 
     /**
      * Returns true if the given key holds a secret that must never appear in
-     * plain text in the journal (mail password, API keys, etc.). Conservative —
-     * any key containing "password", "key", "secret" or "token" is treated as
-     * sensitive. The latitude/longitude pair is also masked because the coop
-     * coordinates are private.
+     * plain text in the journal (mail password, API keys, etc.).
+     *
+     * <p>Delegates to {@link SecretConfigKeys}, which combines an explicit registry of
+     * secret keys with a conservative name heuristic (CRYPTO-006, CRYPTO-007). The old
+     * version was a bare substring test that missed hyphen-delimited names such as
+     * {@code ai.inference.api-key}.</p>
      */
-    private static boolean isSecretKey(String key) {
-        if (key == null) return false;
-        String k = key.toLowerCase();
-        return k.contains("password") || k.contains("secret") || k.contains("token")
-                || k.endsWith(".key") || k.contains(".key.")
-                || k.equals("suntime.latitude") || k.equals("suntime.longitude");
+    static boolean isSecretKey(String key) {
+        return SecretConfigKeys.isSecret(key);
     }
 
     // ============================================================================
@@ -1533,12 +1566,20 @@ public class ConfigService {
      * {@code {longitude}}, {@code {key}} placeholders for {@link org.jibe77.hermanas.client.weather.WeatherClient}
      * to interpolate them — we do not validate that here so a future migration to a
      * different provider with a different signature stays possible without code change.
+     *
+     * <p>What we <em>do</em> validate (SSRF-VULN-03): the destination itself. The old
+     * version rejected only blank, and because the {@code @CacheEvict} makes the change
+     * live immediately, one {@code PUT /config/weather/url?url=http://169.254.169.254/}
+     * turned every dashboard poll into a metadata-service request. The validator also
+     * refuses anything other than {@code https} for this sink (CRYPTO-014) — the provider
+     * key is interpolated into the URL, so it must never cross the wire in clear.</p>
      */
     @CacheEvict(value = "weatherInfoUrl", allEntries = true)
     public void setWeatherInfoUrl(String url) {
         if (url == null || url.trim().isEmpty()) {
             throw new IllegalArgumentException("Weather URL must not be empty");
         }
+        checkDestination(url.trim(), org.jibe77.hermanas.security.ssrf.DestinationValidator.Sink.WEATHER);
         setConfigValue("weather.info.url", url.trim(), null);
     }
 
@@ -1577,7 +1618,13 @@ public class ConfigService {
     public void setAiInferenceUrl(String url) {
         // Allow clearing the URL by passing an empty string — that effectively
         // marks the AI integration as "not configured", which is a legitimate state.
-        setConfigValue("ai.inference.url", url == null ? "" : url.trim(), null);
+        String trimmed = url == null ? "" : url.trim();
+        if (!trimmed.isEmpty()) {
+            // SSRF-VULN-03: this value is POSTed to by the capture pipeline, which an
+            // anonymous visitor can trigger. It used to be stored after a bare trim().
+            checkDestination(trimmed, org.jibe77.hermanas.security.ssrf.DestinationValidator.Sink.AI_INFERENCE);
+        }
+        setConfigValue("ai.inference.url", trimmed, null);
     }
 
     /**
@@ -1804,6 +1851,9 @@ public class ConfigService {
         if (host == null || host.trim().isEmpty()) {
             throw new IllegalArgumentException("SMTP host must not be empty");
         }
+        // SSRF-VULN-03: the SMTP sink was the least-filtered of the four — any host and any
+        // port could be stored, and the credentials follow the host.
+        checkSmtpDestination(host.trim(), getMailPort());
         setConfigValue("spring.mail.host", host.trim(), null);
     }
 
@@ -1816,6 +1866,12 @@ public class ConfigService {
     public void setMailPort(int port) {
         if (port < 1 || port > 65535) {
             throw new IllegalArgumentException("SMTP port must be 1..65535: " + port);
+        }
+        // Re-check the pair: the port is what turns "our relay" into "an open proxy on the
+        // management VLAN", so it is validated against the allowlist together with the host.
+        String host = getMailHost();
+        if (host != null && !host.isBlank()) {
+            checkSmtpDestination(host.trim(), port);
         }
         setConfigValue("spring.mail.port", port, null);
     }

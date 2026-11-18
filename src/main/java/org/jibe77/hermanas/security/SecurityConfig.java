@@ -3,9 +3,11 @@ package org.jibe77.hermanas.security;
 import org.jibe77.hermanas.data.entity.EventType;
 import org.jibe77.hermanas.security.ratelimit.LoginRateLimitFilter;
 import org.jibe77.hermanas.security.siri.SiriTokenAuthenticationFilter;
+import org.jibe77.hermanas.security.siri.SiriTokenVerifier;
 import org.jibe77.hermanas.service.event.EventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -15,10 +17,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
@@ -49,11 +53,15 @@ public class SecurityConfig
     /** Name of the remember-me cookie sent to the browser. */
     private static final String REMEMBER_ME_COOKIE_NAME = "hermanas-remember-me";
 
-    @Value("${hermanas.security.remember-me-key}")
-    private String rememberMeKey;
-
     @Value("${hermanas.security.remember-me-validity-seconds:2678400}")
     private int rememberMeValiditySeconds;
+
+    /**
+     * Whether the remember-me cookie carries the {@code Secure} attribute (CRYPTO-002).
+     * Defaults to {@code true}; only a local http development server should set it to false.
+     */
+    @Value("${hermanas.security.require-secure-cookie:true}")
+    private boolean requireSecureCookie = true;
 
     /**
      * HTTP security with inverted policy: everything is public by default; only state-changing
@@ -81,7 +89,11 @@ public class SecurityConfig
                                            PersistentTokenBasedRememberMeServices rememberMeServices,
                                            EventService eventService,
                                            LoginRateLimitFilter loginRateLimitFilter,
-                                           SiriTokenAuthenticationFilter siriTokenAuthenticationFilter)
+                                           SessionEpochFilter sessionEpochFilter,
+                                           SiriTokenAuthenticationFilter siriTokenAuthenticationFilter,
+                                           SiriTokenVerifier siriTokenVerifier,
+                                           RememberMeKey rememberMeKey,
+                                           org.jibe77.hermanas.security.ratelimit.LoginAttemptService loginAttemptService)
             throws Exception
     {
         logger.info("Configure authorizations.");
@@ -95,6 +107,10 @@ public class SecurityConfig
                 // standard auth machinery runs, so they bypass the form-login flow and inherit
                 // the matching authorizeRequests rules (ROLE_USER).
                 .addFilterBefore(siriTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // Runs once every authentication mechanism has had its say (form login, remember-me,
+                // anonymous) but before authorization, so a session whose account changed under it
+                // is dropped with a 401 instead of being served on the cached authority.
+                .addFilterAfter(sessionEpochFilter, AnonymousAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
                 // CSRF protection relies on the SPA echoing a cookie value in a header — Shortcuts
                 // cannot do that, so requests carrying the Siri token are exempt. The token itself
@@ -114,12 +130,32 @@ public class SecurityConfig
                         //
                         // Handler *simple* et non XorCsrfTokenRequestAttributeHandler (le défaut
                         // depuis 6.0) : Angular renvoie la valeur du cookie telle quelle dans
-                        // X-XSRF-TOKEN, sans savoir la déchiffrer. Avec la variante XOR, le cookie
-                        // est encodé et la comparaison échouerait.
+                        // X-XSRF-TOKEN, sans savoir la déchiffrer. Ce n'est plus une intuition,
+                        // c'est mesuré dans SpaCsrfRoundTripTest : CookieCsrfTokenRepository écrit
+                        // le jeton BRUT dans le cookie (le masque XOR ne porte que sur l'attribut
+                        // de requête, que ce SPA ne lit pas), alors que le gestionnaire par défaut
+                        // attend une valeur masquée dans l'en-tête et la dé-masque avant de
+                        // comparer. Passer au défaut sans rien d'autre casse donc chaque requête
+                        // mutante du frontend (403 vérifié).
+                        //
+                        // CRYPTO-012 demandait ce retour au défaut ; il n'est pas applicable tel
+                        // quel, et son bénéfice serait nul ici : la défense XOR contre BREACH
+                        // suppose que le secret soit réfléchi dans un corps de réponse compressé.
+                        // Le jeton CSRF, lui, ne sort que dans un en-tête Set-Cookie et n'est
+                        // jamais imprimé dans une page — et aucune compression n'est activée
+                        // (aucune clé server.compression.* dans application.properties). Le
+                        // précondition du rapport n'est pas réunie, et le remède l'aurait payé en
+                        // frontend cassé.
                         .csrfTokenRequestHandler(csrfTokenRequestHandler())
+                        // CRYPTO-004: l'exemption était indexée sur la PRÉSENCE de l'en-tête, pas
+                        // sur une authentification réussie. N'importe quel POST porteur de
+                        // `X-Siri-Token: n-importe-quoi` sortait donc du CsrfFilter — y compris
+                        // system/shutdown, system/reboot et door/open. L'exemption est le prix du
+                        // mécanisme de jeton statique (un Shortcut ne peut pas réémettre un cookie) :
+                        // elle n'est due que quand ce mécanisme a réellement authentifié la requête.
                         .requireCsrfProtectionMatcher(req ->
                                 org.springframework.security.web.csrf.CsrfFilter.DEFAULT_CSRF_MATCHER.matches(req)
-                                        && req.getHeader(SiriTokenAuthenticationFilter.HEADER_NAME) == null))
+                                        && !siriTokenVerifier.isAuthenticated(req)))
                 .authorizeHttpRequests(auth -> auth
 
                 // ─── Authentication endpoints (must stay reachable unauthenticated) ───────────
@@ -157,6 +193,20 @@ public class SecurityConfig
                 // anonymous showcase view).
                 .requestMatchers("/api/v1/email/**").hasRole(ROLE_ADMIN)
 
+                // ─── Choix assume : la vitrine reste publique ───────────────────────────────────
+                // Deux patchs Vigilo de la seconde vague proposaient de fermer `POST
+                // /api/v1/captures` (AUTHZ-VULN-03) et le CONNECT STOMP (AUTHZ-VULN-05) aux
+                // visiteurs anonymes. Revus et ecartes le 2026-11-18, sur decision du
+                // proprietaire : le tableau de bord est concu comme une vitrine publique du
+                // poulailler, et sa carte en temps reel consomme /api/v1/stomp en anonyme.
+                // Compensations verifiees :
+                //   - captures : @RateLimited (5 / 60 s par IP) sur la methode, plus
+                //     l'AiVisionCache qui absorbe les requests repetees sur une meme langue ;
+                //   - STOMP : aucun @MessageMapping dans l'application, un client anonyme peut
+                //     s'abonner aux sujets d'etat (porte, capteurs, progression de capture) mais
+                //     ne peut rien modifier ;
+                //   - seules l'image courante d'une capture et la vue directe sont publiques,
+                //     l'archive /api/v1/camera/photos/** reste authentifiee.
                 // ─── Camera photo archive: authenticated users only — the historical
                 //     /photos/** tree is private. The live dashboard endpoints
                 //     (takePicture, stream, closingRate) stay public so unauthenticated
@@ -237,33 +287,38 @@ public class SecurityConfig
                     .usernameParameter("username")
                     .passwordParameter("password")
                     .successHandler((req, res, auth) -> {
+                        // A successful login clears the account-side failure counter and any
+                        // lockout (AUTH-VULN-03).
+                        loginAttemptService.recordSuccess(auth.getName());
                         eventService.record(EventType.LOGIN_SUCCESS,
                                 "login=" + auth.getName() + " ip=" + clientIp(req));
                         res.setStatus(200);
                     })
                     .failureHandler((req, res, ex) -> {
                         // Record the failed attempt with the login that was tried, so admins
-                        // can spot brute-force attempts on the Journalisation page.
+                        // can spot brute-force attempts on the Journalisation page. The auth
+                        // journal is admin-only, so this is not an oracle.
                         String attempted = req.getParameter("username");
+                        // AUTH-VULN-03: the per-IP bucket alone let a named account be sprayed
+                        // with zero account-side friction. Count it on the account too.
+                        loginAttemptService.recordFailure(attempted);
                         eventService.record(EventType.LOGIN_FAILED,
                                 "login=" + (attempted == null ? "?" : attempted)
                                         + " reason=" + ex.getMessage()
                                         + " ip=" + clientIp(req));
-                        // Surface the special "pending validation" case as a small JSON body so the
-                        // SPA can render the right error string. Anything else stays a generic 401.
+                        // AUTH-VULN-02: one uniform answer for every failure reason. The
+                        // pending-validation case used to answer a distinguishable body,
+                        // which told an unauthenticated caller that the login exists and is
+                        // merely awaiting approval. The registration response and the
+                        // confirmation mail already tell a real applicant the same thing,
+                        // so nothing legitimate is lost.
                         res.setStatus(401);
-                        if (PendingValidationUserDetailsChecker.PENDING_VALIDATION_MESSAGE
-                                .equals(ex.getMessage())) {
-                            res.setContentType("application/json");
-                            res.getWriter().write(
-                                    "{\"error\":\""
-                                            + PendingValidationUserDetailsChecker.PENDING_VALIDATION_MESSAGE
-                                            + "\"}");
-                        }
+                        res.setContentType("application/json");
+                        res.getWriter().write("{\"error\":\"INVALID_CREDENTIALS\"}");
                     }))
                 .rememberMe(remember -> remember
                     .rememberMeServices(rememberMeServices)
-                    .key(rememberMeKey))
+                    .key(rememberMeKey.value()))
                 .logout(logout -> logout
                     .logoutUrl("/api/v1/auth/logout")
                     // Remove the remember-me cookie alongside the session on logout, otherwise
@@ -293,9 +348,24 @@ public class SecurityConfig
         return req.getRemoteAddr();
     }
 
+    /**
+     * Facteur de travail BCrypt par défaut (CRYPTO-010). 12 est le plancher raisonnable
+     * aujourd'hui : 10, l'ancien défaut codé en dur, coûte une soixantaine de millisecondes par
+     * essai sur du matériel ordinaire, ce qui laisse un fichier de hashes se faire cribler à
+     * bon compte. Sur un Pi Zero 2 W volontairement bridé à 600 MHz, 12 représente grosso modo
+     * une seconde par connexion — d'où la propriété : c'est à l'exploitant de juger, pas au JAR.
+     */
+    public static final int DEFAULT_BCRYPT_STRENGTH = 12;
+
+    @Value("${hermanas.security.bcrypt-strength:" + DEFAULT_BCRYPT_STRENGTH + "}")
+    private int bcryptStrength;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        logger.info("Password encoder: BCrypt, strength {}.", bcryptStrength);
+        // BCryptPasswordEncoder enforce 4..31 and throws otherwise, which is the clearest
+        // message the operator can get at startup.
+        return new BCryptPasswordEncoder(bcryptStrength);
     }
 
     /**
@@ -307,12 +377,23 @@ public class SecurityConfig
     @Bean
     public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
                                                             PasswordEncoder passwordEncoder,
-                                                            PendingValidationUserDetailsChecker pendingChecker) {
+                                                            PendingValidationUserDetailsChecker pendingChecker,
+                                                            ObjectProvider<UserDetailsPasswordService> passwordService) {
         // Spring Security 7 : le constructeur no-arg et setUserDetailsService()
         // ont disparu, le UserDetailsService passe par le constructeur.
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         provider.setPreAuthenticationChecks(pendingChecker);
+        // CRYPTO-010 : quand un mot de passe vient de prouver le bon, et que le hash stocké est
+        // plus faible que le facteur courant, DaoAuthenticationProvider le ré-encode et le fait
+        // persister par ce service. C'est le seul chemin qui rattrape les lignes importées en
+        // l'état de l'ancien users.properties — sinon un hash posé au plancher y reste à vie.
+        // ObjectProvider et pas la dépendance directe : un slice de test qui monte cette
+        // configuration sans DbUserDetailsService ne doit pas échouer là-dessus.
+        UserDetailsPasswordService upgrader = passwordService.getIfAvailable();
+        if (upgrader != null) {
+            provider.setUserDetailsPasswordService(upgrader);
+        }
         return provider;
     }
 
@@ -339,21 +420,34 @@ public class SecurityConfig
     @Bean
     public PersistentTokenBasedRememberMeServices rememberMeServices(
             PersistentTokenRepository tokenRepository,
-            UserDetailsService userDetailsService) {
+            UserDetailsService userDetailsService,
+            RememberMeKey rememberMeKey) {
         // GraceWindowRememberMeServices et non la classe mère : le SPA émet plusieurs requêtes
         // en parallèle au démarrage, et la rotation de token de la stratégie "persistent token"
         // faisait passer les requêtes concurrentes pour un vol de cookie. La réponse en erreur
         // supprimait alors le cookie remember-me tout juste renouvelé — l'utilisateur devait se
         // reconnecter. Voir le javadoc de la classe pour le détail du scénario.
         PersistentTokenBasedRememberMeServices services =
-                new GraceWindowRememberMeServices(rememberMeKey, userDetailsService,
+                new GraceWindowRememberMeServices(rememberMeKey.value(), userDetailsService,
                         tokenRepository);
         services.setCookieName(REMEMBER_ME_COOKIE_NAME);
         services.setTokenValiditySeconds(rememberMeValiditySeconds);
         services.setParameter("remember-me");
-        // Send the cookie only over HTTPS in production. Hermanas serves both http (dev) and https
-        // (prod via reverse-proxy), so we let Spring auto-detect from the request scheme.
-        services.setUseSecureCookie(false);
+        // CRYPTO-002: this used to be a hard-coded setUseSecureCookie(false), justified by
+        // "Hermanas serves both http (dev) and https (prod)". The consequence in production
+        // was that the longest-lived credential the application issues — a 31-day, full-
+        // authority authentication cookie — was transmitted in cleartext on any cleartext
+        // request. nginx's 301 to https does not protect that first request: the cookie
+        // rides along with it.
+        //
+        // The default is now Secure. Local http development opts out explicitly through
+        // hermanas.security.require-secure-cookie=false rather than by editing security code.
+        services.setUseSecureCookie(requireSecureCookie);
+        if (!requireSecureCookie) {
+            logger.warn("hermanas.security.require-secure-cookie=false: the {} remember-me "
+                    + "cookie is issued WITHOUT the Secure attribute and can leak over "
+                    + "cleartext HTTP. Never leave this on in production.", REMEMBER_ME_COOKIE_NAME);
+        }
         return services;
     }
 

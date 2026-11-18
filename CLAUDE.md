@@ -78,8 +78,10 @@ in 2026 from `poupou` (original Pi Zero, kept as rollback). Key facts that shape
   `/dev/gpiochip0`. Replaced the pigpio/`/dev/mem` stack, which Debian Trixie dropped.
   FFM needs `--enable-native-access=ALL-UNNAMED` to avoid restricted-method warnings.
 - **Runs as the non-root `hermanas` user** from `/var/lib/hermanas/` (see `deploy.sh`) — that
-  is where `application.properties`, `users.properties`, `photos/`, `music/` and the keystore
-  live. Not `/home/pi/`. Needs supplementary groups `gpio` (chardev) and `audio` (cvlc).
+  is where `application.properties`, `users.properties`, `photos/` and `music/` live. Not
+  `/home/pi/`. Needs supplementary groups `gpio` (chardev) and `audio` (cvlc). There is **no
+  keystore on the device and none in the repo**: TLS ends at Traefik, the app speaks plain HTTP
+  on `:8080`.
 - **Reverse proxy:** Traefik (TLS) → nginx (`deploy/nginx/hermanas-cache.conf`, caching) →
   Spring on `:8080`. `/api/**` and WebSockets are never cached; hashed assets cache 1 year;
   HTML 60 s. nginx forwards `X-Forwarded-*`.
@@ -142,9 +144,12 @@ Main configuration in `application.properties`. Key externalized parameters:
 - **Door timing:** opening 10000 ms, closing 2350 ms, servo positions 5–16
 - **Sun scheduling:** location coordinates, door delays after sunrise/sunset
 - **Camera:** resolution, quality, rotation (180), streaming port
-- **Auth/session:** `hermanas.security.users-file`, `hermanas.security.remember-me-key`
-  (⚠️ still `change-me-in-production-please` in the committed default — override in prod;
-  rotating it invalidates every remember-me cookie), `spring.session.timeout`
+- **Auth/session:** `hermanas.security.users-file`, `spring.session.timeout`, and
+  `hermanas.security.remember-me-key` — which is **no longer a committed literal** (CRYPTO-001):
+  it reads `${HERMANAS_SECURITY_REMEMBER_ME_KEY:}`, and `RememberMeKey` draws a random key at
+  each boot when it is empty. Harmless, because under the persistent-token strategy the key is
+  not an input to the cookie value; set it only if several instances must share one
+  authentication context
 
 In production these are overridden by `/var/lib/hermanas/application.properties`
 (not in git — it holds the DB credentials).
@@ -603,6 +608,29 @@ every legacy template script), `webjars-locator-core` 0.x → 1.x.
   rename refactor left it behind.
 - [ ] **Leftover Amplify files**: `frontend/amplify/`, `frontend/amplify.yml`,
   `frontend/.graphqlconfig.yml` are unreferenced and can be removed.
+- [ ] **Purge `keystore.p12` from git history and add a secret scanner to CI.** The file is gone
+  from the tree (Vigilo CRYPTO-008, 2026-11-17), but the private key it holds is still reachable
+  in every commit since the baseline `528ee1b` — `git filter-repo --path src/main/resources/keystore.p12
+  --invert-path` plus a coordinated force-push, and rotate whatever certificate it carried. A
+  `gitleaks`/`detect-secrets` pre-commit + CI step is what stops the next one.
+- [ ] **Encrypt the secret configuration values at rest** (Vigilo CRYPTO-015). Every long-lived
+  secret — VAPID private scalar, SMTP password, weather key, inference key — is plaintext in
+  `Parameter.entry_value`: no column encryption, no key id, no version, no rotation path, and the
+  VAPID pair is generated once (`if (pub == null || priv == null)`) and never changes. The fix is
+  a programme, not a patch: a JPA `AttributeConverter` doing AES-256-GCM with a key from the
+  environment, a `key_version` column so a rotation can migrate rows lazily, and an admin action
+  that re-derives VAPID and forces browsers to re-subscribe. `SecretConfigKeys` is the list of
+  what must be wrapped — and is *not* encryption, a point its Javadoc now states out loud.
+  Deliberately not attempted on the pentest branch: a lost master key makes every stored secret
+  unreadable, which is an outage with a chicken door attached.
+- [ ] **Replace the static Siri token with per-device credentials** (Vigilo CRYPTO-005). The
+  hygiene items shipped in 2026-11-17 — `MessageDigest.isEqual` so the comparison no longer leaks
+  the token length, a startup warning below 32 bytes, an INFO line on every accepted use, and a
+  CSRF exemption that is granted only when the token actually authenticated the caller
+  (CRYPTO-004). What did not: it is still one permanent, shared, non-revocable secret. The real
+  fix is short-lived HMAC/signed tokens bound to `(user, device id)`, stored server-side as a
+  salted hash, with an admin screen to issue and revoke them. Until then the property stays empty
+  by default and the filter stays a no-op.
 - [x] ~~Consider `micrometer-registry-prometheus`~~ — already declared in `pom.xml`
   (verified 2026-10-21); `/actuator/prometheus` is wired. The old migration note claiming it
   was missing is out of date.

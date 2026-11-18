@@ -58,11 +58,13 @@ public class EventService {
             EventType.RESIDENT_UPDATED,
             EventType.RESIDENT_PHOTO_UPLOADED,
             EventType.RESIDENT_PHOTO_DELETED,
-            EventType.USER_CREATED,
-            EventType.USER_UPDATED,
-            EventType.USER_DELETED,
-            EventType.USER_SELF_UPDATED,
-            EventType.CONFIG_CHANGED,
+            // AUTH-VULN-02: the USER_* rows were added to this list without re-checking the
+            // assumption the masking layer was written for — "the public showcase never
+            // exposes operator logins". Their details column is `login=<user> role=<role>`,
+            // copied verbatim, so 33 anonymous requests handed the whole operator population
+            // with privilege levels. Account-management history is not chicken-coop business
+            // and now sits behind the admin-only journal. CONFIG_CHANGED followed for the same
+            // reason (CRYPTO-007), see AUTH_TYPES.
             EventType.EMAIL_TEST_SENT,
             EventType.PICTURE_TAKEN
     );
@@ -70,11 +72,31 @@ public class EventService {
     /**
      * Event types restricted to administrators. Exposing failed login attempts
      * to anonymous users would leak whether a given login exists.
+     *
+     * <p>The {@code USER_*} rows moved here from {@link #BUSINESS_TYPES} (AUTH-VULN-02):
+     * their {@code details} column names the operator account and its role, which is
+     * exactly what must not reach an anonymous caller. They stay visible to administrators
+     * on the same admin-only journal feed.</p>
+     *
+     * <p>{@code CONFIG_CHANGED} moved here too (CRYPTO-007). Its {@code details} column is
+     * {@code key=<name> value=<rendered>}, and the rendering is the only thing standing
+     * between a secret and the anonymous {@code /events/business} feed: {@code isSecretKey}
+     * is a substring heuristic, and it already misses the hyphen-delimited names the
+     * application owns ({@code ai.inference.api-key}, {@code hermanas.push.vapid.private-key}).
+     * No HTTP setter writes those today — the moment someone adds one, which is the obvious
+     * next feature given that the inference URL and model are already USER-writable, the key
+     * would be readable by anyone on the internet. Configuration history is operator
+     * telemetry; it belongs next to {@code /api/v1/logs/**}, behind {@code hasRole(ADMIN)}.</p>
      */
     public static final List<EventType> AUTH_TYPES = Arrays.asList(
             EventType.LOGIN_SUCCESS,
             EventType.LOGIN_FAILED,
-            EventType.LOGOUT
+            EventType.LOGOUT,
+            EventType.USER_CREATED,
+            EventType.USER_UPDATED,
+            EventType.USER_DELETED,
+            EventType.USER_SELF_UPDATED,
+            EventType.CONFIG_CHANGED
     );
 
     private final EventRepository eventRepository;

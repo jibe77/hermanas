@@ -34,6 +34,9 @@ public class NotificationService {
 
     public static final String RETURN_TO_NEXT_LINE = "\r\n";
 
+    /** Hard cap on the model reply interpolated into a notification mail (XSS-VULN-01). */
+    static final int MAX_RATIONALE_LENGTH = 600;
+
     @Autowired(required = false)
     private HermanasUserRepository userRepository;
 
@@ -116,7 +119,7 @@ public class NotificationService {
                     locale));
             message.append(messageSource.getMessage(pictureKey, null, locale));
 
-            emailService.sendMailTo(entry.getValue(), title, message.toString(),
+            emailService.sendPlainTextMailTo(entry.getValue(), title, message.toString(),
                     picBeforeOpening, picWithClosedDoor);
         }
     }
@@ -150,7 +153,7 @@ public class NotificationService {
                     locale));
             message.append(messageSource.getMessage(pictureKey, null, locale));
 
-            emailService.sendMailTo(entry.getValue(), title, message.toString(), picWithClosedDoor);
+            emailService.sendPlainTextMailTo(entry.getValue(), title, message.toString(), picWithClosedDoor);
         }
     }
 
@@ -187,7 +190,13 @@ public class NotificationService {
             message.append(RETURN_TO_NEXT_LINE).append(RETURN_TO_NEXT_LINE);
             message.append(messageSource.getMessage(
                     "event.mail.verification.ai.rationale",
-                    new Object[]{aiRationale == null ? "" : aiRationale},
+                    // XSS-VULN-01: this string is whatever the host named by
+                    // ai.inference.url answered — choices[0].message.content of an
+                    // attacker-influenced response. It used to be interpolated verbatim into
+                    // the text/html MIME part. It is now bounded here and HTML-escaped at the
+                    // EmailService boundary, so neither this call-site nor a future one can
+                    // inject markup into an operator's inbox.
+                    new Object[]{boundRationale(aiRationale)},
                     locale));
             message.append(RETURN_TO_NEXT_LINE).append(RETURN_TO_NEXT_LINE);
             String pictureKey = snapshot.isPresent()
@@ -195,8 +204,25 @@ public class NotificationService {
                     : "event.mail.without_picture.message";
             message.append(messageSource.getMessage(pictureKey, null, locale));
 
-            emailService.sendMailTo(entry.getValue(), title, message.toString(), snapshot);
+            emailService.sendPlainTextMailTo(entry.getValue(), title, message.toString(), snapshot);
         }
+    }
+
+    /**
+     * Trims the model reply to a sane length and strips control characters before it is
+     * interpolated into a notification. The escaping itself happens in
+     * {@link EmailService#sendPlainTextMailTo}; doing it once, at the boundary, is what keeps
+     * the text/plain and text/html parts consistent.
+     */
+    static String boundRationale(String aiRationale) {
+        if (aiRationale == null) {
+            return "";
+        }
+        String trimmed = aiRationale.replaceAll("\\p{Cntrl}", " ").trim();
+        if (trimmed.length() <= MAX_RATIONALE_LENGTH) {
+            return trimmed;
+        }
+        return trimmed.substring(0, MAX_RATIONALE_LENGTH) + " […]";
     }
 
     /** Chooses the picture paragraph based on how many snapshots are actually available. */

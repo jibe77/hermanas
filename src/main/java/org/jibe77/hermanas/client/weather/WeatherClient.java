@@ -20,6 +20,7 @@ public class WeatherClient {
     static final Duration PAUSE = Duration.ofMinutes(5);
 
     private final org.jibe77.hermanas.service.config.ConfigService configService;
+    private final org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator;
 
     public static final Double DEFAULT_VALUE_IF_DISABLED = -100d;
 
@@ -31,9 +32,11 @@ public class WeatherClient {
     private Instant pausedUntil = Instant.MIN;
 
     public WeatherClient(RestTemplateBuilder builder,
-                         org.jibe77.hermanas.service.config.ConfigService configService) {
+                         org.jibe77.hermanas.service.config.ConfigService configService,
+                         org.jibe77.hermanas.security.ssrf.DestinationValidator destinationValidator) {
         this.builder = builder;
         this.configService = configService;
+        this.destinationValidator = destinationValidator;
     }
 
     public synchronized WeatherInfo getInfo() {
@@ -44,9 +47,20 @@ public class WeatherClient {
             log.debug("Weather API paused until {}; returning default info.", pausedUntil);
             return getDefaultWeatherInfo();
         }
+        // Re-validated on every dial, not only when the value is written: the row can
+        // predate this control, and the DNS answer can differ between the two checks
+        // (SSRF-VULN-03). A refusal here is a normal fallback, not a user-facing error.
+        String url = configService.getWeatherInfoUrl();
+        try {
+            destinationValidator.validateHttpUrl(url,
+                    org.jibe77.hermanas.security.ssrf.DestinationValidator.Sink.WEATHER);
+        } catch (RuntimeException refused) {
+            log.warn("Weather lookup skipped: {} — returning default info.", refused.getMessage());
+            return getDefaultWeatherInfo();
+        }
         try {
             WeatherInfo weatherInfo = builder.build().getForObject(
-                    configService.getWeatherInfoUrl(),
+                    url,
                     WeatherInfo.class,
                     configService.getLatitude(),
                     configService.getLongitude(),

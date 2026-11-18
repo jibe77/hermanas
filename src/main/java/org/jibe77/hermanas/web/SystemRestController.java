@@ -82,6 +82,11 @@ public class SystemRestController {
     })
     @AuditLog(category = "SYSTEM", operation = "System shutdown initiated")
     @RateLimited(maxRequests = 2, windowSeconds = 300, message = "Too many shutdown attempts. Please wait 5 minutes.")
+    // AUTHZ-VULN-06: sans cette ligne, shutdown tombait sous la regle generique
+    // « verbe mutatif sur /api/v1/** -> USER ou ADMIN », donc n'importe quel compte
+    // USER etait autorise a eteindre le Raspberry Pi. Le reste de cette classe est
+    // deja en ADMIN.
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/shutdown")
     public void shutdown() {
         eventService.record(EventType.SHUTDOWN_REQUESTED);
@@ -104,6 +109,9 @@ public class SystemRestController {
     })
     @AuditLog(category = "SYSTEM", operation = "System reboot initiated")
     @RateLimited(maxRequests = 2, windowSeconds = 300, message = "Too many reboot attempts. Please wait 5 minutes.")
+    // AUTHZ-VULN-06: meme motif que /shutdown — un simple compte USER ne doit pas
+    // pouvoir redemarrer la machine.
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/reboot")
     public void reboot() {
         eventService.record(EventType.REBOOT_REQUESTED);

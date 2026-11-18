@@ -5,6 +5,7 @@ import org.jibe77.hermanas.data.entity.Parameter;
 import org.jibe77.hermanas.data.repository.HermanasUserRepository;
 import org.jibe77.hermanas.data.repository.ParameterRepository;
 import org.jibe77.hermanas.service.config.ConfigService;
+import org.jibe77.hermanas.security.ssrf.DestinationValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,13 @@ public class EmailService {
     @Autowired(required = false)
     private HermanasUserRepository userRepository;
 
+    /**
+     * Optional so the narrow unit tests that build an {@code EmailService} by hand keep
+     * working; the Spring context always provides it.
+     */
+    @Autowired(required = false)
+    private DestinationValidator destinationValidator;
+
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     public EmailService(JavaMailSender mailSender, ConfigService configService,
@@ -71,11 +79,34 @@ public class EmailService {
      * <p>If {@code ConfigService} returns a blank host (e.g. in a test context where
      * no SMTP is configured), falls back to the Spring Boot auto-configured
      * {@link JavaMailSender} bean that was injected at startup.</p>
+     *
+     * @return the sender to use, or {@code null} when the configured destination is refused
+     *         by the SSRF validator — callers must treat that as "e-mail is off for now",
+     *         never as a fatal error.
      */
     protected JavaMailSender resolveSender() {
         String host = configService.getMailHost();
         if (host == null || host.isBlank()) {
             return mailSender;
+        }
+
+        // SSRF-VULN-03: the SMTP transport was the least-filtered sink — any host and any
+        // port could be stored, and the SMTP credentials are transmitted to whatever host
+        // the row names. Re-check on every send, not only when the value is written.
+        if (destinationValidator != null) {
+            try {
+                destinationValidator.validateSmtpDestination(host, configService.getMailPort());
+            } catch (DestinationValidator.InvalidDestinationException refused) {
+                // A refused relay is a configuration problem, never a reason to take the
+                // whole application down. This method sits on the startup path — WifiService
+                // drains the sending queue from a @PostConstruct — and on 2026-11-18 a
+                // split-horizon mail.r3n4.uk resolving to a LAN address made the door
+                // automation fail to boot at all, restart after restart. Email degrades to
+                // "not sent"; the coop keeps working.
+                logger.error("SMTP relay destination refused, e-mail notifications are off "
+                        + "until it is corrected: {}", refused.getMessage());
+                return null;
+            }
         }
 
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
@@ -86,8 +117,40 @@ public class EmailService {
 
         Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", String.valueOf(configService.isMailSmtpAuth()));
-        props.put("mail.smtp.starttls.enable", String.valueOf(configService.isMailStartTlsEnable()));
+        boolean auth = configService.isMailSmtpAuth();
+        boolean startTls = configService.isMailStartTlsEnable();
+        int port = configService.getMailPort();
+        // CRYPTO-013: implicit TLS (port 465) and opportunistic STARTTLS (25/587) are
+        // different transports. The shipped properties used to set socketFactory.port=465 /
+        // socketFactory.class=SSLSocketFactory, which JavaMail's SMTPTransport ignores —
+        // the socket came up in plaintext whatever the operator believed.
+        boolean implicitTls = port == 465;
+
+        props.put("mail.smtp.auth", String.valueOf(auth));
+        if (implicitTls) {
+            props.put("mail.smtp.ssl.enable", "true");
+            // STARTTLS on an already-encrypted socket is meaningless and confuses some
+            // relays; leave it off and say why.
+            props.put("mail.smtp.starttls.enable", "false");
+        } else {
+            props.put("mail.smtp.starttls.enable", String.valueOf(startTls));
+            // The whole point of this block: with only `starttls.enable`, STARTTLS is
+            // *opportunistic*. A server that does not advertise it — or an on-path
+            // adversary that strips the capability out of the EHLO response — let the
+            // session continue in plaintext, and `mail.smtp.auth=true` then sent
+            // `AUTH LOGIN` in clear text. `required` makes the handshake a precondition
+            // for the send instead of a preference.
+            props.put("mail.smtp.starttls.required", String.valueOf(startTls));
+        }
+
+        if (auth && !implicitTls && !startTls) {
+            // Belt and braces: never negotiate credentials onto a socket we know is bare.
+            throw new IllegalStateException(
+                    "Refusing to send: SMTP authentication is enabled but neither STARTTLS nor"
+                            + " implicit TLS is configured. The credentials would cross the wire"
+                            + " in plaintext. Enable STARTTLS, use port 465, or turn off auth.");
+        }
+
         props.put("mail.smtp.connectiontimeout", "50000");
         props.put("mail.smtp.timeout", "50000");
         props.put("mail.smtp.writetimeout", "50000");
@@ -95,9 +158,8 @@ public class EmailService {
             props.put("mail.host", mailSessionHost.trim());
         }
 
-        logger.debug("Resolved SMTP sender: host={}, port={}, auth={}, starttls={}",
-                host, sender.getPort(),
-                configService.isMailSmtpAuth(), configService.isMailStartTlsEnable());
+        logger.debug("Resolved SMTP sender: host={}, port={}, auth={}, starttls={}, implicit-tls={}",
+                host, port, auth, startTls, implicitTls);
 
         return sender;
     }
@@ -132,10 +194,41 @@ public class EmailService {
      * Sends a mail to an explicit list of recipients, bypassing the opt-in resolution. Used for
      * one-off transactional mails such as registration confirmation and the admin notification of
      * a pending account.
+     *
+     * <p><strong>Contract (XSS-VULN-01):</strong> {@code htmlBody} is a <em>trusted template</em>.
+     * It is written verbatim into the {@code text/html} MIME part, so anything interpolated into
+     * it must already be escaped — see {@link #escapeHtml(String)}. Any caller whose body is
+     * plain text — which is every notification built from device or model output — must use
+     * {@link #sendPlainTextMailTo} instead, which escapes at this boundary so no call-site can
+     * inherit the flaw.</p>
      */
     @SafeVarargs
-    public final void sendMailTo(List<String> recipients, String subject, String body,
+    public final void sendMailTo(List<String> recipients, String subject, String htmlBody,
                                  Optional<File>... filesToAttach) {
+        // multipart/alternative with a text/plain part: HTML-only mails score as spam.
+        sendInternal(recipients, subject, htmlToPlainText(htmlBody), htmlBody, filesToAttach);
+    }
+
+    /**
+     * Plain-text counterpart of {@link #sendMailTo}. The body is HTML-escaped here, before it
+     * can reach any MIME part, and line breaks become {@code <br>}.
+     *
+     * <p>This is the fix for the second-order HTML injection: the door-verification mail used to
+     * interpolate the raw {@code choices[0].message.content} returned by whatever host
+     * {@code ai.inference.url} names straight into the {@code text/html} part, so a hostile
+     * inference reply could inject markup into a mail the operator's mail client renders.</p>
+     */
+    @SafeVarargs
+    public final void sendPlainTextMailTo(List<String> recipients, String subject, String plainText,
+                                          Optional<File>... filesToAttach) {
+        String safe = escapeHtml(plainText);
+        String html = safe.replace("\r\n", "<br>").replace("\n", "<br>");
+        sendInternal(recipients, subject, plainText, html, filesToAttach);
+    }
+
+    @SafeVarargs
+    private final void sendInternal(List<String> recipients, String subject, String textPart,
+                                    String htmlPart, Optional<File>... filesToAttach) {
         if (recipients == null || recipients.isEmpty()) {
             logger.info("No recipients for mail '{}' — skipping.", subject);
             return;
@@ -172,11 +265,19 @@ public class EmailService {
                 }
             }
 
-            // multipart/alternative with a text/plain part: HTML-only mails score as spam.
-            helper.setText(htmlToPlainText(body), body);
+            // text/plain + text/html → multipart/alternative.
+            helper.setText(textPart, htmlPart);
         };
         sendingQueue.add(preparator);
         processSendingQueue();
+    }
+
+    /**
+     * HTML-escapes a value destined for an HTML MIME part. Centralised so there is exactly one
+     * encoder on the mail path and a call-site cannot pick a weaker one.
+     */
+    public static String escapeHtml(String value) {
+        return org.springframework.web.util.HtmlUtils.htmlEscape(value == null ? "" : value);
     }
 
     /**
@@ -222,6 +323,14 @@ public class EmailService {
     public synchronized void processSendingQueue() {
         logger.info("start processing sending queue.");
         JavaMailSender sender = resolveSender();
+        if (sender == null) {
+            // Refused destination (see resolveSender). The messages stay queued: a relay
+            // that is temporarily unreachable, or blocked until the operator adds it to
+            // hermanas.security.allowed-destination-hosts, must not silently eat the
+            // notifications that piled up while it was down.
+            logger.warn("Sending queue left untouched: no usable SMTP destination.");
+            return;
+        }
         Iterator<MimeMessagePreparator> it = sendingQueue.iterator();
         while (it.hasNext()) {
             try {
@@ -275,7 +384,15 @@ public class EmailService {
             }
         };
         logger.info("Sending diagnostics test email to {}.", recipient);
-        resolveSender().send(preparator);
+        JavaMailSender sender = resolveSender();
+        if (sender == null) {
+            // Contrairement au chemin file d'attente, celui-ci est declenche par un admin
+            // qui clique sur « envoyer un test » : il faut lui dire pourquoi rien ne part.
+            throw new IllegalStateException("The configured SMTP destination was refused by "
+                    + "the destination validator; the application log gives the reason and the "
+                    + "property to adjust.");
+        }
+        sender.send(preparator);
         logger.info("Diagnostics test email sent successfully.");
     }
 

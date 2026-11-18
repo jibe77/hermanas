@@ -708,7 +708,6 @@ hermanas/
 │   ├── src/                    # Angular sources
 │   ├── package.json            # npm dependencies (Angular 20, Vitest 3)
 │   └── angular.json            # Angular CLI workspace
-├── docs/                       # Generators for security report + test plan
 ├── pom.xml                     # Maven (+ frontend-maven-plugin)
 ├── CLAUDE.md                   # AI assistant instructions
 └── README.md                   # This file

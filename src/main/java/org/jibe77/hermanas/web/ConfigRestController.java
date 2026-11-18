@@ -819,8 +819,14 @@ public class ConfigRestController {
     }
 
     // ─── Weather provider settings ─────────────────────────────────────────────
+    // AUTHZ-VULN-07 : ces deux reglages decident d'une destination sortante et d'une
+    // cle d'API. Un simple USER pouvait pointer `weather.info.url` sur un hôte public
+    // (validé par DestinationValidator, donc hors réseaux privés) et y faire partir la
+    // cle OpenWeather avec les coordonnées GPS du poulailler en query string. Les
+    // reglages de transport sortant sont donc en ADMIN, comme `/mail/*` plus bas.
 
     @Operation(summary = "Update OpenWeather API URL template")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/weather/url")
     public ResponseEntity<String> setWeatherUrl(@RequestParam String url) {
         configService.setWeatherInfoUrl(url);
@@ -828,6 +834,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Update OpenWeather API key")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/weather/key")
     public ResponseEntity<String> setWeatherKey(@RequestParam String key) {
         configService.setWeatherInfoKey(key);
@@ -837,6 +844,7 @@ public class ConfigRestController {
     // ─── AI inference endpoint ─────────────────────────────────────────────────
 
     @Operation(summary = "Update the local LLM inference URL used by /camera/analyze")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/ai/inference-url")
     public ResponseEntity<String> setAiInferenceUrl(@RequestParam(required = false, defaultValue = "") String url) {
         configService.setAiInferenceUrl(url);
@@ -994,6 +1002,7 @@ public class ConfigRestController {
     // ─── SMTP transport ────────────────────────────────────────────────────────
 
     @Operation(summary = "Update SMTP host")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/host")
     public ResponseEntity<String> setMailHost(@RequestParam String host) {
         configService.setMailHost(host);
@@ -1001,6 +1010,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Update SMTP port (1..65535)")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/port")
     public ResponseEntity<String> setMailPort(@RequestParam int port) {
         configService.setMailPort(port);
@@ -1008,6 +1018,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Update SMTP username")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/username")
     public ResponseEntity<String> setMailUsername(@RequestParam String username) {
         configService.setMailUsername(username);
@@ -1015,6 +1026,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Update SMTP password (write-only; never returned)")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/password")
     public ResponseEntity<String> setMailPassword(@RequestParam String password) {
         configService.setMailPassword(password);
@@ -1022,6 +1034,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Toggle SMTP authentication")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/auth")
     public ResponseEntity<String> setMailAuth(@RequestParam boolean enabled) {
         configService.setMailSmtpAuth(enabled);
@@ -1029,6 +1042,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Toggle SMTP STARTTLS")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/mail/starttls")
     public ResponseEntity<String> setMailStartTls(@RequestParam boolean enabled) {
         configService.setMailStartTlsEnable(enabled);

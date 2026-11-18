@@ -6,12 +6,15 @@ import { Observable } from 'rxjs';
 /**
  * Body returned by POST /api/v1/weather/test. {@code ok} reflects whether the
  * call to the OpenWeather endpoint succeeded; on failure the {@code error}
- * field carries a stable code and {@code message} the underlying error text.
+ * field carries a stable code and {@code message} a generic explanation.
+ *
+ * <p>There is deliberately no excerpt of the provider's answer and no exception
+ * text (SSRF-VULN-01): both were readable channels for an internal URL. The
+ * details stay in the server log.</p>
  */
 export interface WeatherTestResult {
     ok: boolean;
     durationMs?: number;
-    snippet?: string;
     error?: string;
     message?: string;
 }

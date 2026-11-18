@@ -1,10 +1,15 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { UserService } from './user.service';
 
-export type LoginOutcome = 'ok' | 'invalid' | 'pending-validation';
+/**
+ * Result of a login attempt. Deliberately only two failure-free outcomes: the backend
+ * returns one uniform 401 whatever the reason, so the SPA must not pretend to know more
+ * than it is told (AUTH-VULN-02).
+ */
+export type LoginOutcome = 'ok' | 'invalid';
 
 @Injectable({ providedIn: 'root' })
 export class LoginService {
@@ -36,16 +41,11 @@ export class LoginService {
             return 'ok';
         } catch (e: unknown) {
             this.userService.setSignedOutUser();
-            // Backend returns 401 with body {"error":"ACCOUNT_PENDING_VALIDATION"} for accounts
-            // awaiting admin approval, so we can show a tailored message instead of a generic one.
-            if (
-                e instanceof HttpErrorResponse &&
-                e.error &&
-                typeof e.error === 'object' &&
-                (e.error as { error?: string }).error === 'ACCOUNT_PENDING_VALIDATION'
-            ) {
-                return 'pending-validation';
-            }
+            // AUTH-VULN-02: the backend answers one uniform 401 for every failure reason,
+            // including "account awaiting validation" — a distinguishable body there was a
+            // pre-authentication account oracle. A real applicant learns the same thing
+            // from the registration response and the confirmation mail, so the SPA now has
+            // exactly one failure branch.
             return 'invalid';
         }
     }

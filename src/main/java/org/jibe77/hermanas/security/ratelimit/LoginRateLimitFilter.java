@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -65,9 +67,26 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
+    /**
+     * Le matcher utilise la meme classe que celle que Spring Security construit dans
+     * {@code FormLoginConfigurer.createLoginProcessingUrlMatcher()} pour
+     * {@code loginProcessingUrl(LOGIN_PATH)} : les deux cotes voient donc exactement la
+     * meme porte, quoi que fasse le conteneur de servlet.
+     *
+     * <p>La comparaison brute sur {@code getRequestURI()} que ce filtre faisait avant
+     * laissait passer au moins une variante que Spring Security, elle, traitait bien
+     * comme un login : {@code /api/v1/auth/login;n'importe=quoi}. Le contenu entre
+     * points-virgules est un parametre de chemin (RFC 3986 §3.3), retire par le matcher
+     * cote Spring mais present dans l'URI brut — le throttle IP sautait, et le
+     * dictionnaire de mots de passe pouvait tourner sans limite. Le slash final, lui,
+     * n'a jamais ete une porte : {@code PathPattern} ne l'accepte pas sur ce motif,
+     * Spring Security ne le traite pas comme un login non plus.</p>
+     */
+    private static final RequestMatcher LOGIN_MATCHER =
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, LOGIN_PATH);
+
     private boolean isLoginAttempt(HttpServletRequest request) {
-        return HttpMethod.POST.matches(request.getMethod())
-                && LOGIN_PATH.equals(request.getRequestURI());
+        return LOGIN_MATCHER.matches(request);
     }
 
     private static String clientIp(HttpServletRequest request) {
