@@ -89,8 +89,15 @@ public class DestinationValidator {
      * {@code hermanas.security.allow-insecure-http-destinations} says (CRYPTO-014). The
      * weather provider has answered on 443 since long before this code existed, so nothing
      * legitimate is lost.
+     *
+     * <p>{@link Sink#WEB_PUSH} joined after the second patch round: a web-push endpoint is
+     * handed the browser's P-256 public key and an auth secret, and every push service in
+     * existence (Mozilla autopush, FCM, Apple WebPush) answers on 443. Accepting a plain
+     * {@code http://} endpoint here would only ever be somebody pointing the notifier at
+     * themselves.</p>
      */
-    private static final Set<Sink> TLS_REQUIRED = Set.of(Sink.WEATHER, Sink.DIAGNOSTIC);
+    private static final Set<Sink> TLS_REQUIRED =
+            Set.of(Sink.WEATHER, Sink.DIAGNOSTIC, Sink.WEB_PUSH);
 
     private final Set<String> allowedHosts = new LinkedHashSet<>();
     private final Set<Integer> allowedPorts = new LinkedHashSet<>();

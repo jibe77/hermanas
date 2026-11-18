@@ -60,9 +60,9 @@ class DestinationValidatorTest {
     }
 
     /**
-     * CRYPTO-014 : la clé du fournisseur est interpolée dans l'URL. Même avec
-     * {@code allow-insecure-http-destinations = true}, le temps clair reste refusé pour la
-     * météo et son diagnostic.
+     * CRYPTO-014 : la clé du fournisseur est interpolée dans l'URL, et un endpoint de push
+     * porte la clé du navigateur. Même avec {@code allow-insecure-http-destinations = true},
+     * le temps clair reste refusé pour la météo, son diagnostic et le push.
      */
     @Test
     void cleartextIsRefusedForTheSinksThatSendASecret() {
@@ -77,6 +77,13 @@ class DestinationValidatorTest {
         assertThatThrownBy(() -> validator.validateHttpUrl("http://api.openweathermap.org/x",
                 DestinationValidator.Sink.DIAGNOSTIC))
                 .isInstanceOf(DestinationValidator.InvalidDestinationException.class);
+
+        // Un endpoint de push transporte la clé publique P-256 du navigateur et son
+        // secret d'auth ; tous les services de push existants répondent en 443.
+        assertThatThrownBy(() -> validator.validateHttpUrl("http://push.example.org/wpush/v1/abc",
+                DestinationValidator.Sink.WEB_PUSH))
+                .isInstanceOf(DestinationValidator.InvalidDestinationException.class)
+                .hasMessageContaining("https");
     }
 
     /** Le dérogatoire reste valable pour les autres destinations (le serveur d'inférence du LAN). */
