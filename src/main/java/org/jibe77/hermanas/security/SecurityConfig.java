@@ -193,6 +193,20 @@ public class SecurityConfig
                 // anonymous showcase view).
                 .requestMatchers("/api/v1/email/**").hasRole(ROLE_ADMIN)
 
+                // ─── Choix assume : la vitrine reste publique ───────────────────────────────────
+                // Deux patchs Vigilo de la seconde vague proposaient de fermer `POST
+                // /api/v1/captures` (AUTHZ-VULN-03) et le CONNECT STOMP (AUTHZ-VULN-05) aux
+                // visiteurs anonymes. Revus et ecartes le 2026-11-18, sur decision du
+                // proprietaire : le tableau de bord est concu comme une vitrine publique du
+                // poulailler, et sa carte en temps reel consomme /api/v1/stomp en anonyme.
+                // Compensations verifiees :
+                //   - captures : @RateLimited (5 / 60 s par IP) sur la methode, plus
+                //     l'AiVisionCache qui absorbe les requests repetees sur une meme langue ;
+                //   - STOMP : aucun @MessageMapping dans l'application, un client anonyme peut
+                //     s'abonner aux sujets d'etat (porte, capteurs, progression de capture) mais
+                //     ne peut rien modifier ;
+                //   - seules l'image courante d'une capture et la vue directe sont publiques,
+                //     l'archive /api/v1/camera/photos/** reste authentifiee.
                 // ─── Camera photo archive: authenticated users only — the historical
                 //     /photos/** tree is private. The live dashboard endpoints
                 //     (takePicture, stream, closingRate) stay public so unauthenticated
