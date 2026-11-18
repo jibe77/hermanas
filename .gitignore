@@ -98,3 +98,6 @@ audit_config.*.txt
 
 # Rapport de pentest (confidentiel) : ne jamais le versionner.
 /audit/
+# Revue de sécurité 2026-05-30 + générateurs de rapport et plan de test : retirés
+# du dépôt le 2026-11-18, conservés hors dépôt dans hermanas-audit-backup/.
+/docs/
