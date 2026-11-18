@@ -75,7 +75,15 @@ public class RegistrationService {
             throw new RegistrationException("INVALID_EMAIL", "A valid email is required");
         }
         if (repository.existsByLogin(login)) {
-            throw new RegistrationException("LOGIN_TAKEN", "This login is already taken");
+            // AUTH-VULN-02 / AUTH-VULN-04 : le message ne confirme plus textuellement
+            // que le compte existe. Le code `LOGIN_TAKEN` reste dans la reponse parce
+            // que le front le mappe pour sa traduction (login-modal et register) ; il
+            // reste donc un oracle mou, mais `POST /register` est limite a 3 tentatives
+            // par heure et par IP (voir AuthRestController), ce qui rend un balayage de
+            // dictionnaire sans interet. Fermer completement demanderait un autre
+            // parcours : reponse identique dans tous les cas + confirmation par e-mail.
+            throw new RegistrationException("LOGIN_TAKEN",
+                    "Registration could not be completed with the supplied details.");
         }
 
         String language = normalizeLanguage(body.getLanguage());
