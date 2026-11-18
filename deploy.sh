@@ -90,7 +90,11 @@ fi
 
 # ─── Étape 2: Récupération de la version ────────────────────────────────────
 echo -e "${YELLOW}[2/6] Détection de la version...${NC}"
-JAR_FILE=$(ls target/hermanas-*.jar 2>/dev/null | grep -v '\.original$' | head -n 1)
+# Le plus récent, pas le premier trié : `ls target/hermanas-*.jar` renvoyait
+# hermanas-0.16.2.jar avant hermanas-0.16.3.jar, et déployait donc le JAR d'à côté
+# par-dessus le bon (constaté le 2026-11-18). Tri par date de modification : c'est
+# bien « le JAR qui vient d'être construit » que l'on veut téléverser.
+JAR_FILE=$(ls -1t target/hermanas-*.jar 2>/dev/null | grep -v '\.original$' | head -n 1)
 if [ -z "$JAR_FILE" ]; then
     echo -e "${RED}Erreur: Aucun fichier JAR trouvé dans target/${NC}"
     exit 1
