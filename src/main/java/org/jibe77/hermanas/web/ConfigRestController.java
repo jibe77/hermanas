@@ -819,8 +819,14 @@ public class ConfigRestController {
     }
 
     // ─── Weather provider settings ─────────────────────────────────────────────
+    // AUTHZ-VULN-07 : ces deux reglages decident d'une destination sortante et d'une
+    // cle d'API. Un simple USER pouvait pointer `weather.info.url` sur un hôte public
+    // (validé par DestinationValidator, donc hors réseaux privés) et y faire partir la
+    // cle OpenWeather avec les coordonnées GPS du poulailler en query string. Les
+    // reglages de transport sortant sont donc en ADMIN, comme `/mail/*` plus bas.
 
     @Operation(summary = "Update OpenWeather API URL template")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/weather/url")
     public ResponseEntity<String> setWeatherUrl(@RequestParam String url) {
         configService.setWeatherInfoUrl(url);
@@ -828,6 +834,7 @@ public class ConfigRestController {
     }
 
     @Operation(summary = "Update OpenWeather API key")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/weather/key")
     public ResponseEntity<String> setWeatherKey(@RequestParam String key) {
         configService.setWeatherInfoKey(key);
@@ -837,6 +844,7 @@ public class ConfigRestController {
     // ─── AI inference endpoint ─────────────────────────────────────────────────
 
     @Operation(summary = "Update the local LLM inference URL used by /camera/analyze")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/ai/inference-url")
     public ResponseEntity<String> setAiInferenceUrl(@RequestParam(required = false, defaultValue = "") String url) {
         configService.setAiInferenceUrl(url);

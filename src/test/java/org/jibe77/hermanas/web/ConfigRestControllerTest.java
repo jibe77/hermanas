@@ -183,4 +183,78 @@ class ConfigRestControllerTest {
 
     // PUT /api/v1/config/system/<mode>/wifi and /shutdown endpoints have been
     // removed — see ConfigRestController for the rationale.
+
+    // ============================================================================
+    // PUT /api/v1/config/weather/* et /config/ai/inference-url — AUTHZ-VULN-07
+    //
+    // Ces trois reglages choisissent une destination sortante et y font partir une cle
+    // d'API. Ils sont deja masques aux non-admins dans le front (bloc @if (isAdmin) des
+    // pages weather et camera) ; on aligne l'API, qui etait la seule porte ouverte.
+    // ============================================================================
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void setWeatherUrl_shouldBeRefusedToPlainUser() throws Exception {
+        mockMvc.perform(put("/api/v1/config/weather/url")
+                        .param("url", "https://evil.example.org/{key}")
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+
+        verify(configService, never()).setWeatherInfoUrl(any());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void setWeatherUrl_shouldBeAllowedForAdmin() throws Exception {
+        mockMvc.perform(put("/api/v1/config/weather/url")
+                        .param("url", "https://api.openweathermap.org/data/2.5/weather")
+                        .with(csrf()))
+                .andExpect(status().isOk());
+
+        verify(configService).setWeatherInfoUrl("https://api.openweathermap.org/data/2.5/weather");
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void setWeatherKey_shouldBeRefusedToPlainUser() throws Exception {
+        mockMvc.perform(put("/api/v1/config/weather/key")
+                        .param("key", "a-weather-key")
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+
+        verify(configService, never()).setWeatherInfoKey(any());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void setWeatherKey_shouldBeAllowedForAdmin() throws Exception {
+        mockMvc.perform(put("/api/v1/config/weather/key")
+                        .param("key", "a-weather-key")
+                        .with(csrf()))
+                .andExpect(status().isOk());
+
+        verify(configService).setWeatherInfoKey("a-weather-key");
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void setAiInferenceUrl_shouldBeRefusedToPlainUser() throws Exception {
+        mockMvc.perform(put("/api/v1/config/ai/inference-url")
+                        .param("url", "http://attacker.example.org/v1")
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+
+        verify(configService, never()).setAiInferenceUrl(any());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void setAiInferenceUrl_shouldBeAllowedForAdmin() throws Exception {
+        mockMvc.perform(put("/api/v1/config/ai/inference-url")
+                        .param("url", "http://alyssa.local:8080/v1")
+                        .with(csrf()))
+                .andExpect(status().isOk());
+
+        verify(configService).setAiInferenceUrl("http://alyssa.local:8080/v1");
+    }
 }
